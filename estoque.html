@@ -305,6 +305,10 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 async function verificarAutenticacao() {
+  async function fazerLogout() {
+      await _supabase.auth.signOut();
+      window.location.href = "login.html";
+    }
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) {
         // Se NÃO estiver logado, manda para o login.html
