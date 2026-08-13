@@ -3,253 +3,513 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo - Figurinhas</title>
+  <title>Álbum Digital de Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #111827;
+      --primary: #101827;
       --accent: #25d366;
-      --bg: #f3f4f6;
+      --gold: #f59e0b;
       --card-bg: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: var(--bg); padding: 2rem 1rem; color: #333; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     
-    .container { max-width: 700px; margin: 0 auto; }
-    h1 { text-align: center; margin-bottom: 2rem; color: var(--primary); }
+    body { 
+      background: var(--bg-gradient); 
+      min-height: 100vh;
+      color: #334155; 
+      padding-bottom: 120px; 
+    }
 
-    .card {
-      background: var(--card-bg);
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    /* HEADER BANNER */
+    header { 
+      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+      color: white; 
+      padding: 2.5rem 1rem 1.5rem; 
+      text-align: center; 
+    }
+    header h1 { 
+      font-size: 2.2rem; 
+      font-weight: 800; 
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    }
+    header p { color: #94a3b8; font-size: 0.95rem; margin-top: 0.3rem; }
+
+    /* CONTAINER PRINCIPAL DO ÁLBUM */
+    .album-container { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 0 1rem; 
+    }
+
+    /* BARRA DE PESQUISA E FILTROS */
+    .controls-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 16px;
       margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    .card h2 { margin-bottom: 1rem; font-size: 1.2rem; color: var(--primary); border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
-
-    .field { margin-bottom: 1rem; }
-    .field label { display: block; font-weight: bold; margin-bottom: 0.4rem; font-size: 0.9rem; }
-    .field input, .field select {
+    .search-box input {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-    button {
-      width: 100%;
-      background: var(--primary);
+      padding: 0.85rem 1.2rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(15, 23, 42, 0.6);
       color: white;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .search-box input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+    .search-box input::placeholder { color: #64748b; }
+
+    /* ABAS DE ÁLBUM */
+    .album-tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.3rem;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
       border: none;
-      padding: 0.8rem;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: bold;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
+
+    /* GRID DE FIGURINHAS */
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); 
+      gap: 1.25rem; 
+    }
+
+    /* CARD FIGURINHA */
+    .sticker-card { 
+      background: #ffffff; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      position: relative;
+      display: flex; 
+      flex-direction: column; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 3px solid #ffffff;
+    }
+    .sticker-card:hover {
+      transform: translateY(-6px) rotate(0.5deg);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+
+    .sticker-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #0f172a;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .sticker-img-wrap {
+      width: 100%;
+      height: 210px;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      position: relative;
+    }
+    .sticker-card img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: contain; 
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+
+    .sticker-info { 
+      padding: 0.9rem; 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+    }
+    .album-name { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .sticker-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 2px 0 8px; line-height: 1.2; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin-bottom: 0.8rem; }
+    
+    .btn-add { 
+      background: #0f172a; 
+      color: white; 
+      border: none; 
+      padding: 0.7rem; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 700; 
+      font-size: 0.85rem;
+      margin-top: auto; 
+      transition: all 0.2s;
+    }
+    .btn-add:hover { background: #2563eb; }
+    
+    .out-of-stock { opacity: 0.65; filter: grayscale(0.5); }
+    .btn-disabled { background: #e2e8f0 !important; color: #94a3b8 !important; cursor: not-allowed !important; }
+    
+    .badge-out {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-12deg);
+      background: #ef4444; color: white;
+      font-weight: 800; font-size: 0.75rem;
+      padding: 6px 14px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      z-index: 3; white-space: nowrap;
+    }
+
+    /* BARRA DO CARRINHO */
+    .cart-bar { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 2rem);
+      max-width: 800px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 1rem 1.5rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+      z-index: 100;
+    }
+    .cart-info { cursor: pointer; }
+    .cart-info span { font-size: 0.8rem; color: var(--gold); font-weight: 600; display: block; }
+    .cart-info h3 { color: #ffffff; font-size: 1.2rem; font-weight: 800; }
+    
+    .btn-wsp { 
+      background: #25d366; color: #052e16; 
+      border: none; padding: 0.8rem 1.4rem; 
+      border-radius: 10px; font-weight: 800; font-size: 0.9rem;
+      cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: all 0.2s;
+    }
+    .btn-wsp:hover { transform: scale(1.03); background: #22c55e; }
+    .btn-wsp:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* MODAL DE ITENS DO CARRINHO */
+    .cart-modal {
+      display: none;
+      position: fixed;
+      bottom: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 2rem);
+      max-width: 800px;
+      max-height: 350px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 1rem;
+      overflow-y: auto;
+      z-index: 99;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .cart-modal.active { display: block; }
+    .cart-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 0.8rem;
+    }
+    .cart-modal-header h4 { font-size: 0.95rem; text-transform: uppercase; color: var(--gold); }
+    .btn-close-modal { background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer; }
+    
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #0f172a; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;
+      color: white; font-size: 0.85rem;
+    }
+    .cart-item-info { display: flex; align-items: center; gap: 0.8rem; }
+    .cart-item-img { width: 35px; height: 45px; object-fit: contain; }
+    .btn-remove-item {
+      background: #ef4444; color: white; border: none; padding: 0.3rem 0.6rem;
+      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75rem;
       transition: background 0.2s;
     }
-
-    button:hover { background: #1f2937; }
-    button:disabled { background: #9ca3af; cursor: not-allowed; }
+    .btn-remove-item:hover { background: #dc2626; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Painel de Controle</h1>
+  <header>
+    <h1>Coleção de Figurinhas</h1>
+    <p>Escolha as suas figurinhas faltantes e envie o pedido direto no WhatsApp</p>
+  </header>
 
-    <!-- FORMULÁRIO 1: CADASTRAR ÁLBUM -->
-    <div class="card">
-      <h2>1. Cadastrar Novo Álbum</h2>
-      <form id="formAlbum">
-        <div class="field">
-          <label for="albumNome">Nome do Álbum</label>
-          <input type="text" id="albumNome" placeholder="Ex: Brasileirão 2026, Champions League..." required>
-        </div>
-        <button type="submit" id="btnSalvarAlbum">Cadastrar Álbum</button>
-      </form>
+  <div class="album-container">
+    <div class="controls-wrapper">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Buscar por número ou nome do jogador..." oninput="filtrar()">
+      </div>
+      <div class="album-tabs" id="album-tabs">
+        <button class="tab-btn active" onclick="filtrarAlbum('todos', this)">Todos os Álbuns</button>
+      </div>
     </div>
 
-    <!-- FORMULÁRIO 2: CADASTRAR FIGURINHA -->
-    <div class="card">
-      <h2>2. Cadastrar Nova Figurinha</h2>
-      <form id="formFigurinha">
-        <div class="field">
-          <label for="figAlbum">Selecione o Álbum</label>
-          <select id="figAlbum" required>
-            <option value="">Carregando álbuns...</option>
-          </select>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="figNumero">Número/Código</label>
-            <input type="text" id="figNumero" placeholder="Ex: 10, BRA1..." required>
-          </div>
-          <div class="field">
-            <label for="figNome">Nome do Jogador / Item</label>
-            <input type="text" id="figNome" placeholder="Ex: Neymar Jr." required>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="figPreco">Preço (€)</label>
-            <input type="number" step="0.01" min="0" id="figPreco" placeholder="2.50" required>
-          </div>
-          <div class="field">
-            <label for="figEstoque">Estoque Inicial</label>
-            <input type="number" min="0" id="figEstoque" value="1" required>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="figImagem">Imagem da Figurinha (Opcional)</label>
-          <input type="file" id="figImagem" accept="image/*">
-        </div>
-
-        <button type="submit" id="btnSalvarFigurinha">Salvar Figurinha</button>
-      </form>
+    <div class="grid" id="catalog">
+      <p style="color: white; text-align: center; grid-column: 1/-1;">Carregando o álbum...</p>
     </div>
   </div>
 
+  <!-- MODAL COM OS ITENS SELECIONADOS NO CARRINHO -->
+  <div class="cart-modal" id="cartModal">
+    <div class="cart-modal-header">
+      <h4>Itens Selecionados</h4>
+      <button class="btn-close-modal" onclick="toggleCartModal()">✕</button>
+    </div>
+    <div id="cartItemsList">
+      <p style="color: #94a3b8; text-align: center; font-size: 0.85rem;">Nenhum item no carrinho.</p>
+    </div>
+  </div>
+
+  <!-- BARRA DE CARRINHO FLUTUANTE -->
+  <div class="cart-bar">
+    <div class="cart-info" onclick="toggleCartModal()">
+      <span id="cart-count">0 figurinhas (Clique para ver / remover) 👁️</span>
+      <h3 id="cart-total">Total: € 0,00</h3>
+    </div>
+    <button class="btn-wsp" id="btnWsp" onclick="enviarWhatsapp()">
+      <span>Finalizar Pedido</span> ➔
+    </button>
+  </div>
+
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    const SEU_WHATSAPP = "+351962634522"; 
 
-    // Inicialização do cliente Supabase
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let figurinhasGlobal = [];
+    let carrinho = [];
+    let albumSelecionado = 'todos';
+    let mapaAlbuns = {};
 
-    // Carregar a lista de álbuns no dropdown
-    async function carregarAlbuns() {
-      const select = document.getElementById('figAlbum');
+    async function init() {
+      const catalog = document.getElementById('catalog');
       try {
-        const { data, error } = await _supabase
-          .from('albuns')
+        // 1. Carregar Álbuns (Mapeando os IDs e criando as abas)
+        const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
+        const tabsContainer = document.getElementById('album-tabs');
+        
+        if (albuns && albuns.length > 0) {
+          albuns.forEach(a => {
+            mapaAlbuns[a.id] = a.nome;
+            tabsContainer.innerHTML += `<button class="tab-btn" onclick="filtrarAlbum('${a.id}', this)">${a.nome}</button>`;
+          });
+        }
+
+        // 2. Carregar Figurinhas sem Risco de Travar no JOIN
+        const { data: figurinhas, error } = await _supabase
+          .from('figurinhas')
           .select('*')
-          .order('nome', { ascending: true });
+          .order('numero', { ascending: true });
 
         if (error) throw error;
 
-        select.innerHTML = '<option value="">Selecione um álbum...</option>';
-        if (data && data.length > 0) {
-          data.forEach(album => {
-            select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
-          });
-        } else {
-          select.innerHTML = '<option value="">Nenhum álbum cadastrado no banco</option>';
-        }
+        figurinhasGlobal = figurinhas || [];
+        renderizar(figurinhasGlobal);
+
       } catch (err) {
-        console.error('Erro ao carregar álbuns:', err);
-        select.innerHTML = `<option value="">Erro ao carregar: ${err.message || 'Verifique o RLS'}</option>`;
+        console.error("Erro ao carregar dados:", err);
+        catalog.innerHTML = `<p style="color: #ef4444; text-align: center; grid-column: 1/-1; padding: 2rem;">Erro ao carregar o álbum: ${err.message || 'Verifique a conexão ou chaves do Supabase'}</p>`;
       }
     }
 
-    // EVENTO 1: Cadastrar Álbum
-    document.getElementById('formAlbum').onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnSalvarAlbum');
-      const inputNome = document.getElementById('albumNome');
-      const nome = inputNome.value.trim();
+    function renderizar(lista) {
+      const catalog = document.getElementById('catalog');
+      catalog.innerHTML = '';
 
-      if (!nome) return alert('Por favor, digite o nome do álbum.');
+      if (lista.length === 0) { 
+        catalog.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center; padding: 3rem 0;">Nenhuma figurinha encontrada.</p>'; 
+        return; 
+      }
 
-      btn.innerText = 'Salvando...';
-      btn.disabled = true;
+      lista.forEach(f => {
+        const temEstoque = f.estoque && f.estoque > 0;
+        const cardClass = temEstoque ? 'sticker-card' : 'sticker-card out-of-stock';
+        const badgeEsgotado = !temEstoque ? `<div class="badge-out">Esgotado</div>` : '';
+        
+        const qtdNoCarrinho = carrinho.filter(item => item.id === f.id).length;
+        const textoBotao = qtdNoCarrinho > 0 ? `+ Adicionar (${qtdNoCarrinho})` : `+ Adicionar`;
+
+        const botaoHTML = temEstoque 
+          ? `<button class="btn-add" onclick="adicionar(${f.id})">${textoBotao}</button>`
+          : `<button class="btn-add btn-disabled" disabled>Indisponível</button>`;
+
+        const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção Especial';
+        const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
+
+        catalog.innerHTML += `
+          <div class="${cardClass}">
+            <div class="sticker-badge">Nº ${f.numero}</div>
+            ${badgeEsgotado}
+            <div class="sticker-img-wrap">
+              <img src="${f.imagem}" alt="${f.nome}" loading="lazy">
+            </div>
+            <div class="sticker-info">
+              <span class="album-name">${nomeAlbum}</span>
+              <div class="sticker-title">${f.nome}</div>
+              <div class="sticker-price">€ ${precoFormatado}</div>
+              ${botaoHTML}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function adicionar(id) {
+      const item = figurinhasGlobal.find(f => f.id === id);
+      carrinho.push(item);
+      atualizarCarrinho();
+      filtrar();
+    }
+
+    function removerDoCarrinho(indexNoCarrinho) {
+      carrinho.splice(indexNoCarrinho, 1);
+      atualizarCarrinho();
+      filtrar();
+    }
+
+    function toggleCartModal() {
+      const modal = document.getElementById('cartModal');
+      modal.classList.toggle('active');
+    }
+
+    function atualizarCarrinho() {
+      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
+      document.getElementById('cart-count').innerText = `${carrinho.length} figurinha(s) (Clique para ver/remover) 👁️`;
+      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
+
+      const listContainer = document.getElementById('cartItemsList');
+      if (carrinho.length === 0) {
+        listContainer.innerHTML = '<p style="color: #94a3b8; text-align: center; font-size: 0.85rem;">Nenhum item no carrinho.</p>';
+        document.getElementById('cartModal').classList.remove('active');
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      carrinho.forEach((item, index) => {
+        const precoFormatado = item.preco ? item.preco.toFixed(2).replace('.', ',') : '0,00';
+        listContainer.innerHTML += `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <img src="${item.imagem}" class="cart-item-img">
+              <div>
+                <strong>Nº ${item.numero} - ${item.nome}</strong><br>
+                <small style="color:#94a3b8;">€ ${precoFormatado}</small>
+              </div>
+            </div>
+            <button class="btn-remove-item" onclick="removerDoCarrinho(${index})">Remover 🗑️</button>
+          </div>
+        `;
+      });
+    }
+
+    function filtrarAlbum(id, element) {
+      albumSelecionado = id;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      filtrar();
+    }
+
+    function filtrar() {
+      const busca = document.getElementById('search').value.toLowerCase();
+      const resultado = figurinhasGlobal.filter(f => {
+        const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
+                         (f.numero && f.numero.toString().toLowerCase().includes(busca));
+        const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
+        return bateNome && bateAlbum;
+      });
+      renderizar(resultado);
+    }
+
+    async function enviarWhatsapp() {
+      if (carrinho.length === 0) return alert("Selecione pelo menos uma figurinha!");
+
+      const btnWsp = document.getElementById('btnWsp');
+      btnWsp.innerText = "Processando...";
+      btnWsp.disabled = true;
 
       try {
-        const { error } = await _supabase.from('albuns').insert([{ nome }]);
-
-        if (error) {
-          alert('Erro ao cadastrar álbum: ' + error.message);
-        } else {
-          alert('Álbum cadastrado com sucesso!');
-          inputNome.value = '';
-          await carregarAlbuns();
-        }
-      } catch (err) {
-        alert('Ocorreu um erro ao salvar o álbum.');
-        console.error(err);
-      } finally {
-        btn.innerText = 'Cadastrar Álbum';
-        btn.disabled = false;
-      }
-    };
-
-    // EVENTO 2: Cadastrar Figurinha
-    document.getElementById('formFigurinha').onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnSalvarFigurinha');
-
-      const albumId = document.getElementById('figAlbum').value;
-      const numero = document.getElementById('figNumero').value.trim();
-      const nome = document.getElementById('figNome').value.trim();
-      const preco = parseFloat(document.getElementById('figPreco').value);
-      const estoque = parseInt(document.getElementById('figEstoque').value);
-      const fileInput = document.getElementById('figImagem');
-
-      if (!albumId) return alert('Por favor, selecione um álbum.');
-
-      btn.innerText = 'Salvando figurinha...';
-      btn.disabled = true;
-
-      try {
-        // 🌐 1. URL da Imagem Padrão (utilizada se não houver upload de ficheiro)
-        let imagemUrl = "https://github.com/rmbcolecionismo/catalogo-cards/blob/main/sem-foto.jpg";
-
-        // 📸 2. Se o utilizador enviou um ficheiro, faz o upload para o Supabase
-        if (fileInput.files && fileInput.files.length > 0) {
-          btn.innerText = 'Enviando imagem...';
-          const file = fileInput.files[0];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-          const { error: uploadError } = await _supabase
-            .storage
-            .from('figurinhas')
-            .upload(fileName, file);
-
-          if (uploadError) throw new Error('Erro ao enviar imagem: ' + uploadError.message);
-
-          const { data: urlData } = _supabase
-            .storage
-            .from('figurinhas')
-            .getPublicUrl(fileName);
-
-          imagemUrl = urlData.publicUrl;
+        for (const item of carrinho) {
+          const { data } = await _supabase.from('figurinhas').select('estoque').eq('id', item.id).single();
+          if (data) {
+            const novoEstoque = Math.max(0, (data.estoque || 0) - 1);
+            await _supabase.from('figurinhas').update({ estoque: novoEstoque }).eq('id', item.id);
+          }
         }
 
-        // 💾 3. Salva no Banco de Dados
-        const { error: dbError } = await _supabase.from('figurinhas').insert([{
-          album_id: albumId,
-          numero: numero,
-          nome: nome,
-          preco: preco,
-          estoque: estoque,
-          imagem: imagemUrl
-        }]);
+        let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
+        let total = 0;
+        carrinho.forEach((item, i) => {
+          msg += `${i + 1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
+          total += item.preco;
+        });
+        msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
 
-        if (dbError) throw new Error('Erro ao salvar no banco: ' + dbError.message);
+        window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
 
-        alert('Figurinha cadastrada com sucesso!');
-        document.getElementById('formFigurinha').reset();
+        carrinho = [];
+        atualizarCarrinho();
+        await init();
 
-      } catch (err) {
-        alert(err.message || 'Erro ao cadastrar figurinha.');
-        console.error(err);
+      } catch (error) {
+        alert("Ocorreu um erro ao processar o pedido. Tente novamente.");
+        console.error(error);
       } finally {
-        btn.innerText = 'Salvar Figurinha';
-        btn.disabled = false;
+        btnWsp.innerHTML = `<span>Finalizar Pedido</span> ➔`;
+        btnWsp.disabled = false;
       }
-    };
+    }
 
-    // Inicializa carregando os álbuns ao abrir a página
-    carregarAlbuns();
+    init();
   </script>
 </body>
 </html>
