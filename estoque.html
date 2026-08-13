@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Estoque</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; background: #f9fafb; }
+    h1 { margin-bottom: 1rem; }
+    
+    .search-bar { width: 100%; padding: 0.75rem; margin-bottom: 1.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+    
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f3f4f6; }
+    
+    .img-preview { width: 40px; height: 50px; object-fit: contain; border-radius: 4px; }
+    .qty-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .qty-input { width: 60px; padding: 0.4rem; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; }
+    
+    .btn-save { background: #10b981; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-save:hover { background: #059669; }
+    
+    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+    .status-ok { background: #d1fae5; color: #065f46; }
+    .status-zero { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+  <h1>Controle de Estoque de Figurinhas</h1>
+  <input type="text" id="search" class="search-bar" placeholder="Filtrar por nome, número ou álbum..." oninput="filtrar()">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Álbum / Nº</th>
+        <th>Nome</th>
+        <th>Preço</th>
+        <th>Status</th>
+        <th>Estoque</th>
+      </tr>
+    </thead>
+    <tbody id="stock-list">
+      <tr><td colspan="6">Carregando estoque...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const SUPABASE_URL = "SUA_URL_DO_SUPABASE_AQUI";
+    const SUPABASE_KEY = "SUA_CHAVE_ANON_AQUI";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let figurinhasGlobal = [];
+
+    async function carregarEstoque() {
+      const { data, error } = await _supabase
+        .from('figurinhas')
+        .select('*, albuns(nome)')
+        .order('id', { ascending: false });
+
+      if (data) {
+        figurinhasGlobal = data;
+        renderizarTabela(figurinhasGlobal);
+      }
+    }
+
+    function renderizarTabela(lista) {
+      const tbody = document.getElementById('stock-list');
+      tbody.innerHTML = '';
+
+      if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">Nenhuma figurinha encontrada.</td></tr>';
+        return;
+      }
+
+      lista.forEach(f => {
+        const qtdEstoque = f.estoque !== null && f.estoque !== undefined ? f.estoque : 0;
+        const statusClass = qtdEstoque > 0 ? 'status-ok' : 'status-zero';
+        const statusTexto = qtdEstoque > 0 ? 'Disponível' : 'Esgotado';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><img src="${f.imagem}" class="img-preview"></td>
+            <td><small>${f.albuns ? f.albuns.nome : ''}</small><br><strong>Nº ${f.numero}</strong></td>
+            <td>${f.nome}</td>
+            <td>€ ${f.preco.toFixed(2).replace('.', ',')}</td>
+            <td><span class="status-badge ${statusClass}">${statusTexto}</span></td>
+            <td>
+              <div class="qty-controls">
+                <input type="number" min="0" value="${qtdEstoque}" id="input-${f.id}" class="qty-input">
+                <button class="btn-save" onclick="atualizarEstoque(${f.id})">Salvar</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filtrar() {
+      const termo = document.getElementById('search').value.toLowerCase();
+      const resultado = figurinhasGlobal.filter(f => 
+        f.nome.toLowerCase().includes(termo) || 
+        f.numero.toLowerCase().includes(termo) ||
+        (f.albuns && f.albuns.nome.toLowerCase().includes(termo))
+      );
+      renderizarTabela(resultado);
+    }
+
+    async function atualizarEstoque(id) {
+      const novaQtd = parseInt(document.getElementById(`input-${id}`).value);
+      
+      if (isNaN(novaQtd) || novaQtd < 0) {
+        alert("Por favor, insira uma quantidade válida.");
+        return;
+      }
+
+      const { error } = await _supabase
+        .from('figurinhas')
+        .update({ estoque: novaQtd })
+        .eq('id', id);
+
+      if (error) {
+        alert("Erro ao atualizar estoque: " + error.message);
+      } else {
+        alert("Estoque atualizado!");
+        carregarEstoque();
+      }
+    }
+
+    carregarEstoque();
+  </script>
+</body>
+</html>
