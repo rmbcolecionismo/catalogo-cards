@@ -2,174 +2,250 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel Admin - Supabase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 2rem auto; padding: 0 1rem; }
-    form { background: #f4f4f4; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
-    .field { margin-bottom: 1rem; display: flex; flex-direction: column; }
-    label { font-weight: bold; margin-bottom: .3rem; }
-    input, select, button { padding: .6rem; border: 1px solid #ccc; border-radius: 4px; }
-    button { background: #10b981; color: white; font-weight: bold; cursor: pointer; border: none; }
+    :root {
+      --primary: #111827;
+      --accent: #25d366;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: var(--bg); padding: 2rem 1rem; color: #333; }
+    
+    .container { max-width: 700px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 2rem; color: var(--primary); }
+
+    .card {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .card h2 { margin-bottom: 1rem; font-size: 1.2rem; color: var(--primary); border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-weight: bold; margin-bottom: 0.4rem; font-size: 0.9rem; }
+    .field input, .field select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    button {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #1f2937; }
+    button:disabled { background: #9ca3af; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
-  <h1>Painel de Cadastro</h1>
+  <div class="container">
+    <h1>Painel de Controle</h1>
 
-  <form id="formAlbum">
-    <h3>1. Cadastrar Álbum</h3>
-    <div class="field">
-      <label>Nome do Álbum</label>
-      <input type="text" id="albumNome" required placeholder="Ex: Brasileirão 2026">
+    <!-- FORMULÁRIO 1: CADASTRAR ÁLBUM -->
+    <div class="card">
+      <h2>1. Cadastrar Novo Álbum</h2>
+      <form id="formAlbum">
+        <div class="field">
+          <label for="albumNome">Nome do Álbum</label>
+          <input type="text" id="albumNome" placeholder="Ex: Brasileirão 2026, Champions League..." required>
+        </div>
+        <button type="submit" id="btnSalvarAlbum">Cadastrar Álbum</button>
+      </form>
     </div>
-    <button type="submit">Salvar Álbum</button>
-  </form>
 
-  <form id="formFigurinha">
-    <h3>2. Cadastrar Figurinha</h3>
-    <div class="field">
-      <label>Álbum</label>
-      <select id="figAlbum" required></select>
+    <!-- FORMULÁRIO 2: CADASTRAR FIGURINHA -->
+    <div class="card">
+      <h2>2. Cadastrar Nova Figurinha</h2>
+      <form id="formFigurinha">
+        <div class="field">
+          <label for="figAlbum">Selecione o Álbum</label>
+          <select id="figAlbum" required>
+            <option value="">Carregando álbuns...</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="figNumero">Número/Código</label>
+            <input type="text" id="figNumero" placeholder="Ex: 10, BRA1..." required>
+          </div>
+          <div class="field">
+            <label for="figNome">Nome do Jogador / Item</label>
+            <input type="text" id="figNome" placeholder="Ex: Neymar Jr." required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="figPreco">Preço (€)</label>
+            <input type="number" step="0.01" min="0" id="figPreco" placeholder="2.50" required>
+          </div>
+          <div class="field">
+            <label for="figEstoque">Estoque Inicial</label>
+            <input type="number" min="0" id="figEstoque" value="1" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="figImagem">Imagem da Figurinha</label>
+          <input type="file" id="figImagem" accept="image/*" required>
+        </div>
+
+        <button type="submit" id="btnSalvarFigurinha">Salvar Figurinha</button>
+      </form>
     </div>
-    <div class="field">
-      <label>Número</label>
-      <input type="text" id="figNumero" required placeholder="Ex: BRA-10">
-    </div>
-    <div class="field">
-      <label>Nome / Jogador</label>
-      <input type="text" id="figNome" required placeholder="Ex: Neymar Jr">
-    </div>
-    <div class="field">
-      <label>Preço (€)</label>
-      <input type="number" step="0.01" id="figPreco" required placeholder="2.50">
-    </div>
-    <div class="field">
-  <label>Quantidade em Estoque</label>
-  <input type="number" min="0" id="figEstoque" value="1" required placeholder="1">
-</div>
-    <div class="field">
-      <label>Foto da Figurinha</label>
-      <input type="file" id="figImagem" accept="image/*" required>
-    </div>
-    <button type="submit">Cadastrar Figurinha</button>
-  </form>
+  </div>
 
   <script>
-    // === CONECTAR COM O SEU SUPABASE ===
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+
+    // Inicialização do cliente Supabase
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Carregar Álbuns no formulário
+    // Carregar a lista de álbuns no dropdown assim que carregar a página
     async function carregarAlbuns() {
-      const { data, error } = await _supabase.from('albuns').select('*');
       const select = document.getElementById('figAlbum');
-      select.innerHTML = '<option value="">Selecione...</option>';
-      if (data) {
-        data.forEach(a => {
-          select.innerHTML += `<option value="${a.id}">${a.nome}</option>`;
-        });
+      try {
+        const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
+
+        if (error) throw error;
+
+        select.innerHTML = '<option value="">Selecione um álbum...</option>';
+        if (data && data.length > 0) {
+          data.forEach(album => {
+            select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
+          });
+        } else {
+          select.innerHTML = '<option value="">Nenhum álbum cadastrado</option>';
+        }
+      } catch (err) {
+        console.error('Erro ao carregar álbuns:', err);
+        select.innerHTML = '<option value="">Erro ao carregar álbuns</option>';
       }
     }
 
-    // Enviar Álbum
-    // 1. Formulário de Álbum (Linha 91)
-document.getElementById('formAlbum').onsubmit = async (e) => { // 👈 Adicionado 'async'
-  e.preventDefault();
-  const nomeInput = document.getElementById('albumNome');
-  const nome = nomeInput.value.trim();
-
-  if(!nome) return alert("Digite o nome do álbum.");
-
-  const { data, error } = await _supabase.from('albuns').insert([{ nome }]);
-  
-  if (error) {
-    alert("Erro ao cadastrar álbum: " + error.message);
-  } else {
-    alert("Álbum cadastrado com sucesso!");
-    nomeInput.value = '';
-    carregarAlbuns();
-  }
-};
-
-document.getElementById('formFigurinha').onsubmit = async (e) => { // ✅ Adicionado 'async'
-  e.preventDefault();
-  
-  // ... seu código de pegar os dados dos inputs ...
-
-  // Exemplo da chamada com await:
-  const { error: dbError } = await _supabase.from('figurinhas').insert([{
-    album_id: document.getElementById('figAlbum').value,
-    numero: document.getElementById('figNumero').value,
-    nome: document.getElementById('figNome').value,
-    preco: parseFloat(document.getElementById('figPreco').value),
-    estoque: parseInt(document.getElementById('figEstoque').value),
-    imagem: imagemUrl
-  }]);
-
-  if (dbError) {
-    alert("Erro ao salvar figurinha: " + dbError.message);
-  } else {
-    alert("Figurinha cadastrada com sucesso!");
-  }
-};
-
-    // Na gravação do banco em admin.html:
-const { error: dbError } = await _supabase.from('figurinhas').insert([{
-  album_id: document.getElementById('figAlbum').value,
-  numero: document.getElementById('figNumero').value,
-  nome: document.getElementById('figNome').value,
-  preco: parseFloat(document.getElementById('figPreco').value),
-  estoque: parseInt(document.getElementById('figEstoque').value), // 👈 Adicionado aqui
-  imagem: imagemUrl
-}]);
-
-    // Enviar Figurinha + Imagem
-    document.getElementById('formFigurinha').onsubmit = async (e) => {
+    // EVENTO 1: Cadastrar Álbum
+    document.getElementById('formAlbum').onsubmit = async (e) => {
       e.preventDefault();
-      const btn = e.target.querySelector('button');
-      btn.innerText = "Enviando...";
+      const btn = document.getElementById('btnSalvarAlbum');
+      const inputNome = document.getElementById('albumNome');
+      const nome = inputNome.value.trim();
+
+      if (!nome) return alert('Por favor, digite o nome do álbum.');
+
+      btn.innerText = 'Salvando...';
       btn.disabled = true;
 
-      const file = document.getElementById('figImagem').files[0];
-      const fileName = `${Date.now()}_${file.name}`;
+      try {
+        const { error } = await _supabase.from('albuns').insert([{ nome }]);
 
-      // 1. Upload da Foto para o Storage do Supabase
-      const { data: imgData, error: imgError } = await _supabase.storage
-        .from('figurinhas')
-        .upload(fileName, file);
-
-      if (imgError) {
-        alert("Erro no upload da imagem: " + imgError.message);
-        btn.innerText = "Cadastrar Figurinha";
+        if (error) {
+          alert('Erro ao cadastrar álbum: ' + error.message);
+        } else {
+          alert('Álbum cadastrado com sucesso!');
+          inputNome.value = '';
+          await carregarAlbuns();
+        }
+      } catch (err) {
+        alert('Ocorreu um erro ao salvar o álbum.');
+        console.error(err);
+      } finally {
+        btn.innerText = 'Cadastrar Álbum';
         btn.disabled = false;
-        return;
       }
-
-      // Pegar URL Pública da foto
-      const { data: urlData } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
-      const imagemUrl = urlData.publicUrl;
-
-      // 2. Salvar Dados no Banco
-      const { error: dbError } = await _supabase.from('figurinhas').insert([{
-        album_id: document.getElementById('figAlbum').value,
-        numero: document.getElementById('figNumero').value,
-        nome: document.getElementById('figNome').value,
-        preco: parseFloat(document.getElementById('figPreco').value),
-        imagem: imagemUrl
-      }]);
-
-      if (dbError) alert("Erro ao salvar no banco: " + dbError.message);
-      else {
-        alert("Figurinha salva com sucesso!");
-        e.target.reset();
-      }
-
-      btn.innerText = "Cadastrar Figurinha";
-      btn.disabled = false;
     };
 
+    // EVENTO 2: Cadastrar Figurinha
+    document.getElementById('formFigurinha').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvarFigurinha');
+
+      const albumId = document.getElementById('figAlbum').value;
+      const numero = document.getElementById('figNumero').value.trim();
+      const nome = document.getElementById('figNome').value.trim();
+      const preco = parseFloat(document.getElementById('figPreco').value);
+      const estoque = parseInt(document.getElementById('figEstoque').value);
+      const fileInput = document.getElementById('figImagem');
+
+      if (!albumId) return alert('Por favor, selecione um álbum.');
+      if (!fileInput.files || fileInput.files.length === 0) return alert('Por favor, selecione uma imagem.');
+
+      btn.innerText = 'Enviando imagem e salvando...';
+      btn.disabled = true;
+
+      try {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+        // 1. Upload da imagem para o Storage 'figurinhas'
+        const { data: uploadData, error: uploadError } = await _supabase
+          .storage
+          .from('figurinhas')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          throw new Error('Erro ao enviar imagem: ' + uploadError.message);
+        }
+
+        // 2. Gerar URL pública da imagem
+        const { data: urlData } = _supabase
+          .storage
+          .from('figurinhas')
+          .getPublicUrl(fileName);
+
+        const imagemUrl = urlData.publicUrl;
+
+        // 3. Inserir os dados na tabela 'figurinhas'
+        const { error: dbError } = await _supabase.from('figurinhas').insert([{
+          album_id: albumId,
+          numero: numero,
+          nome: nome,
+          preco: preco,
+          estoque: estoque,
+          imagem: imagemUrl
+        }]);
+
+        if (dbError) {
+          throw new Error('Erro ao salvar dados no banco: ' + dbError.message);
+        }
+
+        alert('Figurinha cadastrada com sucesso!');
+        document.getElementById('formFigurinha').reset();
+
+      } catch (err) {
+        alert(err.message || 'Erro ao cadastrar figurinha.');
+        console.error(err);
+      } finally {
+        btn.innerText = 'Salvar Figurinha';
+        btn.disabled = false;
+      }
+    };
+
+    // Inicializa carregando os álbuns
     carregarAlbuns();
   </script>
 </body>
