@@ -57,29 +57,36 @@
   </table>
 
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE
-";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let figurinhasGlobal = [];
+    let mapaAlbuns = {};
 
     async function carregarEstoque() {
       const tbody = document.getElementById('stock-list');
       try {
-        const { data, error } = await _supabase
+        // 1. Carrega os álbuns para mapear os nomes com segurança
+        const { data: albuns } = await _supabase.from('albuns').select('id, nome');
+        if (albuns) {
+          albuns.forEach(a => { mapaAlbuns[a.id] = a.nome; });
+        }
+
+        // 2. Carrega as figurinhas sem risco de travar no "JOIN"
+        const { data: figurinhas, error } = await _supabase
           .from('figurinhas')
-          .select('*, albuns(nome)')
+          .select('*')
           .order('id', { ascending: false });
 
         if (error) throw error;
 
-        figurinhasGlobal = data || [];
+        figurinhasGlobal = figurinhas || [];
         renderizarTabela(figurinhasGlobal);
       } catch (err) {
         console.error("Erro ao carregar estoque:", err);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Erro ao carregar dados: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 2rem;">Erro ao carregar dados: ${err.message || 'Verifique as chaves ou o RLS no Supabase'}</td></tr>`;
       }
     }
 
@@ -96,14 +103,15 @@
         const qtdEstoque = f.estoque !== null && f.estoque !== undefined ? f.estoque : 0;
         const statusClass = qtdEstoque > 0 ? 'status-ok' : 'status-zero';
         const statusTexto = qtdEstoque > 0 ? 'Disponível' : 'Esgotado';
-        const nomeAlbum = f.albuns ? f.albuns.nome : 'Sem álbum';
+        
+        // Pega o nome do álbum através do ID
+        const nomeAlbum = mapaAlbuns[f.album_id] || 'Geral / Especial';
         const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
 
         tbody.innerHTML += `
           <tr>
             <td style="width: 110px;">
               <img src="${f.imagem}" class="img-preview" id="img-preview-${f.id}" alt="Foto"><br>
-              <!-- Input de arquivo escondido para cada linha -->
               <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarImagem(${f.id})">
               <button class="btn-action btn-img" id="btn-img-${f.id}" onclick="document.getElementById('file-${f.id}').click()">
                 📷 Trocar
@@ -126,15 +134,15 @@
 
     function filtrar() {
       const termo = document.getElementById('search').value.toLowerCase();
-      const resultado = figurinhasGlobal.filter(f => 
-        (f.nome && f.nome.toLowerCase().includes(termo)) || 
-        (f.numero && f.numero.toString().toLowerCase().includes(termo)) ||
-        (f.albuns && f.albuns.nome.toLowerCase().includes(termo))
-      );
+      const resultado = figurinhasGlobal.filter(f => {
+        const nomeAlbum = (mapaAlbuns[f.album_id] || '').toLowerCase();
+        return (f.nome && f.nome.toLowerCase().includes(termo)) || 
+               (f.numero && f.numero.toString().toLowerCase().includes(termo)) ||
+               nomeAlbum.includes(termo);
+      });
       renderizarTabela(resultado);
     }
 
-    // 🔄 FUNÇÃO PARA SUBSTITUIR A IMAGEM NO SUPABASE
     async function trocarImagem(id) {
       const fileInput = document.getElementById(`file-${id}`);
       const btnImg = document.getElementById(`btn-img-${id}`);
@@ -149,7 +157,6 @@
       btnImg.disabled = true;
 
       try {
-        // 1. Upload do novo arquivo para o Storage 'figurinhas'
         const { error: uploadError } = await _supabase
           .storage
           .from('figurinhas')
@@ -157,7 +164,6 @@
 
         if (uploadError) throw uploadError;
 
-        // 2. Pegar a nova URL pública
         const { data: urlData } = _supabase
           .storage
           .from('figurinhas')
@@ -165,7 +171,6 @@
 
         const novaImagemUrl = urlData.publicUrl;
 
-        // 3. Atualizar a coluna 'imagem' da figurinha no banco de dados
         const { error: dbError } = await _supabase
           .from('figurinhas')
           .update({ imagem: novaImagemUrl })
@@ -174,7 +179,7 @@
         if (dbError) throw dbError;
 
         alert("Imagem substituída com sucesso!");
-        carregarEstoque(); // Recarrega a tabela com a foto nova
+        carregarEstoque();
 
       } catch (err) {
         alert("Erro ao substituir imagem: " + err.message);
@@ -185,7 +190,6 @@
       }
     }
 
-    // 💾 FUNÇÃO PARA SALVAR A QUANTIDADE DO ESTOQUE
     async function atualizarEstoque(id) {
       const input = document.getElementById(`input-${id}`);
       const novaQtd = parseInt(input.value);
@@ -211,8 +215,10 @@
       }
     }
 
-    // Inicializar
     carregarEstoque();
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
