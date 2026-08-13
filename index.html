@@ -50,7 +50,7 @@
   <div class="cart-bar">
     <div>
       <span id="cart-count">0 itens</span>
-      <h3 id="cart-total">Total: R$ 0,00</h3>
+      <h3 id="cart-total">Total: € 0,00</h3>
     </div>
     <button class="btn-wsp" onclick="enviarWhatsapp()">Enviar Pedido no WhatsApp</button>
   </div>
@@ -92,7 +92,7 @@
             <div class="card-body">
               <small style="color:#666;">${f.albuns ? f.albuns.nome : ''} • Nº ${f.numero}</small>
               <div class="card-title">${f.nome}</div>
-              <div class="card-price">R$ ${f.preco.toFixed(2).replace('.', ',')}</div>
+              <div class="card-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
               <button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>
             </div>
           </div>
@@ -118,7 +118,7 @@
       carrinho.push(item);
       const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
       document.getElementById('cart-count').innerText = `${carrinho.length} item(ns)`;
-      document.getElementById('cart-total').innerText = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
+      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
     }
 
     function enviarWhatsapp() {
@@ -126,10 +126,10 @@
       let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
       let total = 0;
       carrinho.forEach((item, i) => {
-        msg += `${i+1}. Nº ${item.numero} - ${item.nome} (R$ ${item.preco.toFixed(2)})\n`;
+        msg += `${i+1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
         total += item.preco;
       });
-      msg += `\n*TOTAL:* R$ ${total.toFixed(2)}`;
+      msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
       window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
