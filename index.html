@@ -21,14 +21,62 @@
       background: var(--bg-gradient); 
       min-height: 100vh;
       color: #334155; 
-      padding-bottom: 140px; /* Espaço extra para o carrinho no celular */
+      padding-bottom: 140px;
+    }
+
+    /* BARRA SUPERIOR DE NAVEGAÇÃO */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1rem 0;
+    }
+
+    .btn-nav-home {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f8fafc;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-nav-home:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: var(--gold);
+    }
+
+    .btn-nav-admin {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-nav-admin:hover {
+      background: var(--gold);
+      color: #0f172a;
     }
 
     /* HEADER BANNER */
     header { 
       background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
       color: white; 
-      padding: 2rem 1rem 1rem; 
+      padding: 1.5rem 1rem 1rem; 
       text-align: center; 
     }
     header h1 { 
@@ -72,7 +120,7 @@
 
     .search-box {
       flex: 1;
-      min-width: 100%; /* No celular ocupa a linha inteira */
+      min-width: 100%;
     }
 
     .search-box input {
@@ -92,7 +140,7 @@
     }
     .search-box input::placeholder { color: #64748b; }
 
-    /* BOTAO PARA OCULTAR ESGOTADOS */
+    /* BOTÃO OCULTAR ESGOTADOS */
     .toggle-out-stock {
       display: flex;
       align-items: center;
@@ -123,9 +171,9 @@
       gap: 0.5rem;
       overflow-x: auto;
       padding-bottom: 0.5rem;
-      -webkit-overflow-scrolling: touch; /* ROLAGEM SUAVE NO IOS */
+      -webkit-overflow-scrolling: touch;
     }
-    .album-tabs::-webkit-scrollbar { display: none; } /* ESCONDE BARRAS NO CELULAR */
+    .album-tabs::-webkit-scrollbar { display: none; }
 
     .tab-btn {
       background: rgba(255, 255, 255, 0.1);
@@ -145,7 +193,7 @@
       color: #0f172a;
     }
 
-    /* GRID DE FIGURINHAS RESPONSIVO */
+    /* GRID DE FIGURINHAS */
     .grid { 
       display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); 
@@ -240,7 +288,7 @@
       z-index: 3; white-space: nowrap;
     }
 
-    /* BARRA DO CARRINHO FLUTUANTE (OTIMIZADA PARA MOVIIS) */
+    /* BARRA DO CARRINHO FLUTUANTE */
     .cart-bar { 
       position: fixed; 
       bottom: 12px; 
@@ -275,7 +323,7 @@
     }
     .btn-wsp:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* MODAL DE ITENS DO CARRINHO */
+    /* MODAL DO CARRINHO */
     .cart-modal {
       display: none;
       position: fixed;
@@ -313,7 +361,6 @@
       border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem;
     }
 
-    /* DESKTOPS E TABLETS (Ajustes para telas maiores) */
     @media (min-width: 600px) {
       header h1 { font-size: 2.2rem; }
       .search-box { min-width: 250px; }
@@ -329,6 +376,16 @@
   </style>
 </head>
 <body>
+
+  <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
+  <div class="top-nav">
+    <button class="btn-nav-home" onclick="window.location.reload()">
+      🏠 Home
+    </button>
+    <a href="login.html" class="btn-nav-admin">
+      ⚙️ Painel de Controle
+    </a>
+  </div>
 
   <header>
     <h1>Coleção de Figurinhas</h1>
