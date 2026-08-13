@@ -93,10 +93,26 @@ document.getElementById('formAlbum').onsubmit = async (e) => { // 👈 Adicionad
   }
 };
 
-// 2. Formulário de Figurinha (Garante que este também tenha 'async')
-document.getElementById('formFigurinha').onsubmit = async (e) => { // 👈 Adicionado 'async'
+document.getElementById('formFigurinha').onsubmit = async (e) => { // ✅ Adicionado 'async'
   e.preventDefault();
-  // ... restante do código do formFigurinha ...
+  
+  // ... seu código de pegar os dados dos inputs ...
+
+  // Exemplo da chamada com await:
+  const { error: dbError } = await _supabase.from('figurinhas').insert([{
+    album_id: document.getElementById('figAlbum').value,
+    numero: document.getElementById('figNumero').value,
+    nome: document.getElementById('figNome').value,
+    preco: parseFloat(document.getElementById('figPreco').value),
+    estoque: parseInt(document.getElementById('figEstoque').value),
+    imagem: imagemUrl
+  }]);
+
+  if (dbError) {
+    alert("Erro ao salvar figurinha: " + dbError.message);
+  } else {
+    alert("Figurinha cadastrada com sucesso!");
+  }
 };
 
     // Na gravação do banco em admin.html:
