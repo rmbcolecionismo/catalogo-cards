@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Figurinhas</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --primary: #128c7e; --bg: #f0f2f5; --accent: #25d366; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: var(--bg); padding-bottom: 100px; }
+    header { background: #111827; color: white; padding: 1.5rem; text-align: center; }
+    .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+    
+    .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filters input, .filters select { padding: 0.6rem; border-radius: 6px; border: 1px solid #ccc; flex: 1; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .card { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 180px; object-fit: cover; }
+    .card-body { padding: 0.8rem; flex: 1; display: flex; flex-direction: column; }
+    .card-title { font-size: 1rem; font-weight: bold; margin: 0.3rem 0; }
+    .card-price { font-size: 1.1rem; font-weight: bold; color: #111; margin-bottom: 0.8rem; }
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto; }
+
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #ccc; padding: 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+    .btn-wsp { background: var(--accent); color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Catálogo de Figurinhas</h1>
+  </header>
+
+  <div class="container">
+    <div class="filters">
+      <input type="text" id="search" placeholder="Buscar por jogador ou número..." oninput="filtrar()">
+      <select id="filter-album" onchange="filtrar()">
+        <option value="todos">Todos os Álbuns</option>
+      </select>
+    </div>
+
+    <div class="grid" id="catalog">Carregando figurinhas...</div>
+  </div>
+
+  <div class="cart-bar">
+    <div>
+      <span id="cart-count">0 itens</span>
+      <h3 id="cart-total">Total: R$ 0,00</h3>
+    </div>
+    <button class="btn-wsp" onclick="enviarWhatsapp()">Enviar Pedido no WhatsApp</button>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "SUA_URL_DO_SUPABASE_AQUI";
+    const SUPABASE_KEY = "SUA_CHAVE_ANON_AQUI";
+    const SEU_WHATSAPP = "5511999999999"; // COLOQUE SEU NUMERO AQUI
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let figurinhasGlobal = [];
+    let carrinho = [];
+
+    async function init() {
+      // Buscar Álbuns
+      const { data: albuns } = await _supabase.from('albuns').select('*');
+      const select = document.getElementById('filter-album');
+      if(albuns) {
+        albuns.forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
+      }
+
+      // Buscar Figurinhas
+      const { data: figurinhas } = await _supabase.from('figurinhas').select('*, albuns(nome)');
+      if(figurinhas) {
+        figurinhasGlobal = figurinhas;
+        renderizar(figurinhasGlobal);
+      }
+    }
+
+    function renderizar(lista) {
+      const catalog = document.getElementById('catalog');
+      catalog.innerHTML = '';
+      if(lista.length === 0) { catalog.innerHTML = '<p>Nenhuma figurinha encontrada.</p>'; return; }
+
+      lista.forEach(f => {
+        catalog.innerHTML += `
+          <div class="card">
+            <img src="${f.imagem}" alt="${f.nome}">
+            <div class="card-body">
+              <small style="color:#666;">${f.albuns ? f.albuns.nome : ''} • Nº ${f.numero}</small>
+              <div class="card-title">${f.nome}</div>
+              <div class="card-price">R$ ${f.preco.toFixed(2).replace('.', ',')}</div>
+              <button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filtrar() {
+      const busca = document.getElementById('search').value.toLowerCase();
+      const albumId = document.getElementById('filter-album').value;
+
+      const resultado = figurinhasGlobal.filter(f => {
+        const bateNome = f.nome.toLowerCase().includes(busca) || f.numero.toLowerCase().includes(busca);
+        const bateAlbum = albumId === 'todos' || f.album_id == albumId;
+        return bateNome && bateAlbum;
+      });
+
+      renderizar(resultado);
+    }
+
+    function adicionar(id) {
+      const item = figurinhasGlobal.find(f => f.id === id);
+      carrinho.push(item);
+      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
+      document.getElementById('cart-count').innerText = `${carrinho.length} item(ns)`;
+      document.getElementById('cart-total').innerText = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    function enviarWhatsapp() {
+      if(carrinho.length === 0) return alert("Selecione figurinhas!");
+      let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
+      let total = 0;
+      carrinho.forEach((item, i) => {
+        msg += `${i+1}. Nº ${item.numero} - ${item.nome} (R$ ${item.preco.toFixed(2)})\n`;
+        total += item.preco;
+      });
+      msg += `\n*TOTAL:* R$ ${total.toFixed(2)}`;
+      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    init();
+  </script>
+</body>
+</html>
