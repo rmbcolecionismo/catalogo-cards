@@ -121,7 +121,16 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+async function verificarAutenticacao() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) {
+        // Se NÃO estiver logado, manda para o login.html
+        window.location.href = "login.html";
+      }
+    }
 
+    // Executa a verificação assim que a página carrega
+    verificarAutenticacao();
     async function carregarAlbuns() {
       const select = document.getElementById('selectAlbum');
       try {
