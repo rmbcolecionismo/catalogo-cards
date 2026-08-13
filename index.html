@@ -24,7 +24,7 @@
       padding-bottom: 120px; 
     }
 
-    /* HEADER ESTILO BANNER DE ÁLBUM */
+    /* HEADER BANNER */
     header { 
       background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
       color: white; 
@@ -80,7 +80,7 @@
     }
     .search-box input::placeholder { color: #64748b; }
 
-    /* ABAS DE ÁLBOUM */
+    /* ABAS DE ÁLBUM */
     .album-tabs {
       display: flex;
       gap: 0.5rem;
@@ -104,14 +104,14 @@
       color: #0f172a;
     }
 
-    /* GRID DE FIGURINHAS (CARD ÁLBUM) */
+    /* GRID DE FIGURINHAS */
     .grid { 
       display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); 
       gap: 1.25rem; 
     }
 
-    /* FIGURINHA/STICKER CARD */
+    /* CARD FIGURINHA */
     .sticker-card { 
       background: #ffffff; 
       border-radius: 12px; 
@@ -128,7 +128,6 @@
       box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     }
 
-    /* NÚMERO/SELO DA FIGURINHA */
     .sticker-badge {
       position: absolute;
       top: 10px;
@@ -144,7 +143,6 @@
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
 
-    /* IMAGEM DA FIGURINHA */
     .sticker-img-wrap {
       width: 100%;
       height: 210px;
@@ -162,7 +160,6 @@
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
     }
 
-    /* CONTEÚDO DO CARD */
     .sticker-info { 
       padding: 0.9rem; 
       flex: 1; 
@@ -175,7 +172,6 @@
     .sticker-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 2px 0 8px; line-height: 1.2; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin-bottom: 0.8rem; }
     
-    /* BOTAO ADICIONAR */
     .btn-add { 
       background: #0f172a; 
       color: white; 
@@ -190,35 +186,22 @@
     }
     .btn-add:hover { background: #2563eb; }
     
-    /* FIGURINHA INDISPONÍVEL / ESGOTADA */
-    .out-of-stock {
-      opacity: 0.65;
-      filter: grayscale(0.5);
-    }
-    .btn-disabled { 
-      background: #e2e8f0 !important; 
-      color: #94a3b8 !important; 
-      cursor: not-allowed !important; 
-    }
+    .out-of-stock { opacity: 0.65; filter: grayscale(0.5); }
+    .btn-disabled { background: #e2e8f0 !important; color: #94a3b8 !important; cursor: not-allowed !important; }
+    
     .badge-out {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%) rotate(-12deg);
-      background: #ef4444;
-      color: white;
-      font-weight: 800;
-      font-size: 0.75rem;
-      padding: 6px 14px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      background: #ef4444; color: white;
+      font-weight: 800; font-size: 0.75rem;
+      padding: 6px 14px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: 1px;
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-      z-index: 3;
-      white-space: nowrap;
+      z-index: 3; white-space: nowrap;
     }
 
-    /* CARRINHO FLUTUANTE MODERNO */
+    /* BARRA DO CARRINHO */
     .cart-bar { 
       position: fixed; 
       bottom: 20px; 
@@ -226,7 +209,7 @@
       transform: translateX(-50%);
       width: calc(100% - 2rem);
       max-width: 800px;
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 16px;
@@ -237,26 +220,59 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
       z-index: 100;
     }
-    .cart-info span { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+    .cart-info { cursor: pointer; }
+    .cart-info span { font-size: 0.8rem; color: var(--gold); font-weight: 600; display: block; }
     .cart-info h3 { color: #ffffff; font-size: 1.2rem; font-weight: 800; }
     
     .btn-wsp { 
-      background: #25d366; 
-      color: #052e16; 
-      border: none; 
-      padding: 0.8rem 1.4rem; 
-      border-radius: 10px; 
-      font-weight: 800; 
-      font-size: 0.9rem;
-      cursor: pointer; 
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-      transition: all 0.2s;
+      background: #25d366; color: #052e16; 
+      border: none; padding: 0.8rem 1.4rem; 
+      border-radius: 10px; font-weight: 800; font-size: 0.9rem;
+      cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: all 0.2s;
     }
     .btn-wsp:hover { transform: scale(1.03); background: #22c55e; }
     .btn-wsp:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* MODAL DE ITENS DO CARRINHO */
+    .cart-modal {
+      display: none;
+      position: fixed;
+      bottom: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 2rem);
+      max-width: 800px;
+      max-height: 350px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 1rem;
+      overflow-y: auto;
+      z-index: 99;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .cart-modal.active { display: block; }
+    .cart-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 0.8rem;
+    }
+    .cart-modal-header h4 { font-size: 0.95rem; text-transform: uppercase; color: var(--gold); }
+    .btn-close-modal { background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer; }
+    
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #0f172a; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;
+      color: white; font-size: 0.85rem;
+    }
+    .cart-item-info { display: flex; align-items: center; gap: 0.8rem; }
+    .cart-item-img { width: 35px; height: 45px; object-fit: contain; }
+    .btn-remove-item {
+      background: #ef4444; color: white; border: none; padding: 0.3rem 0.6rem;
+      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75rem;
+      transition: background 0.2s;
+    }
+    .btn-remove-item:hover { background: #dc2626; }
   </style>
 </head>
 <body>
@@ -281,9 +297,21 @@
     </div>
   </div>
 
+  <!-- MODAL COM OS ITENS SELECIONADOS NO CARRINHO -->
+  <div class="cart-modal" id="cartModal">
+    <div class="cart-modal-header">
+      <h4>Itens Selecionados</h4>
+      <button class="btn-close-modal" onclick="toggleCartModal()">✕</button>
+    </div>
+    <div id="cartItemsList">
+      <p style="color: #94a3b8; text-align: center; font-size: 0.85rem;">Nenhum item no carrinho.</p>
+    </div>
+  </div>
+
+  <!-- BARRA DE CARRINHO FLUTUANTE -->
   <div class="cart-bar">
-    <div class="cart-info">
-      <span id="cart-count">0 figurinhas selecionadas</span>
+    <div class="cart-info" onclick="toggleCartModal()">
+      <span id="cart-count">0 figurinhas (Clique para ver / remover) 👁️</span>
       <h3 id="cart-total">Total: € 0,00</h3>
     </div>
     <button class="btn-wsp" id="btnWsp" onclick="enviarWhatsapp()">
@@ -294,8 +322,9 @@
   <script>
     // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const SEU_WHATSAPP = "+351962634522"; // Substitua pelo seu WhatsApp com código do país
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE
+";
+    const SEU_WHATSAPP = "+351962634522"; 
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let figurinhasGlobal = [];
@@ -303,7 +332,6 @@
     let albumSelecionado = 'todos';
 
     async function init() {
-      // 1. Buscar Álbuns para criar as Abas
       const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
       const tabsContainer = document.getElementById('album-tabs');
       
@@ -313,8 +341,7 @@
         });
       }
 
-      // 2. Buscar Figurinhas
-      const { data: figurinhas, error } = await _supabase
+      const { data: figurinhas } = await _supabase
         .from('figurinhas')
         .select('*, albuns(nome)')
         .order('numero', { ascending: true });
@@ -338,12 +365,14 @@
 
       lista.forEach(f => {
         const temEstoque = f.estoque && f.estoque > 0;
-        
         const cardClass = temEstoque ? 'sticker-card' : 'sticker-card out-of-stock';
         const badgeEsgotado = !temEstoque ? `<div class="badge-out">Esgotado</div>` : '';
         
+        const qtdNoCarrinho = carrinho.filter(item => item.id === f.id).length;
+        const textoBotao = qtdNoCarrinho > 0 ? `+ Adicionar (${qtdNoCarrinho})` : `+ Adicionar`;
+
         const botaoHTML = temEstoque 
-          ? `<button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>`
+          ? `<button class="btn-add" onclick="adicionar(${f.id})">${textoBotao}</button>`
           : `<button class="btn-add btn-disabled" disabled>Indisponível</button>`;
 
         const nomeAlbum = f.albuns ? f.albuns.nome : 'Especial';
@@ -367,36 +396,71 @@
       });
     }
 
+    function adicionar(id) {
+      const item = figurinhasGlobal.find(f => f.id === id);
+      carrinho.push(item);
+      atualizarCarrinho();
+      filtrar(); // Recarrega os botões com a quantidade
+    }
+
+    function removerDoCarrinho(indexNoCarrinho) {
+      carrinho.splice(indexNoCarrinho, 1);
+      atualizarCarrinho();
+      filtrar(); // Recarrega os botões na tela
+    }
+
+    function toggleCartModal() {
+      const modal = document.getElementById('cartModal');
+      modal.classList.toggle('active');
+    }
+
+    function atualizarCarrinho() {
+      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
+      document.getElementById('cart-count').innerText = `${carrinho.length} figurinha(s) (Clique para ver/remover) 👁️`;
+      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
+
+      // Renderiza a lista dentro do modal
+      const listContainer = document.getElementById('cartItemsList');
+      if(carrinho.length === 0) {
+        listContainer.innerHTML = '<p style="color: #94a3b8; text-align: center; font-size: 0.85rem;">Nenhum item no carrinho.</p>';
+        document.getElementById('cartModal').classList.remove('active');
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      carrinho.forEach((item, index) => {
+        const precoFormatado = item.preco ? item.preco.toFixed(2).replace('.', ',') : '0,00';
+        listContainer.innerHTML += `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <img src="${item.imagem}" class="cart-item-img">
+              <div>
+                <strong>Nº ${item.numero} - ${item.nome}</strong><br>
+                <small style="color:#94a3b8;">€ ${precoFormatado}</small>
+              </div>
+            </div>
+            <button class="btn-remove-item" onclick="removerDoCarrinho(${index})">Remover 🗑️</button>
+          </div>
+        `;
+      });
+    }
+
     function filtrarAlbum(id, element) {
       albumSelecionado = id;
-      
-      // Atualizar classe ativa do botão da aba
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
-
       filtrar();
     }
 
     function filtrar() {
       const busca = document.getElementById('search').value.toLowerCase();
-
       const resultado = figurinhasGlobal.filter(f => {
         const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
                          (f.numero && f.numero.toString().toLowerCase().includes(busca));
         const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
         return bateNome && bateAlbum;
       });
-
       renderizar(resultado);
-    }
-
-    function adicionar(id) {
-      const item = figurinhasGlobal.find(f => f.id === id);
-      carrinho.push(item);
-      
-      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
-      document.getElementById('cart-count').innerText = `${carrinho.length} figurinha(s) no pedido`;
-      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
     }
 
     async function enviarWhatsapp() {
@@ -407,21 +471,14 @@
       btnWsp.disabled = true;
 
       try {
-        // Baixa automática no estoque
         for (const item of carrinho) {
-          const { data } = await _supabase
-            .from('figurinhas')
-            .select('estoque')
-            .eq('id', item.id)
-            .single();
-
+          const { data } = await _supabase.from('figurinhas').select('estoque').eq('id', item.id).single();
           if (data) {
             const novoEstoque = Math.max(0, (data.estoque || 0) - 1);
             await _supabase.from('figurinhas').update({ estoque: novoEstoque }).eq('id', item.id);
           }
         }
 
-        // Montar a mensagem do WhatsApp
         let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
         let total = 0;
         carrinho.forEach((item, i) => {
@@ -430,13 +487,10 @@
         });
         msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
 
-        // Abrir WhatsApp
         window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
 
-        // Resetar carrinho e recarregar
         carrinho = [];
-        document.getElementById('cart-count').innerText = `0 figurinhas selecionadas`;
-        document.getElementById('cart-total').innerText = `Total: € 0,00`;
+        atualizarCarrinho();
         await init();
 
       } catch (error) {
