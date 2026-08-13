@@ -3,105 +3,363 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catálogo de Figurinhas</title>
+  <title>Álbum Digital de Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #128c7e; --bg: #f0f2f5; --accent: #25d366; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: var(--bg); padding-bottom: 100px; }
-    header { background: #111827; color: white; padding: 1.5rem; text-align: center; }
-    .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
-    
-    .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .filters input, .filters select { padding: 0.6rem; border-radius: 6px; border: 1px solid #ccc; flex: 1; }
+    :root {
+      --primary: #101827;
+      --accent: #25d366;
+      --gold: #f59e0b;
+      --card-bg: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-    .card { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; }
-    .card img { width: 100%;height: 220px; /* Aumentamos um pouco a altura para a figurinha focar bem visível */
-  object-fit: contain; /* ✅ Exibe a figurinha inteira sem cortar */
-  background-color: #f8fafc; /* Opcional: cor de fundo suave caso a figurinha seja estreita */
-               padding-top: 10px;/* Cria um espaço interno acima da imagem */
-}
-    .card-body { padding: 0.8rem; flex: 1; display: flex; flex-direction: column; }
-    .card-title { font-size: 1rem; font-weight: bold; margin: 0.3rem 0; }
-    .card-price { font-size: 1.1rem; font-weight: bold; color: #111; margin-bottom: 0.8rem; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     
-    .btn-add { background: var(--primary); color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto; }
-    .btn-disabled { background: #9ca3af !important; cursor: not-allowed !important; opacity: 0.8; }
+    body { 
+      background: var(--bg-gradient); 
+      min-height: 100vh;
+      color: #334155; 
+      padding-bottom: 120px; 
+    }
 
-    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #ccc; padding: 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-    .btn-wsp { background: var(--accent); color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    /* HEADER ESTILO BANNER DE ÁLBUM */
+    header { 
+      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+      color: white; 
+      padding: 2.5rem 1rem 1.5rem; 
+      text-align: center; 
+    }
+    header h1 { 
+      font-size: 2.2rem; 
+      font-weight: 800; 
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    }
+    header p { color: #94a3b8; font-size: 0.95rem; margin-top: 0.3rem; }
+
+    /* CONTAINER PRINCIPAL DO ÁLBUM */
+    .album-container { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 0 1rem; 
+    }
+
+    /* BARRA DE PESQUISA E FILTROS */
+    .controls-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.85rem 1.2rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(15, 23, 42, 0.6);
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .search-box input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+    .search-box input::placeholder { color: #64748b; }
+
+    /* ABAS DE ÁLBOUM */
+    .album-tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.3rem;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
+
+    /* GRID DE FIGURINHAS (CARD ÁLBUM) */
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); 
+      gap: 1.25rem; 
+    }
+
+    /* FIGURINHA/STICKER CARD */
+    .sticker-card { 
+      background: #ffffff; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      position: relative;
+      display: flex; 
+      flex-direction: column; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 3px solid #ffffff;
+    }
+    .sticker-card:hover {
+      transform: translateY(-6px) rotate(0.5deg);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+
+    /* NÚMERO/SELO DA FIGURINHA */
+    .sticker-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #0f172a;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    /* IMAGEM DA FIGURINHA */
+    .sticker-img-wrap {
+      width: 100%;
+      height: 210px;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      position: relative;
+    }
+    .sticker-card img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: contain; 
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+
+    /* CONTEÚDO DO CARD */
+    .sticker-info { 
+      padding: 0.9rem; 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+    }
+    .album-name { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .sticker-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 2px 0 8px; line-height: 1.2; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin-bottom: 0.8rem; }
+    
+    /* BOTAO ADICIONAR */
+    .btn-add { 
+      background: #0f172a; 
+      color: white; 
+      border: none; 
+      padding: 0.7rem; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 700; 
+      font-size: 0.85rem;
+      margin-top: auto; 
+      transition: all 0.2s;
+    }
+    .btn-add:hover { background: #2563eb; }
+    
+    /* FIGURINHA INDISPONÍVEL / ESGOTADA */
+    .out-of-stock {
+      opacity: 0.65;
+      filter: grayscale(0.5);
+    }
+    .btn-disabled { 
+      background: #e2e8f0 !important; 
+      color: #94a3b8 !important; 
+      cursor: not-allowed !important; 
+    }
+    .badge-out {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-12deg);
+      background: #ef4444;
+      color: white;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      z-index: 3;
+      white-space: nowrap;
+    }
+
+    /* CARRINHO FLUTUANTE MODERNO */
+    .cart-bar { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 2rem);
+      max-width: 800px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 1rem 1.5rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+      z-index: 100;
+    }
+    .cart-info span { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+    .cart-info h3 { color: #ffffff; font-size: 1.2rem; font-weight: 800; }
+    
+    .btn-wsp { 
+      background: #25d366; 
+      color: #052e16; 
+      border: none; 
+      padding: 0.8rem 1.4rem; 
+      border-radius: 10px; 
+      font-weight: 800; 
+      font-size: 0.9rem;
+      cursor: pointer; 
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-wsp:hover { transform: scale(1.03); background: #22c55e; }
+    .btn-wsp:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Catálogo de Figurinhas</h1>
+    <h1>Coleção de Figurinhas</h1>
+    <p>Escolha as suas figurinhas faltantes e envie o pedido direto no WhatsApp</p>
   </header>
 
-  <div class="container">
-    <div class="filters">
-      <input type="text" id="search" placeholder="Buscar por jogador ou número..." oninput="filtrar()">
-      <select id="filter-album" onchange="filtrar()">
-        <option value="todos">Todos os Álbuns</option>
-      </select>
+  <div class="album-container">
+    <div class="controls-wrapper">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Buscar por número ou nome do jogador..." oninput="filtrar()">
+      </div>
+      <div class="album-tabs" id="album-tabs">
+        <button class="tab-btn active" onclick="filtrarAlbum('todos', this)">Todos os Álbuns</button>
+      </div>
     </div>
 
-    <div class="grid" id="catalog">Carregando figurinhas...</div>
+    <div class="grid" id="catalog">
+      <p style="color: white; text-align: center; grid-column: 1/-1;">Carregando o álbum...</p>
+    </div>
   </div>
 
   <div class="cart-bar">
-    <div>
-      <span id="cart-count">0 itens</span>
+    <div class="cart-info">
+      <span id="cart-count">0 figurinhas selecionadas</span>
       <h3 id="cart-total">Total: € 0,00</h3>
     </div>
-    <button class="btn-wsp" onclick="enviarWhatsapp()">Enviar Pedido no WhatsApp</button>
+    <button class="btn-wsp" id="btnWsp" onclick="enviarWhatsapp()">
+      <span>Finalizar Pedido</span> ➔
+    </button>
   </div>
 
   <script>
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const SEU_WHATSAPP = "+351962634522"; // COLOQUE SEU NUMERO COM CODIGO DO PAIS
+    const SEU_WHATSAPP = "+351962634522"; // Substitua pelo seu WhatsApp com código do país
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let figurinhasGlobal = [];
     let carrinho = [];
+    let albumSelecionado = 'todos';
 
     async function init() {
-      // Buscar Álbuns
-      const { data: albuns } = await _supabase.from('albuns').select('*');
-      const select = document.getElementById('filter-album');
-      if(albuns) {
-        albuns.forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
+      // 1. Buscar Álbuns para criar as Abas
+      const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
+      const tabsContainer = document.getElementById('album-tabs');
+      
+      if(albuns && albuns.length > 0) {
+        albuns.forEach(a => {
+          tabsContainer.innerHTML += `<button class="tab-btn" onclick="filtrarAlbum('${a.id}', this)">${a.nome}</button>`;
+        });
       }
 
-      // Buscar Figurinhas
-      const { data: figurinhas } = await _supabase.from('figurinhas').select('*, albuns(nome)');
+      // 2. Buscar Figurinhas
+      const { data: figurinhas, error } = await _supabase
+        .from('figurinhas')
+        .select('*, albuns(nome)')
+        .order('numero', { ascending: true });
+
       if(figurinhas) {
         figurinhasGlobal = figurinhas;
         renderizar(figurinhasGlobal);
+      } else {
+        document.getElementById('catalog').innerHTML = `<p style="color:white; grid-column:1/-1;">Erro ao carregar figurinhas.</p>`;
       }
     }
 
     function renderizar(lista) {
       const catalog = document.getElementById('catalog');
       catalog.innerHTML = '';
-      if(lista.length === 0) { catalog.innerHTML = '<p>Nenhuma figurinha encontrada.</p>'; return; }
+
+      if(lista.length === 0) { 
+        catalog.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center; padding: 3rem 0;">Nenhuma figurinha encontrada.</p>'; 
+        return; 
+      }
 
       lista.forEach(f => {
-        // Lógica para verificar o estoque
         const temEstoque = f.estoque && f.estoque > 0;
+        
+        const cardClass = temEstoque ? 'sticker-card' : 'sticker-card out-of-stock';
+        const badgeEsgotado = !temEstoque ? `<div class="badge-out">Esgotado</div>` : '';
+        
         const botaoHTML = temEstoque 
           ? `<button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>`
           : `<button class="btn-add btn-disabled" disabled>Indisponível</button>`;
 
+        const nomeAlbum = f.albuns ? f.albuns.nome : 'Especial';
+        const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
+
         catalog.innerHTML += `
-          <div class="card">
-            <img src="${f.imagem}" alt="${f.nome}">
-            <div class="card-body">
-              <small style="color:#666;">${f.albuns ? f.albuns.nome : ''} • Nº ${f.numero}</small>
-              <div class="card-title">${f.nome}</div>
-              <div class="card-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
+          <div class="${cardClass}">
+            <div class="sticker-badge">Nº ${f.numero}</div>
+            ${badgeEsgotado}
+            <div class="sticker-img-wrap">
+              <img src="${f.imagem}" alt="${f.nome}" loading="lazy">
+            </div>
+            <div class="sticker-info">
+              <span class="album-name">${nomeAlbum}</span>
+              <div class="sticker-title">${f.nome}</div>
+              <div class="sticker-price">€ ${precoFormatado}</div>
               ${botaoHTML}
             </div>
           </div>
@@ -109,13 +367,23 @@
       });
     }
 
+    function filtrarAlbum(id, element) {
+      albumSelecionado = id;
+      
+      // Atualizar classe ativa do botão da aba
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+
+      filtrar();
+    }
+
     function filtrar() {
       const busca = document.getElementById('search').value.toLowerCase();
-      const albumId = document.getElementById('filter-album').value;
 
       const resultado = figurinhasGlobal.filter(f => {
-        const bateNome = f.nome.toLowerCase().includes(busca) || f.numero.toLowerCase().includes(busca);
-        const bateAlbum = albumId === 'todos' || f.album_id == albumId;
+        const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
+                         (f.numero && f.numero.toString().toLowerCase().includes(busca));
+        const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
         return bateNome && bateAlbum;
       });
 
@@ -125,67 +393,60 @@
     function adicionar(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       carrinho.push(item);
+      
       const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
-      document.getElementById('cart-count').innerText = `${carrinho.length} item(ns)`;
+      document.getElementById('cart-count').innerText = `${carrinho.length} figurinha(s) no pedido`;
       document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
     }
 
-   async function enviarWhatsapp() {
-  if (carrinho.length === 0) return alert("Selecione figurinhas!");
+    async function enviarWhatsapp() {
+      if (carrinho.length === 0) return alert("Selecione pelo menos uma figurinha!");
 
-  const btnWsp = document.querySelector('.btn-wsp');
-  btnWsp.innerText = "Processando pedido...";
-  btnWsp.disabled = true;
+      const btnWsp = document.getElementById('btnWsp');
+      btnWsp.innerText = "Processando...";
+      btnWsp.disabled = true;
 
-  try {
-    // 1. Dar baixa no estoque de cada figurinha no Supabase
-    for (const item of carrinho) {
-      // Busca a quantidade atual direto do banco para garantir consistência
-      const { data } = await _supabase
-        .from('figurinhas')
-        .select('estoque')
-        .eq('id', item.id)
-        .single();
+      try {
+        // Baixa automática no estoque
+        for (const item of carrinho) {
+          const { data } = await _supabase
+            .from('figurinhas')
+            .select('estoque')
+            .eq('id', item.id)
+            .single();
 
-      if (data) {
-        const novoEstoque = Math.max(0, (data.estoque || 0) - 1);
+          if (data) {
+            const novoEstoque = Math.max(0, (data.estoque || 0) - 1);
+            await _supabase.from('figurinhas').update({ estoque: novoEstoque }).eq('id', item.id);
+          }
+        }
 
-        // Atualiza a nova quantidade no Supabase
-        await _supabase
-          .from('figurinhas')
-          .update({ estoque: novoEstoque })
-          .eq('id', item.id);
+        // Montar a mensagem do WhatsApp
+        let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
+        let total = 0;
+        carrinho.forEach((item, i) => {
+          msg += `${i + 1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
+          total += item.preco;
+        });
+        msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
+
+        // Abrir WhatsApp
+        window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+
+        // Resetar carrinho e recarregar
+        carrinho = [];
+        document.getElementById('cart-count').innerText = `0 figurinhas selecionadas`;
+        document.getElementById('cart-total').innerText = `Total: € 0,00`;
+        await init();
+
+      } catch (error) {
+        alert("Ocorreu um erro ao processar o pedido. Tente novamente.");
+        console.error(error);
+      } finally {
+        btnWsp.innerHTML = `<span>Finalizar Pedido</span> ➔`;
+        btnWsp.disabled = false;
       }
     }
-
-    // 2. Montar a mensagem do WhatsApp
-    let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
-    let total = 0;
-    carrinho.forEach((item, i) => {
-      msg += `${i + 1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
-      total += item.preco;
-    });
-    msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
-
-    // 3. Abrir o WhatsApp em uma nova aba
-    window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
-
-    // 4. Limpar o carrinho e atualizar a tela do catálogo
-    carrinho = [];
-    document.getElementById('cart-count').innerText = `0 itens`;
-    document.getElementById('cart-total').innerText = `Total: € 0,00`;
-    
-    // Recarrega as figurinhas atualizadas da nuvem
-    await init();
-
-  } catch (error) {
-    alert("Ocorreu um erro ao atualizar o estoque. Tente novamente.");
-    console.error(error);
-  } finally {
-    btnWsp.innerText = "Enviar Pedido no WhatsApp";
-    btnWsp.disabled = false;
-  }
-}
 
     init();
   </script>
