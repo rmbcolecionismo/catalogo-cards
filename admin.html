@@ -126,26 +126,34 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Carregar a lista de álbuns no dropdown assim que carregar a página
-    async function carregarAlbuns() {
-      const select = document.getElementById('figAlbum');
-      try {
-        const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
+   // Carregar a lista de álbuns no dropdown
+async function carregarAlbuns() {
+  const select = document.getElementById('figAlbum');
+  try {
+    const { data, error } = await _supabase
+      .from('albuns')
+      .select('*')
+      .order('nome', { ascending: true });
 
-        if (error) throw error;
-
-        select.innerHTML = '<option value="">Selecione um álbum...</option>';
-        if (data && data.length > 0) {
-          data.forEach(album => {
-            select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
-          });
-        } else {
-          select.innerHTML = '<option value="">Nenhum álbum cadastrado</option>';
-        }
-      } catch (err) {
-        console.error('Erro ao carregar álbuns:', err);
-        select.innerHTML = '<option value="">Erro ao carregar álbuns</option>';
-      }
+    if (error) {
+      console.error('Erro Supabase:', error);
+      select.innerHTML = `<option value="">Erro ao carregar: ${error.message}</option>`;
+      return;
     }
+
+    select.innerHTML = '<option value="">Selecione um álbum...</option>';
+    if (data && data.length > 0) {
+      data.forEach(album => {
+        select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
+      });
+    } else {
+      select.innerHTML = '<option value="">Nenhum álbum cadastrado no banco</option>';
+    }
+  } catch (err) {
+    console.error('Erro de conexão/script:', err);
+    select.innerHTML = '<option value="">Falha na conexão com o Supabase</option>';
+  }
+}
 
     // EVENTO 1: Cadastrar Álbum
     document.getElementById('formAlbum').onsubmit = async (e) => {
