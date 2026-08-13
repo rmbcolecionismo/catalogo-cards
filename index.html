@@ -63,6 +63,18 @@
       gap: 1rem;
     }
 
+    .search-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+    }
+
     .search-box input {
       width: 100%;
       padding: 0.85rem 1.2rem;
@@ -79,6 +91,32 @@
       box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
     }
     .search-box input::placeholder { color: #64748b; }
+
+    /* BOTAO PARA OCULTAR ESGOTADOS */
+    .toggle-out-stock {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .toggle-out-stock:hover {
+      border-color: var(--gold);
+    }
+    .toggle-out-stock input {
+      accent-color: var(--gold);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
 
     /* ABAS DE ÁLBUM */
     .album-tabs {
@@ -284,9 +322,18 @@
 
   <div class="album-container">
     <div class="controls-wrapper">
-      <div class="search-box">
-        <input type="text" id="search" placeholder="🔍 Buscar por número ou nome do jogador..." oninput="filtrar()">
+      <div class="search-row">
+        <div class="search-box">
+          <input type="text" id="search" placeholder="🔍 Buscar por número ou nome do jogador..." oninput="filtrar()">
+        </div>
+        
+        <!-- BOTÃO/OPÇÃO DE OCULTAR ESGOTADAS -->
+        <label class="toggle-out-stock">
+          <input type="checkbox" id="hideOutOfStock" onchange="filtrar()">
+          Ocultar esgotadas
+        </label>
       </div>
+
       <div class="album-tabs" id="album-tabs">
         <button class="tab-btn active" onclick="filtrarAlbum('todos', this)">Todos os Álbuns</button>
       </div>
@@ -322,35 +369,41 @@
   <script>
     // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE
-";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const SEU_WHATSAPP = "+351962634522"; 
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let figurinhasGlobal = [];
     let carrinho = [];
     let albumSelecionado = 'todos';
+    let mapaAlbuns = {};
 
     async function init() {
-      const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
-      const tabsContainer = document.getElementById('album-tabs');
-      
-      if(albuns && albuns.length > 0) {
-        albuns.forEach(a => {
-          tabsContainer.innerHTML += `<button class="tab-btn" onclick="filtrarAlbum('${a.id}', this)">${a.nome}</button>`;
-        });
-      }
+      const catalog = document.getElementById('catalog');
+      try {
+        const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
+        const tabsContainer = document.getElementById('album-tabs');
+        
+        if (albuns && albuns.length > 0) {
+          albuns.forEach(a => {
+            mapaAlbuns[a.id] = a.nome;
+            tabsContainer.innerHTML += `<button class="tab-btn" onclick="filtrarAlbum('${a.id}', this)">${a.nome}</button>`;
+          });
+        }
 
-      const { data: figurinhas } = await _supabase
-        .from('figurinhas')
-        .select('*, albuns(nome)')
-        .order('numero', { ascending: true });
+        const { data: figurinhas, error } = await _supabase
+          .from('figurinhas')
+          .select('*')
+          .order('numero', { ascending: true });
 
-      if(figurinhas) {
-        figurinhasGlobal = figurinhas;
+        if (error) throw error;
+
+        figurinhasGlobal = figurinhas || [];
         renderizar(figurinhasGlobal);
-      } else {
-        document.getElementById('catalog').innerHTML = `<p style="color:white; grid-column:1/-1;">Erro ao carregar figurinhas.</p>`;
+
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        catalog.innerHTML = `<p style="color: #ef4444; text-align: center; grid-column: 1/-1; padding: 2rem;">Erro ao carregar o álbum: ${err.message || 'Verifique a conexão ou chaves do Supabase'}</p>`;
       }
     }
 
@@ -358,7 +411,7 @@
       const catalog = document.getElementById('catalog');
       catalog.innerHTML = '';
 
-      if(lista.length === 0) { 
+      if (lista.length === 0) { 
         catalog.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center; padding: 3rem 0;">Nenhuma figurinha encontrada.</p>'; 
         return; 
       }
@@ -375,7 +428,7 @@
           ? `<button class="btn-add" onclick="adicionar(${f.id})">${textoBotao}</button>`
           : `<button class="btn-add btn-disabled" disabled>Indisponível</button>`;
 
-        const nomeAlbum = f.albuns ? f.albuns.nome : 'Especial';
+        const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção Especial';
         const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
 
         catalog.innerHTML += `
@@ -400,13 +453,13 @@
       const item = figurinhasGlobal.find(f => f.id === id);
       carrinho.push(item);
       atualizarCarrinho();
-      filtrar(); // Recarrega os botões com a quantidade
+      filtrar();
     }
 
     function removerDoCarrinho(indexNoCarrinho) {
       carrinho.splice(indexNoCarrinho, 1);
       atualizarCarrinho();
-      filtrar(); // Recarrega os botões na tela
+      filtrar();
     }
 
     function toggleCartModal() {
@@ -419,9 +472,8 @@
       document.getElementById('cart-count').innerText = `${carrinho.length} figurinha(s) (Clique para ver/remover) 👁️`;
       document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
 
-      // Renderiza a lista dentro do modal
       const listContainer = document.getElementById('cartItemsList');
-      if(carrinho.length === 0) {
+      if (carrinho.length === 0) {
         listContainer.innerHTML = '<p style="color: #94a3b8; text-align: center; font-size: 0.85rem;">Nenhum item no carrinho.</p>';
         document.getElementById('cartModal').classList.remove('active');
         return;
@@ -452,14 +504,22 @@
       filtrar();
     }
 
+    // 🔍 LÓGICA DE FILTRAGEM COM A OPÇÃO DE OCULTAR ESGOTADAS
     function filtrar() {
       const busca = document.getElementById('search').value.toLowerCase();
+      const ocultarEsgotadas = document.getElementById('hideOutOfStock').checked;
+
       const resultado = figurinhasGlobal.filter(f => {
         const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
                          (f.numero && f.numero.toString().toLowerCase().includes(busca));
         const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
-        return bateNome && bateAlbum;
+        
+        const temEstoque = f.estoque && f.estoque > 0;
+        const bateEstoque = ocultarEsgotadas ? temEstoque : true;
+
+        return bateNome && bateAlbum && bateEstoque;
       });
+
       renderizar(resultado);
     }
 
