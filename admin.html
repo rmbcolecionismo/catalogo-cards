@@ -107,10 +107,10 @@
           </div>
         </div>
 
-       <div class="field">
-  <label for="figImagem">Imagem da Figurinha (Opcional)</label>
-  <input type="file" id="figImagem" accept="image/*">
-</div>
+        <div class="field">
+          <label for="figImagem">Imagem da Figurinha (Opcional)</label>
+          <input type="file" id="figImagem" accept="image/*">
+        </div>
 
         <button type="submit" id="btnSalvarFigurinha">Salvar Figurinha</button>
       </form>
@@ -125,35 +125,30 @@
     // Inicialização do cliente Supabase
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Carregar a lista de álbuns no dropdown assim que carregar a página
-   // Carregar a lista de álbuns no dropdown
-async function carregarAlbuns() {
-  const select = document.getElementById('figAlbum');
-  try {
-    const { data, error } = await _supabase
-      .from('albuns')
-      .select('*')
-      .order('nome', { ascending: true });
+    // Carregar a lista de álbuns no dropdown
+    async function carregarAlbuns() {
+      const select = document.getElementById('figAlbum');
+      try {
+        const { data, error } = await _supabase
+          .from('albuns')
+          .select('*')
+          .order('nome', { ascending: true });
 
-    if (error) {
-      console.error('Erro Supabase:', error);
-      select.innerHTML = `<option value="">Erro ao carregar: ${error.message}</option>`;
-      return;
-    }
+        if (error) throw error;
 
-    select.innerHTML = '<option value="">Selecione um álbum...</option>';
-    if (data && data.length > 0) {
-      data.forEach(album => {
-        select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
-      });
-    } else {
-      select.innerHTML = '<option value="">Nenhum álbum cadastrado no banco</option>';
+        select.innerHTML = '<option value="">Selecione um álbum...</option>';
+        if (data && data.length > 0) {
+          data.forEach(album => {
+            select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
+          });
+        } else {
+          select.innerHTML = '<option value="">Nenhum álbum cadastrado no banco</option>';
+        }
+      } catch (err) {
+        console.error('Erro ao carregar álbuns:', err);
+        select.innerHTML = `<option value="">Erro ao carregar: ${err.message || 'Verifique o RLS'}</option>`;
+      }
     }
-  } catch (err) {
-    console.error('Erro de conexão/script:', err);
-    select.innerHTML = '<option value="">Falha na conexão com o Supabase</option>';
-  }
-}
 
     // EVENTO 1: Cadastrar Álbum
     document.getElementById('formAlbum').onsubmit = async (e) => {
@@ -187,75 +182,7 @@ async function carregarAlbuns() {
     };
 
     // EVENTO 2: Cadastrar Figurinha
-    // EVENTO: Cadastrar Figurinha com imagem opcional
-document.getElementById('formFigurinha').onsubmit = async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('btnSalvarFigurinha');
-
-  // Coleta os valores digitados nos campos
-  const albumId = document.getElementById('figAlbum').value;
-  const numero = document.getElementById('figNumero').value.trim();
-  const nome = document.getElementById('figNome').value.trim();
-  const preco = parseFloat(document.getElementById('figPreco').value);
-  const estoque = parseInt(document.getElementById('figEstoque').value);
-  const fileInput = document.getElementById('figImagem');
-
-  if (!albumId) return alert('Por favor, selecione um álbum.');
-
-  btn.innerText = 'Salvando figurinha...';
-  btn.disabled = true;
-
-  try {
-    // 🌐 1. Define a imagem padrão (se não enviar nada, usará esta URL)
-    let imagemUrl = "https://github.com/rmbcolecionismo/catalogo-cards/blob/main/sem-foto.jpg";
-
-    // 📸 2. Verifica se o usuário SELECIONOU alguma foto
-    if (fileInput.files && fileInput.files.length > 0) {
-      btn.innerText = 'Enviando imagem...';
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-      // Upload do arquivo para a pasta 'figurinhas' no Supabase
-      const { error: uploadError } = await _supabase
-        .storage
-        .from('figurinhas')
-        .upload(fileName, file);
-
-      if (uploadError) throw new Error('Erro no upload da imagem: ' + uploadError.message);
-
-      // Pega a URL pública do arquivo enviado
-      const { data: urlData } = _supabase
-        .storage
-        .from('figurinhas')
-        .getPublicUrl(fileName);
-
-      imagemUrl = urlData.publicUrl; // Substitui o link pela imagem real
-    }
-
-    // 💾 3. Grava no banco de dados com a URL final
-    const { error: dbError } = await _supabase.from('figurinhas').insert([{
-      album_id: albumId,
-      numero: numero,
-      nome: nome,
-      preco: preco,
-      estoque: estoque,
-      imagem: imagemUrl
-    }]);
-
-    if (dbError) throw new Error('Erro ao salvar no banco: ' + dbError.message);
-
-    alert('Figurinha cadastrada com sucesso!');
-    document.getElementById('formFigurinha').reset();
-
-  } catch (err) {
-    alert(err.message || 'Erro ao cadastrar figurinha.');
-    console.error(err);
-  } finally {
-    btn.innerText = 'Salvar Figurinha';
-    btn.disabled = false;
-  }
-}; = async (e) => {
+    document.getElementById('formFigurinha').onsubmit = async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSalvarFigurinha');
 
@@ -267,35 +194,37 @@ document.getElementById('formFigurinha').onsubmit = async (e) => {
       const fileInput = document.getElementById('figImagem');
 
       if (!albumId) return alert('Por favor, selecione um álbum.');
-      if (!fileInput.files || fileInput.files.length === 0) return alert('Por favor, selecione uma imagem.');
 
-      btn.innerText = 'Enviando imagem e salvando...';
+      btn.innerText = 'Salvando figurinha...';
       btn.disabled = true;
 
       try {
-        const file = fileInput.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        // 🌐 1. URL da Imagem Padrão (utilizada se não houver upload de ficheiro)
+        let imagemUrl = "https://via.placeholder.com/300x400?text=Imagem+N%C3%A3o+Dispon%C3%ADvel";
 
-        // 1. Upload da imagem para o Storage 'figurinhas'
-        const { data: uploadData, error: uploadError } = await _supabase
-          .storage
-          .from('figurinhas')
-          .upload(fileName, file);
+        // 📸 2. Se o utilizador enviou um ficheiro, faz o upload para o Supabase
+        if (fileInput.files && fileInput.files.length > 0) {
+          btn.innerText = 'Enviando imagem...';
+          const file = fileInput.files[0];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
-        if (uploadError) {
-          throw new Error('Erro ao enviar imagem: ' + uploadError.message);
+          const { error: uploadError } = await _supabase
+            .storage
+            .from('figurinhas')
+            .upload(fileName, file);
+
+          if (uploadError) throw new Error('Erro ao enviar imagem: ' + uploadError.message);
+
+          const { data: urlData } = _supabase
+            .storage
+            .from('figurinhas')
+            .getPublicUrl(fileName);
+
+          imagemUrl = urlData.publicUrl;
         }
 
-        // 2. Gerar URL pública da imagem
-        const { data: urlData } = _supabase
-          .storage
-          .from('figurinhas')
-          .getPublicUrl(fileName);
-
-        const imagemUrl = urlData.publicUrl;
-
-        // 3. Inserir os dados na tabela 'figurinhas'
+        // 💾 3. Salva no Banco de Dados
         const { error: dbError } = await _supabase.from('figurinhas').insert([{
           album_id: albumId,
           numero: numero,
@@ -305,9 +234,7 @@ document.getElementById('formFigurinha').onsubmit = async (e) => {
           imagem: imagemUrl
         }]);
 
-        if (dbError) {
-          throw new Error('Erro ao salvar dados no banco: ' + dbError.message);
-        }
+        if (dbError) throw new Error('Erro ao salvar no banco: ' + dbError.message);
 
         alert('Figurinha cadastrada com sucesso!');
         document.getElementById('formFigurinha').reset();
@@ -321,7 +248,7 @@ document.getElementById('formFigurinha').onsubmit = async (e) => {
       }
     };
 
-    // Inicializa carregando os álbuns
+    // Inicializa carregando os álbuns ao abrir a página
     carregarAlbuns();
   </script>
 </body>
