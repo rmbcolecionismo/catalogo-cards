@@ -140,6 +140,10 @@ async function verificarAutenticacao() {
 
     // Executa a verificação assim que a página carrega
     verificarAutenticacao();
+    async function fazerLogout() {
+      await _supabase.auth.signOut();
+      window.location.href = "login.html";
+    }
     async function carregarAlbuns() {
       const select = document.getElementById('selectAlbum');
       try {
