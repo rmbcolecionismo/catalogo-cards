@@ -129,17 +129,62 @@
       document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
     }
 
-    function enviarWhatsapp() {
-      if(carrinho.length === 0) return alert("Selecione figurinhas!");
-      let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
-      let total = 0;
-      carrinho.forEach((item, i) => {
-        msg += `${i+1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
-        total += item.preco;
-      });
-      msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
-      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+   async function enviarWhatsapp() {
+  if (carrinho.length === 0) return alert("Selecione figurinhas!");
+
+  const btnWsp = document.querySelector('.btn-wsp');
+  btnWsp.innerText = "Processando pedido...";
+  btnWsp.disabled = true;
+
+  try {
+    // 1. Dar baixa no estoque de cada figurinha no Supabase
+    for (const item of carrinho) {
+      // Busca a quantidade atual direto do banco para garantir consistência
+      const { data } = await _supabase
+        .from('figurinhas')
+        .select('estoque')
+        .eq('id', item.id)
+        .single();
+
+      if (data) {
+        const novoEstoque = Math.max(0, (data.estoque || 0) - 1);
+
+        // Atualiza a nova quantidade no Supabase
+        await _supabase
+          .from('figurinhas')
+          .update({ estoque: novoEstoque })
+          .eq('id', item.id);
+      }
     }
+
+    // 2. Montar a mensagem do WhatsApp
+    let msg = "⚽ *PEDIDO DE FIGURINHAS*\n\n";
+    let total = 0;
+    carrinho.forEach((item, i) => {
+      msg += `${i + 1}. Nº ${item.numero} - ${item.nome} (€ ${item.preco.toFixed(2)})\n`;
+      total += item.preco;
+    });
+    msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
+
+    // 3. Abrir o WhatsApp em uma nova aba
+    window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // 4. Limpar o carrinho e atualizar a tela do catálogo
+    carrinho = [];
+    document.getElementById('cart-count').innerText = `0 itens`;
+    document.getElementById('cart-total').innerText = `Total: € 0,00`;
+    
+    // Recarrega as figurinhas atualizadas da nuvem
+    await init();
+
+  } catch (error) {
+    alert("Ocorreu um erro ao atualizar o estoque. Tente novamente.");
+    console.error(error);
+  } finally {
+    btnWsp.innerText = "Enviar Pedido no WhatsApp";
+    btnWsp.disabled = false;
+  }
+}
 
     init();
   </script>
