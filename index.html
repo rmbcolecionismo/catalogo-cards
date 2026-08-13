@@ -17,14 +17,16 @@
 
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
     .card { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; }
-    ..card img { width: 100%;height: 220px; /* Aumentamos um pouco a altura para a figurinha focar bem visível */
+    .card img { width: 100%;height: 220px; /* Aumentamos um pouco a altura para a figurinha focar bem visível */
   object-fit: contain; /* ✅ Exibe a figurinha inteira sem cortar */
   background-color: #f8fafc; /* Opcional: cor de fundo suave caso a figurinha seja estreita */
 }
     .card-body { padding: 0.8rem; flex: 1; display: flex; flex-direction: column; }
     .card-title { font-size: 1rem; font-weight: bold; margin: 0.3rem 0; }
     .card-price { font-size: 1.1rem; font-weight: bold; color: #111; margin-bottom: 0.8rem; }
-    .btn-add { background: var(--primary); color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto; }
+    
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: auto; }
+    .btn-disabled { background: #9ca3af !important; cursor: not-allowed !important; opacity: 0.8; }
 
     .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #ccc; padding: 1rem; display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
     .btn-wsp { background: var(--accent); color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
@@ -58,7 +60,7 @@
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const SEU_WHATSAPP = "+351962634522"; // COLOQUE SEU NUMERO AQUI
+    const SEU_WHATSAPP = "+351962634522"; // COLOQUE SEU NUMERO COM CODIGO DO PAIS
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let figurinhasGlobal = [];
@@ -86,6 +88,12 @@
       if(lista.length === 0) { catalog.innerHTML = '<p>Nenhuma figurinha encontrada.</p>'; return; }
 
       lista.forEach(f => {
+        // Lógica para verificar o estoque
+        const temEstoque = f.estoque && f.estoque > 0;
+        const botaoHTML = temEstoque 
+          ? `<button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>`
+          : `<button class="btn-add btn-disabled" disabled>Indisponível</button>`;
+
         catalog.innerHTML += `
           <div class="card">
             <img src="${f.imagem}" alt="${f.nome}">
@@ -93,7 +101,7 @@
               <small style="color:#666;">${f.albuns ? f.albuns.nome : ''} • Nº ${f.numero}</small>
               <div class="card-title">${f.nome}</div>
               <div class="card-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
-              <button class="btn-add" onclick="adicionar(${f.id})">+ Adicionar</button>
+              ${botaoHTML}
             </div>
           </div>
         `;
