@@ -74,18 +74,30 @@
     }
 
     // Enviar Álbum
-    document.getElementById('formAlbum').onsubmit = async (e) => {
-      e.preventDefault();
-      const nome = document.getElementById('albumNome').value;
-      const { error } = await _supabase.from('albuns').insert([{ nome }]);
-      
-      if (error) alert("Erro: " + error.message);
-      else {
-        alert("Álbum cadastrado!");
-        document.getElementById('albumNome').value = '';
-        carregarAlbuns();
-      }
-    };
+    // 1. Formulário de Álbum (Linha 91)
+document.getElementById('formAlbum').onsubmit = async (e) => { // 👈 Adicionado 'async'
+  e.preventDefault();
+  const nomeInput = document.getElementById('albumNome');
+  const nome = nomeInput.value.trim();
+
+  if(!nome) return alert("Digite o nome do álbum.");
+
+  const { data, error } = await _supabase.from('albuns').insert([{ nome }]);
+  
+  if (error) {
+    alert("Erro ao cadastrar álbum: " + error.message);
+  } else {
+    alert("Álbum cadastrado com sucesso!");
+    nomeInput.value = '';
+    carregarAlbuns();
+  }
+};
+
+// 2. Formulário de Figurinha (Garante que este também tenha 'async')
+document.getElementById('formFigurinha').onsubmit = async (e) => { // 👈 Adicionado 'async'
+  e.preventDefault();
+  // ... restante do código do formFigurinha ...
+};
 
     // Na gravação do banco em admin.html:
 const { error: dbError } = await _supabase.from('figurinhas').insert([{
