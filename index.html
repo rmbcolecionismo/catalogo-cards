@@ -451,14 +451,9 @@
           <option value="">Todas as Seleções / Escuderias</option>
         </select>
 
+        <!-- FILTRO DE TIPOS DINÂMICO (ALIMENTADO PELO SUPABASE) -->
         <select id="filterType" class="filter-select" onchange="filtrar()">
           <option value="">Todos os Tipos</option>
-          <option value="Base">Base / Comum</option>
-          <option value="Brilhante">Brilhante / Metalizada</option>
-          <option value="Holográfica">Holográfica</option>
-          <option value="Especial">Especial / Escudo</option>
-          <option value="Lenda">Lenda / Legend</option>
-          <option value="Golden Baller">Golden Baller</option>
         </select>
       </div>
 
@@ -495,7 +490,6 @@
   </div>
 
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const SEU_WHATSAPP = "+351962634522"; 
@@ -509,6 +503,10 @@
     async function init() {
       const catalog = document.getElementById('catalog');
       try {
+        // 1. Carrega os tipos dinamicamente da tabela "tipos"
+        await carregarTipos();
+
+        // 2. Carrega os Álbuns
         const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
         const tabsContainer = document.getElementById('album-tabs');
         
@@ -519,6 +517,7 @@
           });
         }
 
+        // 3. Carrega as Figurinhas
         const { data: figurinhas, error } = await _supabase
           .from('figurinhas')
           .select('*')
@@ -533,6 +532,25 @@
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
         catalog.innerHTML = `<p style="color: #ef4444; text-align: center; grid-column: 1/-1; padding: 2rem;">Erro ao carregar o álbum: ${err.message || 'Verifique a conexão'}</p>`;
+      }
+    }
+
+    // FUNÇÃO QUE BUSCA OS TIPOS DO SUPABASE PARA O SELECT
+    async function carregarTipos() {
+      const selectType = document.getElementById('filterType');
+      try {
+        const { data: tipos, error } = await _supabase.from('tipos').select('nome').order('nome');
+        if (error) throw error;
+
+        selectType.innerHTML = '<option value="">Todos os Tipos</option>';
+
+        if (tipos && tipos.length > 0) {
+          tipos.forEach(t => {
+            selectType.innerHTML += `<option value="${t.nome}">${t.nome}</option>`;
+          });
+        }
+      } catch (err) {
+        console.error("Erro ao buscar tipos:", err);
       }
     }
 
