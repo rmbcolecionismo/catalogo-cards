@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 1rem; padding: 0 1rem;">
-      <div>
-        <a href="admin.html" style="color: #cbd5e1; text-decoration: none; margin-right: 15px; font-size: 0.85rem; font-weight: 600;">⚙️ Cadastrar</a>
-        <a href="estoque.html" style="color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600;">📦 Estoque</a>
-      </div>
-      <button onclick="fazerLogout()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
-        Sair 🚪
-      </button>
-    </div>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerenciador de Estoque - Álbum Digital</title>
@@ -17,321 +8,310 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #101827;
-      --accent: #25d366;
       --gold: #f59e0b;
-      --gold-hover: #d97706;
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    
-    body { 
-      background: var(--bg-gradient); 
+
+    body {
+      background: var(--bg-gradient);
       min-height: 100vh;
-      color: #f8fafc; 
-      padding-bottom: 3rem; 
-    }
-
-    /* HEADER BANNER (Padronizado) */
-    header { 
-      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%);
-      color: white; 
-      padding: 2.5rem 1rem 1.5rem; 
-      text-align: center; 
-    }
-    header h1 { 
-      font-size: 2.2rem; 
-      font-weight: 800; 
-      letter-spacing: -0.5px;
-      text-transform: uppercase;
-      background: linear-gradient(to right, #fbbf24, #f59e0b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
-    }
-    header p { color: #94a3b8; font-size: 0.95rem; margin-top: 0.3rem; }
-
-    /* CONTAINER PRINCIPAL */
-    .container { 
-      max-width: 1100px; 
-      margin: 0 auto; 
-      padding: 0 1rem; 
-    }
-
-    /* BARRA DE CONTROLES (PESQUISA + FILTROS) */
-    .controls-wrapper {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 1.2rem;
-      border-radius: 16px;
-      margin-bottom: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-
-    .search-row {
-      display: flex;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 250px;
-    }
-
-    .search-box input {
-      width: 100%;
-      padding: 0.85rem 1.2rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(15, 23, 42, 0.6);
       color: white;
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.3s;
+      padding: 1rem;
     }
-    .search-box input:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
-    }
-    .search-box input::placeholder { color: #64748b; }
 
-    /* TOGGLE OCULTAR ESGOTADAS */
-    .toggle-out-stock {
+    header {
+      max-width: 1100px;
+      margin: 0 auto 1.5rem;
+    }
+
+    /* BARRA SUPERIOR DE NAVEGAÇÃO E LOGOUT */
+    .top-nav {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      color: #e2e8f0;
+      margin-bottom: 1rem;
+    }
+
+    .top-nav a {
+      color: #cbd5e1;
+      text-decoration: none;
       font-size: 0.85rem;
       font-weight: 600;
+      margin-right: 15px;
+      transition: color 0.2s;
+    }
+
+    .top-nav a:hover {
+      color: var(--gold);
+    }
+
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
       cursor: pointer;
-      user-select: none;
+      font-size: 0.8rem;
+      font-weight: 600;
       transition: all 0.2s;
     }
-    .toggle-out-stock:hover { border-color: var(--gold); }
-    .toggle-out-stock input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
 
-    /* TABELA ESTILIZADA (Glassmorphism) */
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    .btn-logout:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    p.subtitle {
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* PAINEL DE CONTROLES E FILTROS */
+    .controls-panel {
       background: rgba(30, 41, 59, 0.7);
       backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: #0f172a;
+      color: white;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold);
+    }
+
+    /* TABELA DE ESTOQUE */
+    .table-container {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
+      font-size: 0.9rem;
     }
 
     th {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.8);
       color: var(--gold);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 1.2rem 1rem;
+      padding: 0.8rem 1rem;
+      font-weight: 700;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     td {
-      padding: 1rem;
+      padding: 0.8rem 1rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       vertical-align: middle;
-      font-size: 0.9rem;
     }
 
-    tr:hover { background: rgba(255, 255, 255, 0.03); }
-
-    /* ELEMENTOS INTERNOS DA TABELA */
-    .img-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      width: 80px;
+    tr:hover {
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .img-preview {
-      width: 50px;
-      height: 65px;
+      width: 40px;
+      height: 50px;
       object-fit: contain;
-      border-radius: 8px;
       background: #0f172a;
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 4px;
+      border-radius: 4px;
+      padding: 2px;
     }
 
-    .album-tag {
-      font-size: 0.7rem;
-      color: var(--gold);
-      font-weight: 700;
-      text-transform: uppercase;
-      display: block;
-    }
-
-    .sticker-num {
-      font-size: 1rem;
-      font-weight: 800;
-      color: white;
-    }
-
-    .sticker-name {
-      font-weight: 600;
-      color: #e2e8f0;
-    }
-
-    .price-tag {
-      font-weight: 700;
-      color: #34d399;
-    }
-
-    /* BADGES DE STATUS */
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .status-ok { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-    .status-zero { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    /* CONTROLES DE QTD E BOTÕES */
-    .qty-controls {
+    /* CONTROLE DE QTD NO ESTOQUE */
+    .stock-control {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    .qty-input {
-      width: 65px;
-      padding: 0.5rem;
+    .input-stock {
+      width: 70px;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      background: rgba(15, 23, 42, 0.8);
-      color: white;
-      font-weight: bold;
-      outline: none;
+      padding: 0.5rem;
+      font-weight: 700;
     }
-    .qty-input:focus { border-color: var(--gold); }
 
-    .btn-action {
-      background: var(--gold);
-      color: #0f172a;
+    .btn-save-stock {
+      background: #10b981;
+      color: white;
       border: none;
-      padding: 0.5rem 0.9rem;
-      border-radius: 8px;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: 700;
       font-size: 0.8rem;
-      transition: all 0.2s;
+      transition: background 0.2s;
     }
-    .btn-action:hover { background: var(--gold-hover); }
 
-    .btn-img {
-      background: rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
+    .btn-save-stock:hover {
+      background: #059669;
+    }
+
+    .badge-out {
+      background: #ef4444;
+      color: white;
       font-size: 0.7rem;
-      padding: 0.3rem 0.5rem;
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
     }
-    .btn-img:hover { background: rgba(255, 255, 255, 0.2); color: white; }
 
-    .file-input-hidden { display: none; }
+    .badge-ok {
+      background: #10b981;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
 
   <header>
+    <!-- NAVEGAÇÃO SUPERIOR -->
+    <div class="top-nav">
+      <div>
+        <a href="index.html">🏠 Home</a>
+        <a href="admin.html">⚙️ Cadastrar</a>
+        <a href="estoque.html" style="color: var(--gold);">📦 Estoque</a>
+      </div>
+      <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+    </div>
+
     <h1>📦 Controle de Estoque</h1>
-    <p>Atualize a quantidade de figurinhas e troque imagens em tempo real</p>
+    <p class="subtitle">Ajuste rapidamente as quantidades disponíveis de cada figurinha</p>
   </header>
 
   <div class="container">
-    <div class="controls-wrapper">
-      <div class="search-row">
-        <div class="search-box">
-          <input type="text" id="search" placeholder="🔍 Filtrar por nome, número ou álbum..." oninput="filtrar()">
-        </div>
-        
-        <label class="toggle-out-stock">
-          <input type="checkbox" id="hideOutOfStock" onchange="filtrar()">
-          Ocultar esgotadas
-        </label>
+    
+    <!-- CONTROLES DE FILTRO -->
+    <div class="controls-panel">
+      <!-- FILTRO POR ÁLBUM -->
+      <div class="filter-group">
+        <label for="filterAlbum">Filtrar por Álbum:</label>
+        <select id="filterAlbum" onchange="filtrar()">
+          <option value="todos">Todos os Álbuns</option>
+        </select>
+      </div>
+
+      <!-- BUSCA POR TEXTO/NÚMERO -->
+      <div class="filter-group">
+        <label for="search">Buscar Figurinha:</label>
+        <input type="text" id="search" placeholder="🔍 Digite o número ou nome..." oninput="filtrar()">
       </div>
     </div>
 
-    <div class="table-responsive">
+    <!-- TABELA DE ESTOQUE -->
+    <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Foto / Trocar</th>
-            <th>Álbum / Nº</th>
+            <th>Foto</th>
+            <th>Nº</th>
             <th>Nome</th>
+            <th>Álbum</th>
             <th>Preço</th>
             <th>Status</th>
-            <th>Estoque</th>
+            <th>Qtd. Estoque</th>
           </tr>
         </thead>
-        <tbody id="stock-list">
-          <tr><td colspan="6" style="text-align: center; padding: 3rem; color: #94a3b8;">Carregando estoque...</td></tr>
+        <tbody id="stockTableBody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
+          </tr>
         </tbody>
       </table>
     </div>
+
   </div>
 
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES REALMENTE CONFIGURADAS
+    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-async function verificarAutenticacao() {
-  async function fazerLogout() {
-      await _supabase.auth.signOut();
-      window.location.href = "login.html";
-    }
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        // Se NÃO estiver logado, manda para o login.html
-        window.location.href = "login.html";
-      }
-    }
 
-    // Executa a verificação assim que a página carrega
-    verificarAutenticacao();
-    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
 
-    async function carregarEstoque() {
-      const tbody = document.getElementById('stock-list');
+    // 🔐 VERIFICAÇÃO DE AUTENTICAÇÃO
+    async function verificarAutenticacao() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) {
+        window.location.href = "login.html";
+      }
+    }
+    verificarAutenticacao();
+
+    async function fazerLogout() {
+      await _supabase.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    // CARREGAR DADOS DE ÁLBUNS E FIGURINHAS
+    async function init() {
       try {
-        // 1. Carrega o mapa de álbuns
-        const { data: albuns } = await _supabase.from('albuns').select('id, nome');
-        if (albuns) {
-          albuns.forEach(a => { mapaAlbuns[a.id] = a.nome; });
+        // 1. Carrega os Álbuns para montar o select do filtro
+        const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
+        const selectAlbum = document.getElementById('filterAlbum');
+
+        if (albuns && albuns.length > 0) {
+          albuns.forEach(a => {
+            mapaAlbuns[a.id] = a.nome;
+            selectAlbum.innerHTML += `<option value="${a.id}">${a.nome}</option>`;
+          });
         }
 
-        // 2. Carrega as figurinhas
+        // 2. Carrega as Figurinhas
         const { data: figurinhas, error } = await _supabase
           .from('figurinhas')
           .select('*')
@@ -341,51 +321,55 @@ async function verificarAutenticacao() {
 
         figurinhasGlobal = figurinhas || [];
         renderizarTabela(figurinhasGlobal);
+
       } catch (err) {
         console.error("Erro ao carregar estoque:", err);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 2rem;">Erro ao carregar dados: ${err.message || 'Verifique o Supabase'}</td></tr>`;
+        document.getElementById('stockTableBody').innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">
+              Erro ao carregar dados: ${err.message || 'Verifique a conexão'}
+            </td>
+          </tr>
+        `;
       }
     }
 
+    // RENDERIZAR TABELA
     function renderizarTabela(lista) {
-      const tbody = document.getElementById('stock-list');
+      const tbody = document.getElementById('stockTableBody');
       tbody.innerHTML = '';
 
       if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 3rem;">Nenhuma figurinha encontrada.</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">
+              Nenhuma figurinha encontrada.
+            </td>
+          </tr>
+        `;
         return;
       }
 
       lista.forEach(f => {
-        const qtdEstoque = f.estoque !== null && f.estoque !== undefined ? f.estoque : 0;
-        const statusClass = qtdEstoque > 0 ? 'status-ok' : 'status-zero';
-        const statusTexto = qtdEstoque > 0 ? 'Disponível' : 'Esgotado';
-        
-        const nomeAlbum = mapaAlbuns[f.album_id] || 'Geral / Especial';
+        const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção';
         const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
+        const qtdEstoque = f.estoque ?? 0;
+        const statusBadge = qtdEstoque > 0 
+          ? `<span class="badge-ok">Disponível</span>` 
+          : `<span class="badge-out">Esgotado</span>`;
 
         tbody.innerHTML += `
           <tr>
+            <td><img src="${f.imagem}" class="img-preview" alt="${f.nome}"></td>
+            <td><strong>Nº ${f.numero}</strong></td>
+            <td>${f.nome}</td>
+            <td style="color: #94a3b8; font-size: 0.85rem;">${nomeAlbum}</td>
+            <td>€ ${precoFormatado}</td>
+            <td>${statusBadge}</td>
             <td>
-              <div class="img-wrap">
-                <img src="${f.imagem}" class="img-preview" id="img-preview-${f.id}" alt="Foto">
-                <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarImagem(${f.id})">
-                <button class="btn-action btn-img" id="btn-img-${f.id}" onclick="document.getElementById('file-${f.id}').click()">
-                  📷 Trocar
-                </button>
-              </div>
-            </td>
-            <td>
-              <span class="album-tag">${nomeAlbum}</span>
-              <span class="sticker-num">Nº ${f.numero}</span>
-            </td>
-            <td><span class="sticker-name">${f.nome}</span></td>
-            <td><span class="price-tag">€ ${precoFormatado}</span></td>
-            <td><span class="status-badge ${statusClass}">${statusTexto}</span></td>
-            <td>
-              <div class="qty-controls">
-                <input type="number" min="0" value="${qtdEstoque}" id="input-${f.id}" class="qty-input">
-                <button class="btn-action" onclick="atualizarEstoque(${f.id})">Salvar</button>
+              <div class="stock-control">
+                <input type="number" class="input-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0">
+                <button class="btn-save-stock" onclick="salvarEstoque(${f.id})">Salvar</button>
               </div>
             </td>
           </tr>
@@ -393,78 +377,29 @@ async function verificarAutenticacao() {
       });
     }
 
+    // FUNÇÃO DE FILTRAGEM (POR ÁLBUM E POR TEXTO/NÚMERO)
     function filtrar() {
-      const termo = document.getElementById('search').value.toLowerCase();
-      const ocultarEsgotadas = document.getElementById('hideOutOfStock').checked;
+      const albumId = document.getElementById('filterAlbum').value;
+      const busca = document.getElementById('search').value.toLowerCase();
 
       const resultado = figurinhasGlobal.filter(f => {
-        const nomeAlbum = (mapaAlbuns[f.album_id] || '').toLowerCase();
-        const bateTexto = (f.nome && f.nome.toLowerCase().includes(termo)) || 
-                           (f.numero && f.numero.toString().toLowerCase().includes(termo)) ||
-                           nomeAlbum.includes(termo);
-        
-        const temEstoque = f.estoque && f.estoque > 0;
-        const bateEstoque = ocultarEsgotadas ? temEstoque : true;
+        const bateAlbum = albumId === 'todos' || f.album_id == albumId;
+        const bateTexto = (f.nome && f.nome.toLowerCase().includes(busca)) ||
+                          (f.numero && f.numero.toString().toLowerCase().includes(busca));
 
-        return bateTexto && bateEstoque;
+        return bateAlbum && bateTexto;
       });
 
       renderizarTabela(resultado);
     }
 
-    async function trocarImagem(id) {
-      const fileInput = document.getElementById(`file-${id}`);
-      const btnImg = document.getElementById(`btn-img-${id}`);
-
-      if (!fileInput.files || fileInput.files.length === 0) return;
-
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-      btnImg.innerText = "Enviando...";
-      btnImg.disabled = true;
-
-      try {
-        const { error: uploadError } = await _supabase
-          .storage
-          .from('figurinhas')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = _supabase
-          .storage
-          .from('figurinhas')
-          .getPublicUrl(fileName);
-
-        const novaImagemUrl = urlData.publicUrl;
-
-        const { error: dbError } = await _supabase
-          .from('figurinhas')
-          .update({ imagem: novaImagemUrl })
-          .eq('id', id);
-
-        if (dbError) throw dbError;
-
-        alert("Imagem substituída com sucesso!");
-        carregarEstoque();
-
-      } catch (err) {
-        alert("Erro ao substituir imagem: " + err.message);
-        console.error(err);
-      } finally {
-        btnImg.innerText = "📷 Trocar";
-        btnImg.disabled = false;
-      }
-    }
-
-    async function atualizarEstoque(id) {
-      const input = document.getElementById(`input-${id}`);
+    // SALVAR ALTERAÇÃO DE ESTOQUE NO SUPABASE
+    async function salvarEstoque(id) {
+      const input = document.getElementById(`input-stock-${id}`);
       const novaQtd = parseInt(input.value);
-      
+
       if (isNaN(novaQtd) || novaQtd < 0) {
-        alert("Por favor, insira uma quantidade válida.");
+        alert("Por favor, digite um número válido para o estoque.");
         return;
       }
 
@@ -476,15 +411,19 @@ async function verificarAutenticacao() {
 
         if (error) throw error;
 
-        alert("Estoque atualizado!");
-        carregarEstoque();
+        // Atualiza a lista local em memória
+        const item = figurinhasGlobal.find(f => f.id === id);
+        if (item) item.estoque = novaQtd;
+
+        // Re-renderiza para atualizar os status (Disponível / Esgotado)
+        filtrar();
+
       } catch (err) {
-        alert("Erro ao atualizar estoque: " + err.message);
-        console.error(err);
+        alert("Erro ao atualizar o estoque: " + err.message);
       }
     }
 
-    carregarEstoque();
+    init();
   </script>
 </body>
 </html>
