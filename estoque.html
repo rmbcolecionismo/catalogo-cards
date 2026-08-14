@@ -128,6 +128,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       overflow-x: auto;
+      margin-bottom: 1.5rem;
     }
 
     table {
@@ -156,7 +157,7 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    /* ALTERAÇÃO: FOTO EM CIMA E BOTÃO EMBAIXO */
+    /* FOTO EM CIMA E BOTÃO EMBAIXO */
     .img-cell {
       display: flex;
       flex-direction: column;
@@ -284,6 +285,34 @@
       border-radius: 4px;
       font-weight: 700;
     }
+
+    /* BOTÃO CARREGAR MAIS */
+    .load-more-container {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .btn-load-more {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-load-more:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
+
+    .btn-load-more:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -307,14 +336,14 @@
     <div class="controls-panel">
       <div class="filter-group">
         <label for="filterAlbum">Filtrar por Álbum:</label>
-        <select id="filterAlbum" onchange="filtrar()">
+        <select id="filterAlbum" onchange="mudarFiltroAlbum()">
           <option value="todos">Todos os Álbuns</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label for="search">Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Digite o número, nome, seleção..." oninput="filtrar()">
+        <input type="text" id="search" placeholder="🔍 Digite o número, nome, seleção..." oninput="filtrarPorTexto()">
       </div>
     </div>
 
@@ -342,6 +371,10 @@
       </table>
     </div>
 
+    <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+      <button class="btn-load-more" id="btnLoadMore" onclick="carregarMaisFigurinhas()">Carregar mais 50 figurinhas</button>
+    </div>
+
   </div>
 
   <script>
@@ -353,8 +386,14 @@
 
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
-    let listaTiposGlobal = []; // Guarda os tipos vindos do Supabase
+    let listaTiposGlobal = [];
     let imagensNovasCarregadas = {};
+
+    // Parâmetros de Paginação
+    const ITENS_POR_PAGINA = 50;
+    let paginaAtual = 0;
+    let temMaisDados = true;
+    let modoBuscaAtivo = false; // Controla se o usuário está filtrando por texto/álbum
 
     async function verificarAutenticacao() {
       const { data: { session } } = await _supabase.auth.getSession();
@@ -391,20 +430,11 @@
         if (!errorTipos && tiposData && tiposData.length > 0) {
           listaTiposGlobal = tiposData.map(t => typeof t === 'string' ? t : (t.nome || t.tipo || t.title));
         } else {
-          // Fallback caso a tabela tipos esteja vazia ou indisponível
           listaTiposGlobal = ['Base', 'Brilhante', 'Holográfica', 'Especial', 'Lenda', 'Golden Baller'];
         }
 
-        // 3. Buscar Figurinhas
-        const { data: figurinhas, error } = await _supabase
-          .from('figurinhas')
-          .select('*')
-          .order('numero', { ascending: true });
-
-        if (error) throw error;
-
-        figurinhasGlobal = figurinhas || [];
-        renderizarTabela(figurinhasGlobal);
+        // 3. Carregar o primeiro lote de figurinhas (50 itens)
+        await carregarMaisFigurinhas(true);
 
       } catch (err) {
         console.error("Erro ao carregar estoque:", err);
@@ -415,6 +445,131 @@
             </td>
           </tr>
         `;
+      }
+    }
+
+    async function carregarMaisFigurinhas(resetar = false) {
+      if (resetar) {
+        paginaAtual = 0;
+        figurinhasGlobal = [];
+        temMaisDados = true;
+      }
+
+      if (!temMaisDados || modoBuscaAtivo) return;
+
+      const btnLoad = document.getElementById('btnLoadMore');
+      if (btnLoad) btnLoad.innerText = "Carregando...";
+
+      const inicio = paginaAtual * ITENS_POR_PAGINA;
+      const fim = inicio + ITENS_POR_PAGINA - 1;
+
+      const albumId = document.getElementById('filterAlbum').value;
+
+      let query = _supabase
+        .from('figurinhas')
+        .select('*')
+        .order('numero', { ascending: true })
+        .range(inicio, fim);
+
+      if (albumId !== 'todos') {
+        query = query.eq('album_id', albumId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Erro ao buscar mais figurinhas:", error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        figurinhasGlobal = figurinhasGlobal.concat(data);
+        paginaAtual++;
+        
+        if (data.length < ITENS_POR_PAGINA) {
+          temMaisDados = false;
+        }
+      } else {
+        temMaisDados = false;
+      }
+
+      renderizarTabela(figurinhasGlobal);
+      atualizarBotaoCarregarMais();
+    }
+
+    function atualizarBotaoCarregarMais() {
+      const container = document.getElementById('loadMoreContainer');
+      const btnLoad = document.getElementById('btnLoadMore');
+      
+      if (modoBuscaAtivo) {
+        container.style.display = 'none'; // Esconde se estiver pesquisando/filtrando ativamente
+      } else if (temMaisDados) {
+        container.style.display = 'block';
+        if (btnLoad) btnLoad.innerText = "Carregar mais 50 figurinhas";
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    async function mudarFiltroAlbum() {
+      paginaAtual = 0;
+      figurinhasGlobal = [];
+      temMaisDados = true;
+      
+      const busca = document.getElementById('search').value.trim();
+      if (busca !== '') {
+        // Se houver texto de busca ativo, busca direto do servidor considerando o álbum
+        await executarBuscaServidor(busca);
+      } else {
+        modoBuscaAtivo = false;
+        await carregarMaisFigurinhas(true);
+      }
+    }
+
+    async function filtrarPorTexto() {
+      const busca = document.getElementById('search').value.trim();
+      
+      if (busca === '') {
+        modoBuscaAtivo = false;
+        paginaAtual = 0;
+        figurinhasGlobal = [];
+        temMaisDados = true;
+        await carregarMaisFigurinhas(true);
+        return;
+      }
+
+      modoBuscaAtivo = true;
+      document.getElementById('loadMoreContainer').style.display = 'none';
+      await executarBuscaServidor(busca);
+    }
+
+    async function executarBuscaServidor(termo) {
+      const albumId = document.getElementById('filterAlbum').value;
+      const tbody = document.getElementById('stockTableBody');
+      
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Buscando figurinhas...</td></tr>`;
+
+      try {
+        // Realiza busca flexível no Supabase (por nome, número ou equipe)
+        let query = _supabase
+          .from('figurinhas')
+          .select('*')
+          .or(`nome.ilike.%${termo}%,numero.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,team.ilike.%${termo}%`)
+          .order('numero', { ascending: true })
+          .limit(100); // Limita resultados de busca para evitar sobrecarga
+
+        if (albumId !== 'todos') {
+          query = query.eq('album_id', albumId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        figurinhasGlobal = data || [];
+        renderizarTabela(figurinhasGlobal);
+
+      } catch (err) {
+        console.error("Erro na busca:", err);
       }
     }
 
@@ -444,13 +599,11 @@
         const selecaoVal = f.selecao_escuderia || f.team || '';
         const tipoVal = f.tipo || f.type || 'Base';
 
-        // Garante que o tipo atual da figurinha apareça no select mesmo que não esteja cadastrado na tabela tipos
         let todosOsTipos = [...listaTiposGlobal];
         if (tipoVal && !todosOsTipos.includes(tipoVal)) {
           todosOsTipos.unshift(tipoVal);
         }
 
-        // Monta as opções do select dinamicamente
         const optionsTipo = todosOsTipos.map(t => {
           const selected = String(t).toLowerCase() === String(tipoVal).toLowerCase() ? 'selected' : '';
           return `<option value="${t}" ${selected}>${t}</option>`;
@@ -535,24 +688,6 @@
       }
     }
 
-    function filtrar() {
-      const albumId = document.getElementById('filterAlbum').value;
-      const busca = document.getElementById('search').value.toLowerCase();
-
-      const resultado = figurinhasGlobal.filter(f => {
-        const selecaoVal = (f.selecao_escuderia || f.team || '').toLowerCase();
-        const bateAlbum = albumId === 'todos' || f.album_id == albumId;
-        const bateTexto = (f.nome && f.nome.toLowerCase().includes(busca)) ||
-                          (f.numero && f.numero.toString().toLowerCase().includes(busca)) ||
-                          selecaoVal.includes(busca);
-
-        return bateAlbum && bateTexto;
-      });
-
-      renderizarTabela(resultado);
-    }
-
-    // SALVAR ALTERAÇÕES (SISTEMA SEGURO ANTI-ERRO 400)
     async function salvarAlteracoes(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       if (!item) return;
@@ -592,7 +727,6 @@
       btnSave.innerText = "Salvando...";
       btnSave.style.opacity = "0.7";
 
-      // 1. Monta apenas os campos universais
       const payload = {
         imagem: novaImg,
         numero: novoNumero,
@@ -601,14 +735,12 @@
         estoque: novoEstoque
       };
 
-      // 2. Adiciona o campo de tipo correto dependendo da coluna existente
       if ('tipo' in item) {
         payload.tipo = novoTipo;
       } else if ('type' in item) {
         payload.type = novoTipo;
       }
 
-      // 3. Adiciona o campo de equipe/seleção correto dependendo da coluna existente
       if ('selecao_escuderia' in item) {
         payload.selecao_escuderia = novaSelecao;
       } else if ('team' in item) {
@@ -623,7 +755,6 @@
 
         if (error) throw error;
 
-        // Atualiza na memória local
         Object.assign(item, payload);
         delete imagensNovasCarregadas[id];
 
@@ -631,8 +762,10 @@
         btnSave.style.background = "#25d366";
 
         setTimeout(() => {
-          filtrar();
-        }, 800);
+          btnSave.innerText = "Salvar";
+          btnSave.style.background = "#10b981";
+          btnSave.style.opacity = "1";
+        }, 1200);
 
       } catch (err) {
         console.error("Erro no Supabase:", err);
@@ -660,7 +793,7 @@
         if (error) throw error;
 
         figurinhasGlobal = figurinhasGlobal.filter(f => f.id !== id);
-        filtrar();
+        renderizarTabela(figurinhasGlobal);
 
       } catch (err) {
         alert("Erro ao excluir figurinha: " + err.message);
