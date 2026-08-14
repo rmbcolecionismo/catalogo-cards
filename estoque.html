@@ -22,7 +22,7 @@
     }
 
     header {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 0 auto 1.5rem;
     }
 
@@ -76,7 +76,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 0 auto;
     }
 
@@ -166,6 +166,11 @@
     }
 
     /* INPUTS EDITÁVEIS DENTRO DA TABELA */
+    .input-edit-img {
+      width: 140px;
+      font-size: 0.75rem;
+    }
+
     .input-edit-num {
       width: 80px;
       text-align: center;
@@ -178,7 +183,7 @@
     }
 
     .input-edit-preco {
-      width: 85px;
+      width: 80px;
       text-align: right;
     }
 
@@ -188,11 +193,17 @@
       font-weight: 700;
     }
 
+    .actions-cell {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
     .btn-save-row {
       background: #10b981;
       color: white;
       border: none;
-      padding: 0.5rem 0.9rem;
+      padding: 0.5rem 0.8rem;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 700;
@@ -203,6 +214,24 @@
 
     .btn-save-row:hover {
       background: #059669;
+    }
+
+    .btn-delete-row {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 0.5rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-delete-row:hover {
+      background: #ef4444;
+      color: white;
     }
 
     .badge-out {
@@ -238,7 +267,7 @@
     </div>
 
     <h1>📦 Gerenciador de Estoque & Edição</h1>
-    <p class="subtitle">Ajuste o número, nome, preço e quantidade em estoque das figurinhas</p>
+    <p class="subtitle">Ajuste o código, nome, imagem, preço e quantidade ou remova figurinhas</p>
   </header>
 
   <div class="container">
@@ -266,18 +295,19 @@
         <thead>
           <tr>
             <th>Foto</th>
+            <th>URL Imagem</th>
             <th>Álbum</th>
             <th>Nº / Código</th>
             <th>Nome do Jogador / Item</th>
             <th>Preço (€)</th>
             <th>Status</th>
             <th>Qtd. Estoque</th>
-            <th>Ação</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="stockTableBody">
           <tr>
-            <td colspan="8" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
+            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
           </tr>
         </tbody>
       </table>
@@ -289,6 +319,9 @@
     // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+
+    // LINK DA IMAGEM PADRÃO "SEM FOTO"
+    const IMAGEM_PADRAO = "https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg";
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -338,7 +371,7 @@
         console.error("Erro ao carregar estoque:", err);
         document.getElementById('stockTableBody').innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; color: #ef4444; padding: 2rem;">
+            <td colspan="9" style="text-align: center; color: #ef4444; padding: 2rem;">
               Erro ao carregar dados: ${err.message || 'Verifique a conexão'}
             </td>
           </tr>
@@ -354,7 +387,7 @@
       if (lista.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; color: #94a3b8; padding: 2rem;">
+            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">
               Nenhuma figurinha encontrada.
             </td>
           </tr>
@@ -369,9 +402,16 @@
           ? `<span class="badge-ok">Disponível</span>` 
           : `<span class="badge-out">Esgotado</span>`;
 
+        const imgUrl = f.imagem || IMAGEM_PADRAO;
+
         tbody.innerHTML += `
           <tr>
-            <td><img src="${f.imagem}" class="img-preview" alt="${f.nome}"></td>
+            <td>
+              <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
+            </td>
+            <td>
+              <input type="text" class="input-edit-img" id="input-img-${f.id}" value="${f.imagem || ''}" placeholder="Link da foto..." onchange="atualizarPreviewImg(${f.id})">
+            </td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
             <td>
               <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero}">
@@ -387,11 +427,21 @@
               <input type="number" class="input-edit-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0">
             </td>
             <td>
-              <button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button>
+              <div class="actions-cell">
+                <button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button>
+                <button class="btn-delete-row" title="Excluir Figurinha" onclick="excluirFigurinha(${f.id})">🗑️</button>
+              </div>
             </td>
           </tr>
         `;
       });
+    }
+
+    // ATUALIZAR PREVIEW DA IMAGEM EM TEMPO REAL
+    function atualizarPreviewImg(id) {
+      const urlInput = document.getElementById(`input-img-${id}`).value.trim();
+      const imgPrev = document.getElementById(`img-prev-${id}`);
+      imgPrev.src = urlInput || IMAGEM_PADRAO;
     }
 
     // FUNÇÃO DE FILTRAGEM (POR ÁLBUM E POR TEXTO/NÚMERO)
@@ -412,11 +462,17 @@
 
     // SALVAR TODAS AS ALTERAÇÕES DA FIGURINHA NO SUPABASE
     async function salvarAlteracoes(id) {
+      const inputImg = document.getElementById(`input-img-${id}`);
       const inputNum = document.getElementById(`input-num-${id}`);
       const inputNome = document.getElementById(`input-nome-${id}`);
       const inputPreco = document.getElementById(`input-preco-${id}`);
       const inputStock = document.getElementById(`input-stock-${id}`);
       const btnSave = document.getElementById(`btn-save-${id}`);
+
+      let novaImg = inputImg.value.trim();
+      if (!novaImg) {
+        novaImg = IMAGEM_PADRAO;
+      }
 
       const novoNumero = inputNum.value.trim();
       const novoNome = inputNome.value.trim();
@@ -445,6 +501,7 @@
         const { error } = await _supabase
           .from('figurinhas')
           .update({
+            imagem: novaImg,
             numero: novoNumero,
             nome: novoNome,
             preco: novoPreco,
@@ -457,6 +514,7 @@
         // Atualiza os dados na lista local em memória
         const item = figurinhasGlobal.find(f => f.id === id);
         if (item) {
+          item.imagem = novaImg;
           item.numero = novoNumero;
           item.nome = novoNome;
           item.preco = novoPreco;
@@ -475,6 +533,34 @@
         alert("Erro ao salvar alterações: " + err.message);
         btnSave.innerText = "Salvar";
         btnSave.style.opacity = "1";
+      }
+    }
+
+    // EXCLUIR FIGURINHA DO SUPABASE
+    async function excluirFigurinha(id) {
+      const item = figurinhasGlobal.find(f => f.id === id);
+      const nomeItem = item ? item.nome : "esta figurinha";
+
+      if (!confirm(`Tem certeza que deseja excluir "${nomeItem}" do sistema?`)) {
+        return;
+      }
+
+      try {
+        const { error } = await _supabase
+          .from('figurinhas')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Remove do array em memória local
+        figurinhasGlobal = figurinhasGlobal.filter(f => f.id !== id);
+
+        // Atualiza a tabela na tela
+        filtrar();
+
+      } catch (err) {
+        alert("Erro ao excluir figurinha: " + err.message);
       }
     }
 
