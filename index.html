@@ -224,6 +224,28 @@
       gap: 0.8rem; 
     }
 
+    /* BOTÃO CARREGAR MAIS */
+    .load-more-container {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .btn-load-more {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+      padding: 0.75rem 2rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-load-more:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
+
     /* CARD FIGURINHA */
     .sticker-card { 
       background: #ffffff; 
@@ -436,23 +458,23 @@
     <div class="controls-wrapper">
       <div class="search-row">
         <div class="search-box">
-          <input type="text" id="search" placeholder="🔍 Buscar por número ou nome..." oninput="filtrar()">
+          <input type="text" id="search" placeholder="🔍 Buscar por número ou nome..." oninput="mudarFiltro()">
         </div>
         
         <label class="toggle-out-stock">
-          <input type="checkbox" id="hideOutOfStock" onchange="filtrar()">
+          <input type="checkbox" id="hideOutOfStock" onchange="mudarFiltro()">
           Ocultar esgotadas
         </label>
       </div>
 
       <!-- FILTROS DE SELEÇÃO/ESCUDERIA E TIPO -->
       <div class="filter-dropdowns">
-        <select id="filterTeam" class="filter-select" onchange="filtrar()">
+        <select id="filterTeam" class="filter-select" onchange="mudarFiltro()">
           <option value="">Todas as Seleções / Escuderias</option>
         </select>
 
         <!-- FILTRO DE TIPOS DINÂMICO (ALIMENTADO PELO SUPABASE) -->
-        <select id="filterType" class="filter-select" onchange="filtrar()">
+        <select id="filterType" class="filter-select" onchange="mudarFiltro()">
           <option value="">Todos os Tipos</option>
         </select>
       </div>
@@ -495,10 +517,13 @@
     const SEU_WHATSAPP = "+351962634522"; 
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let figurinhasGlobal = [];
     let carrinho = [];
     let albumSelecionado = 'todos';
     let mapaAlbuns = {};
+    let offsetAtual = 0;
+    const limitePorPagina = 50;
+    let temMaisItens = true;
+    let figurinhasExibidas = [];
 
     async function init() {
       const catalog = document.getElementById('catalog');
@@ -517,17 +542,11 @@
           });
         }
 
-        // 3. Carrega as Figurinhas
-        const { data: figurinhas, error } = await _supabase
-          .from('figurinhas')
-          .select('*')
-          .order('numero', { ascending: true });
+        // 3. Carrega opções de seleções iniciais para o dropdown
+        await atualizarOpcoesSelecao();
 
-        if (error) throw error;
-
-        figurinhasGlobal = figurinhas || [];
-        atualizarOpcoesSelecao();
-        renderizar(figurinhasGlobal);
+        // 4. Carrega a primeira página de figurinhas
+        await carregarFigurinhas(true);
 
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
@@ -554,27 +573,93 @@
       }
     }
 
-    function atualizarOpcoesSelecao() {
+    async function atualizarOpcoesSelecao() {
       const selectTeam = document.getElementById('filterTeam');
       const timeAtual = selectTeam.value;
       selectTeam.innerHTML = '<option value="">Todas as Seleções / Escuderias</option>';
 
-      // Filtra as equipes baseadas no álbum selecionado
-      const figurinhasFiltradas = albumSelecionado === 'todos' 
-        ? figurinhasGlobal 
-        : figurinhasGlobal.filter(f => f.album_id == albumSelecionado);
+      // Busca equipes únicas considerando o álbum ativo
+      let query = _supabase.from('figurinhas').select('selecao_escuderia, team');
+      if (albumSelecionado !== 'todos') {
+        query = query.eq('album_id', albumSelecionado);
+      }
 
-      const equipes = [...new Set(
-        figurinhasFiltradas
-          .map(f => f.selecao_escuderia || f.team)
-          .filter(Boolean)
-      )].sort();
+      const { data } = await query;
+      if (data) {
+        const equipes = [...new Set(
+          data.map(f => f.selecao_escuderia || f.team).filter(Boolean)
+        )].sort();
 
-      equipes.forEach(eq => {
-        selectTeam.innerHTML += `<option value="${eq}">${eq}</option>`;
-      });
+        equipes.forEach(eq => {
+          selectTeam.innerHTML += `<option value="${eq}">${eq}</option>`;
+        });
+        selectTeam.value = equipes.includes(timeAtual) ? timeAtual : "";
+      }
+    }
 
-      selectTeam.value = equipes.includes(timeAtual) ? timeAtual : "";
+    async function carregarFigurinhas(reiniciar = false) {
+      if (reiniciar) {
+        offsetAtual = 0;
+        figurinhasExibidas = [];
+      }
+
+      const busca = document.getElementById('search').value.toLowerCase().trim();
+      const ocultarEsgotadas = document.getElementById('hideOutOfStock').checked;
+      const teamSelecionado = document.getElementById('filterTeam').value;
+      const typeSelecionado = document.getElementById('filterType').value;
+
+      let query = _supabase.from('figurinhas').select('*', { count: 'exact' });
+
+      // Filtro por álbum
+      if (albumSelecionado !== 'todos') {
+        query = query.eq('album_id', albumSelecionado);
+      }
+
+      // Filtro por equipe / escuderia
+      if (teamSelecionado) {
+        query = query.or(`selecao_escuderia.eq.${teamSelecionado},team.eq.${teamSelecionado}`);
+      }
+
+      // Filtro por tipo
+      if (typeSelecionado) {
+        query = query.or(`tipo.eq.${typeSelecionado},type.eq.${typeSelecionado}`);
+      }
+
+      // Filtro por esgotadas
+      if (ocultarEsgotadas) {
+        query = query.gt('estoque', 0);
+      }
+
+      // Filtro por texto de busca (Nome ou Número)
+      if (busca) {
+        if (!isNaN(busca)) {
+          query = query.eq('numero', busca);
+        } else {
+          query = query.ilike('nome', `%${busca}%`);
+        }
+      }
+
+      // Paginação por blocos de 50
+      const de = offsetAtual;
+      const ate = offsetAtual + limitePorPagina - 1;
+      query = query.order('numero', { ascending: true }).range(de, ate);
+
+      const { data, error, count } = await query;
+      if (error) {
+        console.error("Erro ao buscar figurinhas:", error);
+        return;
+      }
+
+      if (reiniciar) {
+        figurinhasExibidas = data || [];
+      } else {
+        figurinhasExibidas = figurinhasExibidas.concat(data || []);
+      }
+
+      offsetAtual += limitePorPagina;
+      temMaisItens = offsetAtual < (count || 0);
+
+      renderizar(figurinhasExibidas);
     }
 
     function renderizar(lista) {
@@ -586,6 +671,7 @@
         return; 
       }
 
+      let htmlCards = '';
       lista.forEach(f => {
         const temEstoque = f.estoque && f.estoque > 0;
         const cardClass = temEstoque ? 'sticker-card' : 'sticker-card out-of-stock';
@@ -605,7 +691,7 @@
         const tipo = f.tipo || f.type || '';
         const badgeTipo = tipo ? `<div class="sticker-type-badge">${tipo}</div>` : '';
 
-        catalog.innerHTML += `
+        htmlCards += `
           <div class="${cardClass}">
             <div class="sticker-badge">Nº ${f.numero}</div>
             ${badgeTipo}
@@ -623,19 +709,41 @@
           </div>
         `;
       });
+
+      // Adiciona botão "Carregar Mais" caso existam mais registros no banco
+      if (temMaisItens) {
+        htmlCards += `
+          <div class="load-more-container">
+            <button class="btn-load-more" onclick="carregarMais()">Carregar Mais 50 Figurinhas</button>
+          </div>
+        `;
+      }
+
+      catalog.innerHTML = htmlCards;
+    }
+
+    function carregarMais() {
+      carregarFigurinhas(false);
+    }
+
+    function mudarFiltro() {
+      carregarFigurinhas(true);
     }
 
     function adicionar(id) {
-      const item = figurinhasGlobal.find(f => f.id === id);
-      carrinho.push(item);
-      atualizarCarrinho();
-      filtrar();
+      // Procura a figurinha na lista já carregada
+      const item = figurinhasExibidas.find(f => f.id === id);
+      if (item) {
+        carrinho.push(item);
+        atualizarCarrinho();
+        renderizar(figurinhasExibidas);
+      }
     }
 
     function removerDoCarrinho(indexNoCarrinho) {
       carrinho.splice(indexNoCarrinho, 1);
       atualizarCarrinho();
-      filtrar();
+      renderizar(figurinhasExibidas);
     }
 
     function toggleCartModal() {
@@ -673,38 +781,12 @@
       });
     }
 
-    function filtrarAlbum(id, element) {
+    async function filtrarAlbum(id, element) {
       albumSelecionado = id;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
-      atualizarOpcoesSelecao();
-      filtrar();
-    }
-
-    function filtrar() {
-      const busca = document.getElementById('search').value.toLowerCase();
-      const ocultarEsgotadas = document.getElementById('hideOutOfStock').checked;
-      const teamSelecionado = document.getElementById('filterTeam').value;
-      const typeSelecionado = document.getElementById('filterType').value;
-
-      const resultado = figurinhasGlobal.filter(f => {
-        const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
-                         (f.numero && f.numero.toString().toLowerCase().includes(busca));
-        const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
-        
-        const fTeam = f.selecao_escuderia || f.team || '';
-        const bateTeam = !teamSelecionado || fTeam === teamSelecionado;
-
-        const fType = f.tipo || f.type || '';
-        const bateType = !typeSelecionado || fType === typeSelecionado;
-
-        const temEstoque = f.estoque && f.estoque > 0;
-        const bateEstoque = ocultarEsgotadas ? temEstoque : true;
-
-        return bateNome && bateAlbum && bateTeam && bateType && bateEstoque;
-      });
-
-      renderizar(resultado);
+      await atualizarOpcoesSelecao();
+      carregarFigurinhas(true);
     }
 
     async function enviarWhatsapp() {
