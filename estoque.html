@@ -156,6 +156,12 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
+    .img-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
     .img-preview {
       width: 40px;
       height: 50px;
@@ -165,12 +171,25 @@
       padding: 2px;
     }
 
-    /* INPUTS EDITÁVEIS DENTRO DA TABELA */
-    .input-edit-img {
-      width: 140px;
-      font-size: 0.75rem;
+    .btn-upload-label {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.2s;
     }
 
+    .btn-upload-label:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
+
+    /* INPUTS EDITÁVEIS DENTRO DA TABELA */
     .input-edit-num {
       width: 80px;
       text-align: center;
@@ -179,7 +198,17 @@
 
     .input-edit-nome {
       width: 100%;
-      min-width: 140px;
+      min-width: 130px;
+    }
+
+    .input-edit-team {
+      width: 100%;
+      min-width: 110px;
+    }
+
+    .select-edit-tipo {
+      min-width: 110px;
+      font-size: 0.8rem;
     }
 
     .input-edit-preco {
@@ -267,7 +296,7 @@
     </div>
 
     <h1>📦 Gerenciador de Estoque & Edição</h1>
-    <p class="subtitle">Ajuste o código, nome, imagem, preço e quantidade ou remova figurinhas</p>
+    <p class="subtitle">Ajuste o código, nome, seleção, tipo, imagem, preço e quantidade ou remova figurinhas</p>
   </header>
 
   <div class="container">
@@ -285,7 +314,7 @@
       <!-- BUSCA POR TEXTO/NÚMERO -->
       <div class="filter-group">
         <label for="search">Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Digite o número ou nome..." oninput="filtrar()">
+        <input type="text" id="search" placeholder="🔍 Digite o número, nome, seleção..." oninput="filtrar()">
       </div>
     </div>
 
@@ -295,10 +324,11 @@
         <thead>
           <tr>
             <th>Foto</th>
-            <th>URL Imagem</th>
             <th>Álbum</th>
             <th>Nº / Código</th>
             <th>Nome do Jogador / Item</th>
+            <th>Seleção / Escuderia</th>
+            <th>Tipo</th>
             <th>Preço (€)</th>
             <th>Status</th>
             <th>Qtd. Estoque</th>
@@ -307,7 +337,7 @@
         </thead>
         <tbody id="stockTableBody">
           <tr>
-            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
+            <td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
           </tr>
         </tbody>
       </table>
@@ -327,6 +357,7 @@
 
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
+    let imagensNovasCarregadas = {}; // Guarda URLs temporárias de novas imagens uploaded
 
     // 🔐 VERIFICAÇÃO DE AUTENTICAÇÃO
     async function verificarAutenticacao() {
@@ -371,7 +402,7 @@
         console.error("Erro ao carregar estoque:", err);
         document.getElementById('stockTableBody').innerHTML = `
           <tr>
-            <td colspan="9" style="text-align: center; color: #ef4444; padding: 2rem;">
+            <td colspan="10" style="text-align: center; color: #ef4444; padding: 2rem;">
               Erro ao carregar dados: ${err.message || 'Verifique a conexão'}
             </td>
           </tr>
@@ -387,7 +418,7 @@
       if (lista.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">
+            <td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">
               Nenhuma figurinha encontrada.
             </td>
           </tr>
@@ -403,14 +434,17 @@
           : `<span class="badge-out">Esgotado</span>`;
 
         const imgUrl = f.imagem || IMAGEM_PADRAO;
+        const selecaoVal = f.selecao_escuderia || f.team || '';
+        const tipoVal = f.tipo || f.type || 'Base';
 
         tbody.innerHTML += `
           <tr>
             <td>
-              <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
-            </td>
-            <td>
-              <input type="text" class="input-edit-img" id="input-img-${f.id}" value="${f.imagem || ''}" placeholder="Link da foto..." onchange="atualizarPreviewImg(${f.id})">
+              <div class="img-cell">
+                <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
+                <label for="file-input-${f.id}" class="btn-upload-label">Trocar Foto</label>
+                <input type="file" id="file-input-${f.id}" accept="image/*" style="display: none;" onchange="fazerUploadFoto(${f.id})">
+              </div>
             </td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
             <td>
@@ -418,6 +452,18 @@
             </td>
             <td>
               <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome}">
+            </td>
+            <td>
+              <input type="text" class="input-edit-team" id="input-team-${f.id}" value="${selecaoVal}" placeholder="Ex: Brasil">
+            </td>
+            <td>
+              <select class="select-edit-tipo" id="select-tipo-${f.id}">
+                <option value="Base" ${tipoVal === 'Base' ? 'selected' : ''}>Base</option>
+                <option value="Brilhante" ${tipoVal === 'Brilhante' ? 'selected' : ''}>Brilhante</option>
+                <option value="Holográfica" ${tipoVal === 'Holográfica' ? 'selected' : ''}>Holográfica</option>
+                <option value="Especial" ${tipoVal === 'Especial' ? 'selected' : ''}>Especial</option>
+                <option value="Lenda" ${tipoVal === 'Lenda' ? 'selected' : ''}>Lenda</option>
+              </select>
             </td>
             <td>
               <input type="number" step="0.01" class="input-edit-preco" id="input-preco-${f.id}" value="${f.preco ?? 0}">
@@ -437,11 +483,43 @@
       });
     }
 
-    // ATUALIZAR PREVIEW DA IMAGEM EM TEMPO REAL
-    function atualizarPreviewImg(id) {
-      const urlInput = document.getElementById(`input-img-${id}`).value.trim();
-      const imgPrev = document.getElementById(`img-prev-${id}`);
-      imgPrev.src = urlInput || IMAGEM_PADRAO;
+    // UPLOAD DE FOTO DIRETO PELA TABELA
+    async function fazerUploadFoto(id) {
+      const fileInput = document.getElementById(`file-input-${id}`);
+      if (!fileInput.files || !fileInput.files[0]) return;
+
+      const file = fileInput.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const btnSave = document.getElementById(`btn-save-${id}`);
+      const originalText = btnSave.innerText;
+      btnSave.innerText = "Enviando Imagem...";
+      btnSave.disabled = true;
+
+      try {
+        const { error: uploadError } = await _supabase.storage
+          .from('figurinhas')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = _supabase.storage
+          .from('figurinhas')
+          .getPublicUrl(fileName);
+
+        const novaUrl = urlData.publicUrl;
+        imagensNovasCarregadas[id] = novaUrl;
+
+        // Atualiza a prévia visual da imagem na tabela
+        document.getElementById(`img-prev-${id}`).src = novaUrl;
+
+      } catch (err) {
+        alert("Erro ao fazer upload da imagem: " + err.message);
+      } finally {
+        btnSave.innerText = originalText;
+        btnSave.disabled = false;
+      }
     }
 
     // FUNÇÃO DE FILTRAGEM (POR ÁLBUM E POR TEXTO/NÚMERO)
@@ -450,9 +528,11 @@
       const busca = document.getElementById('search').value.toLowerCase();
 
       const resultado = figurinhasGlobal.filter(f => {
+        const selecaoVal = (f.selecao_escuderia || f.team || '').toLowerCase();
         const bateAlbum = albumId === 'todos' || f.album_id == albumId;
         const bateTexto = (f.nome && f.nome.toLowerCase().includes(busca)) ||
-                          (f.numero && f.numero.toString().toLowerCase().includes(busca));
+                          (f.numero && f.numero.toString().toLowerCase().includes(busca)) ||
+                          selecaoVal.includes(busca);
 
         return bateAlbum && bateTexto;
       });
@@ -462,22 +542,23 @@
 
     // SALVAR TODAS AS ALTERAÇÕES DA FIGURINHA NO SUPABASE
     async function salvarAlteracoes(id) {
-      const inputImg = document.getElementById(`input-img-${id}`);
       const inputNum = document.getElementById(`input-num-${id}`);
       const inputNome = document.getElementById(`input-nome-${id}`);
+      const inputTeam = document.getElementById(`input-team-${id}`);
+      const selectTipo = document.getElementById(`select-tipo-${id}`);
       const inputPreco = document.getElementById(`input-preco-${id}`);
       const inputStock = document.getElementById(`input-stock-${id}`);
       const btnSave = document.getElementById(`btn-save-${id}`);
 
-      let novaImg = inputImg.value.trim();
-      if (!novaImg) {
-        novaImg = IMAGEM_PADRAO;
-      }
-
       const novoNumero = inputNum.value.trim();
       const novoNome = inputNome.value.trim();
+      const novaSelecao = inputTeam.value.trim();
+      const novoTipo = selectTipo.value;
       const novoPreco = parseFloat(inputPreco.value);
       const novoEstoque = parseInt(inputStock.value);
+
+      const item = figurinhasGlobal.find(f => f.id === id);
+      let novaImg = imagensNovasCarregadas[id] || (item ? item.imagem : IMAGEM_PADRAO);
 
       if (!novoNumero || !novoNome) {
         alert("O número/código e o nome da figurinha não podem ficar em branco.");
@@ -504,6 +585,10 @@
             imagem: novaImg,
             numero: novoNumero,
             nome: novoNome,
+            selecao_escuderia: novaSelecao,
+            team: novaSelecao, // Mantém compatibilidade com a coluna 'team'
+            tipo: novoTipo,
+            type: novoTipo,     // Mantém compatibilidade com a coluna 'type'
             preco: novoPreco,
             estoque: novoEstoque
           })
@@ -512,14 +597,19 @@
         if (error) throw error;
 
         // Atualiza os dados na lista local em memória
-        const item = figurinhasGlobal.find(f => f.id === id);
         if (item) {
           item.imagem = novaImg;
           item.numero = novoNumero;
           item.nome = novoNome;
+          item.selecao_escuderia = novaSelecao;
+          item.team = novaSelecao;
+          item.tipo = novoTipo;
+          item.type = novoTipo;
           item.preco = novoPreco;
           item.estoque = novoEstoque;
         }
+
+        delete imagensNovasCarregadas[id];
 
         // Feedback visual de sucesso
         btnSave.innerText = "Salvo! ✓";
