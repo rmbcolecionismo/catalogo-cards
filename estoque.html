@@ -156,15 +156,17 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
+    /* ALTERAÇÃO: FOTO EM CIMA E BOTÃO EMBAIXO */
     .img-cell {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.4rem;
     }
 
     .img-preview {
-      width: 40px;
-      height: 50px;
+      width: 45px;
+      height: 55px;
       object-fit: contain;
       background: #0f172a;
       border-radius: 4px;
@@ -175,13 +177,15 @@
       background: rgba(245, 158, 11, 0.2);
       border: 1px solid var(--gold);
       color: var(--gold);
-      padding: 0.3rem 0.5rem;
+      padding: 0.25rem 0.4rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
       white-space: nowrap;
       transition: all 0.2s;
+      text-align: center;
+      width: 100%;
     }
 
     .btn-upload-label:hover {
@@ -349,6 +353,7 @@
 
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
+    let listaTiposGlobal = []; // Guarda os tipos vindos do Supabase
     let imagensNovasCarregadas = {};
 
     async function verificarAutenticacao() {
@@ -366,6 +371,7 @@
 
     async function init() {
       try {
+        // 1. Buscar Álbuns
         const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
         const selectAlbum = document.getElementById('filterAlbum');
 
@@ -376,6 +382,20 @@
           });
         }
 
+        // 2. Buscar Tipos da tabela 'tipos'
+        const { data: tiposData, error: errorTipos } = await _supabase
+          .from('tipos')
+          .select('*')
+          .order('nome', { ascending: true });
+
+        if (!errorTipos && tiposData && tiposData.length > 0) {
+          listaTiposGlobal = tiposData.map(t => typeof t === 'string' ? t : (t.nome || t.tipo || t.title));
+        } else {
+          // Fallback caso a tabela tipos esteja vazia ou indisponível
+          listaTiposGlobal = ['Base', 'Brilhante', 'Holográfica', 'Especial', 'Lenda', 'Golden Baller'];
+        }
+
+        // 3. Buscar Figurinhas
         const { data: figurinhas, error } = await _supabase
           .from('figurinhas')
           .select('*')
@@ -424,6 +444,18 @@
         const selecaoVal = f.selecao_escuderia || f.team || '';
         const tipoVal = f.tipo || f.type || 'Base';
 
+        // Garante que o tipo atual da figurinha apareça no select mesmo que não esteja cadastrado na tabela tipos
+        let todosOsTipos = [...listaTiposGlobal];
+        if (tipoVal && !todosOsTipos.includes(tipoVal)) {
+          todosOsTipos.unshift(tipoVal);
+        }
+
+        // Monta as opções do select dinamicamente
+        const optionsTipo = todosOsTipos.map(t => {
+          const selected = String(t).toLowerCase() === String(tipoVal).toLowerCase() ? 'selected' : '';
+          return `<option value="${t}" ${selected}>${t}</option>`;
+        }).join('');
+
         tbody.innerHTML += `
           <tr>
             <td>
@@ -445,12 +477,7 @@
             </td>
             <td>
               <select class="select-edit-tipo" id="select-tipo-${f.id}">
-                <option value="Base" ${tipoVal === 'Base' ? 'selected' : ''}>Base</option>
-                <option value="Brilhante" ${tipoVal === 'Brilhante' ? 'selected' : ''}>Brilhante</option>
-                <option value="Holográfica" ${tipoVal === 'Holográfica' ? 'selected' : ''}>Holográfica</option>
-                <option value="Especial" ${tipoVal === 'Especial' ? 'selected' : ''}>Especial</option>
-                <option value="Lenda" ${tipoVal === 'Lenda' ? 'selected' : ''}>Lenda</option>
-                <option value="Golden Baller" ${tipoVal === 'Golden Baller' ? 'selected' : ''}>Golden Baller</option>
+                ${optionsTipo}
               </select>
             </td>
             <td>
@@ -525,7 +552,7 @@
       renderizarTabela(resultado);
     }
 
-  // SALVAR ALTERAÇÕES (SISTEMA SEGURO ANTI-ERRO 400)
+    // SALVAR ALTERAÇÕES (SISTEMA SEGURO ANTI-ERRO 400)
     async function salvarAlteracoes(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       if (!item) return;
