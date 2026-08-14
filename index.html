@@ -140,6 +140,30 @@
     }
     .search-box input::placeholder { color: #64748b; }
 
+    /* LINHA DE FILTROS EXTRAS (SELEÇÃO E TIPO) */
+    .filter-dropdowns {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .filter-select option {
+      background: #0f172a;
+      color: white;
+    }
+
     /* BOTÃO OCULTAR ESGOTADOS */
     .toggle-out-stock {
       display: flex;
@@ -228,6 +252,21 @@
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
 
+    .sticker-type-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--gold);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      z-index: 2;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
     .sticker-img-wrap {
       width: 100%;
       height: 150px;
@@ -254,6 +293,7 @@
       border-top: 1px solid #f1f5f9;
     }
     .album-name { font-size: 0.65rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .sticker-team { font-size: 0.7rem; color: #d97706; font-weight: 700; margin-top: 1px; }
     .sticker-title { font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 2px 0 6px; line-height: 1.2; }
     .sticker-price { font-size: 1rem; font-weight: 800; color: #059669; margin-bottom: 0.6rem; }
     
@@ -405,6 +445,22 @@
         </label>
       </div>
 
+      <!-- FILTROS DE SELEÇÃO/ESCUDERIA E TIPO -->
+      <div class="filter-dropdowns">
+        <select id="filterTeam" class="filter-select" onchange="filtrar()">
+          <option value="">Todas as Seleções / Escuderias</option>
+        </select>
+
+        <select id="filterType" class="filter-select" onchange="filtrar()">
+          <option value="">Todos os Tipos</option>
+          <option value="Base">Base / Comum</option>
+          <option value="Brilhante">Brilhante / Metalizada</option>
+          <option value="Holográfica">Holográfica</option>
+          <option value="Especial">Especial / Escudo</option>
+          <option value="Lenda">Lenda / Legend</option>
+        </select>
+      </div>
+
       <div class="album-tabs" id="album-tabs">
         <button class="tab-btn active" onclick="filtrarAlbum('todos', this)">Todos os Álbuns</button>
       </div>
@@ -470,12 +526,36 @@
         if (error) throw error;
 
         figurinhasGlobal = figurinhas || [];
+        atualizarOpcoesSelecao();
         renderizar(figurinhasGlobal);
 
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
         catalog.innerHTML = `<p style="color: #ef4444; text-align: center; grid-column: 1/-1; padding: 2rem;">Erro ao carregar o álbum: ${err.message || 'Verifique a conexão'}</p>`;
       }
+    }
+
+    function atualizarOpcoesSelecao() {
+      const selectTeam = document.getElementById('filterTeam');
+      const timeAtual = selectTeam.value;
+      selectTeam.innerHTML = '<option value="">Todas as Seleções / Escuderias</option>';
+
+      // Filtra as equipes baseadas no álbum selecionado
+      const figurinhasFiltradas = albumSelecionado === 'todos' 
+        ? figurinhasGlobal 
+        : figurinhasGlobal.filter(f => f.album_id == albumSelecionado);
+
+      const equipes = [...new Set(
+        figurinhasFiltradas
+          .map(f => f.selecao_escuderia || f.team)
+          .filter(Boolean)
+      )].sort();
+
+      equipes.forEach(eq => {
+        selectTeam.innerHTML += `<option value="${eq}">${eq}</option>`;
+      });
+
+      selectTeam.value = equipes.includes(timeAtual) ? timeAtual : "";
     }
 
     function renderizar(lista) {
@@ -501,16 +581,22 @@
 
         const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção';
         const precoFormatado = f.preco ? f.preco.toFixed(2).replace('.', ',') : '0,00';
+        
+        const equipe = f.selecao_escuderia || f.team || '';
+        const tipo = f.tipo || f.type || '';
+        const badgeTipo = tipo ? `<div class="sticker-type-badge">${tipo}</div>` : '';
 
         catalog.innerHTML += `
           <div class="${cardClass}">
             <div class="sticker-badge">Nº ${f.numero}</div>
+            ${badgeTipo}
             ${badgeEsgotado}
             <div class="sticker-img-wrap">
               <img src="${f.imagem}" alt="${f.nome}" loading="lazy">
             </div>
             <div class="sticker-info">
               <span class="album-name">${nomeAlbum}</span>
+              ${equipe ? `<span class="sticker-team">${equipe}</span>` : ''}
               <div class="sticker-title">${f.nome}</div>
               <div class="sticker-price">€ ${precoFormatado}</div>
               ${botaoHTML}
@@ -572,22 +658,31 @@
       albumSelecionado = id;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
+      atualizarOpcoesSelecao();
       filtrar();
     }
 
     function filtrar() {
       const busca = document.getElementById('search').value.toLowerCase();
       const ocultarEsgotadas = document.getElementById('hideOutOfStock').checked;
+      const teamSelecionado = document.getElementById('filterTeam').value;
+      const typeSelecionado = document.getElementById('filterType').value;
 
       const resultado = figurinhasGlobal.filter(f => {
         const bateNome = (f.nome && f.nome.toLowerCase().includes(busca)) || 
                          (f.numero && f.numero.toString().toLowerCase().includes(busca));
         const bateAlbum = albumSelecionado === 'todos' || f.album_id == albumSelecionado;
         
+        const fTeam = f.selecao_escuderia || f.team || '';
+        const bateTeam = !teamSelecionado || fTeam === teamSelecionado;
+
+        const fType = f.tipo || f.type || '';
+        const bateType = !typeSelecionado || fType === typeSelecionado;
+
         const temEstoque = f.estoque && f.estoque > 0;
         const bateEstoque = ocultarEsgotadas ? temEstoque : true;
 
-        return bateNome && bateAlbum && bateEstoque;
+        return bateNome && bateAlbum && bateTeam && bateType && bateEstoque;
       });
 
       renderizar(resultado);
