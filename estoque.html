@@ -525,7 +525,7 @@
       renderizarTabela(resultado);
     }
 
-    // SALVAR ALTERAÇÕES (SISTEMA SEGURO DE PAYLOAD)
+  // SALVAR ALTERAÇÕES (SISTEMA SEGURO ANTI-ERRO 400)
     async function salvarAlteracoes(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       if (!item) return;
@@ -565,7 +565,7 @@
       btnSave.innerText = "Salvando...";
       btnSave.style.opacity = "0.7";
 
-      // CONSTRÓI O OBJETO APENAS COM AS COLUNAS QUE REALMENTE EXISTEM NO SEU ITEM
+      // 1. Monta apenas os campos universais
       const payload = {
         imagem: novaImg,
         numero: novoNumero,
@@ -574,14 +574,19 @@
         estoque: novoEstoque
       };
 
-      // Mapeia inteligentemente para evitar o erro 400
-      if ('tipo' in item) payload.tipo = novoTipo;
-      if ('type' in item) payload.type = novoTipo;
-      if (!('tipo' in item) && !('type' in item)) payload.tipo = novoTipo;
+      // 2. Adiciona o campo de tipo correto dependendo da coluna existente
+      if ('tipo' in item) {
+        payload.tipo = novoTipo;
+      } else if ('type' in item) {
+        payload.type = novoTipo;
+      }
 
-      if ('selecao_escuderia' in item) payload.selecao_escuderia = novaSelecao;
-      if ('team' in item) payload.team = novaSelecao;
-      if (!('selecao_escuderia' in item) && !('team' in item)) payload.selecao_escuderia = novaSelecao;
+      // 3. Adiciona o campo de equipe/seleção correto dependendo da coluna existente
+      if ('selecao_escuderia' in item) {
+        payload.selecao_escuderia = novaSelecao;
+      } else if ('team' in item) {
+        payload.team = novaSelecao;
+      }
 
       try {
         const { error } = await _supabase
@@ -591,7 +596,7 @@
 
         if (error) throw error;
 
-        // Atualiza memória local
+        // Atualiza na memória local
         Object.assign(item, payload);
         delete imagensNovasCarregadas[id];
 
@@ -603,8 +608,8 @@
         }, 800);
 
       } catch (err) {
-        console.error("Erro ao salvar:", err);
-        alert("Erro ao salvar alterações: " + (err.message || "Erro de validação nos campos"));
+        console.error("Erro no Supabase:", err);
+        alert("Erro ao salvar no banco de dados: " + (err.message || "Verifique as colunas do Supabase"));
         btnSave.innerText = "Salvar";
         btnSave.style.background = "#10b981";
         btnSave.style.opacity = "1";
