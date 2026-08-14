@@ -199,7 +199,7 @@
         <div class="form-row">
           <div class="form-group">
             <label for="nomeAlbum">Nome do Álbum / Coleção</label>
-            <input type="text" id="nomeAlbum" placeholder="Ex: Copa do Mundo 2026, Brasileirão..." required>
+            <input type="text" id="nomeAlbum" placeholder="Ex: Copa do Mundo 2026, F1 2026..." required>
           </div>
           <div class="form-group" style="flex: 0; align-self: flex-end;">
             <button type="submit" class="btn-submit" id="btnSalvarAlbum">Cadastrar Álbum</button>
@@ -236,6 +236,24 @@
             <label for="nomeFigurinha">Nome do Jogador / Figurinha</label>
             <input type="text" id="nomeFigurinha" placeholder="Ex: Neymar Jr, Escudo Brasil..." required>
           </div>
+          <!-- NOVOS CAMPOS: SELEÇÃO / ESCUDERIA E TIPO -->
+          <div class="form-group">
+            <label for="selecaoEscuderia">Seleção / Escuderia</label>
+            <input type="text" id="selecaoEscuderia" placeholder="Ex: Brasil, Ferrari, Red Bull...">
+          </div>
+          <div class="form-group">
+            <label for="tipoFigurinha">Tipo / Acabamento</label>
+            <select id="tipoFigurinha">
+              <option value="Base">Base / Comum</option>
+              <option value="Brilhante">Brilhante / Metalizada</option>
+              <option value="Holográfica">Holográfica</option>
+              <option value="Especial">Especial / Escudo</option>
+              <option value="Lenda">Lenda / Legend</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label for="precoFigurinha">Preço (€)</label>
             <input type="number" step="0.01" id="precoFigurinha" placeholder="0.50" required>
@@ -248,7 +266,6 @@
 
         <div class="form-row">
           <div class="form-group">
-            <!-- NOTA: O arquivo NÃO é mais obrigatório (sem atributo required) -->
             <label for="arquivoImagem">Foto da Figurinha (Opcional)</label>
             <input type="file" id="arquivoImagem" accept="image/*">
             <small style="color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 4px;">
@@ -383,6 +400,8 @@
         const album_id = document.getElementById('selectAlbum').value;
         const numero = document.getElementById('numeroFigurinha').value.trim();
         const nome = document.getElementById('nomeFigurinha').value.trim();
+        const selecao_escuderia = document.getElementById('selecaoEscuderia').value.trim();
+        const tipo = document.getElementById('tipoFigurinha').value;
         const preco = parseFloat(document.getElementById('precoFigurinha').value);
         const estoque = parseInt(document.getElementById('estoqueFigurinha').value);
 
@@ -415,11 +434,15 @@
         }
         // C) Senão, mantém IMAGEM_PADRAO
 
-        // Inserir Figurinha no Banco de Dados
+        // Inserir Figurinha no Banco de Dados (Passando os campos principais e aliases para compatibilidade)
         const { error: insertError } = await _supabase.from('figurinhas').insert([{
           album_id: parseInt(album_id),
           numero: numero,
           nome: nome,
+          selecao_escuderia: selecao_escuderia,
+          team: selecao_escuderia, // Mantém compatibilidade com a coluna 'team'
+          tipo: tipo,
+          type: tipo,             // Mantém compatibilidade com a coluna 'type'
           preco: preco,
           estoque: estoque,
           imagem: imagemFinal
@@ -434,6 +457,8 @@
         // Limpa o formulário mantendo o álbum selecionado
         document.getElementById('numeroFigurinha').value = '';
         document.getElementById('nomeFigurinha').value = '';
+        document.getElementById('selecaoEscuderia').value = '';
+        document.getElementById('tipoFigurinha').value = 'Base';
         document.getElementById('precoFigurinha').value = '';
         document.getElementById('arquivoImagem').value = '';
         document.getElementById('urlImagemExt').value = '';
