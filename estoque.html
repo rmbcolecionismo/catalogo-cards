@@ -207,7 +207,7 @@
     }
 
     .select-edit-tipo {
-      min-width: 110px;
+      min-width: 120px;
       font-size: 0.8rem;
     }
 
@@ -285,7 +285,6 @@
 <body>
 
   <header>
-    <!-- NAVEGAÇÃO SUPERIOR -->
     <div class="top-nav">
       <div>
         <a href="index.html">🏠 Home</a>
@@ -301,9 +300,7 @@
 
   <div class="container">
     
-    <!-- CONTROLES DE FILTRO -->
     <div class="controls-panel">
-      <!-- FILTRO POR ÁLBUM -->
       <div class="filter-group">
         <label for="filterAlbum">Filtrar por Álbum:</label>
         <select id="filterAlbum" onchange="filtrar()">
@@ -311,14 +308,12 @@
         </select>
       </div>
 
-      <!-- BUSCA POR TEXTO/NÚMERO -->
       <div class="filter-group">
         <label for="search">Buscar Figurinha:</label>
         <input type="text" id="search" placeholder="🔍 Digite o número, nome, seleção..." oninput="filtrar()">
       </div>
     </div>
 
-    <!-- TABELA DE ESTOQUE E EDIÇÃO -->
     <div class="table-container">
       <table>
         <thead>
@@ -346,20 +341,16 @@
   </div>
 
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-
-    // LINK DA IMAGEM PADRÃO "SEM FOTO"
     const IMAGEM_PADRAO = "https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg";
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
-    let imagensNovasCarregadas = {}; // Guarda URLs temporárias de novas imagens uploaded
+    let imagensNovasCarregadas = {};
 
-    // 🔐 VERIFICAÇÃO DE AUTENTICAÇÃO
     async function verificarAutenticacao() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) {
@@ -373,10 +364,8 @@
       window.location.href = "login.html";
     }
 
-    // CARREGAR DADOS DE ÁLBUNS E FIGURINHAS
     async function init() {
       try {
-        // 1. Carrega os Álbuns para montar o select do filtro
         const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
         const selectAlbum = document.getElementById('filterAlbum');
 
@@ -387,7 +376,6 @@
           });
         }
 
-        // 2. Carrega as Figurinhas
         const { data: figurinhas, error } = await _supabase
           .from('figurinhas')
           .select('*')
@@ -410,7 +398,6 @@
       }
     }
 
-    // RENDERIZAR TABELA COM CAMPOS EDITÁVEIS
     function renderizarTabela(lista) {
       const tbody = document.getElementById('stockTableBody');
       tbody.innerHTML = '';
@@ -448,10 +435,10 @@
             </td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
             <td>
-              <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero}">
+              <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero || ''}">
             </td>
             <td>
-              <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome}">
+              <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome || ''}">
             </td>
             <td>
               <input type="text" class="input-edit-team" id="input-team-${f.id}" value="${selecaoVal}" placeholder="Ex: Brasil">
@@ -484,7 +471,6 @@
       });
     }
 
-    // UPLOAD DE FOTO DIRETO PELA TABELA
     async function fazerUploadFoto(id) {
       const fileInput = document.getElementById(`file-input-${id}`);
       if (!fileInput.files || !fileInput.files[0]) return;
@@ -495,7 +481,7 @@
 
       const btnSave = document.getElementById(`btn-save-${id}`);
       const originalText = btnSave.innerText;
-      btnSave.innerText = "Enviando Imagem...";
+      btnSave.innerText = "Enviando...";
       btnSave.disabled = true;
 
       try {
@@ -512,7 +498,6 @@
         const novaUrl = urlData.publicUrl;
         imagensNovasCarregadas[id] = novaUrl;
 
-        // Atualiza a prévia visual da imagem na tabela
         document.getElementById(`img-prev-${id}`).src = novaUrl;
 
       } catch (err) {
@@ -523,7 +508,6 @@
       }
     }
 
-    // FUNÇÃO DE FILTRAGEM (POR ÁLBUM E POR TEXTO/NÚMERO)
     function filtrar() {
       const albumId = document.getElementById('filterAlbum').value;
       const busca = document.getElementById('search').value.toLowerCase();
@@ -541,8 +525,11 @@
       renderizarTabela(resultado);
     }
 
-    // SALVAR TODAS AS ALTERAÇÕES DA FIGURINHA NO SUPABASE
+    // SALVAR ALTERAÇÕES (SISTEMA SEGURO DE PAYLOAD)
     async function salvarAlteracoes(id) {
+      const item = figurinhasGlobal.find(f => f.id === id);
+      if (!item) return;
+
       const inputNum = document.getElementById(`input-num-${id}`);
       const inputNome = document.getElementById(`input-nome-${id}`);
       const inputTeam = document.getElementById(`input-team-${id}`);
@@ -558,8 +545,7 @@
       const novoPreco = parseFloat(inputPreco.value);
       const novoEstoque = parseInt(inputStock.value);
 
-      const item = figurinhasGlobal.find(f => f.id === id);
-      let novaImg = imagensNovasCarregadas[id] || (item ? item.imagem : IMAGEM_PADRAO);
+      let novaImg = imagensNovasCarregadas[id] || item.imagem || IMAGEM_PADRAO;
 
       if (!novoNumero || !novoNome) {
         alert("O número/código e o nome da figurinha não podem ficar em branco.");
@@ -579,55 +565,52 @@
       btnSave.innerText = "Salvando...";
       btnSave.style.opacity = "0.7";
 
+      // CONSTRÓI O OBJETO APENAS COM AS COLUNAS QUE REALMENTE EXISTEM NO SEU ITEM
+      const payload = {
+        imagem: novaImg,
+        numero: novoNumero,
+        nome: novoNome,
+        preco: novoPreco,
+        estoque: novoEstoque
+      };
+
+      // Mapeia inteligentemente para evitar o erro 400
+      if ('tipo' in item) payload.tipo = novoTipo;
+      if ('type' in item) payload.type = novoTipo;
+      if (!('tipo' in item) && !('type' in item)) payload.tipo = novoTipo;
+
+      if ('selecao_escuderia' in item) payload.selecao_escuderia = novaSelecao;
+      if ('team' in item) payload.team = novaSelecao;
+      if (!('selecao_escuderia' in item) && !('team' in item)) payload.selecao_escuderia = novaSelecao;
+
       try {
         const { error } = await _supabase
           .from('figurinhas')
-          .update({
-            imagem: novaImg,
-            numero: novoNumero,
-            nome: novoNome,
-            selecao_escuderia: novaSelecao,
-            team: novaSelecao, // Mantém compatibilidade com a coluna 'team'
-            tipo: novoTipo,
-            type: novoTipo,     // Mantém compatibilidade com a coluna 'type'
-            preco: novoPreco,
-            estoque: novoEstoque
-          })
+          .update(payload)
           .eq('id', id);
 
         if (error) throw error;
 
-        // Atualiza os dados na lista local em memória
-        if (item) {
-          item.imagem = novaImg;
-          item.numero = novoNumero;
-          item.nome = novoNome;
-          item.selecao_escuderia = novaSelecao;
-          item.team = novaSelecao;
-          item.tipo = novoTipo;
-          item.type = novoTipo;
-          item.preco = novoPreco;
-          item.estoque = novoEstoque;
-        }
-
+        // Atualiza memória local
+        Object.assign(item, payload);
         delete imagensNovasCarregadas[id];
 
-        // Feedback visual de sucesso
         btnSave.innerText = "Salvo! ✓";
         btnSave.style.background = "#25d366";
 
         setTimeout(() => {
-          filtrar(); // Re-renderiza para atualizar badges e ordenação
+          filtrar();
         }, 800);
 
       } catch (err) {
-        alert("Erro ao salvar alterações: " + err.message);
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar alterações: " + (err.message || "Erro de validação nos campos"));
         btnSave.innerText = "Salvar";
+        btnSave.style.background = "#10b981";
         btnSave.style.opacity = "1";
       }
     }
 
-    // EXCLUIR FIGURINHA DO SUPABASE
     async function excluirFigurinha(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       const nomeItem = item ? item.nome : "esta figurinha";
@@ -644,10 +627,7 @@
 
         if (error) throw error;
 
-        // Remove do array em memória local
         figurinhasGlobal = figurinhasGlobal.filter(f => f.id !== id);
-
-        // Atualiza a tabela na tela
         filtrar();
 
       } catch (err) {
