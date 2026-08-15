@@ -2,27 +2,72 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Meu Perfil e Vitrine</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root { --gold: #f59e0b; --bg: #0f172a; }
-    body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
-    .main-layout { display: flex; gap: 20px; max-width: 1300px; margin: 0 auto; flex-wrap: wrap; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; }
+    
+    .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 300px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-    .card { background: #1e293b; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
-    .card img { width: 70px; height: 95px; object-fit: contain; background: #0f172a; border-radius: 4px; }
-    .card-title { font-size: 0.85rem; font-weight: 600; }
-    .card-info { font-size: 0.8rem; margin-top: 0.3rem; color: #94a3b8; width: 100%; display: flex; justify-content: space-around; background: rgba(15, 23, 42, 0.6); padding: 0.3rem; border-radius: 4px; }
-    .price { color: var(--gold); font-weight: 700; }
+    
+    /* Grid de cards idêntico ao da index.html */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+    
+    .sticker-card { 
+      background: rgba(30, 41, 59, 0.85); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 12px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+      color: #f8fafc; 
+      display: flex; 
+      flex-direction: column; 
+      transition: 0.3s; 
+    }
+    .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    
+    .sticker-img-wrap { 
+      height: 190px; 
+      background: #0f172a; 
+      padding: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .card-row { font-size: 0.75rem; color: #94a3b8; }
+    .card-row span { font-weight: 700; color: #f8fafc; }
+    
+    .sticker-title { font-size: 0.9rem; font-weight: 700; color: #f8fafc; margin: 2px 0; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
+    .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+
+    /* Botões de gerenciamento de cada card */
+    .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
+    .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
+    .btn-edit { background: #3b82f6; color: white; }
+    .btn-edit:hover { background: #2563eb; }
+    .btn-delete { background: #ef4444; color: white; }
+    .btn-delete:hover { background: #dc2626; }
+
     .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     button:hover { opacity: 0.9; }
     .btn-logout { background: #ef4444; color: white; }
     .btn-gold { background: var(--gold); color: #0f172a; }
+
+    /* Modal simples de Edição */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-box { background: #1e293b; border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 320px; }
   </style>
 </head>
 <body>
@@ -64,8 +109,25 @@
   </div>
 
   <div class="vitrine-content">
-    <h2>🛍️ Minha Vitrine</h2>
+    <h2>🛍️ Vitrine de Ofertas</h2>
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
+  </div>
+</div>
+
+<!-- Modal de Edição de Oferta -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
+    <input type="hidden" id="modalOfertaId">
+    
+    <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
+    <input type="number" step="0.01" id="modalPreco" class="edit-field">
+    
+    <label style="font-size: 0.75rem; color: #94a3b8;">Estoque/Qtd:</label>
+    <input type="number" id="modalEstoque" class="edit-field">
+    
+    <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar Alterações</button>
+    <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
 </div>
 
@@ -73,38 +135,71 @@
   const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
   let usuarioLogado = null;
-  let authUserId = null;
+  let perfilAlvoId = null; // ID do perfil que está sendo exibido na tela
+  let isAdminOrMaster = false;
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) { window.location.replace("login.html"); return; }
 
-    authUserId = session.user.id;
+    const authUserId = session.user.id;
 
-    const { data: perfil } = await _supabase
+    // Busca o usuário logado para verificar permissões de admin/master
+    const { data: perfilLogado } = await _supabase
       .from('vendedores_autorizados')
       .select('*')
       .eq('email', session.user.email)
       .maybeSingle();
 
-    if (perfil) {
-      usuarioLogado = perfil;
-      document.getElementById('userName').innerText = perfil.nome || "Usuário";
-      document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
-      
-      document.getElementById('profileDetails').innerHTML = `
-        <p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>
-      `;
-      
-      document.getElementById('editNome').value = perfil.nome || '';
-      document.getElementById('editCidade').value = perfil.cidade || '';
+    if (!perfilLogado) { window.location.replace("login.html"); return; }
 
-      if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
-        document.getElementById('adminLinks').style.display = 'block';
+    usuarioLogado = perfilLogado;
+    isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
+
+    // Verifica se foi passado um ID via URL (?id=...) para ver o perfil de outro usuário (caso seja admin/master)
+    const urlParams = new URLSearchParams(window.location.search);
+    const idParam = urlParams.get('id');
+
+    if (idParam && idParam !== String(perfilLogado.id) && idParam !== String(perfilLogado.user_id)) {
+      // Se for admin vendo outro perfil, busca o perfil alvo
+      const { data: perfilAlvo } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .or(`id.eq.${idParam},user_id.eq.${idParam}`)
+        .maybeSingle();
+
+      if (perfilAlvo) {
+        perfilAlvoId = perfilAlvo.user_id || perfilAlvo.id;
+        preencherDadosPerfil(perfilAlvo, false); // false para não mostrar edição de dados pessoais de terceiros
+      } else {
+        preencherDadosPerfil(perfilLogado, true);
+        perfilAlvoId = perfilLogado.user_id || perfilLogado.id;
       }
+    } else {
+      preencherDadosPerfil(perfilLogado, true);
+      perfilAlvoId = perfilLogado.user_id || perfilLogado.id;
+    }
 
-      carregarVitrine(authUserId);
+    if (isAdminOrMaster) {
+      document.getElementById('adminLinks').style.display = 'block';
+    }
+
+    carregarVitrine(perfilAlvoId);
+  }
+
+  function preencherDadosPerfil(perfil, ehProprio) {
+    document.getElementById('userName').innerText = perfil.nome || "Usuário";
+    document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
+    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
+    
+    document.getElementById('editNome').value = perfil.nome || '';
+    document.getElementById('editCidade').value = perfil.cidade || '';
+
+    // Se estiver visualizando o perfil de outro usuário e não for master, esconde o botão de editar perfil
+    if (!ehProprio && !isAdminOrMaster) {
+      document.getElementById('viewMode').querySelector('button').style.display = 'none';
     }
   }
 
@@ -113,7 +208,6 @@
     if (!file) return;
     const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
     const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
-    
     if (error) return alert("Erro no upload: " + error.message);
     
     const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
@@ -126,14 +220,9 @@
       nome: document.getElementById('editNome').value,
       cidade: document.getElementById('editCidade').value
     };
-    
     const { error } = await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
-    
-    if (error) {
-      alert("Erro ao atualizar perfil: " + error.message);
-    } else {
-      location.reload();
-    }
+    if (error) alert("Erro ao atualizar perfil: " + error.message);
+    else location.reload();
   }
 
   function toggleEdit() {
@@ -144,45 +233,122 @@
   }
 
   async function carregarVitrine(userId) {
-    const { data, error } = await _supabase
+    // Busca álbuns para mapear nomes se necessário, e ofertas da vitrine
+    const { data: albuns } = await _supabase.from('albuns').select('id, nome');
+    const albunsMap = {};
+    if (albuns) albuns.forEach(a => { albunsMap[a.id] = a.nome; });
+
+    const { data: ofertas, error } = await _supabase
       .from('vitrine_ofertas')
       .select(`
+        id,
         preco,
         estoque,
+        user_id,
+        figurinha_id,
+        id_figurinha,
         figurinhas (
+          id,
           numero,
           nome,
-          imagem
+          imagem,
+          selecao_escuderia,
+          album_id,
+          tipo
         )
       `)
-      .eq('user_id', userId);
+      .or(`user_id.eq.${userId}`);
 
     const grid = document.getElementById('vitrineGrid');
     
     if (error) {
       console.error("Erro ao carregar vitrine:", error);
-      grid.innerHTML = "<p>Erro ao carregar vitrine.</p>";
+      grid.innerHTML = "<p style='color: #ef4444; grid-column: 1/-1;'>Erro ao carregar vitrine.</p>";
       return;
     }
 
-    if (!data || data.length === 0) { 
-      grid.innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Sua vitrine está vazia.</p>"; 
+    if (!ofertas || ofertas.length === 0) { 
+      grid.innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Esta vitrine está vazia.</p>"; 
       return; 
     }
 
-    grid.innerHTML = data.map(item => {
+    grid.innerHTML = ofertas.map(item => {
       const f = item.figurinhas || {};
+      const precoNum = item.preco || 0;
+      const precoFormatado = precoNum.toFixed(2).replace('.', ',');
+      const albumNome = albunsMap[f.album_id] || 'N/A';
+
+      // Verifica permissão para gerenciar (próprio dono ou admin/master)
+      const podeGerenciar = (String(item.user_id) === String(usuarioLogado.user_id) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
+
       return `
-        <div class="card">
-          <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
-          <div class="card-title">${f.numero ? '#' + f.numero : ''} ${f.nome || 'Sem Nome'}</div>
-          <div class="card-info">
-            <div>Preço: <span class="price">€${Number(item.preco || 0).toFixed(2)}</span></div>
-            <div>Qtd: <b>${item.estoque || 0}</b></div>
+        <div class="sticker-card">
+          <div class="sticker-img-wrap">
+            <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="${f.nome || 'Figurinha'}">
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
+            <div class="card-row">Código: <span>${f.numero || 'N/A'}</span></div>
+            <div class="card-row">Álbum: <span>${albumNome}</span></div>
+            <div class="card-row">Seleção: <span>${f.selecao_escuderia || 'N/A'}</span></div>
+            <div class="card-row">Tipo: <span>${f.tipo || 'N/A'}</span></div>
+            <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${item.estoque || 0}</div>
+            <div class="sticker-price">€ ${precoFormatado}</div>
+            
+            ${podeGerenciar ? `
+              <div class="card-actions">
+                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button>
+                <button class="btn-card-action btn-delete" onclick="deletarOferta('${item.id}')">Excluir</button>
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
     }).join('');
+  }
+
+  function abrirModalEdicao(ofertaId, precoAtual, estoqueAtual) {
+    document.getElementById('modalOfertaId').value = ofertaId;
+    document.getElementById('modalPreco').value = precoAtual;
+    document.getElementById('modalEstoque').value = estoqueAtual;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function fecharModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  async function salvarEdicaoOferta() {
+    const ofertaId = document.getElementById('modalOfertaId').value;
+    const novoPreco = parseFloat(document.getElementById('modalPreco').value);
+    const novoEstoque = parseInt(document.getElementById('modalEstoque').value);
+
+    const { error } = await _supabase
+      .from('vitrine_ofertas')
+      .update({ preco: novoPreco, estoque: novoEstoque })
+      .eq('id', ofertaId);
+
+    if (error) {
+      alert("Erro ao atualizar oferta: " + error.message);
+    } else {
+      fecharModal();
+      location.reload();
+    }
+  }
+
+  async function deletarOferta(ofertaId) {
+    if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
+
+    const { error } = await _supabase
+      .from('vitrine_ofertas')
+      .delete()
+      .eq('id', ofertaId);
+
+    if (error) {
+      alert("Erro ao excluir oferta: " + error.message);
+    } else {
+      location.reload();
+    }
   }
 
   async function fazerLogout() {
