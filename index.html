@@ -16,7 +16,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 120px; }
 
-    /* BARRA SUPERIOR DE NAVEGAÇÃO (Igual Admin/Estoque) */
+    /* BARRA SUPERIOR DE NAVEGAÇÃO CORRIGIDA */
     .top-nav {
       display: flex;
       justify-content: space-between;
@@ -70,6 +70,7 @@
     .colecao-label { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
     .sticker-title { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
+    .sticker-qtd { font-size: 0.75rem; color: #64748b; margin-bottom: 5px; font-weight: 600; }
     .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; transition: 0.2s; }
     .btn-add:hover { background: #1e293b; }
 
@@ -81,19 +82,19 @@
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
+  <!-- BARRA SUPERIOR COM HOME À ESQUERDA E LOGIN À DIREITA -->
   <div class="top-nav">
     <div class="nav-links">
       <a href="index.html" style="color: var(--gold);">🏠 Home</a>
     </div>
     <a href="login.html" class="btn-nav-admin">
-      ⚙️ Painel de Controle / Vendedor
+      🔐 Login / Painel
     </a>
   </div>
 
   <header>
     <h1>🛍️ Marketplace de Figurinhas</h1>
-    <p>Escolha seus itens e envie o pedido diretamente</p>
+    <p>Escolha seus itens da vitrine e envie o pedido diretamente</p>
   </header>
 
   <div class="container">
@@ -128,14 +129,45 @@
     let carrinho = [];
 
     async function init() {
-      const { data, error } = await _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      // Carrega os dados diretamente da tabela 'vitrine_ofertas' fazendo o join com a tabela 'figurinhas'
+      const { data, error } = await _supabase
+        .from('vitrine_ofertas')
+        .select(`
+          id,
+          preco,
+          quantidade,
+          figurinhas (
+            id,
+            numero,
+            nome,
+            imagem,
+            selecao_escuderia
+          )
+        `)
+        .gt('quantidade', 0); // Opcional: traz apenas ofertas com quantidade maior que zero
+
       if (error) {
-        console.error("Erro ao carregar:", error);
+        console.error("Erro ao carregar vitrine:", error);
+        document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas.</p>`;
         return;
       }
-      allData = data || [];
+
+      // Organiza os dados para facilitar a manipulação
+      allData = (data || []).map(item => ({
+        oferta_id: item.id,
+        preco: item.preco || 0,
+        quantidade: item.quantidade || 0,
+        id: item.figurinhas?.id,
+        numero: item.figurinhas?.numero,
+        nome: item.figurinhas?.nome,
+        imagem: item.figurinhas?.imagem,
+        selecao_escuderia: item.figurinhas?.selecao_escuderia
+      })).filter(item => item.id); // Garante que a figurinha existe
+
+      // Ordena por número da figurinha
+      allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
       
-      // Preencher o filtro de coleções (usando selecao_escuderia)
+      // Preencher o filtro de coleções dinamicamente
       const colecoes = [...new Set(allData.map(i => i.selecao_escuderia).filter(Boolean))].sort();
       const select = document.getElementById('filterColecao');
       colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
@@ -146,14 +178,14 @@
     function renderizar(lista) {
       const catalog = document.getElementById('catalog');
       if (lista.length === 0) {
-        catalog.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma figurinha encontrada.</p>`;
+        catalog.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma oferta encontrada na vitrine.</p>`;
         return;
       }
 
       catalog.innerHTML = lista.map(f => {
         const precoNum = f.preco || 0;
         const precoFormatado = precoNum.toFixed(2).replace('.', ',');
-        const noCarrinho = carrinho.filter(item => item.id === f.id).length;
+        const noCarrinho = carrinho.filter(item => item.oferta_id === f.oferta_id).length;
         const textoBotao = noCarrinho > 0 ? `Adicionado (${noCarrinho})` : `Adicionar`;
 
         return `
@@ -163,9 +195,10 @@
             </div>
             <div class="sticker-info">
               <div class="colecao-label">${f.selecao_escuderia || 'Coleção'}</div>
-              <div class="sticker-title">Nº ${f.numero} - ${f.nome}</div>
+              <div class="sticker-title">Nº ${f.numero} - ${f.nome || 'Sem Nome'}</div>
+              <div class="sticker-qtd">Disponível: ${f.quantidade}</div>
               <div class="sticker-price">€ ${precoFormatado}</div>
-              <button class="btn-add" onclick="adicionarAoCarrinho(${f.id})">${textoBotao}</button>
+              <button class="btn-add" onclick="adicionarAoCarrinho('${f.oferta_id}')">${textoBotao}</button>
             </div>
           </div>
         `;
@@ -185,12 +218,12 @@
       renderizar(filtrado);
     }
 
-    function adicionarAoCarrinho(id) {
-      const item = allData.find(f => f.id === id);
+    function adicionarAoCarrinho(ofertaId) {
+      const item = allData.find(f => f.oferta_id == ofertaId);
       if (item) {
         carrinho.push(item);
         atualizarCarrinhoBarra();
-        filtrar(); // Atualiza os textos dos botões na tela
+        filtrar(); 
       }
     }
 
