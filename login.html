@@ -132,17 +132,16 @@
   </div>
 
   <script>
-    // ⚠️ SUBSTITUA PELAS SUAS CHAVES DO SUPABASE
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Se já estiver logado, redireciona direto para o admin
+    // Se já estiver logado, valida o direcionamento automaticamente
     async function checarSessaoExistente() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (session) {
-        window.location.href = "admin.html";
+        await redirecionarConformePermissao(session.user.email);
       }
     }
     checarSessaoExistente();
@@ -163,15 +162,31 @@
 
         if (error) throw error;
 
-        // Redireciona para o admin após o login
-        window.location.href = "admin.html";
+        // Redireciona de acordo com o perfil (Admin ou Vendedor)
+        await redirecionarConformePermissao(email);
 
       } catch (err) {
         errorMsg.innerText = "Falha no login: " + (err.message || "E-mail ou senha inválidos.");
         errorMsg.style.display = "block";
-      } finally {
         btn.innerText = "Entrar no Painel";
         btn.disabled = false;
+      }
+    }
+
+    async function redirecionarConformePermissao(email) {
+      // Verifica se o e-mail está na tabela de vendedores autorizados
+      const { data: autorizado } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (autorizado) {
+        // Vendedor parceiro vai para o estoque gerenciar os preços dele
+        window.location.href = "estoque.html";
+      } else {
+        // Administrador mestre vai para o admin central
+        window.location.href = "admin.html";
       }
     }
   </script>
