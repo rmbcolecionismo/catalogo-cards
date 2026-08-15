@@ -72,7 +72,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: 10, Messi, Brasil...">
+        <input type="text" id="search" placeholder="🔍 Ex: 10, #10, Messi, Brasil...">
       </div>
     </div>
 
@@ -92,6 +92,7 @@
     const ITENS_POR_PAGINA = 30;
 
     let usuarioLogado = null;
+    let authUserId = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let meusPrecosQtd = {};
@@ -100,6 +101,8 @@
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) { window.location.href = "login.html"; return null; }
+
+      authUserId = session.user.id;
 
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
@@ -117,39 +120,44 @@
         document.getElementById('adminLinks').style.display = 'inline';
       }
 
-      // Utiliza user_id para buscar os itens da vitrine deste usuário
       const { data: vitrineSalva } = await _supabase
         .from('vitrine_ofertas')
-        .select('figurinha_id, preco, quantidade')
-        .eq('user_id', perfil.id);
+        .select('figurinha_id, preco, estoque')
+        .eq('user_id', authUserId);
 
       if (vitrineSalva) {
         vitrineSalva.forEach(item => {
-          meusPrecosQtd[item.figurinha_id] = { preco: item.preco, quantidade: item.quantidade };
+          meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque };
         });
       }
 
       return session;
     }
 
-    async function aplicarFiltros() {
-      paginaAtual = 0;
-      figurinhasGlobal = [];
-      const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
-
-      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
-      
+    // Função auxiliar para aplicar a query de busca (suporta número com/sem # e nome)
+    function aplicarFiltroQuery(query, termo, albumId) {
       if (albumId !== 'todos') {
         query = query.eq('album_id', albumId);
       }
       if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
+        const termoLimpo = termo.replace('#', '');
+        if (!isNaN(termoLimpo) && termoLimpo !== "") {
+          query = query.or(`numero.eq.${termoLimpo},numero.ilike.%${termoLimpo}%,nome.ilike.%${termo}%`);
         } else {
           query = query.ilike('nome', `%${termo}%`);
         }
       }
+      return query;
+    }
+
+    async function aplicarFiltros() {
+      paginaAtual = 0;
+      figurinhasGlobal = [];
+      const albumId = document.getElementById('filterAlbum').value;
+      const termo = document.getElementById('search').value.trim();
+
+      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
+      query = aplicarFiltroQuery(query, termo, albumId);
 
       const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
       if (error) {
@@ -172,17 +180,10 @@
       paginaAtual++;
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
+      const termo = document.getElementById('search').value.trim();
 
       let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
-        } else {
-          query = query.ilike('nome', `%${termo}%`);
-        }
-      }
+      query = aplicarFiltroQuery(query, termo, albumId);
 
       const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
       if (data && data.length > 0) {
@@ -202,7 +203,7 @@
       }
 
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, quantidade: 0 };
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0 };
         return `
           <div class="card">
             <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
@@ -216,7 +217,7 @@
               </div>
               <div class="input-wrapper">
                 <label>Qtd</label>
-                <input type="number" id="qtd-${f.id}" value="${salvo.quantidade}" min="0">
+                <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
               </div>
             </div>
 
@@ -227,18 +228,17 @@
     }
 
     async function adicionarNaVitrine(figurinhaId) {
-      if (!usuarioLogado) return;
+      if (!authUserId) return;
       const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
-      const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
+      const estoque = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
 
-      meusPrecosQtd[figurinhaId] = { preco, quantidade };
+      meusPrecosQtd[figurinhaId] = { preco, estoque };
 
-      // Salva utilizando user_id e figurinha_id conforme estruturado na tabela
       const { error } = await _supabase.from('vitrine_ofertas').upsert({
-        user_id: usuarioLogado.id,
+        user_id: authUserId,
         figurinha_id: figurinhaId,
         preco: preco,
-        quantidade: quantidade
+        estoque: estoque
       }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
@@ -262,9 +262,9 @@
       aplicarFiltros();
     }
 
-    function fazerLogout() { 
-      _supabase.auth.signOut(); 
-      window.location.href = "login.html"; 
+    async function fazerLogout() { 
+      await _supabase.auth.signOut(); 
+      window.location.href = "index.html"; 
     }
     
     init();
