@@ -69,9 +69,75 @@
   </header>
 
   <div class="container">
+    <!-- CARD: Cadastrar Tipo -->
     <div class="card">
-      <h2>📁 Gerenciamento Geral</h2>
-      <p style="color: #cbd5e1; font-size: 0.9rem;">Insira aqui os formulários de cadastro do seu painel administrativo.</p>
+      <h2>🏷️ Cadastrar Tipo / Categoria</h2>
+      <div class="form-group">
+        <label>Nome do Tipo</label>
+        <input type="text" id="inputNomeTipo" placeholder="Ex: Rara, Lendária, Comum">
+      </div>
+      <button class="btn-submit" onclick="cadastrarTipo()">Salvar Tipo</button>
+      <div id="msgTipo" class="msg-feedback"></div>
+    </div>
+
+    <!-- CARD: Cadastrar Figurinha -->
+    <div class="card">
+      <h2>🃏 Cadastrar Figurinha / Card</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Álbum</label>
+          <select id="selectAlbumFigurinha">
+            <option value="">Selecione o álbum...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="selectTipoFigurinha">
+            <option value="">Selecione o tipo...</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número</label>
+          <input type="text" id="inputNumeroFigurinha" placeholder="Ex: 001">
+        </div>
+        <div class="form-group">
+          <label>Nome da Figurinha</label>
+          <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Link da Imagem</label>
+        <input type="text" id="inputImagemFigurinha" placeholder="https://exemplo.com/imagem.jpg">
+      </div>
+      <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
+      <div id="msgFigurinha" class="msg-feedback"></div>
+    </div>
+
+    <!-- CARD: Liberar Vendedor -->
+    <div class="card">
+      <h2>👥 Liberar / Gerenciar Vendedor</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>E-mail do Vendedor</label>
+          <input type="email" id="inputEmailVendedor" placeholder="vendedor@email.com">
+        </div>
+        <div class="form-group">
+          <label>Nome do Vendedor</label>
+          <input type="text" id="inputNomeVendedor" placeholder="Nome Completo">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Função / Permissão</label>
+        <select id="selectFuncaoVendedor">
+          <option value="vendedor">Vendedor</option>
+          <option value="admin">Administrador</option>
+          <option value="master">Master</option>
+        </select>
+      </div>
+      <button class="btn-submit" onclick="liberarVendedor()">Autorizar / Salvar Vendedor</button>
+      <div id="msgVendedor" class="msg-feedback"></div>
     </div>
   </div>
 
@@ -81,7 +147,7 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-   async function verificarAdminMaster() {
+    async function verificarAdminMaster() {
       try {
         const { data: { session } } = await _supabase.auth.getSession();
         
@@ -102,8 +168,6 @@
           console.error("Erro ao verificar permissão:", error);
         }
 
-        // --- CORREÇÃO AQUI ---
-        // Verifica se o usuário é admin via booleano (is_admin) ou string (funcao)
         const isAdminOuMaster = autorizado && (
           autorizado.is_admin === true || 
           autorizado.funcao === 'admin' || 
@@ -130,6 +194,7 @@
         return false;
       }
     }
+
     async function fazerLogout() {
       await _supabase.auth.signOut();
       localStorage.clear();
@@ -137,17 +202,120 @@
       window.location.replace("login.html");
     }
 
-    function carregarVendedores() { /* sua lógica antiga */ }
-    function carregarAlbuns() { /* sua lógica antiga */ }
-    function carregarTipos() { /* sua lógica antiga */ }
+    // Funções de carregamento para selects
+    async function carregarAlbuns() {
+      const { data } = await _supabase.from('albuns').select('*');
+      const select = document.getElementById('selectAlbumFigurinha');
+      if (!select) return;
+      select.innerHTML = '<option value="">Selecione o álbum...</option>';
+      if (data) {
+        data.forEach(album => {
+          select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
+        });
+      }
+    }
+
+    async function carregarTipos() {
+      const { data } = await _supabase.from('tipos').select('*');
+      const select = document.getElementById('selectTipoFigurinha');
+      if (!select) return;
+      select.innerHTML = '<option value="">Selecione o tipo...</option>';
+      if (data) {
+        data.forEach(tipo => {
+          select.innerHTML += `<option value="${tipo.id}">${tipo.nome}</option>`;
+        });
+      }
+    }
+
+    // Funções de cadastro
+    async function cadastrarTipo() {
+      const nome = document.getElementById('inputNomeTipo').value.trim();
+      const msg = document.getElementById('msgTipo');
+      if (!nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Preencha o nome do tipo.";
+        msg.style.display = "block";
+        return;
+      }
+      const { error } = await _supabase.from('tipos').insert([{ nome }]);
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Tipo cadastrado com sucesso!";
+        document.getElementById('inputNomeTipo').value = '';
+        carregarTipos();
+      }
+      msg.style.display = "block";
+    }
+
+    async function cadastrarFigurinha() {
+      const album_id = document.getElementById('selectAlbumFigurinha').value;
+      const tipo_id = document.getElementById('selectTipoFigurinha').value;
+      const numero = document.getElementById('inputNumeroFigurinha').value.trim();
+      const nome = document.getElementById('inputNomeFigurinha').value.trim();
+      const imagem = document.getElementById('inputImagemFigurinha').value.trim();
+      const msg = document.getElementById('msgFigurinha');
+
+      if (!album_id || !tipo_id || !numero || !nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Preencha os campos obrigatórios.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, numero, nome, imagem }]);
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Figurinha cadastrada com sucesso!";
+        document.getElementById('inputNumeroFigurinha').value = '';
+        document.getElementById('inputNomeFigurinha').value = '';
+        document.getElementById('inputImagemFigurinha').value = '';
+      }
+      msg.style.display = "block";
+    }
+
+    async function liberarVendedor() {
+      const email = document.getElementById('inputEmailVendedor').value.trim();
+      const nome = document.getElementById('inputNomeVendedor').value.trim();
+      const funcao = document.getElementById('selectFuncaoVendedor').value;
+      const msg = document.getElementById('msgVendedor');
+
+      if (!email) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Informe o e-mail do vendedor.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const is_admin = (funcao === 'admin' || funcao === 'master');
+
+      const { error } = await _supabase.from('vendedores_autorizados').upsert([
+        { email, nome, funcao, is_admin }
+      ], { onConflict: 'email' });
+
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Vendedor autorizado/atualizado com sucesso!";
+        document.getElementById('inputEmailVendedor').value = '';
+        document.getElementById('inputNomeVendedor').value = '';
+      }
+      msg.style.display = "block";
+    }
 
     async function inicializarAdmin() {
       const autorizado = await verificarAdminMaster();
       if (!autorizado) return;
 
-      if (typeof carregarVendedores === 'function') carregarVendedores();
-      if (typeof carregarAlbuns === 'function') carregarAlbuns();
-      if (typeof carregarTipos === 'function') carregarTipos();
+      carregarAlbuns();
+      carregarTipos();
     }
 
     inicializarAdmin();
