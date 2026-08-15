@@ -51,8 +51,10 @@
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
-        <a href="admin.html" style="color: var(--gold);">⚙️ Cadastrar</a>
-        <a href="estoque.html">📦 Estoque</a>
+        <a href="perfil.html">👤 Meu Perfil</a>
+        <a href="vitrine.html">📦 Minha Vitrine</a>
+        <a href="admin.html" style="color: var(--gold);">⚙️ Painel Admin</a>
+        <a href="estoque.html">📊 Estoque</a>
       </div>
       
       <div class="user-profile-top">
@@ -67,7 +69,6 @@
   </header>
 
   <div class="container">
-    <!-- CARD DE EXEMPLO: Se você tiver formulários de cadastro de álbum/figurinhas, coloque-os aqui dentro -->
     <div class="card">
       <h2>📁 Gerenciamento Geral</h2>
       <p style="color: #cbd5e1; font-size: 0.9rem;">Insira aqui os formulários de cadastro do seu painel administrativo.</p>
@@ -85,49 +86,51 @@
         const { data: { session } } = await _supabase.auth.getSession();
         
         if (!session) {
-          window.location.href = "login.html";
+          window.location.replace("login.html");
           return false;
         }
-
-        const emailUser = session.user.email;
 
         const { data: autorizado, error } = await _supabase
           .from('vendedores_autorizados')
           .select('*')
-          .eq('email', emailUser)
+          .eq('email', session.user.email)
           .maybeSingle();
 
-        if (error) {
-          console.error("Erro ao verificar permissão:", error);
-        }
-
-        if (autorizado && autorizado.is_admin === false) {
-          alert("Acesso restrito a administradores.");
-          window.location.href = "estoque.html";
+        if (error || !autorizado) {
+          alert("Acesso restrito.");
+          window.location.replace("perfil.html");
           return false;
         }
 
-        const nomeExibicao = (autorizado && autorizado.nome) ? autorizado.nome : emailUser.split('@')[0];
+        // Valida se o usuário tem permissão de admin ou master
+        if (autorizado.funcao !== 'admin' && autorizado.funcao !== 'master') {
+          alert("Acesso restrito a administradores.");
+          window.location.replace("perfil.html");
+          return false;
+        }
+
+        const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
         document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
         
-        if (autorizado && autorizado.avatar) {
+        if (autorizado.avatar) {
           document.getElementById('userAvatar').src = autorizado.avatar;
         }
 
         return true;
       } catch (err) {
         console.error("Erro crítico na autenticação:", err);
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return false;
       }
     }
 
     async function fazerLogout() {
       await _supabase.auth.signOut();
-      window.location.href = "login.html";
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace("login.html");
     }
 
-    // Cole aqui abaixo as suas funções originais de carregar e cadastrar (ex: carregarAlbuns, cadastrarFigurinha, etc)
     function carregarVendedores() { /* sua lógica antiga */ }
     function carregarAlbuns() { /* sua lógica antiga */ }
     function carregarTipos() { /* sua lógica antiga */ }
