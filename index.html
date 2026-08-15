@@ -14,7 +14,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 120px; }
+    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 50px; }
 
     .top-nav {
       display: flex;
@@ -67,12 +67,24 @@
     .sticker-title { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
     .sticker-qtd { font-size: 0.75rem; color: #64748b; margin-bottom: 5px; font-weight: 600; }
-    .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; transition: 0.2s; }
-    .btn-add:hover { background: #1e293b; }
-
-    .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-    .cart-info h3 { color: var(--gold); font-size: 1.1rem; }
-    .btn-checkout { background: #25d366; color: #052e16; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 800; cursor: pointer; }
+    
+    .btn-vendedor { 
+      background: #2563eb; 
+      color: white; 
+      border: none; 
+      padding: 0.7rem; 
+      border-radius: 8px; 
+      width: 100%; 
+      font-weight: 700; 
+      cursor: pointer; 
+      margin-top: auto; 
+      transition: 0.2s; 
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      font-size: 0.85rem;
+    }
+    .btn-vendedor:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
@@ -88,7 +100,7 @@
 
   <header>
     <h1>🛍️ Marketplace de Figurinhas</h1>
-    <p>Escolha seus itens da vitrine e envie o pedido diretamente</p>
+    <p>Encontre figurinhas disponíveis e visite o perfil dos vendedores para contato</p>
   </header>
 
   <div class="container">
@@ -104,26 +116,16 @@
     </div>
   </div>
 
-  <div class="cart-bar" id="cartBar" style="display: none;">
-    <div class="cart-info">
-      <span id="cartCount" style="font-size: 0.75rem; color: #cbd5e1;">0 itens selecionados</span>
-      <h3 id="cartTotal">Total: € 0,00</h3>
-    </div>
-    <button class="btn-checkout" onclick="enviarWhatsapp()">Finalizar no WhatsApp ➔</button>
-  </div>
-
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const SEU_WHATSAPP = "+351962634522";
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let allData = [];
-    let carrinho = [];
 
     async function init() {
       try {
-        // 1. Busca os vendedores e cria um dicionário seguro por ID
+        // 1. Busca todos os vendedores e cria um dicionário indexado pelo ID do usuário
         const { data: vendedores, error: errVend } = await _supabase.from('vendedores_autorizados').select('id, nome');
         if (errVend) console.warn("Aviso ao buscar vendedores:", errVend);
         
@@ -154,12 +156,13 @@
 
         if (error) throw error;
 
-        // 3. Mapeia os dados com segurança
+        // 3. Mapeia os dados com precisão, guardando também o ID do vendedor (user_id)
         allData = (data || []).map(item => ({
           oferta_id: item.id,
           preco: item.preco || 0,
           quantidade: item.estoque || 0,
-          vendedorNome: vendedoresMap[item.user_id] || 'Rodrigo Barbosa', // Fallback ou nome real
+          vendedorId: item.user_id,
+          vendedorNome: vendedoresMap[item.user_id] || 'Vendedor Independente',
           id: item.figurinhas?.id,
           numero: item.figurinhas?.numero,
           nome: item.figurinhas?.nome,
@@ -191,8 +194,6 @@
       catalog.innerHTML = lista.map(f => {
         const precoNum = f.preco || 0;
         const precoFormatado = precoNum.toFixed(2).replace('.', ',');
-        const noCarrinho = carrinho.filter(item => item.oferta_id === f.oferta_id).length;
-        const textoBotao = noCarrinho > 0 ? `Adicionado (${noCarrinho})` : `Adicionar`;
 
         return `
           <div class="sticker-card">
@@ -205,7 +206,7 @@
               <div class="sticker-title">Nº ${f.numero} - ${f.nome || 'Sem Nome'}</div>
               <div class="sticker-qtd">Disponível: ${f.quantidade}</div>
               <div class="sticker-price">€ ${precoFormatado}</div>
-              <button class="btn-add" onclick="adicionarAoCarrinho('${f.oferta_id}')">${textoBotao}</button>
+              <a href="perfil.html?id=${f.vendedorId}" class="btn-vendedor">Ver Vendedor ➔</a>
             </div>
           </div>
         `;
@@ -223,39 +224,6 @@
       });
       
       renderizar(filtrado);
-    }
-
-    function adicionarAoCarrinho(ofertaId) {
-      const item = allData.find(f => f.oferta_id == ofertaId);
-      if (item) {
-        carrinho.push(item);
-        atualizarCarrinhoBarra();
-        filtrar(); 
-      }
-    }
-
-    function atualizarCarrinhoBarra() {
-      const cartBar = document.getElementById('cartBar');
-      if (carrinho.length > 0) {
-        cartBar.style.display = 'flex';
-        const total = carrinho.reduce((sum, i) => sum + (i.preco || 0), 0);
-        document.getElementById('cartCount').innerText = `${carrinho.length} item(ns) selecionado(s)`;
-        document.getElementById('cartTotal').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
-      } else {
-        cartBar.style.display = 'none';
-      }
-    }
-
-    function enviarWhatsapp() {
-      if (carrinho.length === 0) return;
-      let msg = "⚽ *PEDIDO DE FIGURINHAS (MARKETPLACE)*\n\n";
-      let total = 0;
-      carrinho.forEach((item, index) => {
-        msg += `${index + 1}. Nº ${item.numero} - ${item.nome} (Vendedor: ${item.vendedorNome}) - € ${(item.preco || 0).toFixed(2)}\n`;
-        total += (item.preco || 0);
-      });
-      msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
-      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     init();
