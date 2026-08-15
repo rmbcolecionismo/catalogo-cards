@@ -94,7 +94,7 @@
     let usuarioLogado = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
-    let meusPrecosQtd = {}; // Guarda preço e quantidade já salvos na vitrine do usuário
+    let meusPrecosQtd = {};
     let paginaAtual = 0;
 
     async function verificarAcesso() {
@@ -113,16 +113,15 @@
       document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
       if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
       
-      // Exibe links de admin se tiver permissão
       if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
         document.getElementById('adminLinks').style.display = 'inline';
       }
 
-      // Carregar os dados já salvos na vitrine deste vendedor para preencher os inputs automaticamente
+      // Utiliza user_id para buscar os itens da vitrine deste usuário
       const { data: vitrineSalva } = await _supabase
         .from('vitrine_ofertas')
         .select('figurinha_id, preco, quantidade')
-        .eq('vendedor_id', perfil.id);
+        .eq('user_id', perfil.id);
 
       if (vitrineSalva) {
         vitrineSalva.forEach(item => {
@@ -145,7 +144,6 @@
         query = query.eq('album_id', albumId);
       }
       if (termo !== "") {
-        // Busca rápida e segura em nome ou número
         if (!isNaN(termo)) {
           query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
         } else {
@@ -233,15 +231,15 @@
       const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
       const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
 
-      // Atualiza o cache local para refletir caso altere novamente
       meusPrecosQtd[figurinhaId] = { preco, quantidade };
 
+      // Salva utilizando user_id e figurinha_id conforme estruturado na tabela
       const { error } = await _supabase.from('vitrine_ofertas').upsert({
-        vendedor_id: usuarioLogado.id,
+        user_id: usuarioLogado.id,
         figurinha_id: figurinhaId,
         preco: preco,
         quantidade: quantidade
-      }, { onConflict: 'vendedor_id, figurinha_id' });
+      }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
         alert("Erro ao salvar na vitrine: " + error.message);
