@@ -86,7 +86,28 @@
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let paginaAtual = 0;
-    let usuarioLogadoData = null;
+
+    async function verificarAcesso() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) {
+        window.location.href = "login.html";
+        return null;
+      }
+
+      // Verifica se é admin para mostrar link de cadastro
+      const { data: perfil } = await _supabase
+        .from('vendedores_autorizados')
+        .select('nome, avatar, is_admin')
+        .eq('email', session.user.email)
+        .maybeSingle();
+
+      if (perfil) {
+        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
+        if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
+        if (perfil.is_admin) document.getElementById('linkAdmin').style.display = 'inline';
+      }
+      return session;
+    }
 
     async function aplicarFiltros() {
       paginaAtual = 0;
@@ -144,11 +165,14 @@
     }
 
     async function init() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) return window.location.href = "login.html";
+      const session = await verificarAcesso();
+      if (!session) return;
       
       const { data: albuns } = await _supabase.from('albuns').select('*');
-      albuns?.forEach(a => { mapaAlbuns[a.id] = a.nome; document.getElementById('filterAlbum').innerHTML += `<option value="${a.id}">${a.nome}</option>`; });
+      albuns?.forEach(a => { 
+        mapaAlbuns[a.id] = a.nome; 
+        document.getElementById('filterAlbum').innerHTML += `<option value="${a.id}">${a.nome}</option>`; 
+      });
       aplicarFiltros();
     }
 
