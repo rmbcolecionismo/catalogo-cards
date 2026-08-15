@@ -26,7 +26,6 @@
       margin: 0 auto 1.5rem;
     }
 
-    /* BARRA SUPERIOR DE NAVEGAÇÃO E PERFIL */
     .top-nav {
       display: flex;
       justify-content: space-between;
@@ -54,7 +53,6 @@
       color: var(--gold);
     }
 
-    /* PERFIL DO USUÁRIO NO TOPO */
     .user-profile-top {
       display: flex;
       align-items: center;
@@ -113,7 +111,6 @@
       margin: 0 auto;
     }
 
-    /* PAINEL DE CONTROLES E FILTROS */
     .controls-panel {
       background: rgba(30, 41, 59, 0.7);
       backdrop-filter: blur(12px);
@@ -154,7 +151,6 @@
       border-color: var(--gold);
     }
 
-    /* TABELA DE ESTOQUE */
     .table-container {
       background: rgba(30, 41, 59, 0.7);
       backdrop-filter: blur(12px);
@@ -354,20 +350,20 @@
         .single();
 
       if (error || !autorizado) {
-        alert("Acesso negado: Você não tem autorização para gerenciar estoques.");
+        alert("Acesso negado.");
         await _supabase.auth.signOut();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
         return false;
       }
 
       usuarioLogadoData = autorizado;
 
-      // Se for Administrador Master, exibe o link "Cadastrar" no menu superior
+      // MODIFICAÇÃO: Ocultar ou mostrar o link de cadastro com base no is_admin
+      const linkAdmin = document.getElementById('linkAdmin');
       if (autorizado.is_admin === true) {
-        const linkAdmin = document.getElementById('linkAdmin');
-        if (linkAdmin) {
-          linkAdmin.style.display = 'inline-block';
-        }
+        linkAdmin.style.display = 'inline-block';
+      } else {
+        linkAdmin.style.display = 'none';
       }
 
       const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
@@ -414,14 +410,7 @@
         await carregarMaisFigurinhas(true);
 
       } catch (err) {
-        console.error("Erro ao carregar estoque:", err);
-        document.getElementById('stockTableBody').innerHTML = `
-          <tr>
-            <td colspan="10" style="text-align: center; color: #ef4444; padding: 2rem;">
-              Erro ao carregar dados: ${err.message || 'Verifique a conexão'}
-            </td>
-          </tr>
-        `;
+        document.getElementById('stockTableBody').innerHTML = `<tr><td colspan="10" style="text-align: center; color: #ef4444; padding: 2rem;">Erro ao carregar dados.</td></tr>`;
       }
     }
 
@@ -434,150 +423,47 @@
 
       if (!temMaisDados || modoBuscaAtivo) return;
 
-      const btnLoad = document.getElementById('btnLoadMore');
-      if (btnLoad) btnLoad.innerText = "Carregando...";
-
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       const fim = inicio + ITENS_POR_PAGINA - 1;
-
       const albumId = document.getElementById('filterAlbum').value;
 
-      let query = _supabase
-        .from('figurinhas')
-        .select('*')
-        .order('numero', { ascending: true })
-        .range(inicio, fim);
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true }).range(inicio, fim);
+      if (albumId !== 'todos') query = query.eq('album_id', albumId);
 
-      if (albumId !== 'todos') {
-        query = query.eq('album_id', albumId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Erro ao buscar mais figurinhas:", error);
-        return;
-      }
-
+      const { data } = await query;
       if (data && data.length > 0) {
         figurinhasGlobal = figurinhasGlobal.concat(data);
         paginaAtual++;
-        
-        if (data.length < ITENS_POR_PAGINA) {
-          temMaisDados = false;
-        }
+        if (data.length < ITENS_POR_PAGINA) temMaisDados = false;
       } else {
         temMaisDados = false;
       }
-
       renderizarTabela(figurinhasGlobal);
-      atualizarBotaoCarregarMais();
-    }
-
-    function atualizarBotaoCarregarMais() {
-      const container = document.getElementById('loadMoreContainer');
-      const btnLoad = document.getElementById('btnLoadMore');
-      
-      if (modoBuscaAtivo) {
-        container.style.display = 'none';
-      } else if (temMaisDados) {
-        container.style.display = 'block';
-        if (btnLoad) btnLoad.innerText = "Carregar mais 50 figurinhas";
-      } else {
-        container.style.display = 'none';
-      }
-    }
-
-    async function mudarFiltroAlbum() {
-      paginaAtual = 0;
-      figurinhasGlobal = [];
-      temMaisDados = true;
-      
-      const busca = document.getElementById('search').value.trim();
-      if (busca !== '') {
-        await executarBuscaServidor(busca);
-      } else {
-        modoBuscaAtivo = false;
-        await carregarMaisFigurinhas(true);
-      }
-    }
-
-    async function filtrarPorTexto() {
-      const busca = document.getElementById('search').value.trim();
-      
-      if (busca === '') {
-        modoBuscaAtivo = false;
-        paginaAtual = 0;
-        figurinhasGlobal = [];
-        temMaisDados = true;
-        await carregarMaisFigurinhas(true);
-        return;
-      }
-
-      modoBuscaAtivo = true;
-      document.getElementById('loadMoreContainer').style.display = 'none';
-      await executarBuscaServidor(busca);
-    }
-
-    async function executarBuscaServidor(termo) {
-      const albumId = document.getElementById('filterAlbum').value;
-      const tbody = document.getElementById('stockTableBody');
-      
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Buscando figurinhas...</td></tr>`;
-
-      try {
-        let query = _supabase
-          .from('figurinhas')
-          .select('*')
-          .or(`nome.ilike.%${termo}%,numero.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,team.ilike.%${termo}%`)
-          .order('numero', { ascending: true })
-          .limit(100);
-
-        if (albumId !== 'todos') {
-          query = query.eq('album_id', albumId);
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        figurinhasGlobal = data || [];
-        renderizarTabela(figurinhasGlobal);
-
-      } catch (err) {
-        console.error("Erro na busca:", err);
-      }
     }
 
     function renderizarTabela(lista) {
       const tbody = document.getElementById('stockTableBody');
       tbody.innerHTML = '';
 
+      // MODIFICAÇÃO: Verifica se é admin para liberar ou bloquear edição
+      const isAdmin = usuarioLogadoData && usuarioLogadoData.is_admin === true;
+      const desabilitar = isAdmin ? '' : 'disabled';
+
       if (lista.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">
-              Nenhuma figurinha encontrada.
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Nenhuma figurinha encontrada.</td></tr>`;
         return;
       }
 
       lista.forEach(f => {
         const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção';
         const qtdEstoque = f.estoque ?? 0;
-        const statusBadge = qtdEstoque > 0 
-          ? `<span class="badge-ok">Disponível</span>` 
-          : `<span class="badge-out">Esgotado</span>`;
-
+        const statusBadge = qtdEstoque > 0 ? `<span class="badge-ok">Disponível</span>` : `<span class="badge-out">Esgotado</span>`;
         const imgUrl = f.imagem || IMAGEM_PADRAO;
         const selecaoVal = f.selecao_escuderia || f.team || '';
         const tipoVal = f.tipo || f.type || 'Base';
 
         let todosOsTipos = [...listaTiposGlobal];
-        if (tipoVal && !todosOsTipos.includes(tipoVal)) {
-          todosOsTipos.unshift(tipoVal);
-        }
+        if (tipoVal && !todosOsTipos.includes(tipoVal)) { todosOsTipos.unshift(tipoVal); }
 
         const optionsTipo = todosOsTipos.map(t => {
           const selected = String(t).toLowerCase() === String(tipoVal).toLowerCase() ? 'selected' : '';
@@ -586,47 +472,22 @@
 
         tbody.innerHTML += `
           <tr>
-            <td>
-              <div class="img-cell">
-                <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
-              </div>
-            </td>
+            <td><div class="img-cell"><img src="${imgUrl}" class="img-preview"></div></td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
-            <td>
-              <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero || ''}" disabled>
-            </td>
-            <td>
-              <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome || ''}" disabled>
-            </td>
-            <td>
-              <input type="text" class="input-edit-team" id="input-team-${f.id}" value="${selecaoVal}" placeholder="Ex: Brasil" disabled>
-            </td>
-            <td>
-              <select class="select-edit-tipo" id="select-tipo-${f.id}" disabled>
-                ${optionsTipo}
-              </select>
-            </td>
-            <td>
-              <input type="number" step="0.01" class="input-edit-preco" id="input-preco-${f.id}" value="${f.preco ?? 0}">
-            </td>
+            <td><input type="text" class="input-edit-num" value="${f.numero || ''}" ${desabilitar}></td>
+            <td><input type="text" class="input-edit-nome" value="${f.nome || ''}" ${desabilitar}></td>
+            <td><input type="text" class="input-edit-team" value="${selecaoVal}" ${desabilitar}></td>
+            <td><select class="select-edit-tipo" ${desabilitar}>${optionsTipo}</select></td>
+            <td><input type="number" step="0.01" class="input-edit-preco" id="input-preco-${f.id}" value="${f.preco ?? 0}"></td>
             <td>${statusBadge}</td>
-            <td>
-              <input type="number" class="input-edit-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0">
-            </td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button>
-              </div>
-            </td>
+            <td><input type="number" class="input-edit-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0"></td>
+            <td><button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button></td>
           </tr>
         `;
       });
     }
 
     async function salvarAlteracoes(id) {
-      const item = figurinhasGlobal.find(f => f.id === id);
-      if (!item) return;
-
       const inputPreco = document.getElementById(`input-preco-${id}`);
       const inputStock = document.getElementById(`input-stock-${id}`);
       const btnSave = document.getElementById(`btn-save-${id}`);
@@ -634,49 +495,15 @@
       const novoPreco = parseFloat(inputPreco.value);
       const novoEstoque = parseInt(inputStock.value);
 
-      if (isNaN(novoPreco) || novoPreco < 0) {
-        alert("Digite um preço válido.");
-        return;
-      }
-
-      if (isNaN(novoEstoque) || novoEstoque < 0) {
-        alert("Digite um estoque válido.");
-        return;
-      }
-
       btnSave.innerText = "Salvando...";
-      btnSave.style.opacity = "0.7";
-
-      const payload = {
-        preco: novoPreco,
-        estoque: novoEstoque
-      };
-
       try {
-        const { error } = await _supabase
-          .from('figurinhas')
-          .update(payload)
-          .eq('id', id);
-
+        const { error } = await _supabase.from('figurinhas').update({ preco: novoPreco, estoque: novoEstoque }).eq('id', id);
         if (error) throw error;
-
-        Object.assign(item, payload);
-
         btnSave.innerText = "Salvo! ✓";
-        btnSave.style.background = "#25d366";
-
-        setTimeout(() => {
-          btnSave.innerText = "Salvar";
-          btnSave.style.background = "#10b981";
-          btnSave.style.opacity = "1";
-        }, 1200);
-
+        setTimeout(() => btnSave.innerText = "Salvar", 1200);
       } catch (err) {
-        console.error("Erro no Supabase:", err);
-        alert("Erro ao salvar no banco de dados: " + (err.message || "Verifique a conexão"));
+        alert("Erro ao salvar.");
         btnSave.innerText = "Salvar";
-        btnSave.style.background = "#10b981";
-        btnSave.style.opacity = "1";
       }
     }
 
