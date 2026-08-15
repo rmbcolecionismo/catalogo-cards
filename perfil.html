@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minha Vitrine - Álbum Digital</title>
+  <title>Meu Perfil e Vitrine - Álbum Digital</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root { --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg-gradient); min-height: 100vh; color: white; padding: 1rem; }
+    
     header { max-width: 1300px; margin: 0 auto 1.5rem; }
     .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-right: 15px; }
@@ -17,27 +18,29 @@
     .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 30px; }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
     .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-    h1 { font-size: 1.8rem; color: var(--gold); }
     
+    /* PAINEL DE PERFIL */
+    .profile-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .profile-card h2 { color: var(--gold); font-size: 1.4rem; }
+    .profile-info { display: flex; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem; color: #cbd5e1; }
+    .profile-info span strong { color: white; }
+
     .container { max-width: 1300px; margin: 0 auto; }
     .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
     input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
     input:focus, select:focus { border-color: var(--gold); }
 
-    /* Grid de Cards */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; position: relative; }
-    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; margin-bottom: 0.5rem; }
-    .card-title { font-size: 0.9rem; font-weight: 600; color: #f8fafc; }
+    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; }
+    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
+    .card-title { font-size: 0.9rem; font-weight: 600; }
     .card-subtitle { font-size: 0.75rem; color: #94a3b8; }
-    
     .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .input-wrapper { flex: 1; display: flex; flex-direction: column; text-align: left; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); margin-bottom: 2px; font-weight: 600; }
-    .input-wrapper input { padding: 0.4rem; font-size: 0.8rem; text-align: center; }
-
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; font-size: 0.85rem; transition: background 0.2s; }
+    .input-wrapper { flex: 1; text-align: left; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); font-weight: 600; }
+    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
     .btn-add-vitrine:hover { background: #d97706; }
 
     .load-more-container { text-align: center; margin: 2rem 0; }
@@ -50,20 +53,25 @@
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
-        <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
-        <a href="vitrine.html" style="color: var(--gold);">🛍️ Vitrine</a>
-        <a href="estoque.html" id="linkEstoque" style="display: none;">📦 Manutenção Estoque</a>
+        <a href="perfil.html" style="color: var(--gold);">👤 Meu Perfil / Vitrine</a>
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
-        <span id="userGreeting">Olá, Carregando...</span>
+        <span id="userGreeting">Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
-    <h1>🛍️ Gerenciar Minha Vitrine</h1>
   </header>
 
   <div class="container">
+    <!-- Bloco de Dados do Perfil -->
+    <div class="profile-card">
+      <h2>👤 Meus Dados</h2>
+      <div class="profile-info" id="profileDetails">
+        <span>Carregando informações...</span>
+      </div>
+    </div>
+
     <div class="controls-panel">
       <div class="filter-group">
         <label>Filtrar por Álbum:</label>
@@ -73,7 +81,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: #10, Messi, Brasil...">
+        <input type="text" id="search" placeholder="🔍 Ex: 10, Messi, Brasil...">
       </div>
     </div>
 
@@ -91,7 +99,7 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const ITENS_POR_PAGINA = 30;
-    
+
     let usuarioLogado = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
@@ -99,27 +107,27 @@
 
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "login.html";
-        return null;
-      }
+      if (!session) { window.location.href = "login.html"; return null; }
 
+      // Buscando dados do perfil na tabela 'vendedores_autorizados' (ajuste as colunas 'morada' e 'cidade' caso tenham nomes diferentes no banco, ex: 'endereco')
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
-        .select('id, nome, avatar, is_admin')
+        .select('*')
         .eq('email', session.user.email)
         .maybeSingle();
 
       if (perfil) {
         usuarioLogado = perfil;
-        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
+        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
         if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
-        if (perfil.is_admin) {
-          document.getElementById('linkAdmin').style.display = 'inline';
-          document.getElementById('linkEstoque').style.display = 'inline';
-        }
-      } else {
-        document.getElementById('userGreeting').innerText = `Olá, ${session.user.email.split('@')[0]}`;
+        
+        // Renderiza os dados do perfil na tela
+        document.getElementById('profileDetails').innerHTML = `
+          <span><strong>Nome:</strong> ${perfil.nome || 'Não informado'}</span>
+          <span><strong>Morada:</strong> ${perfil.morada || perfil.endereco || 'Não informada'}</span>
+          <span><strong>Cidade:</strong> ${perfil.cidade || 'Não informada'}</span>
+          <span><strong>E-mail:</strong> ${session.user.email}</span>
+        `;
       }
       return session;
     }
@@ -145,7 +153,7 @@
 
       const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
       if (error) {
-        console.error("Erro ao buscar figurinhas:", error);
+        console.error("Erro ao buscar:", error);
         return;
       }
 
@@ -196,17 +204,17 @@
       grid.innerHTML = lista.map(f => `
         <div class="card">
           <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
-          <div class="card-title">#${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
+          <div class="card-title">${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
           <div class="card-subtitle">${f.selecao_escuderia || mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
           
           <div class="card-inputs">
             <div class="input-wrapper">
-              <label>Preço (R$)</label>
-              <input type="number" id="preco-${f.id}" value="${f.preco ?? 0.50}" step="0.01">
+              <label>Preço (€)</label>
+              <input type="number" id="preco-${f.id}" value="0" step="0.01">
             </div>
             <div class="input-wrapper">
               <label>Qtd</label>
-              <input type="number" id="qtd-${f.id}" value="1" min="1">
+              <input type="number" id="qtd-${f.id}" value="0" min="0">
             </div>
           </div>
 
@@ -217,23 +225,18 @@
 
     async function adicionarNaVitrine(figurinhaId) {
       if (!usuarioLogado) return;
-
       const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
-      const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 1;
+      const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
 
-      // Nota: Ajuste o nome da tabela no Supabase conforme sua estrutura (ex: 'vitrine_vendedores' ou 'vendedor_figurinhas')
-      const { error } = await _supabase.from('vitrine_vendedores').upsert({
+      const { error } = await _supabase.from('vitrine_ofertas').upsert({
         vendedor_id: usuarioLogado.id,
         figurinha_id: figurinhaId,
         preco: preco,
         quantidade: quantidade
       }, { onConflict: 'vendedor_id, figurinha_id' });
 
-      if (error) {
-        alert("Erro ao adicionar à vitrine: " + error.message);
-      } else {
-        alert("Figurinha adicionada/atualizada na sua vitrine com sucesso!");
-      }
+      if (error) alert("Erro ao salvar: " + error.message);
+      else alert("Figurinha atualizada na vitrine com sucesso!");
     }
 
     async function init() {
@@ -250,11 +253,11 @@
       aplicarFiltros();
     }
 
-    async function fazerLogout() { 
-      await _supabase.auth.signOut(); 
+    function fazerLogout() { 
+      _supabase.auth.signOut(); 
       window.location.href = "login.html"; 
     }
-
+    
     init();
   </script>
 </body>
