@@ -134,12 +134,15 @@
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   
   let usuarioLogado = null;
-  let perfilAlvoId = null;
+  let authUserId = null;
+  let perfilIdInt = null;
   let isAdminOrMaster = false;
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) { window.location.replace("login.html"); return; }
+
+    authUserId = session.user.id;
 
     const { data: perfilLogado } = await _supabase
       .from('vendedores_autorizados')
@@ -150,35 +153,40 @@
     if (!perfilLogado) { window.location.replace("login.html"); return; }
 
     usuarioLogado = perfilLogado;
+    perfilIdInt = perfilLogado.id;
     isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
 
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
 
-    if (idParam && idParam !== String(perfilLogado.id) && idParam !== String(perfilLogado.user_id)) {
+    let targetIdQuery = authUserId;
+    let targetIntQuery = perfilIdInt;
+
+    if (idParam) {
+      // Verifica se o parâmetro é numérico ou UUID
+      const isNumeric = !isNaN(idParam);
       const { data: perfilAlvo } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
-        .or(`id.eq.${idParam},user_id.eq.${idParam}`)
+        .eq(isNumeric ? 'id' : 'user_id', idParam)
         .maybeSingle();
 
       if (perfilAlvo) {
-        perfilAlvoId = perfilAlvo.user_id || perfilAlvo.id;
+        targetIdQuery = perfilAlvo.user_id || authUserId;
+        targetIntQuery = perfilAlvo.id;
         preencherDadosPerfil(perfilAlvo, false);
       } else {
         preencherDadosPerfil(perfilLogado, true);
-        perfilAlvoId = perfilLogado.user_id || perfilLogado.id;
       }
     } else {
       preencherDadosPerfil(perfilLogado, true);
-      perfilAlvoId = perfilLogado.user_id || perfilLogado.id;
     }
 
     if (isAdminOrMaster) {
       document.getElementById('adminLinks').style.display = 'block';
     }
 
-    carregarVitrine(perfilAlvoId);
+    carregarVitrine(targetIdQuery, targetIntQuery);
   }
 
   function preencherDadosPerfil(perfil, ehProprio) {
@@ -223,14 +231,21 @@
     edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
   }
 
-  async function carregarVitrine(userId) {
+  async function carregarVitrine(uuidVal, intVal) {
     const grid = document.getElementById('vitrineGrid');
     
-    // Busca segura de ofertas vinculadas ao usuário
-    const { data: ofertas, error } = await _supabase
-      .from('vitrine_ofertas')
-      .select('*')
-      .eq('user_id', userId);
+    // Consulta tratada para evitar erro de tipo UUID caso o user_id seja numérico ou UUID
+    let query = _supabase.from('vitrine_ofertas').select('*');
+    
+    if (uuidVal && !isNaN(uuidVal)) {
+      query = query.eq('user_id', parseInt(uuidVal));
+    } else if (uuidVal) {
+      query = query.or(`user_id.eq.${uuidVal},user_id.eq.${intVal}`);
+    } else {
+      query = query.eq('user_id', intVal);
+    }
+
+    const { data: ofertas, error } = await query;
 
     if (error) {
       console.error("Erro ao carregar vitrine:", error);
@@ -243,7 +258,6 @@
       return; 
     }
 
-    // Busca todas as figurinhas correspondentes para preencher os dados visuais
     const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha).filter(Boolean);
     let figurinhasMap = {};
     
@@ -264,7 +278,7 @@
       const precoNum = item.preco || 0;
       const precoFormatado = Number(precoNum).toFixed(2).replace('.', ',');
 
-      const podeGerenciar = (String(item.user_id) === String(usuarioLogado.user_id) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
+      const podeGerenciar = (String(item.user_id) === String(authUserId) || String(item.user_id) === String(perfilIdInt) || isAdminOrMaster);
 
       return `
         <div class="sticker-card">
