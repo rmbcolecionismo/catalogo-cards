@@ -125,18 +125,7 @@
 
     async function init() {
       try {
-        // 1. Busca todos os vendedores e cria um dicionário indexado pelo ID do usuário
-        const { data: vendedores, error: errVend } = await _supabase.from('vendedores_autorizados').select('id, nome');
-        if (errVend) console.warn("Aviso ao buscar vendedores:", errVend);
-        
-        const vendedoresMap = {};
-        if (vendedores) {
-          vendedores.forEach(v => {
-            vendedoresMap[v.id] = v.nome;
-          });
-        }
-
-        // 2. Busca as ofertas ativas na vitrine com os dados da figurinha relacionada
+        // Busca as ofertas ativas na vitrine trazendo os dados da figurinha e do vendedor correspondente
         const { data, error } = await _supabase
           .from('vitrine_ofertas')
           .select(`
@@ -150,19 +139,23 @@
               nome,
               imagem,
               selecao_escuderia
+            ),
+            vendedores_autorizados (
+              id,
+              nome
             )
           `)
           .gt('estoque', 0);
 
         if (error) throw error;
 
-        // 3. Mapeia os dados com precisão, guardando também o ID do vendedor (user_id)
+        // Mapeia os dados utilizando diretamente os dados retornados da relação do banco
         allData = (data || []).map(item => ({
           oferta_id: item.id,
           preco: item.preco || 0,
           quantidade: item.estoque || 0,
-          vendedorId: item.user_id,
-          vendedorNome: vendedoresMap[item.user_id] || 'Vendedor Independente',
+          vendedorId: item.vendedores_autorizados?.id || item.user_id,
+          vendedorNome: item.vendedores_autorizados?.nome || 'Vendedor Independente',
           id: item.figurinhas?.id,
           numero: item.figurinhas?.numero,
           nome: item.figurinhas?.nome,
