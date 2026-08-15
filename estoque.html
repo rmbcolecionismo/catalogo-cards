@@ -26,12 +26,19 @@
       margin: 0 auto 1.5rem;
     }
 
-    /* BARRA SUPERIOR DE NAVEGAÇÃO E LOGOUT */
+    /* BARRA SUPERIOR DE NAVEGAÇÃO E PERFIL */
     .top-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
     }
 
     .top-nav a {
@@ -45,6 +52,32 @@
 
     .top-nav a:hover {
       color: var(--gold);
+    }
+
+    /* PERFIL DO USUÁRIO NO TOPO */
+    .user-profile-top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+      background: #0f172a;
+    }
+
+    .user-greeting {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #f1f5f9;
     }
 
     .btn-logout {
@@ -119,6 +152,14 @@
 
     input:focus, select:focus {
       border-color: var(--gold);
+    }
+
+    /* CAMPOS DESABILITADOS PARA USUÁRIO VITRINE */
+    input:disabled, select:disabled {
+      background: rgba(15, 23, 42, 0.5);
+      color: #64748b;
+      border-color: rgba(255, 255, 255, 0.05);
+      cursor: not-allowed;
     }
 
     /* TABELA DE ESTOQUE */
@@ -319,16 +360,22 @@
 
   <header>
     <div class="top-nav">
-      <div>
+      <div class="nav-links">
         <a href="index.html">🏠 Home</a>
-        <a href="admin.html">⚙️ Cadastrar</a>
+        <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
         <a href="estoque.html" style="color: var(--gold);">📦 Estoque</a>
       </div>
-      <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+      
+      <!-- SAUDAÇÃO E AVATAR DO USUÁRIO -->
+      <div class="user-profile-top">
+        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" alt="Avatar" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+        <span class="user-greeting" id="userGreeting">Olá, Carregando...</span>
+        <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+      </div>
     </div>
 
     <h1>📦 Gerenciador de Estoque & Edição</h1>
-    <p class="subtitle">Ajuste o código, nome, seleção, tipo, imagem, preço e quantidade ou remova figurinhas</p>
+    <p class="subtitle">Ajuste o preço e a quantidade do seu estoque personalizado</p>
   </header>
 
   <div class="container">
@@ -388,6 +435,7 @@
     let mapaAlbuns = {};
     let listaTiposGlobal = [];
     let imagensNovasCarregadas = {};
+    let usuarioLogadoData = null;
 
     // Parâmetros de Paginação
     const ITENS_POR_PAGINA = 50;
@@ -397,7 +445,6 @@
 
     // --- AUTENTICAÇÃO E VERIFICAÇÃO DE PERMISSÃO ---
     async function verificarAutenticacao() {
-      // 1. Verifica se existe uma sessão ativa
       const { data: { session } } = await _supabase.auth.getSession();
       
       if (!session) {
@@ -405,7 +452,7 @@
         return false;
       }
 
-      // 2. Verifica se o e-mail do usuário está na tabela vendedores_autorizados
+      // Busca dados do vendedor na tabela vendedores_autorizados
       const { data: autorizado, error } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
@@ -419,6 +466,22 @@
         return false;
       }
 
+      usuarioLogadoData = autorizado;
+
+      // Exibe link de administração se for admin (opcional, caso tenha flag ou email mestre)
+      // Se quiser liberar o admin.html apenas para você, pode ajustar aqui.
+      if (session.user.email === "seu-email-admin@gmail.com") {
+        document.getElementById('linkAdmin').style.display = 'inline-block';
+      }
+
+      // Atualiza saudação e avatar no topo
+      const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
+      document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
+      
+      if (autorizado.avatar) {
+        document.getElementById('userAvatar').src = autorizado.avatar;
+      }
+
       return true;
     }
 
@@ -428,12 +491,10 @@
     }
 
     async function init() {
-      // Executa a validação de segurança antes de carregar os dados
       const acessoPermitido = await verificarAutenticacao();
       if (!acessoPermitido) return;
 
       try {
-        // 1. Buscar Álbuns
         const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
         const selectAlbum = document.getElementById('filterAlbum');
 
@@ -444,7 +505,6 @@
           });
         }
 
-        // 2. Buscar Tipos da tabela 'tipos'
         const { data: tiposData, error: errorTipos } = await _supabase
           .from('tipos')
           .select('*')
@@ -456,7 +516,6 @@
           listaTiposGlobal = ['Base', 'Brilhante', 'Holográfica', 'Especial', 'Lenda', 'Golden Baller'];
         }
 
-        // 3. Carregar o primeiro lote de figurinhas (50 itens)
         await carregarMaisFigurinhas(true);
 
       } catch (err) {
@@ -635,22 +694,22 @@
             <td>
               <div class="img-cell">
                 <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
-                <label for="file-input-${f.id}" class="btn-upload-label">Trocar Foto</label>
-                <input type="file" id="file-input-${f.id}" accept="image/*" style="display: none;" onchange="fazerUploadFoto(${f.id})">
+                <!-- Foto desabilitada para alteração do usuário vitrine (somente admin) -->
+                <!-- <label for="file-input-${f.id}" class="btn-upload-label" style="opacity: 0.5; pointer-events: none;">Trocar Foto</label> -->
               </div>
             </td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
             <td>
-              <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero || ''}">
+              <input type="text" class="input-edit-num" id="input-num-${f.id}" value="${f.numero || ''}" disabled>
             </td>
             <td>
-              <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome || ''}">
+              <input type="text" class="input-edit-nome" id="input-nome-${f.id}" value="${f.nome || ''}" disabled>
             </td>
             <td>
-              <input type="text" class="input-edit-team" id="input-team-${f.id}" value="${selecaoVal}" placeholder="Ex: Brasil">
+              <input type="text" class="input-edit-team" id="input-team-${f.id}" value="${selecaoVal}" placeholder="Ex: Brasil" disabled>
             </td>
             <td>
-              <select class="select-edit-tipo" id="select-tipo-${f.id}">
+              <select class="select-edit-tipo" id="select-tipo-${f.id}" disabled>
                 ${optionsTipo}
               </select>
             </td>
@@ -664,7 +723,6 @@
             <td>
               <div class="actions-cell">
                 <button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button>
-                <button class="btn-delete-row" title="Excluir Figurinha" onclick="excluirFigurinha(${f.id})">🗑️</button>
               </div>
             </td>
           </tr>
@@ -672,68 +730,16 @@
       });
     }
 
-    async function fazerUploadFoto(id) {
-      const fileInput = document.getElementById(`file-input-${id}`);
-      if (!fileInput.files || !fileInput.files[0]) return;
-
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-      const btnSave = document.getElementById(`btn-save-${id}`);
-      const originalText = btnSave.innerText;
-      btnSave.innerText = "Enviando...";
-      btnSave.disabled = true;
-
-      try {
-        const { error: uploadError } = await _supabase.storage
-          .from('figurinhas')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = _supabase.storage
-          .from('figurinhas')
-          .getPublicUrl(fileName);
-
-        const novaUrl = urlData.publicUrl;
-        imagensNovasCarregadas[id] = novaUrl;
-
-        document.getElementById(`img-prev-${id}`).src = novaUrl;
-
-      } catch (err) {
-        alert("Erro ao fazer upload da imagem: " + err.message);
-      } finally {
-        btnSave.innerText = originalText;
-        btnSave.disabled = false;
-      }
-    }
-
     async function salvarAlteracoes(id) {
       const item = figurinhasGlobal.find(f => f.id === id);
       if (!item) return;
 
-      const inputNum = document.getElementById(`input-num-${id}`);
-      const inputNome = document.getElementById(`input-nome-${id}`);
-      const inputTeam = document.getElementById(`input-team-${id}`);
-      const selectTipo = document.getElementById(`select-tipo-${id}`);
       const inputPreco = document.getElementById(`input-preco-${id}`);
       const inputStock = document.getElementById(`input-stock-${id}`);
       const btnSave = document.getElementById(`btn-save-${id}`);
 
-      const novoNumero = inputNum.value.trim();
-      const novoNome = inputNome.value.trim();
-      const novaSelecao = inputTeam.value.trim();
-      const novoTipo = selectTipo.value;
       const novoPreco = parseFloat(inputPreco.value);
       const novoEstoque = parseInt(inputStock.value);
-
-      let novaImg = imagensNovasCarregadas[id] || item.imagem || IMAGEM_PADRAO;
-
-      if (!novoNumero || !novoNome) {
-        alert("O número/código e o nome da figurinha não podem ficar em branco.");
-        return;
-      }
 
       if (isNaN(novoPreco) || novoPreco < 0) {
         alert("Digite um preço válido.");
@@ -748,25 +754,11 @@
       btnSave.innerText = "Salvando...";
       btnSave.style.opacity = "0.7";
 
+      // O usuário vitrine só altera preço e estoque
       const payload = {
-        imagem: novaImg,
-        numero: novoNumero,
-        nome: novoNome,
         preco: novoPreco,
         estoque: novoEstoque
       };
-
-      if ('tipo' in item) {
-        payload.tipo = novoTipo;
-      } else if ('type' in item) {
-        payload.type = novoTipo;
-      }
-
-      if ('selecao_escuderia' in item) {
-        payload.selecao_escuderia = novaSelecao;
-      } else if ('team' in item) {
-        payload.team = novaSelecao;
-      }
 
       try {
         const { error } = await _supabase
@@ -777,7 +769,6 @@
         if (error) throw error;
 
         Object.assign(item, payload);
-        delete imagensNovasCarregadas[id];
 
         btnSave.innerText = "Salvo! ✓";
         btnSave.style.background = "#25d366";
@@ -790,38 +781,13 @@
 
       } catch (err) {
         console.error("Erro no Supabase:", err);
-        alert("Erro ao salvar no banco de dados: " + (err.message || "Verifique as colunas do Supabase"));
+        alert("Erro ao salvar no banco de dados: " + (err.message || "Verifique a conexão"));
         btnSave.innerText = "Salvar";
         btnSave.style.background = "#10b981";
         btnSave.style.opacity = "1";
       }
     }
 
-    async function excluirFigurinha(id) {
-      const item = figurinhasGlobal.find(f => f.id === id);
-      const nomeItem = item ? item.nome : "esta figurinha";
-
-      if (!confirm(`Tem certeza que deseja excluir "${nomeItem}" do sistema?`)) {
-        return;
-      }
-
-      try {
-        const { error } = await _supabase
-          .from('figurinhas')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-
-        figurinhasGlobal = figurinhasGlobal.filter(f => f.id !== id);
-        renderizarTabela(figurinhasGlobal);
-
-      } catch (err) {
-        alert("Erro ao excluir figurinha: " + err.message);
-      }
-    }
-
-    // Inicializa o sistema após o carregamento da página
     init();
   </script>
 </body>
