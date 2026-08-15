@@ -231,6 +231,7 @@
       if (!authUserId) return;
       const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
       const estoque = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
+      const nomeVendedor = usuarioLogado ? usuarioLogado.nome : 'Vendedor';
 
       meusPrecosQtd[figurinhaId] = { preco, estoque };
 
@@ -238,7 +239,8 @@
         user_id: authUserId,
         figurinha_id: figurinhaId,
         preco: preco,
-        estoque: estoque
+        estoque: estoque,
+        nome_vendedor: nomeVendedor
       }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
