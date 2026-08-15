@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciador de Estoque - Álbum Digital</title>
+  <title>Manutenção de Estoque - Administrador Master</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -40,7 +40,8 @@
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
         <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
-        <a href="estoque.html" style="color: var(--gold);">📦 Estoque</a>
+        <a href="vitrine.html">🛍️ Vitrine</a>
+        <a href="estoque.html" style="color: var(--gold);">📦 Manutenção Estoque</a>
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
@@ -48,7 +49,7 @@
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
-    <h1>📦 Gerenciador de Estoque</h1>
+    <h1>📦 Manutenção Master de Estoque</h1>
   </header>
 
   <div class="container">
@@ -73,7 +74,7 @@
           </tr>
         </thead>
         <tbody id="stockTableBody">
-          <tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Carregando estoque...</td></tr>
+          <tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Verificando permissões...</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,19 +101,24 @@
         return null;
       }
 
+      // Busca dados do perfil do usuário logado
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
         .select('nome, avatar, is_admin')
         .eq('email', session.user.email)
         .maybeSingle();
 
-      if (perfil) {
-        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
-        if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
-        if (perfil.is_admin) document.getElementById('linkAdmin').style.display = 'inline';
-      } else {
-        document.getElementById('userGreeting').innerText = `Olá, ${session.user.email.split('@')[0]}`;
+      // RESTRIÇÃO MASTER: Se não for admin, expulsa da página de estoque de manutenção
+      if (!perfil || !perfil.is_admin) {
+        alert("Acesso negado! Esta página é restrita apenas ao Administrador Master.");
+        window.location.href = "vitrine.html";
+        return null;
       }
+
+      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
+      if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
+      document.getElementById('linkAdmin').style.display = 'inline';
+
       return session;
     }
 
@@ -128,7 +134,6 @@
         query = query.eq('album_id', albumId);
       }
       if (termo !== "") {
-        // Tratamento seguro para busca por texto e número
         if (!isNaN(termo)) {
           query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
         } else {
