@@ -81,7 +81,7 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function verificarAdminMaster() {
+   async function verificarAdminMaster() {
       try {
         const { data: { session } } = await _supabase.auth.getSession();
         
@@ -90,29 +90,36 @@
           return false;
         }
 
+        const emailUser = session.user.email;
+
         const { data: autorizado, error } = await _supabase
           .from('vendedores_autorizados')
           .select('*')
-          .eq('email', session.user.email)
+          .eq('email', emailUser)
           .maybeSingle();
 
-        if (error || !autorizado) {
-          alert("Acesso restrito.");
-          window.location.replace("perfil.html");
-          return false;
+        if (error) {
+          console.error("Erro ao verificar permissão:", error);
         }
 
-        // Valida se o usuário tem permissão de admin ou master
-        if (autorizado.funcao !== 'admin' && autorizado.funcao !== 'master') {
+        // --- CORREÇÃO AQUI ---
+        // Verifica se o usuário é admin via booleano (is_admin) ou string (funcao)
+        const isAdminOuMaster = autorizado && (
+          autorizado.is_admin === true || 
+          autorizado.funcao === 'admin' || 
+          autorizado.funcao === 'master'
+        );
+
+        if (!isAdminOuMaster) {
           alert("Acesso restrito a administradores.");
           window.location.replace("perfil.html");
           return false;
         }
 
-        const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
+        const nomeExibicao = (autorizado && autorizado.nome) ? autorizado.nome : emailUser.split('@')[0];
         document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
         
-        if (autorizado.avatar) {
+        if (autorizado && autorizado.avatar) {
           document.getElementById('userAvatar').src = autorizado.avatar;
         }
 
@@ -123,7 +130,6 @@
         return false;
       }
     }
-
     async function fazerLogout() {
       await _supabase.auth.signOut();
       localStorage.clear();
