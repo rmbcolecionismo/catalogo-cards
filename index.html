@@ -108,7 +108,7 @@
 
   <div class="container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="🔍 Buscar figurinha por nome, código ou álbum..." class="filter-select" oninput="filtrar()">
+      <input type="text" id="search" placeholder="🔍 Buscar por nome, código ou álbum..." class="filter-select" oninput="filtrar()">
       <select id="filterColecao" class="filter-select" onchange="filtrar()">
         <option value="">Todas as Seleções</option>
       </select>
@@ -129,56 +129,49 @@
     async function init() {
       try {
         // 1. Busca os vendedores autorizados
-        const { data: vendedores, error: errVend } = await _supabase
-          .from('vendedores_autorizados')
-          .select('id, nome');
-
-        if (errVend) console.warn("Aviso ao buscar vendedores:", errVend);
-
+        const { data: vendedores } = await _supabase.from('vendedores_autorizados').select('id, nome');
         const vendedoresMap = {};
         if (vendedores) {
-          vendedores.forEach(v => {
-            vendedoresMap[v.id] = v.nome;
-          });
+          vendedores.forEach(v => { vendedoresMap[v.id] = v.nome; });
         }
 
-        // 2. Busca as ofertas ativas com os dados da tabela de figurinhas
+        // 2. Busca todas as figurinhas do catálogo geral para mapear por ID
+        const { data: figurinhas, error: errFig } = await _supabase.from('figurinhas').select('*');
+        if (errFig) throw errFig;
+
+        const figurinhasMap = {};
+        if (figurinhas) {
+          figurinhas.forEach(fig => { figurinhasMap[fig.id] = fig; });
+        }
+
+        // 3. Busca as ofertas ativas na vitrine
         const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
-          .select(`
-            id,
-            preco,
-            estoque,
-            user_id,
-            figurinhas (
-              id,
-              numero,
-              nome,
-              imagem,
-              selecao_escuderia,
-              album,
-              tipo
-            )
-          `)
+          .select('*')
           .gt('estoque', 0);
 
         if (errOfertas) throw errOfertas;
 
-        // 3. Mapeia os dados organizando todas as propriedades solicitadas
-        allData = (ofertas || []).map(item => ({
-          oferta_id: item.id,
-          preco: item.preco || 0,
-          quantidade: item.estoque || 0,
-          vendedorId: item.user_id,
-          vendedorNome: vendedoresMap[item.user_id] || 'Vendedor Independente',
-          id: item.figurinhas?.id,
-          numero: item.figurinhas?.numero,
-          nome: item.figurinhas?.nome,
-          imagem: item.figurinhas?.imagem,
-          selecao_escuderia: item.figurinhas?.selecao_escuderia,
-          album: item.figurinhas?.album || 'N/A',
-          tipo: item.figurinhas?.tipo || 'N/A'
-        })).filter(item => item.id);
+        // 4. Cruzamento seguro dos dados via código
+        allData = (ofertas || []).map(oferta => {
+          // Tenta encontrar a figurinha associada (pode ser figurinha_id ou id dependendo da sua tabela)
+          const figId = oferta.figurinha_id || oferta.id_figurinha || oferta.figurinha;
+          const fig = figurinhasMap[oferta.figurinha_id] || figurinhasMap[oferta.id] || figurinhasMap[oferta.id_figurinha] || {};
+
+          return {
+            oferta_id: oferta.id,
+            preco: oferta.preco || 0,
+            quantidade: oferta.estoque || 0,
+            vendedorId: oferta.user_id,
+            vendedorNome: vendedoresMap[oferta.user_id] || 'Vendedor Independente',
+            numero: fig.numero || oferta.numero || 'N/A',
+            nome: fig.nome || oferta.nome || 'Sem Nome',
+            imagem: fig.imagem || oferta.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
+            selecao_escuderia: fig.selecao_escuderia || fig.selecao || oferta.selecao_escuderia || 'N/A',
+            album: fig.album || oferta.album || 'N/A',
+            tipo: fig.tipo || oferta.tipo || 'N/A'
+          };
+        });
 
         allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
         
@@ -208,13 +201,13 @@
         return `
           <div class="sticker-card">
             <div class="sticker-img-wrap">
-              <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="${f.nome}">
+              <img src="${f.imagem}" alt="${f.nome}">
             </div>
             <div class="sticker-info">
               <div class="vendedor-label">👤 ${f.vendedorNome}</div>
-              <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
+              <div class="sticker-title">${f.nome}</div>
               <div class="card-row">Código: <span>${f.numero}</span></div>
-              <div class="card-row">Seleção: <span>${f.selecao_escuderia || 'N/A'}</span></div>
+              <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
               <div class="card-row">Álbum: <span>${f.album}</span></div>
               <div class="card-row">Tipo: <span>${f.tipo}</span></div>
               <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${f.quantidade}</div>
