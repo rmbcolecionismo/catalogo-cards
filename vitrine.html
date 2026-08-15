@@ -23,24 +23,16 @@
     .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
     input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
-    input:focus, select:focus { border-color: var(--gold); }
-
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; position: relative; }
-    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; margin-bottom: 0.5rem; }
-    .card-title { font-size: 0.9rem; font-weight: 600; color: #f8fafc; }
-    .card-subtitle { font-size: 0.75rem; color: #94a3b8; }
     
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; }
+    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
+    .card-title { font-size: 0.9rem; font-weight: 600; }
     .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .input-wrapper { flex: 1; display: flex; flex-direction: column; text-align: left; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); margin-bottom: 2px; font-weight: 600; }
+    .input-wrapper { flex: 1; text-align: left; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); }
     .input-wrapper input { padding: 0.4rem; font-size: 0.8rem; text-align: center; }
-
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; font-size: 0.85rem; transition: background 0.2s; }
-    .btn-add-vitrine:hover { background: #d97706; }
-
-    .load-more-container { text-align: center; margin: 2rem 0; }
-    .btn-load-more { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -49,13 +41,11 @@
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
-        <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
         <a href="vitrine.html" style="color: var(--gold);">🛍️ Vitrine</a>
-        <a href="estoque.html" id="linkEstoque" style="display: none;">📦 Manutenção Estoque</a>
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
-        <span id="userGreeting">Olá, Carregando...</span>
+        <span id="userGreeting">Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
@@ -63,93 +53,40 @@
   </header>
 
   <div class="container">
-    <div class="controls-panel">
-      <div class="filter-group">
-        <label>Filtrar por Álbum:</label>
-        <select id="filterAlbum" onchange="aplicarFiltros()">
-          <option value="todos">Todos os Álbuns</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: #10, Messi, Brasil...">
-      </div>
-    </div>
-
-    <div class="cards-grid" id="vitrineGrid">
-      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando figurinhas...</div>
-    </div>
-
-    <div class="load-more-container" id="loadMoreContainer" style="display: none;">
-      <button class="btn-load-more" onclick="carregarMaisFigurinhas()">Carregar mais 30 itens</button>
-    </div>
+    <div class="cards-grid" id="vitrineGrid"></div>
   </div>
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 30;
-    
     let usuarioLogado = null;
-    let figurinhasGlobal = [];
-    let mapaAlbuns = {};
-    let paginaAtual = 0;
 
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) { window.location.href = "login.html"; return null; }
+      if (!session) { window.location.href = "login.html"; return; }
 
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
-        .select('id, nome, avatar, is_admin')
+        .select('id, nome, avatar')
         .eq('email', session.user.email)
         .maybeSingle();
 
-      if (perfil) {
-        usuarioLogado = perfil;
-        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
-        if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
-        if (perfil.is_admin) {
-          document.getElementById('linkAdmin').style.display = 'inline';
-          document.getElementById('linkEstoque').style.display = 'inline';
-        }
-      }
-      return session;
+      usuarioLogado = perfil;
+      document.getElementById('userGreeting').innerText = perfil ? `Olá, ${perfil.nome}` : "Olá, Vendedor";
+      if (perfil?.avatar) document.getElementById('userAvatar').src = perfil.avatar;
+      
+      carregarFigurinhas();
     }
 
-    async function aplicarFiltros() {
-      paginaAtual = 0;
-      figurinhasGlobal = [];
-      const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
-
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      if (termo !== "") {
-        if (!isNaN(termo)) query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-        else query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-      }
-
-      const { data } = await query.range(0, ITENS_POR_PAGINA - 1);
-      figurinhasGlobal = data || [];
-      renderizarCards(figurinhasGlobal);
-      document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
-    }
-
-    function renderizarCards(lista) {
+    async function carregarFigurinhas() {
+      const { data } = await _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       const grid = document.getElementById('vitrineGrid');
-      if (!lista || lista.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Nenhuma figurinha encontrada.</div>`;
-        return;
-      }
-
-      grid.innerHTML = lista.map(f => `
+      
+      grid.innerHTML = data.map(f => `
         <div class="card">
-          <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
-          <div class="card-title">${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
-          <div class="card-subtitle">${f.selecao_escuderia || mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
-          
+          <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}">
+          <div class="card-title">${f.numero} - ${f.nome}</div>
           <div class="card-inputs">
             <div class="input-wrapper">
               <label>Preço (€)</label>
@@ -175,26 +112,15 @@
         figurinha_id: figurinhaId,
         preco: preco,
         quantidade: quantidade
-      }, { onConflict: 'vendedor_id, figurinha_id' });
+      });
 
-      if (error) alert("Erro ao adicionar à vitrine: " + error.message);
-      else alert("Figurinha salva na sua vitrine!");
-    }
-
-    async function init() {
-      await verificarAcesso();
-      const { data: albuns } = await _supabase.from('albuns').select('*');
-      if (albuns) {
-        albuns.forEach(a => { 
-          mapaAlbuns[a.id] = a.nome; 
-          document.getElementById('filterAlbum').innerHTML += `<option value="${a.id}">${a.nome}</option>`; 
-        });
-      }
-      aplicarFiltros();
+      if (error) alert("Erro ao salvar: " + error.message);
+      else alert("Figurinha atualizada com sucesso!");
     }
 
     function fazerLogout() { _supabase.auth.signOut(); window.location.href = "login.html"; }
-    init();
+    
+    verificarAcesso();
   </script>
 </body>
 </html>
