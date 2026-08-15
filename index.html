@@ -16,7 +16,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 120px; }
 
-    /* BARRA SUPERIOR DE NAVEGAÇÃO CORRIGIDA */
     .top-nav {
       display: flex;
       justify-content: space-between;
@@ -47,21 +46,17 @@
       color: #0f172a;
     }
 
-    /* HEADER */
     header { padding: 1.5rem 1rem 1rem; text-align: center; }
     header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
 
-    /* FILTROS MODERNOS */
     .controls-wrapper { max-width: 1100px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-select { flex: 1; min-width: 200px; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; }
     .filter-select:focus { border-color: var(--gold); }
 
-    /* GRID ESTILO ADMIN */
     .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.25rem; }
 
-    /* CARD PREMIUM */
     .sticker-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #0f172a; display: flex; flex-direction: column; transition: 0.3s; }
     .sticker-card:hover { transform: translateY(-3px); }
     .sticker-img-wrap { height: 180px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
@@ -75,7 +70,6 @@
     .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; transition: 0.2s; }
     .btn-add:hover { background: #1e293b; }
 
-    /* BARRA INFERIOR CARRINHO */
     .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
     .cart-info h3 { color: var(--gold); font-size: 1.1rem; }
     .btn-checkout { background: #25d366; color: #052e16; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 800; cursor: pointer; }
@@ -83,7 +77,6 @@
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR COM HOME À ESQUERDA E LOGIN À DIREITA -->
   <div class="top-nav">
     <div class="nav-links">
       <a href="index.html" style="color: var(--gold);">🏠 Home</a>
@@ -111,7 +104,6 @@
     </div>
   </div>
 
-  <!-- BARRA FLUTUANTE DE CARRINHO / WHATSAPP -->
   <div class="cart-bar" id="cartBar" style="display: none;">
     <div class="cart-info">
       <span id="cartCount" style="font-size: 0.75rem; color: #cbd5e1;">0 itens selecionados</span>
@@ -130,55 +122,59 @@
     let carrinho = [];
 
     async function init() {
-      // Carrega ofertas fazendo JOIN com figurinhas e vendedores_autorizados (usando user_id)
-      const { data, error } = await _supabase
-        .from('vitrine_ofertas')
-        .select(`
-          id,
-          preco,
-          estoque,
-          user_id,
-          figurinhas (
+      try {
+        // 1. Busca os vendedores para mapear os nomes rapidamente
+        const { data: vendedores } = await _supabase.from('vendedores_autorizados').select('id, nome');
+        const vendedoresMap = {};
+        if (vendedores) {
+          vendedores.forEach(v => { vendedoresMap[v.id] = v.nome; });
+        }
+
+        // 2. Busca apenas as ofertas e as figurinhas (sem join complexo que falha)
+        const { data, error } = await _supabase
+          .from('vitrine_ofertas')
+          .select(`
             id,
-            numero,
-            nome,
-            imagem,
-            selecao_escuderia
-          ),
-          vendedores_autorizados (
-            nome
-          )
-        `)
-        .gt('estoque', 0);
+            preco,
+            estoque,
+            user_id,
+            figurinhas (
+              id,
+              numero,
+              nome,
+              imagem,
+              selecao_escuderia
+            )
+          `)
+          .gt('estoque', 0);
 
-      if (error) {
-        console.error("Erro ao carregar vitrine:", error);
+        if (error) throw error;
+
+        // 3. Organiza os dados com segurança
+        allData = (data || []).map(item => ({
+          oferta_id: item.id,
+          preco: item.preco || 0,
+          quantidade: item.estoque || 0,
+          vendedorNome: vendedoresMap[item.user_id] || 'Vendedor',
+          id: item.figurinhas?.id,
+          numero: item.figurinhas?.numero,
+          nome: item.figurinhas?.nome,
+          imagem: item.figurinhas?.imagem,
+          selecao_escuderia: item.figurinhas?.selecao_escuderia
+        })).filter(item => item.id);
+
+        allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+        
+        const colecoes = [...new Set(allData.map(i => i.selecao_escuderia).filter(Boolean))].sort();
+        const select = document.getElementById('filterColecao');
+        colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+        
+        renderizar(allData);
+
+      } catch (err) {
+        console.error("Erro ao carregar vitrine:", err);
         document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas.</p>`;
-        return;
       }
-
-      // Organiza os dados para facilitar a manipulação
-      allData = (data || []).map(item => ({
-        oferta_id: item.id,
-        preco: item.preco || 0,
-        quantidade: item.estoque || 0,
-        vendedorNome: item.vendedores_autorizados?.nome || 'Vendedor',
-        id: item.figurinhas?.id,
-        numero: item.figurinhas?.numero,
-        nome: item.figurinhas?.nome,
-        imagem: item.figurinhas?.imagem,
-        selecao_escuderia: item.figurinhas?.selecao_escuderia
-      })).filter(item => item.id);
-
-      // Ordena por número da figurinha
-      allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
-      
-      // Preencher o filtro de coleções dinamicamente
-      const colecoes = [...new Set(allData.map(i => i.selecao_escuderia).filter(Boolean))].sort();
-      const select = document.getElementById('filterColecao');
-      colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
-      
-      renderizar(allData);
     }
 
     function renderizar(lista) {
