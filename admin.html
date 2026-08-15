@@ -134,7 +134,7 @@
     .btn-submit:hover { background: #d97706; }
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* LISTA DE ITENS (ÁLBUNS E TIPOS) */
+    /* LISTA DE ITENS (ÁLBUNS, TIPOS E VENDEDORES) */
     .items-list {
       display: flex;
       gap: 0.5rem;
@@ -186,14 +186,39 @@
     </div>
 
     <h1>⚙️ Painel de Administração</h1>
-    <p class="subtitle">Gerencie álbuns, tipos de acabamento e adicione figurinhas ao catálogo</p>
+    <p class="subtitle">Gerencie álbuns, tipos de acabamento, vendedores autorizados e adicione figurinhas</p>
   </header>
 
   <div class="container">
 
-    <!-- CARD 1: CADASTRAR ÁLBUM -->
+    <!-- CARD 1: CADASTRAR VENDEDORES AUTORIZADOS -->
     <div class="card">
-      <h2>1. Cadastrar Novo Álbum</h2>
+      <h2>1. Gerenciar Vendedores Autorizados</h2>
+      <form id="formVendedor" onsubmit="cadastrarVendedor(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="emailVendedor">E-mail do Vendedor</label>
+            <input type="email" id="emailVendedor" placeholder="parceiro@email.com" required>
+            <small style="color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 4px;">
+              * O usuário também precisa estar cadastrado no Authentication do Supabase.
+            </small>
+          </div>
+          <div class="form-group" style="flex: 0; align-self: flex-end;">
+            <button type="submit" class="btn-submit" id="btnSalvarVendedor">Autorizar Vendedor</button>
+          </div>
+        </div>
+      </form>
+      <div id="msgVendedor" class="msg-feedback"></div>
+
+      <div style="margin-top: 1rem;">
+        <label>Vendedores com Acesso ao Estoque:</label>
+        <div class="items-list" id="listaVendedores">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- CARD 2: CADASTRAR ÁLBUM -->
+    <div class="card">
+      <h2>2. Cadastrar Novo Álbum</h2>
       <form id="formAlbum" onsubmit="cadastrarAlbum(event)">
         <div class="form-row">
           <div class="form-group">
@@ -213,9 +238,9 @@
       </div>
     </div>
 
-    <!-- CARD 2: CADASTRAR TIPO / ACABAMENTO -->
+    <!-- CARD 3: CADASTRAR TIPO / ACABAMENTO -->
     <div class="card">
-      <h2>2. Cadastrar Novo Tipo / Acabamento</h2>
+      <h2>3. Cadastrar Novo Tipo / Acabamento</h2>
       <form id="formTipo" onsubmit="cadastrarTipo(event)">
         <div class="form-row">
           <div class="form-group">
@@ -235,9 +260,9 @@
       </div>
     </div>
 
-    <!-- CARD 3: CADASTRAR FIGURINHA -->
+    <!-- CARD 4: CADASTRAR FIGURINHA -->
     <div class="card">
-      <h2>3. Cadastrar Nova Figurinha</h2>
+      <h2>4. Cadastrar Nova Figurinha</h2>
       <form id="formFigurinha" onsubmit="cadastrarFigurinha(event)">
         <div class="form-row">
           <div class="form-group">
@@ -325,7 +350,36 @@
       window.location.href = "login.html";
     }
 
-    // 📦 2. CARREGAMENTO DE ÁLBUNS
+    // 👥 2. CARREGAMENTO DE VENDEDORES AUTORIZADOS
+    async function carregarVendedores() {
+      const lista = document.getElementById('listaVendedores');
+
+      try {
+        const { data: vendedores, error } = await _supabase.from('vendedores_autorizados').select('*').order('email');
+        if (error) throw error;
+
+        lista.innerHTML = '';
+
+        if (!vendedores || vendedores.length === 0) {
+          lista.innerHTML = '<span style="color: #94a3b8; font-size: 0.85rem;">Nenhum vendedor autorizado.</span>';
+          return;
+        }
+
+        vendedores.forEach(v => {
+          lista.innerHTML += `
+            <div class="badge-item">
+              <span>${v.email}</span>
+              <button class="btn-del-item" onclick="deletarVendedor('${v.id}')" title="Revogar acesso">✕</button>
+            </div>
+          `;
+        });
+
+      } catch (err) {
+        console.error("Erro ao carregar vendedores:", err);
+      }
+    }
+
+    // 📦 3. CARREGAMENTO DE ÁLBUNS
     async function carregarAlbuns() {
       const select = document.getElementById('selectAlbum');
       const lista = document.getElementById('listaAlbuns');
@@ -357,7 +411,7 @@
       }
     }
 
-    // ✨ 3. CARREGAMENTO DE TIPOS / ACABAMENTOS (NOVO)
+    // ✨ 4. CARREGAMENTO DE TIPOS / ACABAMENTOS
     async function carregarTipos() {
       const select = document.getElementById('tipoFigurinha');
       const lista = document.getElementById('listaTipos');
@@ -389,7 +443,37 @@
       }
     }
 
-    // ➕ 4. CADASTRAR ÁLBUM
+    // ➕ 5. CADASTRAR VENDEDOR
+    async function cadastrarVendedor(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvarVendedor');
+      const msg = document.getElementById('msgVendedor');
+      const emailInput = document.getElementById('emailVendedor');
+
+      btn.disabled = true;
+      msg.style.display = 'none';
+
+      try {
+        const email = emailInput.value.trim().toLowerCase();
+        const { error } = await _supabase.from('vendedores_autorizados').insert([{ email: email }]);
+        if (error) throw error;
+
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Vendedor autorizado com sucesso!";
+        msg.style.display = "block";
+        emailInput.value = "";
+        await carregarVendedores();
+
+      } catch (err) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro ao autorizar vendedor: " + (err.message.includes('unique') ? 'Este e-mail já está autorizado.' : err.message);
+        msg.style.display = "block";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ➕ 6. CADASTRAR ÁLBUM
     async function cadastrarAlbum(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSalvarAlbum');
@@ -418,7 +502,7 @@
       }
     }
 
-    // ➕ 5. CADASTRAR TIPO (NOVO)
+    // ➕ 7. CADASTRAR TIPO
     async function cadastrarTipo(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSalvarTipo');
@@ -447,7 +531,18 @@
       }
     }
 
-    // ❌ 6. DELETAR ÁLBUM E TIPO
+    // ❌ 8. DELETAR REGISTROS
+    async function deletarVendedor(id) {
+      if (!confirm("Tem certeza que deseja revogar o acesso deste vendedor?")) return;
+      try {
+        const { error } = await _supabase.from('vendedores_autorizados').delete().eq('id', id);
+        if (error) throw error;
+        await carregarVendedores();
+      } catch (err) {
+        alert("Erro ao revogar acesso: " + err.message);
+      }
+    }
+
     async function deletarAlbum(id) {
       if (!confirm("Tem certeza que deseja excluir este álbum?")) return;
       try {
@@ -470,7 +565,7 @@
       }
     }
 
-    // 🃏 7. CADASTRAR FIGURINHA
+    // 🃏 9. CADASTRAR FIGURINHA
     async function cadastrarFigurinha(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSalvarFigurinha');
@@ -509,7 +604,8 @@
             .from('figurinhas')
             .getPublicUrl(fileName);
 
-          imagemFinal = urlData.publicUrl;
+          const novaUrl = urlData?.publicUrl;
+          if (novaUrl) imagemFinal = novaUrl;
         } 
         else if (urlExt !== "") {
           imagemFinal = urlExt;
@@ -552,6 +648,7 @@
     }
 
     // Inicializar carregamentos
+    carregarVendedores();
     carregarAlbuns();
     carregarTipos();
   </script>
