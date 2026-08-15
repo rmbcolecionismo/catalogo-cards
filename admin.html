@@ -336,14 +336,30 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 🔐 1. AUTENTICAÇÃO
-    async function verificarAutenticacao() {
+    // 🔐 1. AUTENTICAÇÃO E VERIFICAÇÃO MASTER
+    async function verificarAdminMaster() {
       const { data: { session } } = await _supabase.auth.getSession();
+      
       if (!session) {
         window.location.href = "login.html";
+        return false;
       }
+
+      // Verifica se o usuário está autorizado e se é admin master (is_admin === true)
+      const { data: autorizado, error } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', session.user.email)
+        .single();
+
+      if (error || !autorizado || autorizado.is_admin !== true) {
+        alert("Acesso negado: Apenas administradores master podem acessar o painel de cadastro.");
+        window.location.href = "estoque.html";
+        return false;
+      }
+
+      return true;
     }
-    verificarAutenticacao();
 
     async function fazerLogout() {
       await _supabase.auth.signOut();
@@ -368,7 +384,7 @@
         vendedores.forEach(v => {
           lista.innerHTML += `
             <div class="badge-item">
-              <span>${v.email}</span>
+              <span>${v.email} ${v.is_admin ? '(Master)' : ''}</span>
               <button class="btn-del-item" onclick="deletarVendedor('${v.id}')" title="Revogar acesso">✕</button>
             </div>
           `;
@@ -455,7 +471,7 @@
 
       try {
         const email = emailInput.value.trim().toLowerCase();
-        const { error } = await _supabase.from('vendedores_autorizados').insert([{ email: email }]);
+        const { error } = await _supabase.from('vendedores_autorizados').insert([{ email: email, is_admin: false }]);
         if (error) throw error;
 
         msg.className = "msg-feedback msg-success";
@@ -647,10 +663,17 @@
       }
     }
 
-    // Inicializar carregamentos
-    carregarVendedores();
-    carregarAlbuns();
-    carregarTipos();
+    // Inicialização protegida
+    async function inicializarAdmin() {
+      const autorizado = await verificarAdminMaster();
+      if (!autorizado) return;
+
+      carregarVendedores();
+      carregarAlbuns();
+      carregarTipos();
+    }
+
+    inicializarAdmin();
   </script>
 </body>
 </html>
