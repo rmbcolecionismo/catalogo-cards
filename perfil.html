@@ -135,7 +135,7 @@
   
   let usuarioLogado = null;
   let authUserId = null;
-  let perfilIdInt = null;
+  let perfilAlvoUuid = null;
   let isAdminOrMaster = false;
 
   async function verificarAcesso() {
@@ -153,28 +153,29 @@
     if (!perfilLogado) { window.location.replace("login.html"); return; }
 
     usuarioLogado = perfilLogado;
-    perfilIdInt = perfilLogado.id;
     isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
 
+    // Identifica se foi passado um parâmetro de ID na URL
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
 
-    let targetIdQuery = authUserId;
-    let targetIntQuery = perfilIdInt;
+    perfilAlvoUuid = authUserId; // Por padrão, usa o UUID do usuário logado
 
     if (idParam) {
-      // Verifica se o parâmetro é numérico ou UUID
       const isNumeric = !isNaN(idParam);
+      const queryCol = isNumeric ? 'id' : 'user_id';
+      
       const { data: perfilAlvo } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
-        .eq(isNumeric ? 'id' : 'user_id', idParam)
+        .eq(queryCol, idParam)
         .maybeSingle();
 
       if (perfilAlvo) {
-        targetIdQuery = perfilAlvo.user_id || authUserId;
-        targetIntQuery = perfilAlvo.id;
-        preencherDadosPerfil(perfilAlvo, false);
+        // Se encontrar o perfil alvo, pega o user_id (UUID) dele para buscar nas ofertas
+        perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
+        const ehProprio = (String(perfilAlvo.id) === String(perfilLogado.id) || perfilAlvo.user_id === authUserId);
+        preencherDadosPerfil(perfilAlvo, ehProprio);
       } else {
         preencherDadosPerfil(perfilLogado, true);
       }
@@ -186,7 +187,7 @@
       document.getElementById('adminLinks').style.display = 'block';
     }
 
-    carregarVitrine(targetIdQuery, targetIntQuery);
+    carregarVitrine(perfilAlvoUuid);
   }
 
   function preencherDadosPerfil(perfil, ehProprio) {
@@ -231,21 +232,14 @@
     edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
   }
 
-  async function carregarVitrine(uuidVal, intVal) {
+  async function carregarVitrine(uuidVal) {
     const grid = document.getElementById('vitrineGrid');
     
-    // Consulta tratada para evitar erro de tipo UUID caso o user_id seja numérico ou UUID
-    let query = _supabase.from('vitrine_ofertas').select('*');
-    
-    if (uuidVal && !isNaN(uuidVal)) {
-      query = query.eq('user_id', parseInt(uuidVal));
-    } else if (uuidVal) {
-      query = query.or(`user_id.eq.${uuidVal},user_id.eq.${intVal}`);
-    } else {
-      query = query.eq('user_id', intVal);
-    }
-
-    const { data: ofertas, error } = await query;
+    // Executa a busca segura utilizando estritamente o UUID correspondente
+    const { data: ofertas, error } = await _supabase
+      .from('vitrine_ofertas')
+      .select('*')
+      .eq('user_id', uuidVal);
 
     if (error) {
       console.error("Erro ao carregar vitrine:", error);
@@ -278,7 +272,8 @@
       const precoNum = item.preco || 0;
       const precoFormatado = Number(precoNum).toFixed(2).replace('.', ',');
 
-      const podeGerenciar = (String(item.user_id) === String(authUserId) || String(item.user_id) === String(perfilIdInt) || isAdminOrMaster);
+      // Permite gerenciar se for o dono da oferta ou um admin/master
+      const podeGerenciar = (String(item.user_id) === String(authUserId) || isAdminOrMaster);
 
       return `
         <div class="sticker-card">
