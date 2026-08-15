@@ -215,26 +215,6 @@
       padding: 2px;
     }
 
-    .btn-upload-label {
-      background: rgba(245, 158, 11, 0.2);
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 0.25rem 0.4rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.68rem;
-      font-weight: 600;
-      white-space: nowrap;
-      transition: all 0.2s;
-      text-align: center;
-      width: 100%;
-    }
-
-    .btn-upload-label:hover {
-      background: var(--gold);
-      color: #0f172a;
-    }
-
     /* INPUTS EDITÁVEIS DENTRO DA TABELA */
     .input-edit-num {
       width: 80px;
@@ -289,24 +269,6 @@
 
     .btn-save-row:hover {
       background: #059669;
-    }
-
-    .btn-delete-row {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #fca5a5;
-      padding: 0.5rem 0.7rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-delete-row:hover {
-      background: #ef4444;
-      color: white;
     }
 
     .badge-out {
@@ -434,7 +396,6 @@
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let listaTiposGlobal = [];
-    let imagensNovasCarregadas = {};
     let usuarioLogadoData = null;
 
     // Parâmetros de Paginação
@@ -445,55 +406,34 @@
 
     // --- AUTENTICAÇÃO E VERIFICAÇÃO DE PERMISSÃO ---
     async function verificarAutenticacao() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  
-  if (!session) {
-    window.location.href = "login.html";
-    return false;
-  }
+      const { data: { session } } = await _supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = "login.html";
+        return false;
+      }
 
-  // Busca os dados do usuário e a coluna 'is_admin' na tabela
-  const { data: autorizado, error } = await _supabase
-    .from('vendedores_autorizados')
-    .select('*')
-    .eq('email', session.user.email)
-    .single();
+      // Busca os dados do usuário e a coluna 'is_admin' na tabela
+      const { data: autorizado, error } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', session.user.email)
+        .single();
 
-  if (error || !autorizado) {
-    alert("Acesso negado: Você não tem autorização para gerenciar estoques.");
-    await _supabase.auth.signOut();
-    window.location.href = "index.html";
-    return false;
-  }
+      if (error || !autorizado) {
+        alert("Acesso negado: Você não tem autorização para gerenciar estoques.");
+        await _supabase.auth.signOut();
+        window.location.href = "index.html";
+        return false;
+      }
 
-  usuarioLogadoData = autorizado;
-
-  // SE FOR O ADMINISTRADOR MESTRE:
-  if (autorizado.is_admin === true) {
-    // Exibe o link para o painel administrativo no menu superior
-    const linkAdmin = document.getElementById('linkAdmin');
-    if (linkAdmin) linkAdmin.style.display = 'inline-block';
-    
-    // (Opcional) No estoque.html, se quiser que você (admin) possa editar tudo, 
-    // você pode remover os 'disabled' dos inputs ou manter restrito.
-  }
-
-  // Atualiza saudação e avatar no topo
-  const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
-  document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
-  
-  if (autorizado.avatar) {
-    document.getElementById('userAvatar').src = autorizado.avatar;
-  }
-
-  return true;
-}
       usuarioLogadoData = autorizado;
 
-      // Exibe link de administração se for admin (opcional, caso tenha flag ou email mestre)
-      // Se quiser liberar o admin.html apenas para você, pode ajustar aqui.
-      if (session.user.email === "seu-email-admin@gmail.com") {
-        document.getElementById('linkAdmin').style.display = 'inline-block';
+      // SE FOR O ADMINISTRADOR MESTRE:
+      if (autorizado.is_admin === true) {
+        // Exibe o link para o painel administrativo no menu superior
+        const linkAdmin = document.getElementById('linkAdmin');
+        if (linkAdmin) linkAdmin.style.display = 'inline-block';
       }
 
       // Atualiza saudação e avatar no topo
@@ -716,8 +656,6 @@
             <td>
               <div class="img-cell">
                 <img src="${imgUrl}" id="img-prev-${f.id}" class="img-preview" alt="${f.nome}" onerror="this.src='${IMAGEM_PADRAO}'">
-                <!-- Foto desabilitada para alteração do usuário vitrine (somente admin) -->
-                <!-- <label for="file-input-${f.id}" class="btn-upload-label" style="opacity: 0.5; pointer-events: none;">Trocar Foto</label> -->
               </div>
             </td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
@@ -776,7 +714,6 @@
       btnSave.innerText = "Salvando...";
       btnSave.style.opacity = "0.7";
 
-      // O usuário vitrine só altera preço e estoque
       const payload = {
         preco: novoPreco,
         estoque: novoEstoque
