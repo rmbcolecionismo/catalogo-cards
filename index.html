@@ -125,8 +125,22 @@
 
     async function init() {
       try {
-        // Busca as ofertas ativas na vitrine trazendo os dados da figurinha e do vendedor correspondente
-        const { data, error } = await _supabase
+        // 1. Busca todos os vendedores cadastrados para montar um dicionário seguro (id -> nome)
+        const { data: vendedores, error: errVend } = await _supabase
+          .from('vendedores_autorizados')
+          .select('id, nome');
+
+        if (errVend) console.warn("Aviso ao buscar vendedores:", errVend);
+
+        const vendedoresMap = {};
+        if (vendedores) {
+          vendedores.forEach(v => {
+            vendedoresMap[v.id] = v.nome;
+          });
+        }
+
+        // 2. Busca apenas as ofertas e as figurinhas relacionadas (sem dependência de chave estrangeira direta na query)
+        const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
           .select(`
             id,
@@ -139,23 +153,19 @@
               nome,
               imagem,
               selecao_escuderia
-            ),
-            vendedores_autorizados (
-              id,
-              nome
             )
           `)
           .gt('estoque', 0);
 
-        if (error) throw error;
+        if (errOfertas) throw errOfertas;
 
-        // Mapeia os dados utilizando diretamente os dados retornados da relação do banco
-        allData = (data || []).map(item => ({
+        // 3. Cruzamento seguro dos dados por JavaScript
+        allData = (ofertas || []).map(item => ({
           oferta_id: item.id,
           preco: item.preco || 0,
           quantidade: item.estoque || 0,
-          vendedorId: item.vendedores_autorizados?.id || item.user_id,
-          vendedorNome: item.vendedores_autorizados?.nome || 'Vendedor Independente',
+          vendedorId: item.user_id,
+          vendedorNome: vendedoresMap[item.user_id] || 'Vendedor Independente',
           id: item.figurinhas?.id,
           numero: item.figurinhas?.numero,
           nome: item.figurinhas?.nome,
@@ -172,8 +182,8 @@
         renderizar(allData);
 
       } catch (err) {
-        console.error("Erro ao carregar vitrine:", err);
-        document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas. Verifique o console.</p>`;
+        console.error("Erro detalhado ao carregar vitrine:", err);
+        document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas. Verifique o console do navegador.</p>`;
       }
     }
 
