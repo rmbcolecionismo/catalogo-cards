@@ -31,16 +31,19 @@
       <button class="btn-gold" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
     </div>
 
-    <div id="viewMode" style="margin-top:20px;">
-      <h3 id="userName" style="text-align:center">Carregando...</h3>
+    <div id="viewMode" style="margin-top:20px; text-align: center;">
+      <h3 id="userName">Carregando...</h3>
       <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
       <button onclick="toggleEdit()">Editar Perfil</button>
     </div>
 
     <div id="editMode" style="display:none; margin-top:20px;">
-      <input type="text" id="editNome" class="edit-field" placeholder="Nome">
-      <input type="text" id="editCidade" class="edit-field" placeholder="Cidade">
-      <input type="text" id="editMorada" class="edit-field" placeholder="Morada">
+      <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
+      <input type="text" id="editNome" class="edit-field" placeholder="Seu Nome">
+      
+      <label style="font-size: 0.75rem; color: var(--gold);">Cidade:</label>
+      <input type="text" id="editCidade" class="edit-field" placeholder="Sua Cidade">
+      
       <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
       <button onclick="toggleEdit()" style="background:transparent; border:1px solid white">Cancelar</button>
     </div>
@@ -81,15 +84,15 @@
       usuarioLogado = perfil;
       document.getElementById('userName').innerText = perfil.nome || "Usuário";
       document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
+      
+      // Exibe apenas Nome e Cidade em destaque
       document.getElementById('profileDetails').innerHTML = `
-        <p><strong>Cidade:</strong> ${perfil.cidade || 'N/A'}</p>
-        <p><strong>Morada:</strong> ${perfil.morada || 'N/A'}</p>
+        <p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>
       `;
       
-      // Preencher campos de edição
+      // Preencher campos de edição (apenas nome e cidade)
       document.getElementById('editNome').value = perfil.nome || '';
       document.getElementById('editCidade').value = perfil.cidade || '';
-      document.getElementById('editMorada').value = perfil.morada || '';
 
       // Mostrar links admin se for master/admin
       if (perfil.funcao === 'admin' || perfil.funcao === 'master') {
@@ -102,6 +105,7 @@
 
   async function uploadAvatar(event) {
     const file = event.target.files[0];
+    if (!file) return;
     const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
     const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
     
@@ -115,11 +119,16 @@
   async function salvarPerfil() {
     const updates = {
       nome: document.getElementById('editNome').value,
-      cidade: document.getElementById('editCidade').value,
-      morada: document.getElementById('editMorada').value
+      cidade: document.getElementById('editCidade').value
     };
-    await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
-    location.reload();
+    
+    const { error } = await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
+    
+    if (error) {
+      alert("Erro ao atualizar perfil: " + error.message);
+    } else {
+      location.reload();
+    }
   }
 
   function toggleEdit() {
