@@ -441,11 +441,10 @@
       renderizarTabela(figurinhasGlobal);
     }
 
-    function renderizarTabela(lista) {
+   function renderizarTabela(lista) {
       const tbody = document.getElementById('stockTableBody');
       tbody.innerHTML = '';
 
-      // MODIFICAÇÃO: Verifica se é admin para liberar ou bloquear edição
       const isAdmin = usuarioLogadoData && usuarioLogadoData.is_admin === true;
       const desabilitar = isAdmin ? '' : 'disabled';
 
@@ -474,10 +473,10 @@
           <tr>
             <td><div class="img-cell"><img src="${imgUrl}" class="img-preview"></div></td>
             <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
-            <td><input type="text" class="input-edit-num" value="${f.numero || ''}" ${desabilitar}></td>
-            <td><input type="text" class="input-edit-nome" value="${f.nome || ''}" ${desabilitar}></td>
-            <td><input type="text" class="input-edit-team" value="${selecaoVal}" ${desabilitar}></td>
-            <td><select class="select-edit-tipo" ${desabilitar}>${optionsTipo}</select></td>
+            <td><input type="text" id="input-num-${f.id}" class="input-edit-num" value="${f.numero || ''}" ${desabilitar}></td>
+            <td><input type="text" id="input-nome-${f.id}" class="input-edit-nome" value="${f.nome || ''}" ${desabilitar}></td>
+            <td><input type="text" id="input-team-${f.id}" class="input-edit-team" value="${selecaoVal}" ${desabilitar}></td>
+            <td><select id="select-tipo-${f.id}" class="select-edit-tipo" ${desabilitar}>${optionsTipo}</select></td>
             <td><input type="number" step="0.01" class="input-edit-preco" id="input-preco-${f.id}" value="${f.preco ?? 0}"></td>
             <td>${statusBadge}</td>
             <td><input type="number" class="input-edit-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0"></td>
@@ -488,21 +487,35 @@
     }
 
     async function salvarAlteracoes(id) {
+      const isAdmin = usuarioLogadoData && usuarioLogadoData.is_admin === true;
+      
+      // Captura os valores (Preço e Estoque são sempre editáveis)
       const inputPreco = document.getElementById(`input-preco-${id}`);
       const inputStock = document.getElementById(`input-stock-${id}`);
       const btnSave = document.getElementById(`btn-save-${id}`);
 
-      const novoPreco = parseFloat(inputPreco.value);
-      const novoEstoque = parseInt(inputStock.value);
+      const payload = {
+        preco: parseFloat(inputPreco.value),
+        estoque: parseInt(inputStock.value)
+      };
+
+      // SE FOR ADMIN, captura também os campos de texto para salvar no banco
+      if (isAdmin) {
+        payload.numero = document.getElementById(`input-num-${id}`).value;
+        payload.nome = document.getElementById(`input-nome-${id}`).value;
+        payload.selecao_escuderia = document.getElementById(`input-team-${id}`).value;
+        payload.tipo = document.getElementById(`select-tipo-${id}`).value;
+      }
 
       btnSave.innerText = "Salvando...";
       try {
-        const { error } = await _supabase.from('figurinhas').update({ preco: novoPreco, estoque: novoEstoque }).eq('id', id);
+        const { error } = await _supabase.from('figurinhas').update(payload).eq('id', id);
         if (error) throw error;
+        
         btnSave.innerText = "Salvo! ✓";
         setTimeout(() => btnSave.innerText = "Salvar", 1200);
       } catch (err) {
-        alert("Erro ao salvar.");
+        alert("Erro ao salvar: " + err.message);
         btnSave.innerText = "Salvar";
       }
     }
