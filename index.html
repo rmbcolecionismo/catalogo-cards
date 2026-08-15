@@ -55,18 +55,21 @@
     .filter-select:focus { border-color: var(--gold); }
 
     .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.25rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
 
     .sticker-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #0f172a; display: flex; flex-direction: column; transition: 0.3s; }
     .sticker-card:hover { transform: translateY(-3px); }
-    .sticker-img-wrap { height: 180px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
+    .sticker-img-wrap { height: 160px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
-    .sticker-info { padding: 10px; flex: 1; display: flex; flex-direction: column; }
-    .colecao-label { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-    .vendedor-label { font-size: 0.7rem; color: #2563eb; font-weight: 700; margin-top: 2px; }
-    .sticker-title { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
-    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
-    .sticker-qtd { font-size: 0.75rem; color: #64748b; margin-bottom: 5px; font-weight: 600; }
+    
+    .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .card-row { font-size: 0.75rem; color: #475569; }
+    .card-row span { font-weight: 700; color: #0f172a; }
+    
+    .vendedor-label { font-size: 0.75rem; color: #2563eb; font-weight: 700; margin-bottom: 2px; }
+    .sticker-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 2px 0; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 4px 0; }
+    .sticker-qtd { font-size: 0.75rem; color: #64748b; font-weight: 600; }
     
     .btn-vendedor { 
       background: #2563eb; 
@@ -105,9 +108,9 @@
 
   <div class="container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="🔍 Buscar figurinha por nome ou número..." class="filter-select" oninput="filtrar()">
+      <input type="text" id="search" placeholder="🔍 Buscar figurinha por nome, código ou álbum..." class="filter-select" oninput="filtrar()">
       <select id="filterColecao" class="filter-select" onchange="filtrar()">
-        <option value="">Todas as Coleções</option>
+        <option value="">Todas as Seleções</option>
       </select>
     </div>
 
@@ -125,7 +128,7 @@
 
     async function init() {
       try {
-        // 1. Busca todos os vendedores cadastrados para montar um dicionário seguro (id -> nome)
+        // 1. Busca os vendedores autorizados
         const { data: vendedores, error: errVend } = await _supabase
           .from('vendedores_autorizados')
           .select('id, nome');
@@ -139,7 +142,7 @@
           });
         }
 
-        // 2. Busca apenas as ofertas e as figurinhas relacionadas (sem dependência de chave estrangeira direta na query)
+        // 2. Busca as ofertas ativas com os dados da tabela de figurinhas
         const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
           .select(`
@@ -152,14 +155,16 @@
               numero,
               nome,
               imagem,
-              selecao_escuderia
+              selecao_escuderia,
+              album,
+              tipo
             )
           `)
           .gt('estoque', 0);
 
         if (errOfertas) throw errOfertas;
 
-        // 3. Cruzamento seguro dos dados por JavaScript
+        // 3. Mapeia os dados organizando todas as propriedades solicitadas
         allData = (ofertas || []).map(item => ({
           oferta_id: item.id,
           preco: item.preco || 0,
@@ -170,7 +175,9 @@
           numero: item.figurinhas?.numero,
           nome: item.figurinhas?.nome,
           imagem: item.figurinhas?.imagem,
-          selecao_escuderia: item.figurinhas?.selecao_escuderia
+          selecao_escuderia: item.figurinhas?.selecao_escuderia,
+          album: item.figurinhas?.album || 'N/A',
+          tipo: item.figurinhas?.tipo || 'N/A'
         })).filter(item => item.id);
 
         allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
@@ -204,10 +211,13 @@
               <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="${f.nome}">
             </div>
             <div class="sticker-info">
-              <div class="colecao-label">${f.selecao_escuderia || 'Coleção'}</div>
               <div class="vendedor-label">👤 ${f.vendedorNome}</div>
-              <div class="sticker-title">Nº ${f.numero} - ${f.nome || 'Sem Nome'}</div>
-              <div class="sticker-qtd">Disponível: ${f.quantidade}</div>
+              <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
+              <div class="card-row">Código: <span>${f.numero}</span></div>
+              <div class="card-row">Seleção: <span>${f.selecao_escuderia || 'N/A'}</span></div>
+              <div class="card-row">Álbum: <span>${f.album}</span></div>
+              <div class="card-row">Tipo: <span>${f.tipo}</span></div>
+              <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${f.quantidade}</div>
               <div class="sticker-price">€ ${precoFormatado}</div>
               <a href="perfil.html?id=${f.vendedorId}" class="btn-vendedor">Ver Vendedor ➔</a>
             </div>
@@ -221,7 +231,10 @@
       const col = document.getElementById('filterColecao').value;
       
       const filtrado = allData.filter(i => {
-        const matchBusca = !busca || String(i.numero).includes(busca) || (i.nome && i.nome.toLowerCase().includes(busca));
+        const matchBusca = !busca || 
+          String(i.numero).includes(busca) || 
+          (i.nome && i.nome.toLowerCase().includes(busca)) ||
+          (i.album && i.album.toLowerCase().includes(busca));
         const matchCol = !col || i.selecao_escuderia === col;
         return matchBusca && matchCol;
       });
