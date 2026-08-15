@@ -7,248 +7,28 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --gold: #f59e0b;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    }
-
+    :root { --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-
-    body {
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      color: white;
-      padding: 1rem;
-    }
-
-    header {
-      max-width: 1300px;
-      margin: 0 auto 1.5rem;
-    }
-
-    .top-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-    }
-
-    .top-nav a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-right: 15px;
-      transition: color 0.2s;
-    }
-
-    .top-nav a:hover {
-      color: var(--gold);
-    }
-
-    .user-profile-top {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.4rem 0.8rem;
-      border-radius: 30px;
-    }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--gold);
-      background: #0f172a;
-    }
-
-    .user-greeting {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    .btn-logout {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #fca5a5;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .btn-logout:hover {
-      background: #ef4444;
-      color: white;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--gold);
-    }
-
-    p.subtitle {
-      color: #94a3b8;
-      font-size: 0.85rem;
-    }
-
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-    }
-
-    .controls-panel {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .filter-group {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .filter-group label {
-      display: block;
-      font-size: 0.75rem;
-      color: #cbd5e1;
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 0.65rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: #0f172a;
-      color: white;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--gold);
-    }
-
-    .table-container {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      overflow-x: auto;
-      margin-bottom: 1.5rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.85rem;
-    }
-
-    th {
-      background: rgba(15, 23, 42, 0.8);
-      color: var(--gold);
-      padding: 0.8rem 0.8rem;
-      font-weight: 700;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 0.6rem 0.8rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
-    }
-
-    tr:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .img-cell {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .img-preview {
-      width: 45px;
-      height: 55px;
-      object-fit: contain;
-      background: #0f172a;
-      border-radius: 4px;
-      padding: 2px;
-    }
-
-    .input-edit-num { width: 80px; text-align: center; font-weight: 700; }
-    .input-edit-nome { width: 100%; min-width: 130px; }
-    .input-edit-team { width: 100%; min-width: 110px; }
-    .select-edit-tipo { min-width: 120px; font-size: 0.8rem; }
-    .input-edit-preco { width: 80px; text-align: right; }
-    .input-edit-stock { width: 70px; text-align: center; font-weight: 700; }
-
-    .actions-cell {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .btn-save-row {
-      background: #10b981;
-      color: white;
-      border: none;
-      padding: 0.5rem 0.8rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.8rem;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-save-row:hover { background: #059669; }
-
-    .badge-out { background: #ef4444; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-    .badge-ok { background: #10b981; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-
-    .load-more-container { text-align: center; margin-bottom: 2rem; }
-
-    .btn-load-more {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 0.75rem 2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-
-    .btn-load-more:hover { background: var(--gold); color: #0f172a; }
-    .btn-load-more:disabled { opacity: 0.5; cursor: not-allowed; }
+    body { background: var(--bg-gradient); min-height: 100vh; color: white; padding: 1rem; }
+    header { max-width: 1300px; margin: 0 auto 1.5rem; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-right: 15px; }
+    .top-nav a:hover { color: var(--gold); }
+    .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 30px; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+    .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+    h1 { font-size: 1.8rem; color: var(--gold); }
+    .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .filter-group { flex: 1; min-width: 200px; }
+    input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; }
+    .table-container { background: rgba(30, 41, 59, 0.7); border-radius: 12px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { background: rgba(15, 23, 42, 0.8); color: var(--gold); padding: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .img-preview { width: 45px; height: 55px; object-fit: contain; background: #0f172a; }
+    .btn-save-row { background: #10b981; color: white; border: none; padding: 0.5rem 0.8rem; border-radius: 6px; cursor: pointer; }
+    .load-more-container { text-align: center; margin-top: 1.5rem; }
+    .btn-load-more { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -260,266 +40,119 @@
         <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
         <a href="estoque.html" style="color: var(--gold);">📦 Estoque</a>
       </div>
-      
       <div class="user-profile-top">
-        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" alt="Avatar" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-        <span class="user-greeting" id="userGreeting">Olá, Carregando...</span>
+        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
+        <span id="userGreeting">Olá, Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
-
-    <h1>📦 Gerenciador de Estoque & Edição</h1>
-    <p class="subtitle">Ajuste o preço e a quantidade do seu estoque personalizado</p>
+    <h1>📦 Gerenciador de Estoque</h1>
   </header>
 
   <div class="container">
-    
     <div class="controls-panel">
       <div class="filter-group">
-        <label for="filterAlbum">Filtrar por Álbum:</label>
-        <select id="filterAlbum" onchange="mudarFiltroAlbum()">
+        <label>Filtrar por Álbum:</label>
+        <select id="filterAlbum" onchange="aplicarFiltros()">
           <option value="todos">Todos os Álbuns</option>
         </select>
       </div>
-
       <div class="filter-group">
-        <label for="search">Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Digite o número, nome, seleção..." oninput="filtrarPorTexto()">
+        <label>Buscar Figurinha:</label>
+        <input type="text" id="search" placeholder="🔍 Ex: #10, Messi, Brasil...">
       </div>
     </div>
 
     <div class="table-container">
       <table>
         <thead>
-          <tr>
-            <th>Foto</th>
-            <th>Álbum</th>
-            <th>Nº / Código</th>
-            <th>Nome do Jogador / Item</th>
-            <th>Seleção / Escuderia</th>
-            <th>Tipo</th>
-            <th>Preço (€)</th>
-            <th>Status</th>
-            <th>Qtd. Estoque</th>
-            <th>Ações</th>
-          </tr>
+          <tr><th>Foto</th><th>Álbum</th><th>Nº</th><th>Nome</th><th>Seleção</th><th>Preço</th><th>Status</th><th>Qtd</th><th>Ações</th></tr>
         </thead>
-        <tbody id="stockTableBody">
-          <tr>
-            <td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Carregando dados...</td>
-          </tr>
-        </tbody>
+        <tbody id="stockTableBody"></tbody>
       </table>
     </div>
 
     <div class="load-more-container" id="loadMoreContainer" style="display: none;">
-      <button class="btn-load-more" id="btnLoadMore" onclick="carregarMaisFigurinhas()">Carregar mais 50 figurinhas</button>
+      <button class="btn-load-more" onclick="carregarMaisFigurinhas()">Carregar mais 50 itens</button>
     </div>
-
   </div>
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const IMAGEM_PADRAO = "https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg";
-
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+    const ITENS_POR_PAGINA = 50;
+    
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
-    let listaTiposGlobal = [];
+    let paginaAtual = 0;
     let usuarioLogadoData = null;
 
-    const ITENS_POR_PAGINA = 50;
-    let paginaAtual = 0;
-    let temMaisDados = true;
-    let modoBuscaAtivo = false;
+    async function aplicarFiltros() {
+      paginaAtual = 0;
+      figurinhasGlobal = [];
+      const albumId = document.getElementById('filterAlbum').value;
+      const termo = document.getElementById('search').value.trim().replace('#', '');
 
-    async function verificarAutenticacao() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      
-      if (!session) {
-        window.location.href = "login.html";
-        return false;
-      }
+      let query = _supabase.from('figurinhas').select('*', { count: 'exact' }).order('numero', { ascending: true });
+      if (albumId !== 'todos') query = query.eq('album_id', albumId);
+      if (termo !== "") query = query.or(`numero.ilike.%${termo}%,nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
 
-      const { data: autorizado, error } = await _supabase
-        .from('vendedores_autorizados')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
-
-      if (error || !autorizado) {
-        alert("Acesso negado.");
-        await _supabase.auth.signOut();
-        window.location.href = "login.html";
-        return false;
-      }
-
-      usuarioLogadoData = autorizado;
-
-      // MODIFICAÇÃO: Ocultar ou mostrar o link de cadastro com base no is_admin
-      const linkAdmin = document.getElementById('linkAdmin');
-      if (autorizado.is_admin === true) {
-        linkAdmin.style.display = 'inline-block';
-      } else {
-        linkAdmin.style.display = 'none';
-      }
-
-      const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
-      document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
-      
-      if (autorizado.avatar) {
-        document.getElementById('userAvatar').src = autorizado.avatar;
-      }
-
-      return true;
+      const { data } = await query.range(0, ITENS_POR_PAGINA - 1);
+      figurinhasGlobal = data || [];
+      renderizarTabela(figurinhasGlobal);
+      document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
     }
 
-    async function fazerLogout() {
-      await _supabase.auth.signOut();
-      window.location.href = "login.html";
+    let timeoutBusca;
+    document.getElementById('search').addEventListener('input', () => {
+      clearTimeout(timeoutBusca);
+      timeoutBusca = setTimeout(aplicarFiltros, 500);
+    });
+
+    async function carregarMaisFigurinhas() {
+      paginaAtual++;
+      const inicio = paginaAtual * ITENS_POR_PAGINA;
+      const albumId = document.getElementById('filterAlbum').value;
+      const termo = document.getElementById('search').value.trim().replace('#', '');
+
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      if (albumId !== 'todos') query = query.eq('album_id', albumId);
+      if (termo !== "") query = query.or(`numero.ilike.%${termo}%,nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+
+      const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
+      if (data) {
+        figurinhasGlobal = figurinhasGlobal.concat(data);
+        renderizarTabela(figurinhasGlobal);
+        document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
+      }
+    }
+
+    function renderizarTabela(lista) {
+      const tbody = document.getElementById('stockTableBody');
+      tbody.innerHTML = lista.map(f => `<tr>
+        <td><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="img-preview"></td>
+        <td>${mapaAlbuns[f.album_id] || '-'}</td>
+        <td><input type="text" value="${f.numero || ''}" style="width:50px"></td>
+        <td><input type="text" value="${f.nome || ''}"></td>
+        <td><input type="text" value="${f.selecao_escuderia || ''}"></td>
+        <td><input type="number" value="${f.preco ?? 0}" style="width:60px"></td>
+        <td>${(f.estoque ?? 0) > 0 ? '<span style="color:#10b981">Disponível</span>' : '<span style="color:#ef4444">Esgotado</span>'}</td>
+        <td><input type="number" value="${f.estoque ?? 0}" style="width:50px"></td>
+        <td><button class="btn-save-row" onclick="salvar(${f.id})">Salvar</button></td>
+      </tr>`).join('');
     }
 
     async function init() {
-      const acessoPermitido = await verificarAutenticacao();
-      if (!acessoPermitido) return;
-
-      try {
-        const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
-        const selectAlbum = document.getElementById('filterAlbum');
-
-        if (albuns && albuns.length > 0) {
-          albuns.forEach(a => {
-            mapaAlbuns[a.id] = a.nome;
-            selectAlbum.innerHTML += `<option value="${a.id}">${a.nome}</option>`;
-          });
-        }
-
-        const { data: tiposData, error: errorTipos } = await _supabase
-          .from('tipos')
-          .select('*')
-          .order('nome', { ascending: true });
-
-        if (!errorTipos && tiposData && tiposData.length > 0) {
-          listaTiposGlobal = tiposData.map(t => typeof t === 'string' ? t : (t.nome || t.tipo || t.title));
-        } else {
-          listaTiposGlobal = ['Base', 'Brilhante', 'Holográfica', 'Especial', 'Lenda', 'Golden Baller'];
-        }
-
-        await carregarMaisFigurinhas(true);
-
-      } catch (err) {
-        document.getElementById('stockTableBody').innerHTML = `<tr><td colspan="10" style="text-align: center; color: #ef4444; padding: 2rem;">Erro ao carregar dados.</td></tr>`;
-      }
-    }
-
-    async function carregarMaisFigurinhas(resetar = false) {
-      if (resetar) {
-        paginaAtual = 0;
-        figurinhasGlobal = [];
-        temMaisDados = true;
-      }
-
-      if (!temMaisDados || modoBuscaAtivo) return;
-
-      const inicio = paginaAtual * ITENS_POR_PAGINA;
-      const fim = inicio + ITENS_POR_PAGINA - 1;
-      const albumId = document.getElementById('filterAlbum').value;
-
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true }).range(inicio, fim);
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-
-      const { data } = await query;
-      if (data && data.length > 0) {
-        figurinhasGlobal = figurinhasGlobal.concat(data);
-        paginaAtual++;
-        if (data.length < ITENS_POR_PAGINA) temMaisDados = false;
-      } else {
-        temMaisDados = false;
-      }
-      renderizarTabela(figurinhasGlobal);
-    }
-
-   function renderizarTabela(lista) {
-      const tbody = document.getElementById('stockTableBody');
-      tbody.innerHTML = '';
-
-      const isAdmin = usuarioLogadoData && usuarioLogadoData.is_admin === true;
-      const desabilitar = isAdmin ? '' : 'disabled';
-
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Nenhuma figurinha encontrada.</td></tr>`;
-        return;
-      }
-
-      lista.forEach(f => {
-        const nomeAlbum = mapaAlbuns[f.album_id] || 'Coleção';
-        const qtdEstoque = f.estoque ?? 0;
-        const statusBadge = qtdEstoque > 0 ? `<span class="badge-ok">Disponível</span>` : `<span class="badge-out">Esgotado</span>`;
-        const imgUrl = f.imagem || IMAGEM_PADRAO;
-        const selecaoVal = f.selecao_escuderia || f.team || '';
-        const tipoVal = f.tipo || f.type || 'Base';
-
-        let todosOsTipos = [...listaTiposGlobal];
-        if (tipoVal && !todosOsTipos.includes(tipoVal)) { todosOsTipos.unshift(tipoVal); }
-
-        const optionsTipo = todosOsTipos.map(t => {
-          const selected = String(t).toLowerCase() === String(tipoVal).toLowerCase() ? 'selected' : '';
-          return `<option value="${t}" ${selected}>${t}</option>`;
-        }).join('');
-
-        tbody.innerHTML += `
-          <tr>
-            <td><div class="img-cell"><img src="${imgUrl}" class="img-preview"></div></td>
-            <td style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">${nomeAlbum}</td>
-            <td><input type="text" id="input-num-${f.id}" class="input-edit-num" value="${f.numero || ''}" ${desabilitar}></td>
-            <td><input type="text" id="input-nome-${f.id}" class="input-edit-nome" value="${f.nome || ''}" ${desabilitar}></td>
-            <td><input type="text" id="input-team-${f.id}" class="input-edit-team" value="${selecaoVal}" ${desabilitar}></td>
-            <td><select id="select-tipo-${f.id}" class="select-edit-tipo" ${desabilitar}>${optionsTipo}</select></td>
-            <td><input type="number" step="0.01" class="input-edit-preco" id="input-preco-${f.id}" value="${f.preco ?? 0}"></td>
-            <td>${statusBadge}</td>
-            <td><input type="number" class="input-edit-stock" id="input-stock-${f.id}" value="${qtdEstoque}" min="0"></td>
-            <td><button class="btn-save-row" id="btn-save-${f.id}" onclick="salvarAlteracoes(${f.id})">Salvar</button></td>
-          </tr>
-        `;
-      });
-    }
-
-    async function salvarAlteracoes(id) {
-      const isAdmin = usuarioLogadoData && usuarioLogadoData.is_admin === true;
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) return window.location.href = "login.html";
       
-      // Captura os valores (Preço e Estoque são sempre editáveis)
-      const inputPreco = document.getElementById(`input-preco-${id}`);
-      const inputStock = document.getElementById(`input-stock-${id}`);
-      const btnSave = document.getElementById(`btn-save-${id}`);
-
-      const payload = {
-        preco: parseFloat(inputPreco.value),
-        estoque: parseInt(inputStock.value)
-      };
-
-      // SE FOR ADMIN, captura também os campos de texto para salvar no banco
-      if (isAdmin) {
-        payload.numero = document.getElementById(`input-num-${id}`).value;
-        payload.nome = document.getElementById(`input-nome-${id}`).value;
-        payload.selecao_escuderia = document.getElementById(`input-team-${id}`).value;
-        payload.tipo = document.getElementById(`select-tipo-${id}`).value;
-      }
-
-      btnSave.innerText = "Salvando...";
-      try {
-        const { error } = await _supabase.from('figurinhas').update(payload).eq('id', id);
-        if (error) throw error;
-        
-        btnSave.innerText = "Salvo! ✓";
-        setTimeout(() => btnSave.innerText = "Salvar", 1200);
-      } catch (err) {
-        alert("Erro ao salvar: " + err.message);
-        btnSave.innerText = "Salvar";
-      }
+      const { data: albuns } = await _supabase.from('albuns').select('*');
+      albuns?.forEach(a => { mapaAlbuns[a.id] = a.nome; document.getElementById('filterAlbum').innerHTML += `<option value="${a.id}">${a.nome}</option>`; });
+      aplicarFiltros();
     }
 
+    async function fazerLogout() { await _supabase.auth.signOut(); window.location.href = "login.html"; }
     init();
   </script>
 </body>
