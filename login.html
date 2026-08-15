@@ -112,7 +112,7 @@
 
   <div class="login-card">
     <h2>🔐 Acesso Restrito</h2>
-    <p>Entre com suas credenciais do Supabase para acessar o painel</p>
+    <p>Entre com suas credenciais para acessar o painel</p>
 
     <form id="loginForm" onsubmit="realizarLogin(event)">
       <div class="form-group">
@@ -139,9 +139,13 @@
 
     // Se já estiver logado, valida o direcionamento automaticamente
     async function checarSessaoExistente() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (session) {
-        await redirecionarConformePermissao(session.user.email);
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session && session.user) {
+          await redirecionarConformePermissao(session.user.email);
+        }
+      } catch (err) {
+        console.error("Erro ao checar sessão:", err);
       }
     }
     checarSessaoExistente();
@@ -162,7 +166,7 @@
 
         if (error) throw error;
 
-        // Redireciona de acordo com o perfil (Admin ou Vendedor)
+        // Redireciona de acordo com o perfil
         await redirecionarConformePermissao(email);
 
       } catch (err) {
@@ -174,12 +178,12 @@
     }
 
     async function redirecionarConformePermissao(email) {
-      // Verifica se o e-mail está na tabela de vendedores autorizados
-      const { data: autorizado } = await _supabase
+      // Usamos .maybeSingle() em vez de .single() para evitar erros caso o e-mail não esteja na tabela
+      const { data: autorizado, error } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       if (autorizado) {
         // Vendedor parceiro vai para o estoque gerenciar os preços dele
