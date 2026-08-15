@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manutenção de Estoque - Administrador Master</title>
+  <title>Minha Vitrine - Álbum Digital</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -18,18 +18,25 @@
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
     .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
     h1 { font-size: 1.8rem; color: var(--gold); }
+    
+    .container { max-width: 1300px; margin: 0 auto; }
     .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
     input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
     input:focus, select:focus { border-color: var(--gold); }
-    .table-container { background: rgba(30, 41, 59, 0.7); border-radius: 12px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th { background: rgba(15, 23, 42, 0.8); color: var(--gold); padding: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; }
-    td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
-    .img-preview { width: 45px; height: 55px; object-fit: contain; background: #0f172a; border-radius: 4px; }
-    .btn-save-row { background: #10b981; color: white; border: none; padding: 0.5rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    .btn-save-row:hover { background: #059669; }
-    .load-more-container { text-align: center; margin-top: 1.5rem; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; }
+    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
+    .card-title { font-size: 0.9rem; font-weight: 600; }
+    .card-subtitle { font-size: 0.75rem; color: #94a3b8; }
+    .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .input-wrapper { flex: 1; text-align: left; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); }
+    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
+    
+    .load-more-container { text-align: center; margin: 2rem 0; }
     .btn-load-more { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
   </style>
 </head>
@@ -39,17 +46,20 @@
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
-        <a href="admin.html" id="linkAdmin" style="display: none;">⚙️ Cadastrar</a>
-        <a href="vitrine.html">🛍️ Vitrine</a>
-        <a href="estoque.html" style="color: var(--gold);">📦 Manutenção Estoque</a>
+        <a href="perfil.html">👤 Meu Perfil</a>
+        <a href="vitrine.html" style="color: var(--gold);">🛍️ Vitrine</a>
+        <div id="adminLinks" style="display:inline; display:none;">
+          <a href="admin.html">⚙️ Painel Admin</a>
+          <a href="estoque.html">📊 Estoque</a>
+        </div>
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
-        <span id="userGreeting">Olá, Carregando...</span>
+        <span id="userGreeting">Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
-    <h1>📦 Manutenção Master de Estoque</h1>
+    <h1>🛍️ Gerenciar Minha Vitrine</h1>
   </header>
 
   <div class="container">
@@ -62,25 +72,16 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: #10, Messi, Brasil...">
+        <input type="text" id="search" placeholder="🔍 Ex: 10, Messi, Brasil...">
       </div>
     </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Foto</th><th>Álbum</th><th>Nº</th><th>Nome</th><th>Seleção</th><th>Preço</th><th>Status</th><th>Qtd</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="stockTableBody">
-          <tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Verificando permissões...</td></tr>
-        </tbody>
-      </table>
+    <div class="cards-grid" id="vitrineGrid">
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando figurinhas...</div>
     </div>
 
     <div class="load-more-container" id="loadMoreContainer" style="display: none;">
-      <button class="btn-load-more" onclick="carregarMaisFigurinhas()">Carregar mais 50 itens</button>
+      <button class="btn-load-more" onclick="carregarMaisFigurinhas()">Carregar mais 30 itens</button>
     </div>
   </div>
 
@@ -88,36 +89,44 @@
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 50;
-    
+    const ITENS_POR_PAGINA = 30;
+
+    let usuarioLogado = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
+    let meusPrecosQtd = {};
     let paginaAtual = 0;
 
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "login.html";
-        return null;
-      }
+      if (!session) { window.location.href = "login.html"; return null; }
 
-      // Busca dados do perfil do usuário logado
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
-        .select('nome, avatar, is_admin')
+        .select('*')
         .eq('email', session.user.email)
         .maybeSingle();
 
-      // RESTRIÇÃO MASTER: Se não for admin, expulsa da página de estoque de manutenção
-      if (!perfil || !perfil.is_admin) {
-        alert("Acesso negado! Esta página é restrita apenas ao Administrador Master.");
-        window.location.href = "vitrine.html";
-        return null;
+      if (!perfil) { window.location.href = "login.html"; return null; }
+
+      usuarioLogado = perfil;
+      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
+      if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
+      
+      if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
+        document.getElementById('adminLinks').style.display = 'inline';
       }
 
-      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || session.user.email.split('@')[0]}`;
-      if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
-      document.getElementById('linkAdmin').style.display = 'inline';
+      const { data: vitrineSalva } = await _supabase
+        .from('vitrine_ofertas')
+        .select('figurinha_id, preco, estoque')
+        .eq('user_id', perfil.id);
+
+      if (vitrineSalva) {
+        vitrineSalva.forEach(item => {
+          meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque };
+        });
+      }
 
       return session;
     }
@@ -128,34 +137,34 @@
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim().replace('#', '');
 
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       
       if (albumId !== 'todos') {
         query = query.eq('album_id', albumId);
       }
       if (termo !== "") {
         if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
         } else {
-          query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+          query = query.ilike('nome', `%${termo}%`);
         }
       }
 
       const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
       if (error) {
-        console.error("Erro ao filtrar:", error);
+        console.error("Erro ao buscar:", error);
         return;
       }
 
       figurinhasGlobal = data || [];
-      renderizarTabela(figurinhasGlobal);
+      renderizarCards(figurinhasGlobal);
       document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
     }
 
     let timeoutBusca;
     document.getElementById('search').addEventListener('input', () => {
       clearTimeout(timeoutBusca);
-      timeoutBusca = setTimeout(aplicarFiltros, 400);
+      timeoutBusca = setTimeout(aplicarFiltros, 300);
     });
 
     async function carregarMaisFigurinhas() {
@@ -164,68 +173,76 @@
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim().replace('#', '');
 
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       if (albumId !== 'todos') query = query.eq('album_id', albumId);
       if (termo !== "") {
         if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
         } else {
-          query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+          query = query.ilike('nome', `%${termo}%`);
         }
       }
 
       const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
       if (data && data.length > 0) {
         figurinhasGlobal = figurinhasGlobal.concat(data);
-        renderizarTabela(figurinhasGlobal);
+        renderizarCards(figurinhasGlobal);
         document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
       } else {
         document.getElementById('loadMoreContainer').style.display = 'none';
       }
     }
 
-    function renderizarTabela(lista) {
-      const tbody = document.getElementById('stockTableBody');
+    function renderizarCards(lista) {
+      const grid = document.getElementById('vitrineGrid');
       if (!lista || lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Nenhum item encontrado no estoque.</td></tr>`;
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Nenhuma figurinha encontrada.</div>`;
         return;
       }
 
-      tbody.innerHTML = lista.map(f => `
-        <tr id="row-${f.id}">
-          <td><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="img-preview"></td>
-          <td>${mapaAlbuns[f.album_id] || 'Geral'}</td>
-          <td><input type="text" id="num-${f.id}" value="${f.numero || ''}" style="width:50px"></td>
-          <td><input type="text" id="nome-${f.id}" value="${f.nome || ''}"></td>
-          <td><input type="text" id="sel-${f.id}" value="${f.selecao_escuderia || ''}"></td>
-          <td><input type="number" id="preco-${f.id}" value="${f.preco ?? 0}" step="0.01" style="width:70px"></td>
-          <td>${(f.estoque ?? 0) > 0 ? '<span style="color:#10b981; font-weight:600;">Disponível</span>' : '<span style="color:#ef4444; font-weight:600;">Esgotado</span>'}</td>
-          <td><input type="number" id="est-${f.id}" value="${f.estoque ?? 0}" style="width:50px"></td>
-          <td><button class="btn-save-row" onclick="salvar(${f.id})">Salvar</button></td>
-        </tr>
-      `).join('');
+      grid.innerHTML = lista.map(f => {
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0 };
+        return `
+          <div class="card">
+            <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
+            <div class="card-title">${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
+            <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
+            
+            <div class="card-inputs">
+              <div class="input-wrapper">
+                <label>Preço (€)</label>
+                <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01">
+              </div>
+              <div class="input-wrapper">
+                <label>Qtd</label>
+                <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
+              </div>
+            </div>
+
+            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar na Vitrine</button>
+          </div>
+        `;
+      }).join('');
     }
 
-    async function salvar(id) {
-      const numero = document.getElementById(`num-${id}`).value;
-      const nome = document.getElementById(`nome-${id}`).value;
-      const selecao = document.getElementById(`sel-${id}`).value;
-      const preco = parseFloat(document.getElementById(`preco-${id}`).value) || 0;
-      const estoque = parseInt(document.getElementById(`est-${id}`).value) || 0;
+    async function adicionarNaVitrine(figurinhaId) {
+      if (!usuarioLogado) return;
+      const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
+      const estoque = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
 
-      const { error } = await _supabase.from('figurinhas').update({
-        numero: numero,
-        nome: nome,
-        selecao_escuderia: selecao,
+      meusPrecosQtd[figurinhaId] = { preco, estoque };
+
+      const { error } = await _supabase.from('vitrine_ofertas').upsert({
+        user_id: usuarioLogado.id,
+        figurinha_id: figurinhaId,
         preco: preco,
         estoque: estoque
-      }).eq('id', id);
+      }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
-        alert("Erro ao atualizar: " + error.message);
+        alert("Erro ao salvar na vitrine: " + error.message);
       } else {
-        alert("Salvo com sucesso!");
-        aplicarFiltros();
+        alert("Figurinha salva na vitrine com sucesso!");
       }
     }
 
@@ -243,11 +260,11 @@
       aplicarFiltros();
     }
 
-    async function fazerLogout() { 
-      await _supabase.auth.signOut(); 
+    function fazerLogout() { 
+      _supabase.auth.signOut(); 
       window.location.href = "login.html"; 
     }
-
+    
     init();
   </script>
 </body>
