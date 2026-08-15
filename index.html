@@ -192,7 +192,7 @@
 
         if (errOfertas) throw errOfertas;
 
-        // 4. Mapeia os dados usando diretamente a coluna 'nome_vendedor' e o 'user_id'
+        // 4. Mapeia os dados usando o user_id e nome_vendedor diretamente da oferta
         allData = (ofertas || []).map(oferta => {
           const figId = oferta.figurinha_id || oferta.id_figurinha;
           const fig = figurinhasMap[figId] || {};
@@ -201,7 +201,7 @@
             oferta_id: oferta.id,
             preco: oferta.preco || 0,
             quantidade: oferta.estoque || 0,
-            vendedorId: oferta.user_id,
+            vendedorId: oferta.user_id, // Usando diretamente o user_id único da oferta
             vendedorNome: oferta.nome_vendedor || 'Vendedor',
             numero: fig.numero || 'N/A',
             nome: fig.nome || 'Sem Nome',
