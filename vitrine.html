@@ -25,7 +25,6 @@
     input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
     input:focus, select:focus { border-color: var(--gold); }
 
-    /* Grid de Cards */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
     .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; position: relative; }
     .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; margin-bottom: 0.5rem; }
@@ -99,10 +98,7 @@
 
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "login.html";
-        return null;
-      }
+      if (!session) { window.location.href = "login.html"; return null; }
 
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
@@ -118,8 +114,6 @@
           document.getElementById('linkAdmin').style.display = 'inline';
           document.getElementById('linkEstoque').style.display = 'inline';
         }
-      } else {
-        document.getElementById('userGreeting').innerText = `Olá, ${session.user.email.split('@')[0]}`;
       }
       return session;
     }
@@ -131,59 +125,16 @@
       const termo = document.getElementById('search').value.trim().replace('#', '');
 
       let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-      
-      if (albumId !== 'todos') {
-        query = query.eq('album_id', albumId);
-      }
+      if (albumId !== 'todos') query = query.eq('album_id', albumId);
       if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-        } else {
-          query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-        }
+        if (!isNaN(termo)) query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+        else query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
       }
 
-      const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
-      if (error) {
-        console.error("Erro ao buscar figurinhas:", error);
-        return;
-      }
-
+      const { data } = await query.range(0, ITENS_POR_PAGINA - 1);
       figurinhasGlobal = data || [];
       renderizarCards(figurinhasGlobal);
       document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
-    }
-
-    let timeoutBusca;
-    document.getElementById('search').addEventListener('input', () => {
-      clearTimeout(timeoutBusca);
-      timeoutBusca = setTimeout(aplicarFiltros, 400);
-    });
-
-    async function carregarMaisFigurinhas() {
-      paginaAtual++;
-      const inicio = paginaAtual * ITENS_POR_PAGINA;
-      const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
-
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-        } else {
-          query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
-        }
-      }
-
-      const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
-      if (data && data.length > 0) {
-        figurinhasGlobal = figurinhasGlobal.concat(data);
-        renderizarCards(figurinhasGlobal);
-        document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
-      } else {
-        document.getElementById('loadMoreContainer').style.display = 'none';
-      }
     }
 
     function renderizarCards(lista) {
@@ -196,20 +147,19 @@
       grid.innerHTML = lista.map(f => `
         <div class="card">
           <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
-          <div class="card-title">#${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
+          <div class="card-title">${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
           <div class="card-subtitle">${f.selecao_escuderia || mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
           
           <div class="card-inputs">
             <div class="input-wrapper">
               <label>Preço (€)</label>
-              <input type="number" id="preco-${f.id}" value="${f.preco ?? 0.50}" step="0.01">
+              <input type="number" id="preco-${f.id}" value="0" step="0.01">
             </div>
             <div class="input-wrapper">
               <label>Qtd</label>
-              <input type="number" id="qtd-${f.id}" value="1" min="1">
+              <input type="number" id="qtd-${f.id}" value="0" min="0">
             </div>
           </div>
-
           <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Adicionar à Vitrine</button>
         </div>
       `).join('');
@@ -217,9 +167,8 @@
 
     async function adicionarNaVitrine(figurinhaId) {
       if (!usuarioLogado) return;
-
       const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
-      const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 1;
+      const quantidade = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
 
       const { error } = await _supabase.from('vitrine_vendedores').upsert({
         vendedor_id: usuarioLogado.id,
@@ -228,17 +177,12 @@
         quantidade: quantidade
       }, { onConflict: 'vendedor_id, figurinha_id' });
 
-      if (error) {
-        alert("Erro ao adicionar à vitrine: " + error.message);
-      } else {
-        alert("Figurinha adicionada/atualizada na sua vitrine com sucesso!");
-      }
+      if (error) alert("Erro ao adicionar à vitrine: " + error.message);
+      else alert("Figurinha salva na sua vitrine!");
     }
 
     async function init() {
-      const session = await verificarAcesso();
-      if (!session) return;
-      
+      await verificarAcesso();
       const { data: albuns } = await _supabase.from('albuns').select('*');
       if (albuns) {
         albuns.forEach(a => { 
@@ -249,11 +193,7 @@
       aplicarFiltros();
     }
 
-    async function fazerLogout() { 
-      await _supabase.auth.signOut(); 
-      window.location.href = "login.html"; 
-    }
-
+    function fazerLogout() { _supabase.auth.signOut(); window.location.href = "login.html"; }
     init();
   </script>
 </body>
