@@ -8,119 +8,94 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0f172a;
-      --accent: #2563eb;
+      --primary: #101827; /* Mesma cor do seu Admin */
+      --accent: #25d366;
       --gold: #f59e0b;
-      --success: #059669;
-      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg); padding-bottom: 120px; color: #1e293b; }
+    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 100px; }
 
     /* HEADER */
-    header { background: var(--primary); color: white; padding: 2rem 1rem; text-align: center; }
-    header h1 { font-size: 1.5rem; letter-spacing: -0.5px; }
+    header { padding: 2rem 1rem; text-align: center; }
+    header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* MARKETPLACE GRID */
-    .album-container { max-width: 1000px; margin: 0 auto; padding: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-    
-    .sticker-card { 
-      background: white; border-radius: 16px; padding: 12px; 
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      display: flex; flex-direction: column; transition: transform 0.2s;
-      border: 1px solid #e2e8f0;
-    }
-    .sticker-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-    
-    .sticker-img-wrap { height: 140px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+    /* FILTROS MODERNOS */
+    .controls-wrapper { max-width: 800px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
+    .filter-select { flex: 1; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; }
+
+    /* GRID ESTILO ADMIN */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.25rem; }
+
+    /* CARD PREMIUM */
+    .sticker-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #0f172a; display: flex; flex-direction: column; transition: 0.3s; }
+    .sticker-img-wrap { height: 180px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
-    
-    .vendedor-tag { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-    .sticker-title { font-size: 0.85rem; font-weight: 600; line-height: 1.2; margin-bottom: 5px; height: 2.4em; overflow: hidden; }
-    .sticker-price { font-size: 1.1rem; font-weight: 800; color: var(--success); margin: 5px 0; }
-    
-    .btn-add { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
-    .btn-add:hover { background: #1d4ed8; }
-
-    /* FILTROS */
-    .controls-wrapper { background: white; padding: 1rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .filter-select { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem; outline: none; }
-
-    /* CART BAR */
-    .cart-bar { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
+    .sticker-info { padding: 10px; flex: 1; }
+    .colecao-label { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .sticker-title { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>🛍️ Sticker Market</h1>
-  </header>
+  <header><h1>Coleção Disponível</h1></header>
 
-  <div class="album-container">
+  <div class="container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="Buscar figurinhas por nome..." class="filter-select" oninput="mudarFiltro()">
-      <select id="filterVendedor" class="filter-select" onchange="mudarFiltro()">
-        <option value="">Todos os Vendedores</option>
+      <input type="text" id="search" placeholder="🔍 Buscar figurinha..." class="filter-select" oninput="filtrar()">
+      <select id="filterColecao" class="filter-select" onchange="filtrar()">
+        <option value="">Todas as Coleções</option>
       </select>
     </div>
 
-    <div class="grid" id="catalog">
-      <p style="text-align: center; grid-column: 1/-1;">Carregando vitrine...</p>
-    </div>
-  </div>
-
-  <div class="cart-bar">
-    <div>
-      <strong id="cart-total">Total: € 0,00</strong>
-    </div>
-    <button class="btn-add" style="width: auto;" onclick="enviarWhatsapp()">Finalizar Pedido</button>
+    <div class="grid" id="catalog"></div>
   </div>
 
   <script>
-    const _supabase = supabase.createClient("https://eyddrnjrewehojfmskvd.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE");
-    let carrinho = [];
+    const _supabase = supabase.createClient("SUA_URL", "SUA_KEY");
+    let allData = [];
 
     async function init() {
-      const { data: items } = await _supabase.from('figurinhas').select('selecao_escuderia');
-      const select = document.getElementById('filterVendedor');
-      const vendedores = [...new Set(items.map(i => i.selecao_escuderia).filter(Boolean))];
-      vendedores.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
-      carregarFigurinhas();
+      const { data } = await _supabase.from('figurinhas').select('*');
+      allData = data;
+      
+      // Popular select sem mexer no banco, apenas renomeando visualmente
+      const colecoes = [...new Set(data.map(i => i.selecao_escuderia).filter(Boolean))];
+      const select = document.getElementById('filterColecao');
+      colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+      
+      renderizar(allData);
     }
 
-    async function carregarFigurinhas() {
-      let query = _supabase.from('figurinhas').select('*');
-      const v = document.getElementById('filterVendedor').value;
-      if(v) query = query.eq('selecao_escuderia', v);
-
-      const { data } = await query;
+    function renderizar(lista) {
       const catalog = document.getElementById('catalog');
-      
-      catalog.innerHTML = data.map(f => `
+      catalog.innerHTML = lista.map(f => `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem}"></div>
-          <span class="vendedor-tag">Vendedor: ${f.selecao_escuderia || 'Loja'}</span>
-          <div class="sticker-title">${f.nome}</div>
-          <div class="sticker-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
-          <button class="btn-add" onclick="adicionar(${f.id}, '${f.nome}', ${f.preco})">Adicionar</button>
+          <div class="sticker-info">
+            <div class="colecao-label">COLEÇÃO: ${f.selecao_escuderia || 'Geral'}</div>
+            <div class="sticker-title">${f.nome}</div>
+            <div class="sticker-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
+            <button class="btn-add" onclick="alert('Adicionado: ${f.nome}')">Adicionar</button>
+          </div>
         </div>
       `).join('');
     }
 
-    function adicionar(id, nome, preco) {
-      carrinho.push({id, nome, preco});
-      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
-      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
-      alert(nome + " adicionado ao carrinho!");
-    }
-
-    function mudarFiltro() { carregarFigurinhas(); }
-
-    function enviarWhatsapp() {
-      const msg = "Olá, gostaria de comprar estas figurinhas: " + carrinho.map(i => i.nome).join(', ');
-      window.open(`https://wa.me/SEU_NUMERO?text=${encodeURIComponent(msg)}`);
+    function filtrar() {
+      const busca = document.getElementById('search').value.toLowerCase();
+      const col = document.getElementById('filterColecao').value;
+      
+      const filtrado = allData.filter(i => 
+        (i.nome.toLowerCase().includes(busca)) && 
+        (col === "" || i.selecao_escuderia === col)
+      );
+      renderizar(filtrado);
     }
 
     init();
