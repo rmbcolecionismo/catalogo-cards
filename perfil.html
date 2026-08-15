@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Meu Perfil e Vitrine</title>
+  <title>Perfil e Vitrine</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -74,13 +74,13 @@
     <div style="text-align:center">
       <img id="userAvatar" src="https://via.placeholder.com/120" class="avatar-img">
       <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
-      <button class="btn-gold" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
+      <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
     </div>
 
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
       <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
-      <button onclick="toggleEdit()">Editar Perfil</button>
+      <button id="btnEditarPerfil" style="display:none;" onclick="toggleEdit()">Editar Perfil</button>
     </div>
 
     <div id="editMode" style="display:none; margin-top:20px;">
@@ -96,12 +96,17 @@
 
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
       <a href="index.html" style="text-decoration:none;"><button style="background:#334155; color:white">🏠 Home</button></a>
-      <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
-      <div id="adminLinks" style="display:none;">
-        <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
-        <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
+      <div id="loggedMenu" style="display:none;">
+        <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
+        <div id="adminLinks" style="display:none;">
+          <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
+          <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
+        </div>
+        <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
       </div>
-      <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
+      <div id="unloggedMenu" style="display:none; margin-top: 10px;">
+        <a href="login.html" style="text-decoration:none;"><button class="btn-gold">Entrar / Fazer Login</button></a>
+      </div>
     </div>
   </div>
 
@@ -140,26 +145,26 @@
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) { window.location.replace("login.html"); return; }
+    
+    if (session) {
+      authUserId = session.user.id;
+      const { data: perfilLogado } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', session.user.email)
+        .maybeSingle();
 
-    authUserId = session.user.id;
+      if (perfilLogado) {
+        usuarioLogado = perfilLogado;
+        isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
+      }
+      document.getElementById('loggedMenu').style.display = 'block';
+    } else {
+      document.getElementById('unloggedMenu').style.display = 'block';
+    }
 
-    const { data: perfilLogado } = await _supabase
-      .from('vendedores_autorizados')
-      .select('*')
-      .eq('email', session.user.email)
-      .maybeSingle();
-
-    if (!perfilLogado) { window.location.replace("login.html"); return; }
-
-    usuarioLogado = perfilLogado;
-    isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
-
-    // Identifica se foi passado um parâmetro de ID na URL
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
-
-    perfilAlvoUuid = authUserId; // Por padrão, usa o UUID do usuário logado
 
     if (idParam) {
       const isNumeric = !isNaN(idParam);
@@ -172,15 +177,27 @@
         .maybeSingle();
 
       if (perfilAlvo) {
-        // Se encontrar o perfil alvo, pega o user_id (UUID) dele para buscar nas ofertas
         perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
-        const ehProprio = (String(perfilAlvo.id) === String(perfilLogado.id) || perfilAlvo.user_id === authUserId);
+        const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
         preencherDadosPerfil(perfilAlvo, ehProprio);
       } else {
-        preencherDadosPerfil(perfilLogado, true);
+        if (usuarioLogado) {
+          preencherDadosPerfil(usuarioLogado, true);
+          perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
+        } else {
+          document.getElementById('userName').innerText = "Vendedor não encontrado";
+          document.getElementById('vitrineGrid').innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Perfil não encontrado.</p>";
+          return;
+        }
       }
     } else {
-      preencherDadosPerfil(perfilLogado, true);
+      if (usuarioLogado) {
+        preencherDadosPerfil(usuarioLogado, true);
+        perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
+      } else {
+        window.location.replace("login.html");
+        return;
+      }
     }
 
     if (isAdminOrMaster) {
@@ -198,8 +215,9 @@
     document.getElementById('editNome').value = perfil.nome || '';
     document.getElementById('editCidade').value = perfil.cidade || '';
 
-    if (!ehProprio && !isAdminOrMaster) {
-      document.getElementById('viewMode').querySelector('button').style.display = 'none';
+    if (ehProprio || isAdminOrMaster) {
+      document.getElementById('btnTrocarFoto').style.display = 'block';
+      document.getElementById('btnEditarPerfil').style.display = 'block';
     }
   }
 
@@ -235,7 +253,6 @@
   async function carregarVitrine(uuidVal) {
     const grid = document.getElementById('vitrineGrid');
     
-    // Executa a busca segura utilizando estritamente o UUID correspondente
     const { data: ofertas, error } = await _supabase
       .from('vitrine_ofertas')
       .select('*')
@@ -272,8 +289,7 @@
       const precoNum = item.preco || 0;
       const precoFormatado = Number(precoNum).toFixed(2).replace('.', ',');
 
-      // Permite gerenciar se for o dono da oferta ou um admin/master
-      const podeGerenciar = (String(item.user_id) === String(authUserId) || isAdminOrMaster);
+      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || (usuarioLogado && String(item.user_id) === String(usuarioLogado.id)) || isAdminOrMaster);
 
       return `
         <div class="sticker-card">
