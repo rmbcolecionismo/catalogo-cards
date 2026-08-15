@@ -8,46 +8,48 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1e293b;
-      --accent: #3b82f6; /* Azul moderno de marketplace */
+      --primary: #0f172a;
+      --accent: #2563eb;
       --gold: #f59e0b;
-      --bg: #f1f5f9;
+      --success: #059669;
+      --bg: #f8fafc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    
-    body { background: var(--bg); padding-bottom: 120px; }
+    body { background: var(--bg); padding-bottom: 120px; color: #1e293b; }
 
-    /* HEADER MARKETPLACE */
-    header { background: var(--primary); color: white; padding: 2rem 1rem; text-align: center; border-radius: 0 0 30px 30px; }
-    header h1 { font-size: 1.5rem; }
-    
-    .album-container { max-width: 1000px; margin: -20px auto 0; padding: 0 1rem; }
+    /* HEADER */
+    header { background: var(--primary); color: white; padding: 2rem 1rem; text-align: center; }
+    header h1 { font-size: 1.5rem; letter-spacing: -0.5px; }
 
-    /* CARD ESTILO MARKETPLACE */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    /* MARKETPLACE GRID */
+    .album-container { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
     
     .sticker-card { 
-      background: white; border-radius: 16px; padding: 10px; 
+      background: white; border-radius: 16px; padding: 12px; 
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
       display: flex; flex-direction: column; transition: transform 0.2s;
+      border: 1px solid #e2e8f0;
     }
-    .sticker-card:hover { transform: translateY(-5px); }
+    .sticker-card:hover { transform: translateY(-3px); border-color: var(--accent); }
     
-    .sticker-img-wrap { height: 140px; background: #f8fafc; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+    .sticker-img-wrap { height: 140px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
     
-    .vendedor-tag { font-size: 0.7rem; color: var(--accent); font-weight: 700; margin-bottom: 4px; display: block; }
-    .sticker-title { font-size: 0.9rem; font-weight: 600; line-height: 1.2; height: 2.4em; overflow: hidden; }
-    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
+    .vendedor-tag { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+    .sticker-title { font-size: 0.85rem; font-weight: 600; line-height: 1.2; margin-bottom: 5px; height: 2.4em; overflow: hidden; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: var(--success); margin: 5px 0; }
     
-    .btn-add { background: var(--accent); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-add { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
+    .btn-add:hover { background: #1d4ed8; }
 
-    /* ESTILO DOS FILTROS */
-    .controls-wrapper { background: white; padding: 1rem; border-radius: 16px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .filter-select { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem; }
-    
-    /* ... (restante do CSS de carrinho permanece similar ao original) ... */
+    /* FILTROS */
+    .controls-wrapper { background: white; padding: 1rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .filter-select { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem; outline: none; }
+
+    /* CART BAR */
+    .cart-bar { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
   </style>
 </head>
 <body>
@@ -58,59 +60,70 @@
 
   <div class="album-container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="Buscar figurinhas..." class="filter-select" oninput="mudarFiltro()">
-      <!-- NOVO FILTRO DE VENDEDOR -->
+      <input type="text" id="search" placeholder="Buscar figurinhas por nome..." class="filter-select" oninput="mudarFiltro()">
       <select id="filterVendedor" class="filter-select" onchange="mudarFiltro()">
         <option value="">Todos os Vendedores</option>
       </select>
     </div>
 
     <div class="grid" id="catalog">
-      <!-- Cards serão injetados aqui -->
+      <p style="text-align: center; grid-column: 1/-1;">Carregando vitrine...</p>
     </div>
   </div>
 
-  <script>
-    const _supabase = supabase.createClient("SUA_URL", "SUA_KEY");
+  <div class="cart-bar">
+    <div>
+      <strong id="cart-total">Total: € 0,00</strong>
+    </div>
+    <button class="btn-add" style="width: auto;" onclick="enviarWhatsapp()">Finalizar Pedido</button>
+  </div>
 
-    async function carregarVendedores() {
-      // Busca vendedores únicos na tabela
-      const { data } = await _supabase.from('figurinhas').select('vendedor');
+  <script>
+    const _supabase = supabase.createClient("https://eyddrnjrewehojfmskvd.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE");
+    let carrinho = [];
+
+    async function init() {
+      const { data: items } = await _supabase.from('figurinhas').select('selecao_escuderia');
       const select = document.getElementById('filterVendedor');
-      const unicos = [...new Set(data.map(i => i.vendedor))];
-      unicos.forEach(v => {
-        if(v) select.innerHTML += `<option value="${v}">${v}</option>`;
-      });
+      const vendedores = [...new Set(items.map(i => i.selecao_escuderia).filter(Boolean))];
+      vendedores.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
+      carregarFigurinhas();
     }
 
     async function carregarFigurinhas() {
       let query = _supabase.from('figurinhas').select('*');
-      
       const v = document.getElementById('filterVendedor').value;
-      if(v) query = query.eq('vendedor', v);
+      if(v) query = query.eq('selecao_escuderia', v);
 
       const { data } = await query;
-      renderizar(data);
-    }
-
-    function renderizar(lista) {
       const catalog = document.getElementById('catalog');
-      catalog.innerHTML = lista.map(f => `
+      
+      catalog.innerHTML = data.map(f => `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem}"></div>
-          <span class="vendedor-tag">Vendedor: ${f.vendedor || 'Anônimo'}</span>
+          <span class="vendedor-tag">Vendedor: ${f.selecao_escuderia || 'Loja'}</span>
           <div class="sticker-title">${f.nome}</div>
-          <div class="sticker-price">€ ${f.preco.toFixed(2)}</div>
-          <button class="btn-add" onclick="adicionar(${f.id})">Adicionar</button>
+          <div class="sticker-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
+          <button class="btn-add" onclick="adicionar(${f.id}, '${f.nome}', ${f.preco})">Adicionar</button>
         </div>
       `).join('');
     }
 
-    // Inicialização
-    carregarVendedores();
-    carregarFigurinhas();
-    
-    // ... manter funções de carrinho e lógica original ...
+    function adicionar(id, nome, preco) {
+      carrinho.push({id, nome, preco});
+      const total = carrinho.reduce((sum, i) => sum + i.preco, 0);
+      document.getElementById('cart-total').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
+      alert(nome + " adicionado ao carrinho!");
+    }
+
+    function mudarFiltro() { carregarFigurinhas(); }
+
+    function enviarWhatsapp() {
+      const msg = "Olá, gostaria de comprar estas figurinhas: " + carrinho.map(i => i.nome).join(', ');
+      window.open(`https://wa.me/SEU_NUMERO?text=${encodeURIComponent(msg)}`);
+    }
+
+    init();
   </script>
 </body>
 </html>
