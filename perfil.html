@@ -14,19 +14,45 @@
     .vitrine-content { flex: 1; }
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     .card { background: #1e293b; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-    button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; }
+    .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
+    button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
+    button:hover { opacity: 0.9; }
     .btn-logout { background: #ef4444; color: white; }
+    .btn-gold { background: var(--gold); color: #0f172a; }
   </style>
 </head>
 <body>
 
 <div class="main-layout">
   <div class="profile-sidebar">
-    <img id="userAvatar" src="https://via.placeholder.com/120" class="avatar-img">
-    <button onclick="trocarAvatar()" style="background:var(--gold)">Trocar Avatar</button>
-    <h3 id="userName" style="text-align:center">Carregando...</h3>
-    <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
-    <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
+    <div style="text-align:center">
+      <img id="userAvatar" src="https://via.placeholder.com/120" class="avatar-img">
+      <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
+      <button class="btn-gold" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
+    </div>
+
+    <div id="viewMode" style="margin-top:20px;">
+      <h3 id="userName" style="text-align:center">Carregando...</h3>
+      <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
+      <button onclick="toggleEdit()">Editar Perfil</button>
+    </div>
+
+    <div id="editMode" style="display:none; margin-top:20px;">
+      <input type="text" id="editNome" class="edit-field" placeholder="Nome">
+      <input type="text" id="editCidade" class="edit-field" placeholder="Cidade">
+      <input type="text" id="editMorada" class="edit-field" placeholder="Morada">
+      <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
+      <button onclick="toggleEdit()" style="background:transparent; border:1px solid white">Cancelar</button>
+    </div>
+
+    <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
+      <a href="vitrine.html"><button class="btn-gold">📦 Minha Vitrine</button></a>
+      <div id="adminLinks" style="display:none;">
+        <a href="admin.html"><button style="background:#334155">⚙️ Painel Admin</button></a>
+        <a href="estoque.html"><button style="background:#334155">📊 Ver Estoque</button></a>
+      </div>
+      <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
+    </div>
   </div>
 
   <div class="vitrine-content">
@@ -36,68 +62,89 @@
 </div>
 
 <script>
-  // COLOQUE SUAS CREDENCIAIS AQUI NOVAMENTE
   const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let usuarioLogado = null;
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) { window.location.replace("login.html"); return; }
 
-    const { data: perfil, error } = await _supabase
+    const { data: perfil } = await _supabase
       .from('vendedores_autorizados')
       .select('*')
       .eq('email', session.user.email)
       .maybeSingle();
 
     if (perfil) {
+      usuarioLogado = perfil;
       document.getElementById('userName').innerText = perfil.nome || "Usuário";
       document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
       document.getElementById('profileDetails').innerHTML = `
         <p><strong>Cidade:</strong> ${perfil.cidade || 'N/A'}</p>
         <p><strong>Morada:</strong> ${perfil.morada || 'N/A'}</p>
       `;
+      
+      // Preencher campos de edição
+      document.getElementById('editNome').value = perfil.nome || '';
+      document.getElementById('editCidade').value = perfil.cidade || '';
+      document.getElementById('editMorada').value = perfil.morada || '';
+
+      // Mostrar links admin se for master/admin
+      if (perfil.funcao === 'admin' || perfil.funcao === 'master') {
+        document.getElementById('adminLinks').style.display = 'block';
+      }
+
       carregarVitrine(perfil.id);
     }
   }
 
+  async function uploadAvatar(event) {
+    const file = event.target.files[0];
+    const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
+    const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
+    
+    if (error) return alert("Erro no upload: " + error.message);
+    
+    const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+    await _supabase.from('vendedores_autorizados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
+    location.reload();
+  }
+
+  async function salvarPerfil() {
+    const updates = {
+      nome: document.getElementById('editNome').value,
+      cidade: document.getElementById('editCidade').value,
+      morada: document.getElementById('editMorada').value
+    };
+    await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
+    location.reload();
+  }
+
+  function toggleEdit() {
+    const view = document.getElementById('viewMode');
+    const edit = document.getElementById('editMode');
+    view.style.display = (view.style.display === 'none') ? 'block' : 'none';
+    edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
+  }
+
   async function carregarVitrine(vendedorId) {
-    const { data, error } = await _supabase
-      .from('vitrine_ofertas')
-      .select('preco, quantidade, figurinhas(nome, numero, imagem)')
-      .eq('vendedor_id', vendedorId);
-
+    const { data } = await _supabase.from('vitrine_ofertas').select('preco, quantidade, figurinhas(nome, numero, imagem)').eq('vendedor_id', vendedorId);
     const grid = document.getElementById('vitrineGrid');
-    if (error || !data || data.length === 0) {
-      grid.innerHTML = "<p>Nenhum item na vitrine.</p>";
-      return;
-    }
-
+    if (!data || data.length === 0) { grid.innerHTML = "<p>Vitrine vazia.</p>"; return; }
     grid.innerHTML = data.map(item => `
       <div class="card">
         <img src="${item.figurinhas?.imagem || ''}" style="width:60px; border-radius:4px">
         <p style="font-size:0.8rem; margin:10px 0">${item.figurinhas?.nome || 'Sem nome'}</p>
         <p style="color:var(--gold); font-weight:bold">€${item.preco}</p>
-        <p style="font-size:0.7rem">Qtd: ${item.quantidade}</p>
       </div>
     `).join('');
   }
 
   async function fazerLogout() {
     await _supabase.auth.signOut();
-    localStorage.clear();
-    sessionStorage.clear();
     window.location.replace("login.html");
-  }
-
-  async function trocarAvatar() {
-    const novoUrl = prompt("Cole a URL da nova foto:");
-    if (novoUrl) {
-      // Nota: Certifique-se que o ID está acessível aqui
-      // Se não, busque o 'usuarioLogado' globalmente
-      location.reload();
-    }
   }
 
   verificarAcesso();
