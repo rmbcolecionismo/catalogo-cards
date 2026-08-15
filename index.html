@@ -8,23 +8,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #101827; /* Mesma cor do seu Admin */
-      --accent: #25d366;
+      --primary: #101827;
       --gold: #f59e0b;
-      --card-bg: #ffffff;
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 100px; }
+    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 120px; }
+
+    /* BARRA SUPERIOR DE NAVEGAÇÃO (Igual Admin/Estoque) */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1rem 0;
+    }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-right: 15px; }
+    .top-nav a:hover { color: var(--gold); }
+    
+    .btn-nav-admin {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-nav-admin:hover {
+      background: var(--gold);
+      color: #0f172a;
+    }
 
     /* HEADER */
-    header { padding: 2rem 1rem; text-align: center; }
+    header { padding: 1.5rem 1rem 1rem; text-align: center; }
     header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
 
     /* FILTROS MODERNOS */
-    .controls-wrapper { max-width: 800px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
-    .filter-select { flex: 1; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; }
+    .controls-wrapper { max-width: 1100px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-select { flex: 1; min-width: 200px; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; }
+    .filter-select:focus { border-color: var(--gold); }
 
     /* GRID ESTILO ADMIN */
     .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
@@ -32,40 +63,80 @@
 
     /* CARD PREMIUM */
     .sticker-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #0f172a; display: flex; flex-direction: column; transition: 0.3s; }
+    .sticker-card:hover { transform: translateY(-3px); }
     .sticker-img-wrap { height: 180px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
-    .sticker-info { padding: 10px; flex: 1; }
+    .sticker-info { padding: 10px; flex: 1; display: flex; flex-direction: column; }
     .colecao-label { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
     .sticker-title { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 5px 0; }
-    .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; }
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; transition: 0.2s; }
+    .btn-add:hover { background: #1e293b; }
+
+    /* BARRA INFERIOR CARRINHO */
+    .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+    .cart-info h3 { color: var(--gold); font-size: 1.1rem; }
+    .btn-checkout { background: #25d366; color: #052e16; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 800; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <header><h1>Coleção Disponível</h1></header>
+  <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
+  <div class="top-nav">
+    <div class="nav-links">
+      <a href="index.html" style="color: var(--gold);">🏠 Home</a>
+    </div>
+    <a href="login.html" class="btn-nav-admin">
+      ⚙️ Painel de Controle / Vendedor
+    </a>
+  </div>
+
+  <header>
+    <h1>🛍️ Marketplace de Figurinhas</h1>
+    <p>Escolha seus itens e envie o pedido diretamente</p>
+  </header>
 
   <div class="container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="🔍 Buscar figurinha..." class="filter-select" oninput="filtrar()">
+      <input type="text" id="search" placeholder="🔍 Buscar figurinha por nome ou número..." class="filter-select" oninput="filtrar()">
       <select id="filterColecao" class="filter-select" onchange="filtrar()">
         <option value="">Todas as Coleções</option>
       </select>
     </div>
 
-    <div class="grid" id="catalog"></div>
+    <div class="grid" id="catalog">
+      <p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Carregando vitrine...</p>
+    </div>
+  </div>
+
+  <!-- BARRA FLUTUANTE DE CARRINHO / WHATSAPP -->
+  <div class="cart-bar" id="cartBar" style="display: none;">
+    <div class="cart-info">
+      <span id="cartCount" style="font-size: 0.75rem; color: #cbd5e1;">0 itens selecionados</span>
+      <h3 id="cartTotal">Total: € 0,00</h3>
+    </div>
+    <button class="btn-checkout" onclick="enviarWhatsapp()">Finalizar no WhatsApp ➔</button>
   </div>
 
   <script>
-    const _supabase = supabase.createClient("SUA_URL", "SUA_KEY");
+    const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    const SEU_WHATSAPP = "+351962634522";
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let allData = [];
+    let carrinho = [];
 
     async function init() {
-      const { data } = await _supabase.from('figurinhas').select('*');
-      allData = data;
+      const { data, error } = await _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      if (error) {
+        console.error("Erro ao carregar:", error);
+        return;
+      }
+      allData = data || [];
       
-      // Popular select sem mexer no banco, apenas renomeando visualmente
-      const colecoes = [...new Set(data.map(i => i.selecao_escuderia).filter(Boolean))];
+      // Preencher o filtro de coleções (usando selecao_escuderia)
+      const colecoes = [...new Set(allData.map(i => i.selecao_escuderia).filter(Boolean))].sort();
       const select = document.getElementById('filterColecao');
       colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
       
@@ -74,28 +145,77 @@
 
     function renderizar(lista) {
       const catalog = document.getElementById('catalog');
-      catalog.innerHTML = lista.map(f => `
-        <div class="sticker-card">
-          <div class="sticker-img-wrap"><img src="${f.imagem}"></div>
-          <div class="sticker-info">
-            <div class="colecao-label">COLEÇÃO: ${f.selecao_escuderia || 'Geral'}</div>
-            <div class="sticker-title">${f.nome}</div>
-            <div class="sticker-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
-            <button class="btn-add" onclick="alert('Adicionado: ${f.nome}')">Adicionar</button>
+      if (lista.length === 0) {
+        catalog.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma figurinha encontrada.</p>`;
+        return;
+      }
+
+      catalog.innerHTML = lista.map(f => {
+        const precoNum = f.preco || 0;
+        const precoFormatado = precoNum.toFixed(2).replace('.', ',');
+        const noCarrinho = carrinho.filter(item => item.id === f.id).length;
+        const textoBotao = noCarrinho > 0 ? `Adicionado (${noCarrinho})` : `Adicionar`;
+
+        return `
+          <div class="sticker-card">
+            <div class="sticker-img-wrap">
+              <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="${f.nome}">
+            </div>
+            <div class="sticker-info">
+              <div class="colecao-label">${f.selecao_escuderia || 'Coleção'}</div>
+              <div class="sticker-title">Nº ${f.numero} - ${f.nome}</div>
+              <div class="sticker-price">€ ${precoFormatado}</div>
+              <button class="btn-add" onclick="adicionarAoCarrinho(${f.id})">${textoBotao}</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function filtrar() {
-      const busca = document.getElementById('search').value.toLowerCase();
+      const busca = document.getElementById('search').value.toLowerCase().trim();
       const col = document.getElementById('filterColecao').value;
       
-      const filtrado = allData.filter(i => 
-        (i.nome.toLowerCase().includes(busca)) && 
-        (col === "" || i.selecao_escuderia === col)
-      );
+      const filtrado = allData.filter(i => {
+        const matchBusca = !busca || String(i.numero).includes(busca) || (i.nome && i.nome.toLowerCase().includes(busca));
+        const matchCol = !col || i.selecao_escuderia === col;
+        return matchBusca && matchCol;
+      });
+      
       renderizar(filtrado);
+    }
+
+    function adicionarAoCarrinho(id) {
+      const item = allData.find(f => f.id === id);
+      if (item) {
+        carrinho.push(item);
+        atualizarCarrinhoBarra();
+        filtrar(); // Atualiza os textos dos botões na tela
+      }
+    }
+
+    function atualizarCarrinhoBarra() {
+      const cartBar = document.getElementById('cartBar');
+      if (carrinho.length > 0) {
+        cartBar.style.display = 'flex';
+        const total = carrinho.reduce((sum, i) => sum + (i.preco || 0), 0);
+        document.getElementById('cartCount').innerText = `${carrinho.length} item(ns) selecionado(s)`;
+        document.getElementById('cartTotal').innerText = `Total: € ${total.toFixed(2).replace('.', ',')}`;
+      } else {
+        cartBar.style.display = 'none';
+      }
+    }
+
+    function enviarWhatsapp() {
+      if (carrinho.length === 0) return;
+      let msg = "⚽ *PEDIDO DE FIGURINHAS (MARKETPLACE)*\n\n";
+      let total = 0;
+      carrinho.forEach((item, index) => {
+        msg += `${index + 1}. Nº ${item.numero} - ${item.nome} (€ ${(item.preco || 0).toFixed(2)})\n`;
+        total += (item.preco || 0);
+      });
+      msg += `\n*TOTAL:* € ${total.toFixed(2)}`;
+      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     init();
