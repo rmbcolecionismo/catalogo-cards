@@ -154,14 +154,6 @@
       border-color: var(--gold);
     }
 
-    /* CAMPOS DESABILITADOS PARA USUÁRIO VITRINE */
-    input:disabled, select:disabled {
-      background: rgba(15, 23, 42, 0.5);
-      color: #64748b;
-      border-color: rgba(255, 255, 255, 0.05);
-      cursor: not-allowed;
-    }
-
     /* TABELA DE ESTOQUE */
     .table-container {
       background: rgba(30, 41, 59, 0.7);
@@ -198,7 +190,6 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    /* FOTO EM CIMA E BOTÃO EMBAIXO */
     .img-cell {
       display: flex;
       flex-direction: column;
@@ -215,38 +206,12 @@
       padding: 2px;
     }
 
-    /* INPUTS EDITÁVEIS DENTRO DA TABELA */
-    .input-edit-num {
-      width: 80px;
-      text-align: center;
-      font-weight: 700;
-    }
-
-    .input-edit-nome {
-      width: 100%;
-      min-width: 130px;
-    }
-
-    .input-edit-team {
-      width: 100%;
-      min-width: 110px;
-    }
-
-    .select-edit-tipo {
-      min-width: 120px;
-      font-size: 0.8rem;
-    }
-
-    .input-edit-preco {
-      width: 80px;
-      text-align: right;
-    }
-
-    .input-edit-stock {
-      width: 70px;
-      text-align: center;
-      font-weight: 700;
-    }
+    .input-edit-num { width: 80px; text-align: center; font-weight: 700; }
+    .input-edit-nome { width: 100%; min-width: 130px; }
+    .input-edit-team { width: 100%; min-width: 110px; }
+    .select-edit-tipo { min-width: 120px; font-size: 0.8rem; }
+    .input-edit-preco { width: 80px; text-align: right; }
+    .input-edit-stock { width: 70px; text-align: center; font-weight: 700; }
 
     .actions-cell {
       display: flex;
@@ -267,33 +232,12 @@
       white-space: nowrap;
     }
 
-    .btn-save-row:hover {
-      background: #059669;
-    }
+    .btn-save-row:hover { background: #059669; }
 
-    .badge-out {
-      background: #ef4444;
-      color: white;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 700;
-    }
+    .badge-out { background: #ef4444; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .badge-ok { background: #10b981; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
 
-    .badge-ok {
-      background: #10b981;
-      color: white;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 700;
-    }
-
-    /* BOTÃO CARREGAR MAIS */
-    .load-more-container {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+    .load-more-container { text-align: center; margin-bottom: 2rem; }
 
     .btn-load-more {
       background: rgba(245, 158, 11, 0.15);
@@ -307,15 +251,8 @@
       transition: all 0.2s;
     }
 
-    .btn-load-more:hover {
-      background: var(--gold);
-      color: #0f172a;
-    }
-
-    .btn-load-more:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .btn-load-more:hover { background: var(--gold); color: #0f172a; }
+    .btn-load-more:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -328,7 +265,6 @@
         <a href="estoque.html" style="color: var(--gold);">📦 Estoque</a>
       </div>
       
-      <!-- SAUDAÇÃO E AVATAR DO USUÁRIO -->
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" alt="Avatar" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
         <span class="user-greeting" id="userGreeting">Olá, Carregando...</span>
@@ -398,13 +334,11 @@
     let listaTiposGlobal = [];
     let usuarioLogadoData = null;
 
-    // Parâmetros de Paginação
     const ITENS_POR_PAGINA = 50;
     let paginaAtual = 0;
     let temMaisDados = true;
     let modoBuscaAtivo = false;
 
-    // --- AUTENTICAÇÃO E VERIFICAÇÃO DE PERMISSÃO ---
     async function verificarAutenticacao() {
       const { data: { session } } = await _supabase.auth.getSession();
       
@@ -413,7 +347,6 @@
         return false;
       }
 
-      // Busca os dados do usuário e a coluna 'is_admin' na tabela
       const { data: autorizado, error } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
@@ -429,14 +362,14 @@
 
       usuarioLogadoData = autorizado;
 
-      // SE FOR O ADMINISTRADOR MESTRE:
+      // Se for Administrador Master, exibe o link "Cadastrar" no menu superior
       if (autorizado.is_admin === true) {
-        // Exibe o link para o painel administrativo no menu superior
         const linkAdmin = document.getElementById('linkAdmin');
-        if (linkAdmin) linkAdmin.style.display = 'inline-block';
+        if (linkAdmin) {
+          linkAdmin.style.display = 'inline-block';
+        }
       }
 
-      // Atualiza saudação e avatar no topo
       const nomeExibicao = autorizado.nome || session.user.email.split('@')[0];
       document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
       
