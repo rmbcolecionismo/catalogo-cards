@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login Administrativo - Álbum Digital</title>
+  <title>Login de Vendedor/Admin - Álbum Digital</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -106,18 +106,27 @@
       margin-top: 1rem;
       display: none;
     }
+    
+    .back-home {
+      display: inline-block;
+      margin-top: 1.2rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-decoration: none;
+    }
+    .back-home:hover { color: var(--gold); }
   </style>
 </head>
 <body>
 
   <div class="login-card">
     <h2>🔐 Acesso Restrito</h2>
-    <p>Entre com suas credenciais para acessar o painel</p>
+    <p>Entre com suas credenciais para gerenciar sua vitrine</p>
 
     <form id="loginForm" onsubmit="realizarLogin(event)">
       <div class="form-group">
         <label for="email">E-mail</label>
-        <input type="email" id="email" required placeholder="admin@seuemail.com">
+        <input type="email" id="email" required placeholder="seuemail@exemplo.com">
       </div>
 
       <div class="form-group">
@@ -125,10 +134,11 @@
         <input type="password" id="senha" required placeholder="••••••••">
       </div>
 
-      <button type="submit" class="btn-login" id="btnLogin">Entrar no Painel</button>
+      <button type="submit" class="btn-login" id="btnLogin">Entrar</button>
     </form>
 
     <div class="error-msg" id="errorMsg"></div>
+    <a href="index.html" class="back-home">← Voltar para a Home</a>
   </div>
 
   <script>
@@ -137,7 +147,6 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Se já estiver logado, valida o direcionamento automaticamente
     async function checarSessaoExistente() {
       try {
         const { data: { session } } = await _supabase.auth.getSession();
@@ -166,19 +175,17 @@
 
         if (error) throw error;
 
-        // Redireciona de acordo com o perfil
         await redirecionarConformePermissao(email);
 
       } catch (err) {
         errorMsg.innerText = "Falha no login: " + (err.message || "E-mail ou senha inválidos.");
         errorMsg.style.display = "block";
-        btn.innerText = "Entrar no Painel";
+        btn.innerText = "Entrar";
         btn.disabled = false;
       }
     }
 
     async function redirecionarConformePermissao(email) {
-      // Usamos .maybeSingle() em vez de .single() para evitar erros caso o e-mail não esteja na tabela
       const { data: autorizado, error } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
@@ -186,10 +193,10 @@
         .maybeSingle();
 
       if (autorizado) {
-        // Vendedor parceiro vai para o estoque gerenciar os preços dele
-        window.location.href = "estoque.html";
+        // Redireciona parceiro para gerenciar seu perfil e vitrine
+        window.location.href = "vitrine.html";
       } else {
-        // Administrador mestre vai para o admin central
+        // Redireciona administrador geral para o painel de cadastro
         window.location.href = "admin.html";
       }
     }
