@@ -85,17 +85,15 @@
       document.getElementById('userName').innerText = perfil.nome || "Usuário";
       document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
       
-      // Exibe apenas Nome e Cidade em destaque
       document.getElementById('profileDetails').innerHTML = `
         <p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>
       `;
       
-      // Preencher campos de edição (apenas nome e cidade)
       document.getElementById('editNome').value = perfil.nome || '';
       document.getElementById('editCidade').value = perfil.cidade || '';
 
-      // Mostrar links admin se for master/admin
-      if (perfil.funcao === 'admin' || perfil.funcao === 'master') {
+      // Verifica permissão via is_admin (boolean) ou função (string)
+      if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
         document.getElementById('adminLinks').style.display = 'block';
       }
 
