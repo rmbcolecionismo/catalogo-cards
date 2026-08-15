@@ -50,9 +50,35 @@
     header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
 
-    .controls-wrapper { max-width: 1100px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; flex-wrap: wrap; }
-    .filter-select { flex: 1; min-width: 200px; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; }
-    .filter-select:focus { border-color: var(--gold); }
+    .controls-wrapper { 
+      max-width: 1100px; 
+      margin: 0 auto 1.5rem; 
+      padding: 1rem; 
+      background: rgba(255, 255, 255, 0.05); 
+      backdrop-filter: blur(10px); 
+      border-radius: 16px; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      display: flex; 
+      flex-direction: column;
+      gap: 10px; 
+    }
+    .filters-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-select, .filter-input { 
+      flex: 1; 
+      min-width: 200px; 
+      padding: 0.8rem; 
+      border-radius: 10px; 
+      background: rgba(15, 23, 42, 0.8); 
+      border: 1px solid rgba(255,255,255,0.2); 
+      color: white; 
+      outline: none; 
+      font-size: 0.85rem;
+    }
+    .filter-select:focus, .filter-input:focus { border-color: var(--gold); }
 
     .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
@@ -108,10 +134,20 @@
 
   <div class="container">
     <div class="controls-wrapper">
-      <input type="text" id="search" placeholder="🔍 Buscar por nome, código ou álbum..." class="filter-select" oninput="filtrar()">
-      <select id="filterColecao" class="filter-select" onchange="filtrar()">
-        <option value="">Todas as Seleções</option>
+      <!-- Filtro Principal por Álbum -->
+      <select id="filterAlbum" class="filter-select" onchange="filtrar()">
+        <option value="">📂 Todos os Álbuns</option>
       </select>
+
+      <div class="filters-row">
+        <input type="text" id="search" placeholder="🔍 Buscar por nome ou código..." class="filter-input" oninput="filtrar()">
+        <select id="filterColecao" class="filter-select" onchange="filtrar()">
+          <option value="">⚽ Todas as Seleções / Escuderias</option>
+        </select>
+        <select id="filterTipo" class="filter-select" onchange="filtrar()">
+          <option value="">🏷️ Todos os Tipos</option>
+        </select>
+      </div>
     </div>
 
     <div class="grid" id="catalog">
@@ -128,23 +164,39 @@
 
     async function init() {
       try {
-        // 1. Busca os vendedores autorizados
-        const { data: vendedores } = await _supabase.from('vendedores_autorizados').select('id, nome');
-        const vendedoresMap = {};
-        if (vendedores) {
-          vendedores.forEach(v => { vendedoresMap[v.id] = v.nome; });
+        // 1. Busca os álbuns da tabela 'albuns' (mapeando id -> nome do álbum)
+        const { data: albuns } = await _supabase.from('albuns').select('id, nome');
+        const albunsMap = {};
+        if (albuns) {
+          albuns.forEach(a => { albunsMap[a.id] = a.nome; });
         }
 
-        // 2. Busca todas as figurinhas do catálogo geral para mapear por ID
+        // 2. Busca os vendedores autorizados para mapear id -> nome e garantir o ID correto do perfil
+        const { data: vendedores } = await _supabase.from('vendedores_autorizados').select('id, nome, user_id');
+        const vendedoresMap = {};
+        if (vendedores) {
+          vendedores.forEach(v => {
+            // Mapeia tanto pelo ID interno da tabela quanto pelo user_id de autenticação se houver
+            vendedoresMap[v.id] = v.nome;
+            if (v.user_id) vendedoresMap[v.user_id] = v.nome;
+          });
+        }
+
+        // 3. Busca as figurinhas
         const { data: figurinhas, error: errFig } = await _supabase.from('figurinhas').select('*');
         if (errFig) throw errFig;
 
         const figurinhasMap = {};
         if (figurinhas) {
-          figurinhas.forEach(fig => { figurinhasMap[fig.id] = fig; });
+          figurinhas.forEach(fig => {
+            figurinhasMap[fig.id] = {
+              ...fig,
+              albumNome: albunsMap[fig.album_id] || 'Álbum Desconhecido'
+            };
+          });
         }
 
-        // 3. Busca as ofertas ativas na vitrine
+        // 4. Busca as ofertas ativas na vitrine
         const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
           .select('*')
@@ -152,45 +204,58 @@
 
         if (errOfertas) throw errOfertas;
 
-        // 4. Cruzamento seguro dos dados via código
+        // 5. Cruzamento rigoroso dos dados
         allData = (ofertas || []).map(oferta => {
-          // Tenta encontrar a figurinha associada (pode ser figurinha_id ou id dependendo da sua tabela)
-          const figId = oferta.figurinha_id || oferta.id_figurinha || oferta.figurinha;
-          const fig = figurinhasMap[oferta.figurinha_id] || figurinhasMap[oferta.id] || figurinhasMap[oferta.id_figurinha] || {};
+          // Identifica a chave correta da figurinha na oferta
+          const figId = oferta.figurinha_id || oferta.id_figurinha;
+          const fig = figurinhasMap[figId] || {};
+
+          // Identifica o ID real do vendedor para o link do perfil (tenta user_id ou vendedor_id)
+          const vId = oferta.user_id || oferta.vendedor_id || oferta.id_vendedor;
+          const vNome = vendedoresMap[vId] || vendedoresMap[oferta.user_id] || 'Vendedor Autorizado';
 
           return {
             oferta_id: oferta.id,
             preco: oferta.preco || 0,
             quantidade: oferta.estoque || 0,
-            vendedorId: oferta.user_id,
-            vendedorNome: vendedoresMap[oferta.user_id] || 'Vendedor Independente',
-            numero: fig.numero || oferta.numero || 'N/A',
-            nome: fig.nome || oferta.nome || 'Sem Nome',
-            imagem: fig.imagem || oferta.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
-            selecao_escuderia: fig.selecao_escuderia || fig.selecao || oferta.selecao_escuderia || 'N/A',
-            album: fig.album || oferta.album || 'N/A',
-            tipo: fig.tipo || oferta.tipo || 'N/A'
+            vendedorId: vId,
+            vendedorNome: vNome,
+            numero: fig.numero || 'N/A',
+            nome: fig.nome || 'Sem Nome',
+            imagem: fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
+            selecao_escuderia: fig.selecao_escuderia || 'N/A',
+            album: fig.albumNome || 'N/A',
+            tipo: fig.tipo || 'N/A'
           };
         });
 
         allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
         
-        const colecoes = [...new Set(allData.map(i => i.selecao_escuderia).filter(Boolean))].sort();
-        const select = document.getElementById('filterColecao');
-        colecoes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+        // Popula os selects de filtros dinamicamente
+        const albunsList = [...new Set(allData.map(i => i.album).filter(item => item !== 'N/A'))].sort();
+        const selectAlbum = document.getElementById('filterAlbum');
+        albunsList.forEach(a => selectAlbum.innerHTML += `<option value="${a}">${a}</option>`);
+
+        const colecoesList = [...new Set(allData.map(i => i.selecao_escuderia).filter(item => item !== 'N/A'))].sort();
+        const selectColecao = document.getElementById('filterColecao');
+        colecoesList.forEach(c => selectColecao.innerHTML += `<option value="${c}">${c}</option>`);
+
+        const tiposList = [...new Set(allData.map(i => i.tipo).filter(item => item !== 'N/A'))].sort();
+        const selectTipo = document.getElementById('filterTipo');
+        tiposList.forEach(t => selectTipo.innerHTML += `<option value="${t}">${t}</option>`);
         
         renderizar(allData);
 
       } catch (err) {
         console.error("Erro detalhado ao carregar vitrine:", err);
-        document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas. Verifique o console do navegador.</p>`;
+        document.getElementById('catalog').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444; padding: 2rem;">Erro ao carregar ofertas. Verifique o console.</p>`;
       }
     }
 
     function renderizar(lista) {
       const catalog = document.getElementById('catalog');
       if (lista.length === 0) {
-        catalog.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma oferta encontrada na vitrine.</p>`;
+        catalog.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma oferta encontrada com esses filtros.</p>`;
         return;
       }
 
@@ -207,8 +272,8 @@
               <div class="vendedor-label">👤 ${f.vendedorNome}</div>
               <div class="sticker-title">${f.nome}</div>
               <div class="card-row">Código: <span>${f.numero}</span></div>
-              <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
               <div class="card-row">Álbum: <span>${f.album}</span></div>
+              <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
               <div class="card-row">Tipo: <span>${f.tipo}</span></div>
               <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${f.quantidade}</div>
               <div class="sticker-price">€ ${precoFormatado}</div>
@@ -221,15 +286,20 @@
 
     function filtrar() {
       const busca = document.getElementById('search').value.toLowerCase().trim();
-      const col = document.getElementById('filterColecao').value;
+      const albumSel = document.getElementById('filterAlbum').value;
+      const colSel = document.getElementById('filterColecao').value;
+      const tipoSel = document.getElementById('filterTipo').value;
       
       const filtrado = allData.filter(i => {
         const matchBusca = !busca || 
           String(i.numero).includes(busca) || 
-          (i.nome && i.nome.toLowerCase().includes(busca)) ||
-          (i.album && i.album.toLowerCase().includes(busca));
-        const matchCol = !col || i.selecao_escuderia === col;
-        return matchBusca && matchCol;
+          (i.nome && i.nome.toLowerCase().includes(busca));
+        
+        const matchAlbum = !albumSel || i.album === albumSel;
+        const matchCol = !colSel || i.selecao_escuderia === colSel;
+        const matchTipo = !tipoSel || i.tipo === tipoSel;
+
+        return matchBusca && matchAlbum && matchCol && matchTipo;
       });
       
       renderizar(filtrado);
