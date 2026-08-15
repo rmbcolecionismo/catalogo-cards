@@ -393,15 +393,34 @@
     const ITENS_POR_PAGINA = 50;
     let paginaAtual = 0;
     let temMaisDados = true;
-    let modoBuscaAtivo = false; // Controla se o usuário está filtrando por texto/álbum
+    let modoBuscaAtivo = false;
 
+    // --- AUTENTICAÇÃO E VERIFICAÇÃO DE PERMISSÃO ---
     async function verificarAutenticacao() {
+      // 1. Verifica se existe uma sessão ativa
       const { data: { session } } = await _supabase.auth.getSession();
+      
       if (!session) {
         window.location.href = "login.html";
+        return false;
       }
+
+      // 2. Verifica se o e-mail do usuário está na tabela vendedores_autorizados
+      const { data: autorizado, error } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', session.user.email)
+        .single();
+
+      if (error || !autorizado) {
+        alert("Acesso negado: Você não tem autorização para gerenciar estoques.");
+        await _supabase.auth.signOut();
+        window.location.href = "index.html";
+        return false;
+      }
+
+      return true;
     }
-    verificarAutenticacao();
 
     async function fazerLogout() {
       await _supabase.auth.signOut();
@@ -409,6 +428,10 @@
     }
 
     async function init() {
+      // Executa a validação de segurança antes de carregar os dados
+      const acessoPermitido = await verificarAutenticacao();
+      if (!acessoPermitido) return;
+
       try {
         // 1. Buscar Álbuns
         const { data: albuns } = await _supabase.from('albuns').select('*').order('nome');
@@ -502,7 +525,7 @@
       const btnLoad = document.getElementById('btnLoadMore');
       
       if (modoBuscaAtivo) {
-        container.style.display = 'none'; // Esconde se estiver pesquisando/filtrando ativamente
+        container.style.display = 'none';
       } else if (temMaisDados) {
         container.style.display = 'block';
         if (btnLoad) btnLoad.innerText = "Carregar mais 50 figurinhas";
@@ -518,7 +541,6 @@
       
       const busca = document.getElementById('search').value.trim();
       if (busca !== '') {
-        // Se houver texto de busca ativo, busca direto do servidor considerando o álbum
         await executarBuscaServidor(busca);
       } else {
         modoBuscaAtivo = false;
@@ -550,13 +572,12 @@
       tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">Buscando figurinhas...</td></tr>`;
 
       try {
-        // Realiza busca flexível no Supabase (por nome, número ou equipe)
         let query = _supabase
           .from('figurinhas')
           .select('*')
           .or(`nome.ilike.%${termo}%,numero.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,team.ilike.%${termo}%`)
           .order('numero', { ascending: true })
-          .limit(100); // Limita resultados de busca para evitar sobrecarga
+          .limit(100);
 
         if (albumId !== 'todos') {
           query = query.eq('album_id', albumId);
@@ -800,6 +821,7 @@
       }
     }
 
+    // Inicializa o sistema após o carregamento da página
     init();
   </script>
 </body>
