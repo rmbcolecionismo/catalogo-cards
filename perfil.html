@@ -8,12 +8,16 @@
   <style>
     :root { --gold: #f59e0b; --bg: #0f172a; }
     body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
-    .main-layout { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; flex-wrap: wrap; }
+    .main-layout { display: flex; gap: 20px; max-width: 1300px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 300px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-    .card { background: #1e293b; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .card { background: #1e293b; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+    .card img { width: 70px; height: 95px; object-fit: contain; background: #0f172a; border-radius: 4px; }
+    .card-title { font-size: 0.85rem; font-weight: 600; }
+    .card-info { font-size: 0.8rem; margin-top: 0.3rem; color: #94a3b8; width: 100%; display: flex; justify-content: space-around; background: rgba(15, 23, 42, 0.6); padding: 0.3rem; border-radius: 4px; }
+    .price { color: var(--gold); font-weight: 700; }
     .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     button:hover { opacity: 0.9; }
@@ -49,10 +53,11 @@
     </div>
 
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
-      <a href="vitrine.html"><button class="btn-gold">📦 Minha Vitrine</button></a>
+      <a href="index.html" style="text-decoration:none;"><button style="background:#334155; color:white">🏠 Home</button></a>
+      <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
       <div id="adminLinks" style="display:none;">
-        <a href="admin.html"><button style="background:#334155">⚙️ Painel Admin</button></a>
-        <a href="estoque.html"><button style="background:#334155">📊 Ver Estoque</button></a>
+        <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
+        <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
       </div>
       <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
     </div>
@@ -69,10 +74,13 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let usuarioLogado = null;
+  let authUserId = null;
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) { window.location.replace("login.html"); return; }
+
+    authUserId = session.user.id;
 
     const { data: perfil } = await _supabase
       .from('vendedores_autorizados')
@@ -92,12 +100,11 @@
       document.getElementById('editNome').value = perfil.nome || '';
       document.getElementById('editCidade').value = perfil.cidade || '';
 
-      // Verifica permissão via is_admin (boolean) ou função (string)
       if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
         document.getElementById('adminLinks').style.display = 'block';
       }
 
-      carregarVitrine(perfil.id);
+      carregarVitrine(authUserId);
     }
   }
 
@@ -136,22 +143,51 @@
     edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
   }
 
-  async function carregarVitrine(vendedorId) {
-    const { data } = await _supabase.from('vitrine_ofertas').select('preco, quantidade, figurinhas(nome, numero, imagem)').eq('vendedor_id', vendedorId);
+  async function carregarVitrine(userId) {
+    const { data, error } = await _supabase
+      .from('vitrine_ofertas')
+      .select(`
+        preco,
+        estoque,
+        figurinhas (
+          numero,
+          nome,
+          imagem
+        )
+      `)
+      .eq('user_id', userId);
+
     const grid = document.getElementById('vitrineGrid');
-    if (!data || data.length === 0) { grid.innerHTML = "<p>Vitrine vazia.</p>"; return; }
-    grid.innerHTML = data.map(item => `
-      <div class="card">
-        <img src="${item.figurinhas?.imagem || ''}" style="width:60px; border-radius:4px">
-        <p style="font-size:0.8rem; margin:10px 0">${item.figurinhas?.nome || 'Sem nome'}</p>
-        <p style="color:var(--gold); font-weight:bold">€${item.preco}</p>
-      </div>
-    `).join('');
+    
+    if (error) {
+      console.error("Erro ao carregar vitrine:", error);
+      grid.innerHTML = "<p>Erro ao carregar vitrine.</p>";
+      return;
+    }
+
+    if (!data || data.length === 0) { 
+      grid.innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Sua vitrine está vazia.</p>"; 
+      return; 
+    }
+
+    grid.innerHTML = data.map(item => {
+      const f = item.figurinhas || {};
+      return `
+        <div class="card">
+          <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
+          <div class="card-title">${f.numero ? '#' + f.numero : ''} ${f.nome || 'Sem Nome'}</div>
+          <div class="card-info">
+            <div>Preço: <span class="price">€${Number(item.preco || 0).toFixed(2)}</span></div>
+            <div>Qtd: <b>${item.estoque || 0}</b></div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   async function fazerLogout() {
     await _supabase.auth.signOut();
-    window.location.replace("login.html");
+    window.location.replace("index.html");
   }
 
   verificarAcesso();
