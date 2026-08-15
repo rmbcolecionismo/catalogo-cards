@@ -134,7 +134,6 @@
 
   <div class="container">
     <div class="controls-wrapper">
-      <!-- Filtro Principal por Álbum -->
       <select id="filterAlbum" class="filter-select" onchange="filtrar()">
         <option value="">📂 Todos os Álbuns</option>
       </select>
@@ -164,25 +163,14 @@
 
     async function init() {
       try {
-        // 1. Busca os álbuns da tabela 'albuns' (mapeando id -> nome do álbum)
+        // 1. Busca os álbuns da tabela 'albuns'
         const { data: albuns } = await _supabase.from('albuns').select('id, nome');
         const albunsMap = {};
         if (albuns) {
           albuns.forEach(a => { albunsMap[a.id] = a.nome; });
         }
 
-        // 2. Busca os vendedores autorizados para mapear id -> nome e garantir o ID correto do perfil
-        const { data: vendedores } = await _supabase.from('vendedores_autorizados').select('id, nome, user_id');
-        const vendedoresMap = {};
-        if (vendedores) {
-          vendedores.forEach(v => {
-            // Mapeia tanto pelo ID interno da tabela quanto pelo user_id de autenticação se houver
-            vendedoresMap[v.id] = v.nome;
-            if (v.user_id) vendedoresMap[v.user_id] = v.nome;
-          });
-        }
-
-        // 3. Busca as figurinhas
+        // 2. Busca as figurinhas
         const { data: figurinhas, error: errFig } = await _supabase.from('figurinhas').select('*');
         if (errFig) throw errFig;
 
@@ -196,7 +184,7 @@
           });
         }
 
-        // 4. Busca as ofertas ativas na vitrine
+        // 3. Busca as ofertas ativas na vitrine
         const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
           .select('*')
@@ -204,22 +192,17 @@
 
         if (errOfertas) throw errOfertas;
 
-        // 5. Cruzamento rigoroso dos dados
+        // 4. Mapeia os dados usando diretamente a coluna 'nome_vendedor' e o 'user_id'
         allData = (ofertas || []).map(oferta => {
-          // Identifica a chave correta da figurinha na oferta
           const figId = oferta.figurinha_id || oferta.id_figurinha;
           const fig = figurinhasMap[figId] || {};
-
-          // Identifica o ID real do vendedor para o link do perfil (tenta user_id ou vendedor_id)
-          const vId = oferta.user_id || oferta.vendedor_id || oferta.id_vendedor;
-          const vNome = vendedoresMap[vId] || vendedoresMap[oferta.user_id] || 'Vendedor Autorizado';
 
           return {
             oferta_id: oferta.id,
             preco: oferta.preco || 0,
             quantidade: oferta.estoque || 0,
-            vendedorId: vId,
-            vendedorNome: vNome,
+            vendedorId: oferta.user_id,
+            vendedorNome: oferta.nome_vendedor || 'Vendedor',
             numero: fig.numero || 'N/A',
             nome: fig.nome || 'Sem Nome',
             imagem: fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
