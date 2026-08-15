@@ -20,7 +20,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1100px;
+      max-width: 1250px;
       margin: 0 auto;
       padding: 1rem 1rem 0;
     }
@@ -51,7 +51,7 @@
     header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
 
     .controls-wrapper { 
-      max-width: 1100px; 
+      max-width: 1250px; 
       margin: 0 auto 1.5rem; 
       padding: 1rem; 
       background: rgba(255, 255, 255, 0.05); 
@@ -80,28 +80,51 @@
     }
     .filter-select:focus, .filter-input:focus { border-color: var(--gold); }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
+    .container { max-width: 1250px; margin: 0 auto; padding: 0 1rem; }
+    
+    /* Configurado para exibir perfeitamente 5 cards por linha */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
 
-    .sticker-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #0f172a; display: flex; flex-direction: column; transition: 0.3s; }
-    .sticker-card:hover { transform: translateY(-3px); }
-    .sticker-img-wrap { height: 160px; background: #f8fafc; padding: 10px; display: flex; align-items: center; justify-content: center; }
+    /* Novo visual do card (fundo escuro e moderno, sem fundo branco) */
+    .sticker-card { 
+      background: rgba(30, 41, 59, 0.85); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 12px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+      color: #f8fafc; 
+      display: flex; 
+      flex-direction: column; 
+      transition: 0.3s; 
+    }
+    .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    
+    /* Imagem maior e em evidência */
+    .sticker-img-wrap { 
+      height: 200px; 
+      background: #0f172a; 
+      padding: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
     
     .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .card-row { font-size: 0.75rem; color: #475569; }
-    .card-row span { font-weight: 700; color: #0f172a; }
+    .card-row { font-size: 0.75rem; color: #94a3b8; }
+    .card-row span { font-weight: 700; color: #f8fafc; }
     
-    .vendedor-label { font-size: 0.75rem; color: #2563eb; font-weight: 700; margin-bottom: 2px; }
-    .sticker-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 2px 0; }
-    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #059669; margin: 4px 0; }
-    .sticker-qtd { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+    .vendedor-label { font-size: 0.75rem; color: var(--gold); font-weight: 700; margin-bottom: 2px; }
+    .sticker-title { font-size: 0.9rem; font-weight: 700; color: #f8fafc; margin: 2px 0; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
+    .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
     
     .btn-vendedor { 
-      background: #2563eb; 
-      color: white; 
+      background: var(--gold); 
+      color: #0f172a; 
       border: none; 
-      padding: 0.7rem; 
+      padding: 0.6rem; 
       border-radius: 8px; 
       width: 100%; 
       font-weight: 700; 
@@ -111,9 +134,9 @@
       text-align: center;
       text-decoration: none;
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
-    .btn-vendedor:hover { background: #1d4ed8; }
+    .btn-vendedor:hover { background: #fbbf24; }
   </style>
 </head>
 <body>
@@ -163,14 +186,12 @@
 
     async function init() {
       try {
-        // 1. Busca os álbuns da tabela 'albuns'
         const { data: albuns } = await _supabase.from('albuns').select('id, nome');
         const albunsMap = {};
         if (albuns) {
           albuns.forEach(a => { albunsMap[a.id] = a.nome; });
         }
 
-        // 2. Busca as figurinhas
         const { data: figurinhas, error: errFig } = await _supabase.from('figurinhas').select('*');
         if (errFig) throw errFig;
 
@@ -184,7 +205,6 @@
           });
         }
 
-        // 3. Busca as ofertas ativas na vitrine
         const { data: ofertas, error: errOfertas } = await _supabase
           .from('vitrine_ofertas')
           .select('*')
@@ -192,7 +212,6 @@
 
         if (errOfertas) throw errOfertas;
 
-        // 4. Mapeia os dados usando o user_id e nome_vendedor diretamente da oferta
         allData = (ofertas || []).map(oferta => {
           const figId = oferta.figurinha_id || oferta.id_figurinha;
           const fig = figurinhasMap[figId] || {};
@@ -201,7 +220,7 @@
             oferta_id: oferta.id,
             preco: oferta.preco || 0,
             quantidade: oferta.estoque || 0,
-            vendedorId: oferta.user_id, // Usando diretamente o user_id único da oferta
+            vendedorId: oferta.user_id,
             vendedorNome: oferta.nome_vendedor || 'Vendedor',
             numero: fig.numero || 'N/A',
             nome: fig.nome || 'Sem Nome',
@@ -214,7 +233,6 @@
 
         allData.sort((a, b) => (a.numero || 0) - (b.numero || 0));
         
-        // Popula os selects de filtros dinamicamente
         const albunsList = [...new Set(allData.map(i => i.album).filter(item => item !== 'N/A'))].sort();
         const selectAlbum = document.getElementById('filterAlbum');
         albunsList.forEach(a => selectAlbum.innerHTML += `<option value="${a}">${a}</option>`);
