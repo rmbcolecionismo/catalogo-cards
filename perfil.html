@@ -16,7 +16,6 @@
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
     
-    /* Grid de cards idêntico ao da index.html */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
     .sticker-card { 
@@ -51,7 +50,6 @@
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
     .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
 
-    /* Botões de gerenciamento de cada card */
     .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
     .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
     .btn-edit { background: #3b82f6; color: white; }
@@ -65,7 +63,6 @@
     .btn-logout { background: #ef4444; color: white; }
     .btn-gold { background: var(--gold); color: #0f172a; }
 
-    /* Modal simples de Edição */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
     .modal-box { background: #1e293b; border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 320px; }
   </style>
@@ -137,16 +134,13 @@
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   
   let usuarioLogado = null;
-  let perfilAlvoId = null; // ID do perfil que está sendo exibido na tela
+  let perfilAlvoId = null;
   let isAdminOrMaster = false;
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) { window.location.replace("login.html"); return; }
 
-    const authUserId = session.user.id;
-
-    // Busca o usuário logado para verificar permissões de admin/master
     const { data: perfilLogado } = await _supabase
       .from('vendedores_autorizados')
       .select('*')
@@ -158,12 +152,10 @@
     usuarioLogado = perfilLogado;
     isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
 
-    // Verifica se foi passado um ID via URL (?id=...) para ver o perfil de outro usuário (caso seja admin/master)
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
 
     if (idParam && idParam !== String(perfilLogado.id) && idParam !== String(perfilLogado.user_id)) {
-      // Se for admin vendo outro perfil, busca o perfil alvo
       const { data: perfilAlvo } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
@@ -172,7 +164,7 @@
 
       if (perfilAlvo) {
         perfilAlvoId = perfilAlvo.user_id || perfilAlvo.id;
-        preencherDadosPerfil(perfilAlvo, false); // false para não mostrar edição de dados pessoais de terceiros
+        preencherDadosPerfil(perfilAlvo, false);
       } else {
         preencherDadosPerfil(perfilLogado, true);
         perfilAlvoId = perfilLogado.user_id || perfilLogado.id;
@@ -197,7 +189,6 @@
     document.getElementById('editNome').value = perfil.nome || '';
     document.getElementById('editCidade').value = perfil.cidade || '';
 
-    // Se estiver visualizando o perfil de outro usuário e não for master, esconde o botão de editar perfil
     if (!ehProprio && !isAdminOrMaster) {
       document.getElementById('viewMode').querySelector('button').style.display = 'none';
     }
@@ -233,37 +224,17 @@
   }
 
   async function carregarVitrine(userId) {
-    // Busca álbuns para mapear nomes se necessário, e ofertas da vitrine
-    const { data: albuns } = await _supabase.from('albuns').select('id, nome');
-    const albunsMap = {};
-    if (albuns) albuns.forEach(a => { albunsMap[a.id] = a.nome; });
-
-    const { data: ofertas, error } = await _supabase
-      .from('vitrine_ofertas')
-      .select(`
-        id,
-        preco,
-        estoque,
-        user_id,
-        figurinha_id,
-        id_figurinha,
-        figurinhas (
-          id,
-          numero,
-          nome,
-          imagem,
-          selecao_escuderia,
-          album_id,
-          tipo
-        )
-      `)
-      .or(`user_id.eq.${userId}`);
-
     const grid = document.getElementById('vitrineGrid');
     
+    // Busca segura de ofertas vinculadas ao usuário
+    const { data: ofertas, error } = await _supabase
+      .from('vitrine_ofertas')
+      .select('*')
+      .eq('user_id', userId);
+
     if (error) {
       console.error("Erro ao carregar vitrine:", error);
-      grid.innerHTML = "<p style='color: #ef4444; grid-column: 1/-1;'>Erro ao carregar vitrine.</p>";
+      grid.innerHTML = `<p style='color: #ef4444; grid-column: 1/-1;'>Erro ao carregar vitrine: ${error.message}</p>`;
       return;
     }
 
@@ -272,13 +243,27 @@
       return; 
     }
 
-    grid.innerHTML = ofertas.map(item => {
-      const f = item.figurinhas || {};
-      const precoNum = item.preco || 0;
-      const precoFormatado = precoNum.toFixed(2).replace('.', ',');
-      const albumNome = albunsMap[f.album_id] || 'N/A';
+    // Busca todas as figurinhas correspondentes para preencher os dados visuais
+    const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha).filter(Boolean);
+    let figurinhasMap = {};
+    
+    if (figIds.length > 0) {
+      const { data: figs } = await _supabase
+        .from('figurinhas')
+        .select('*')
+        .in('id', figIds);
+        
+      if (figs) {
+        figs.forEach(f => { figurinhasMap[f.id] = f; });
+      }
+    }
 
-      // Verifica permissão para gerenciar (próprio dono ou admin/master)
+    grid.innerHTML = ofertas.map(item => {
+      const fId = item.figurinha_id || item.id_figurinha;
+      const f = figurinhasMap[fId] || {};
+      const precoNum = item.preco || 0;
+      const precoFormatado = Number(precoNum).toFixed(2).replace('.', ',');
+
       const podeGerenciar = (String(item.user_id) === String(usuarioLogado.user_id) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
 
       return `
@@ -289,7 +274,6 @@
           <div class="sticker-info">
             <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
             <div class="card-row">Código: <span>${f.numero || 'N/A'}</span></div>
-            <div class="card-row">Álbum: <span>${albumNome}</span></div>
             <div class="card-row">Seleção: <span>${f.selecao_escuderia || 'N/A'}</span></div>
             <div class="card-row">Tipo: <span>${f.tipo || 'N/A'}</span></div>
             <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${item.estoque || 0}</div>
