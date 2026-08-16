@@ -235,16 +235,26 @@
     const { data: figs } = await _supabase.from('figurinhas').select('*').in('id', figIds);
     const figsMap = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
 
+    const albumIds = [...new Set(Object.values(figsMap).map(f => f.album_id).filter(Boolean))];
+    let albunsMap = {};
+    if (albumIds.length > 0) {
+      const { data: albuns } = await _supabase.from('albuns').select('*').in('id', albumIds);
+      if (albuns) albunsMap = Object.fromEntries(albuns.map(a => [a.id, a.nome]));
+    }
+
     grid.innerHTML = ofertas.map(item => {
       const f = figsMap[item.figurinha_id || item.id_figurinha] || {};
+      const nomeAlbum = albunsMap[f.album_id] || '-';
+      const selecaoEscuderia = f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
       return `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
           <div class="sticker-info">
+            <div class="card-row">Álbum: <span>${nomeAlbum}</span></div>
             <div class="card-row">Número: <span>${f.numero || '-'}</span></div>
             <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
-            <div class="card-row">Seleção: <span>${f.selecao || '-'}</span></div>
+            <div class="card-row">Seleção: <span>${selecaoEscuderia}</span></div>
             <div class="card-row">Tipo: <span>${f.tipo || '-'}</span></div>
             <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
             <div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>
