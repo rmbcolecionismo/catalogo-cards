@@ -284,7 +284,7 @@
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJZ7KUkDCdCoJuE";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // --- VERIFICAR SESSÃO E CARREGAR DADOS DO UTILIZADOR ---
@@ -311,6 +311,7 @@
         greetingEl.innerText = `Olá, ${nomeExibicao}`;
       }
 
+      // Carregar dados iniciais das tabelas
       carregarAlbuns();
       carregarTipos();
       carregarVendedores();
@@ -318,6 +319,7 @@
       carregarAjudas();
     }
 
+    // Executa ao carregar a página
     window.addEventListener('DOMContentLoaded', verificarSessao);
 
     async function fazerLogout() {
@@ -514,67 +516,6 @@
       else carregarTipos();
     }
 
-    // --- CADASTRO DE FIGURINHA ---
-    async function cadastrarFigurinha() {
-      const album_id = document.getElementById('selectAlbumFigurinha').value;
-      const tipo_id = document.getElementById('selectTipoFigurinha').value;
-      const selecao = document.getElementById('inputSelecaoFigurinha').value.trim();
-      const numero = document.getElementById('inputNumeroFigurinha').value.trim();
-      const nome = document.getElementById('inputNomeFigurinha').value.trim();
-      const fileInput = document.getElementById('inputArquivoFigurinha');
-      const msg = document.getElementById('msgFigurinha');
-
-      if (!album_id || !nome || !numero) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Preencha o álbum, o número e o nome da figurinha.";
-        msg.style.display = "block";
-        return;
-      }
-
-      let imagem_url = "";
-
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}_${file.name}`;
-        const { data: uploadData, error: uploadError } = await _supabase.storage
-          .from('figurinhas')
-          .upload(fileName, file);
-
-        if (uploadError) {
-          msg.className = "msg-feedback msg-error";
-          msg.innerText = "Erro no upload da imagem: " + uploadError.message;
-          msg.style.display = "block";
-          return;
-        }
-
-        const { data: publicUrlData } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
-        imagem_url = publicUrlData.publicUrl;
-      }
-
-      const { error } = await _supabase.from('figurinhas').insert([{
-        album_id,
-        tipo_id: tipo_id || null,
-        selecao,
-        numero,
-        nome,
-        imagem_url
-      }]);
-
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro ao cadastrar figurinha: " + error.message;
-        msg.style.display = "block";
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Figurinha cadastrada com sucesso!";
-        msg.style.display = "block";
-        document.getElementById('inputSelecaoFigurinha').value = '';
-        document.getElementById('inputNumeroFigurinha').value = '';
-        document.getElementById('inputNomeFigurinha').value = '';
-        document.getElementById('inputArquivoFigurinha').value = '';
-      }
-    }
-
     // --- CARREGAMENTO DE VENDEDORES ---
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
@@ -713,57 +654,109 @@
       `).join('');
     }
 
-    // --- CARREGAMENTO DE AJUDAS ---
+    function copiarEmailSaudacao(nome, emailDestino) {
+      const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
+      const mensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma!`;
+      
+      if (emailDestino) {
+        window.location.href = `mailto:${emailDestino}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
+      } else {
+        alert("E-mail do contato não disponível.");
+      }
+    }
+
+    // --- CARREGAR AJUDAS E COLABORAÇÕES (ATUALIZADO) ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('ajudas').select('*');
-
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda registada.</td></tr>`;
+      const { data, error } = await _supabase.from('colaboracoes').select('*');
+      
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map(item => `
-        <tr>
-          <td>
-            <img src="${item.imagem_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" 
-                 alt="Miniatura" class="img-miniatura" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-          </td>
-          <td>${item.album || '-'}</td>
-          <td>${item.codigo_figurinha || '-'}</td>
-          <td>${item.nome_figurinha || '-'}</td>
-          <td>${item.credito || item.email || '-'}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-excluir" onclick="excluirAjuda('${item.id}')">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function excluirAjuda(id) {
-      if (!confirm("Deseja realmente excluir este registo de ajuda?")) return;
-      const { error } = await _supabase.from('ajudas').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir ajuda: " + error.message);
-      } else {
-        carregarAjudas();
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        return;
       }
+
+      tbody.innerHTML = data.map(a => {
+        // Tratamento flexível para colunas com possíveis variações de nomenclatura na tabela do banco
+        const album = a.album || a.álbum || '-';
+        const codigo = a.codigo_figurinha || a.codigo || a.numero || '-';
+        const nomeFigurinha = a.nome_figurinha || a.figurinha || '-';
+        const credito = a.email_ou_nome_para_credito || a.email || a.credito || a.remetente || '-';
+        const fotoUrl = a.foto_url || a.foto || '';
+
+        return `
+          <tr>
+            <td>
+              ${fotoUrl ? `<img src="${fotoUrl}" alt="Foto" class="img-miniatura" onclick="window.open('${fotoUrl}', '_blank')" title="Clique para ampliar">` : 'Sem foto'}
+            </td>
+            <td>${album}</td>
+            <td>${codigo}</td>
+            <td>${nomeFigurinha}</td>
+            <td>${credito}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" title="Enviar E-mail de Agradecimento" onclick="enviarEmailAgradecimento('${credito}', '${nomeFigurinha}')">✉️ E-mail</button>
+                <button class="btn-excluir" title="Excluir ajuda e foto" onclick="excluirAjuda('${a.id}', '${fotoUrl}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    function copiarEmailSaudacao(nome, emailDestino) {
-      // Implementação da função de copiar email existente...
-      alert("Função de copiar e-mail para: " + nome);
+    // --- FUNÇÃO PARA ENVIAR E-MAIL DE AGRADECIMENTO PELA AJUDA ---
+    function enviarEmailAgradecimento(emailDestino, nomeFigurinha) {
+      // Verifica se o texto do crédito se parece com um e-mail válido
+      const ehEmail = emailDestino && emailDestino.includes('@');
+      const destinatario = ehEmail ? emailDestino : '';
+      
+      const assunto = "Muito obrigado pela sua colaboração! 🌟";
+      const mensagem = `Olá!\n\nGostaríamos de agradecer imensamente pela sua ajuda ao enviar a foto da figurinha (${nomeFigurinha}) para completar o nosso catálogo.\n\nA sua contribuição é essencial para manter o nosso álbum digital atualizado e completo para todos os colecionadores.\n\nMuito obrigado!`;
+      
+      window.location.href = `mailto:${destinatario}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
     }
 
-    async function excluirContato(id) {
-        if (!confirm("Deseja realmente excluir este contacto?")) return;
-        const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-        if (error) alert("Erro: " + error.message);
-        else carregarContatos();
+    // --- EXCLUIR AJUDA E O ARQUIVO DO STORAGE ---
+    async function excluirAjuda(id, fotoUrl) {
+      if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
+
+      try {
+        if (fotoUrl) {
+          const partesUrl = fotoUrl.split('/colaboracoes/');
+          if (partesUrl.length > 1) {
+            const caminhoArquivo = decodeURIComponent(partesUrl[1]);
+            
+            const { error: storageError } = await _supabase.storage
+              .from('colaboracoes')
+              .remove([caminhoArquivo]);
+
+            if (storageError) {
+              console.warn("Aviso ao remover arquivo do storage:", storageError.message);
+            }
+          }
+        }
+
+        const { error: dbError } = await _supabase
+          .from('colaboracoes')
+          .delete()
+          .eq('id', id);
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        alert("Ajuda excluída com sucesso!");
+        carregarAjudas();
+
+      } catch (err) {
+        alert("Erro ao excluir ajuda: " + err.message);
+      }
     }
   </script>
 </body>
