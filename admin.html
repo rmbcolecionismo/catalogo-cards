@@ -301,6 +301,14 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Inicialização ao carregar a página
+    document.addEventListener("DOMContentLoaded", async () => {
+      const autorizado = await verificarAdminMaster();
+      if (autorizedOrNot = autorizado) {
+        carregarAlbuns();
+      }
+    });
+
     function mudarAba(abaId, event) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -410,7 +418,6 @@
       else carregarAlbuns();
     }
 
-
     // --- CRUD: TIPOS ---
     async function carregarTipos() {
       const { data } = await _supabase.from('tipos').select('*').order('nome');
@@ -474,7 +481,6 @@
       else carregarTipos();
     }
 
-
     // --- CRUD: SELEÇÕES / ESCUDERIAS ---
     async function carregarSelecoes() {
       const { data } = await _supabase.from('selecoes_escuderias').select('*').order('nome');
@@ -537,7 +543,6 @@
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarSelecoes();
     }
-
 
     // --- SELECTS E UPLOAD PARA FIGURINHAS ---
     async function carregarAlbunsSelect() {
@@ -615,7 +620,6 @@
       msg.style.display = "block";
     }
 
-
     // --- CRUD: VENDEDORES ---
     async function carregarVendedores() {
       const { data } = await _supabase.from('vendedores_autorizados').select('*').order('nome');
@@ -659,9 +663,12 @@
         { email, nome, cidade, telefone_whats, funcao, is_admin }
       ], { onConflict: 'email' }));
 
-      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
-      else {
-        msg.className = "msg-feedback msg-success"; msg.innerText = "Vendedor salvo com sucesso!";
+      if (error) { 
+        msg.className = "msg-feedback msg-error"; 
+        msg.innerText = "Erro: " + error.message; 
+      } else {
+        msg.className = "msg-feedback msg-success"; 
+        msg.innerText = "Vendedor salvo com sucesso!";
         cancelarEdicaoVendedor();
         carregarVendedores();
       }
@@ -694,34 +701,31 @@
     }
 
     async function excluirVendedor(email) {
-      if (!confirm("Deseja remover este vendedor?")) return;
+      if (!confirm("Deseja remover a autorização deste vendedor?")) return;
       const { error } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarVendedores();
     }
 
-    // --- CRUD: CONTATOS RECEBIDOS (CONTATO_VENDEDORES) ---
+    // --- CONTATOS RECEBIDOS (contato_vendedores) ---
     async function carregarContatos() {
-      const { data, error } = await _supabase.from('contato_vendedores').select('*');
+      const { data, error } = await _supabase.from('contato_vendedores').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
-
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`;
         return;
       }
-
       if (!data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido.</td></tr>`;
         return;
       }
-
       tbody.innerHTML = data.map(c => `
         <tr>
           <td>${c.nome || '-'}</td>
           <td>${c.email || '-'}</td>
           <td>${c.cidade || '-'}</td>
-          <td>${c.telefone || c.telemóvel || '-'}</td>
+          <td>${c.telemovel || c.telefone || '-'}</td>
           <td>${c.albuns || '-'}</td>
           <td class="acoes-btns">
             <button class="btn-excluir" onclick="excluirContato(${c.id})">Excluir</button>
@@ -731,19 +735,11 @@
     }
 
     async function excluirContato(id) {
-      if (!confirm("Deseja excluir este contato?")) return;
+      if (!confirm("Deseja apagar este contato recebido?")) return;
       const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarContatos();
     }
-
-    // Inicialização ao carregar a página
-    window.onload = async () => {
-      const autorizado = await verificarAdminMaster();
-      if (autorized !== false && autorizado) {
-        carregarAlbuns();
-      }
-    };
   </script>
 </body>
 </html>
