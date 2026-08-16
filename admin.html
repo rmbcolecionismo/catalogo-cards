@@ -710,80 +710,12 @@ Equipa de Administração
     }
 
     async function excluirAjuda(id) {
-        if (!confirm("Deseja realmente excluir esta ajuda?")) return;
-        const { error } = await _supabase.from('ajudas').delete().eq('id', id);
-        if (error) alert("Erro ao excluir: " + error.message);
-        else carregarAjudas();
-    }
-
-    // --- CADASTRAR FIGURINHA ---
-    async function cadastrarFigurinha() {
-      const album_id = document.getElementById('selectAlbumFigurinha').value;
-      const tipo_id = document.getElementById('selectTipoFigurinha').value;
-      const selecao_escuderia = document.getElementById('inputSelecaoFigurinha').value.trim();
-      const numero = document.getElementById('inputNumeroFigurinha').value.trim();
-      const nome = document.getElementById('inputNomeFigurinha').value.trim();
-      const fileInput = document.getElementById('inputArquivoFigurinha');
-      const msg = document.getElementById('msgFigurinha');
-
-      if (!album_id || !tipo_id || !numero || !nome) {
-        msg.className = "msg-feedback msg-error"; 
-        msg.innerText = "Preencha todos os campos obrigatórios."; 
-        msg.style.display = "block"; 
-        return;
-      }
-
-      msg.className = "msg-feedback";
-      msg.innerText = "Processando imagem..."; 
-      msg.style.display = "block";
-
-      let publicUrl = "https://rmbcolecionismo.github.io/catalogo-cards/sem-foto.jpg";
-
-      if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await _supabase.storage
-          .from('figurinhas')
-          .upload(filePath, file);
-
-        if (uploadError) {
-          msg.className = "msg-feedback msg-error";
-          msg.innerText = "Erro ao fazer upload da imagem: " + uploadError.message;
-          msg.style.display = "block";
-          return;
-        }
-
-        const { data: publicData } = _supabase.storage
-          .from('figurinhas')
-          .getPublicUrl(filePath);
-
-        publicUrl = publicData.publicUrl;
-      }
-
-      const { error: insertError } = await _supabase.from('figurinhas').insert([{
-        album_id,
-        tipo_id,
-        selecao_escuderia,
-        numero,
-        nome,
-        imagem_url: publicUrl
-      }]);
-
-      if (insertError) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro ao cadastrar figurinha: " + insertError.message;
-        msg.style.display = "block";
+      if (!confirm("Deseja realmente excluir esta ajuda?")) return;
+      const { error } = await _supabase.from('ajudas').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
       } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Figurinha cadastrada com sucesso!";
-        msg.style.display = "block";
-        document.getElementById('inputSelecaoFigurinha').value = '';
-        document.getElementById('inputNumeroFigurinha').value = '';
-        document.getElementById('inputNomeFigurinha').value = '';
-        fileInput.value = '';
+        carregarAjudas();
       }
     }
   </script>
