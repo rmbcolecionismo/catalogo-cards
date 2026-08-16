@@ -288,6 +288,261 @@
       if(event) event.currentTarget.classList.add('active');
     }
 
+    // --- CARREGAMENTO DE ÁLBUNS ---
+    async function carregarAlbuns() {
+      const tbody = document.getElementById('tabelaAlbuns');
+      const selectFig = document.getElementById('selectAlbumFigurinha');
+      if (!tbody) return;
+
+      const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum álbum cadastrado.</td></tr>`;
+        if (selectFig) selectFig.innerHTML = `<option value="">Selecione o álbum...</option>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td>${item.nome}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${item.nome}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      if (selectFig) {
+        selectFig.innerHTML = `<option value="">Selecione o álbum...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      }
+    }
+
+    async function salvarAlbum() {
+      const id = document.getElementById('editAlbumId').value;
+      const nome = document.getElementById('inputNomeAlbum').value.trim();
+      const msg = document.getElementById('msgAlbum');
+
+      if (!nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Digite o nome do álbum.";
+        msg.style.display = "block";
+        return;
+      }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase.from('albuns').update({ nome }).eq('id', id));
+      } else {
+        ({ error } = await _supabase.from('albuns').insert([{ nome }]));
+      }
+
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+        msg.style.display = "block";
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Álbum salvo com sucesso!";
+        msg.style.display = "block";
+        document.getElementById('inputNomeAlbum').value = '';
+        cancelarEdicaoAlbum();
+        carregarAlbuns();
+      }
+    }
+
+    function prepararEdicaoAlbum(id, nome) {
+      document.getElementById('editAlbumId').value = id;
+      document.getElementById('inputNomeAlbum').value = nome;
+      document.getElementById('tituloCardAlbum').innerText = "📂 Editar Álbum";
+      document.getElementById('btnSalvarAlbum').innerText = "Atualizar Álbum";
+      document.getElementById('btnCancelarAlbum').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoAlbum() {
+      document.getElementById('editAlbumId').value = '';
+      document.getElementById('inputNomeAlbum').value = '';
+      document.getElementById('tituloCardAlbum').innerText = "📂 Cadastro de Álbum";
+      document.getElementById('btnSalvarAlbum').innerText = "Salvar Álbum";
+      document.getElementById('btnCancelarAlbum').style.display = "none";
+    }
+
+    async function excluirAlbum(id) {
+      if (!confirm("Deseja realmente excluir este álbum?")) return;
+      const { error } = await _supabase.from('albuns').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarAlbuns();
+    }
+
+    // --- CARREGAMENTO DE TIPOS ---
+    async function carregarTipos() {
+      const tbody = document.getElementById('tabelaTipos');
+      const selectTip = document.getElementById('selectTipoFigurinha');
+      if (!tbody) return;
+
+      const { data, error } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum tipo cadastrado.</td></tr>`;
+        if (selectTip) selectTip.innerHTML = `<option value="">Selecione o tipo...</option>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td>${item.nome}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoTipo('${item.id}', '${item.nome}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirTipo('${item.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      if (selectTip) {
+        selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      }
+    }
+
+    async function salvarTipo() {
+      const id = document.getElementById('editTipoId').value;
+      const nome = document.getElementById('inputNomeTipo').value.trim();
+      const msg = document.getElementById('msgTipo');
+
+      if (!nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Digite o nome do tipo.";
+        msg.style.display = "block";
+        return;
+      }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase.from('tipos').update({ nome }).eq('id', id));
+      } else {
+        ({ error } = await _supabase.from('tipos').insert([{ nome }]));
+      }
+
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+        msg.style.display = "block";
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Tipo salvo com sucesso!";
+        msg.style.display = "block";
+        document.getElementById('inputNomeTipo').value = '';
+        cancelarEdicaoTipo();
+        carregarTipos();
+      }
+    }
+
+    function prepararEdicaoTipo(id, nome) {
+      document.getElementById('editTipoId').value = id;
+      document.getElementById('inputNomeTipo').value = nome;
+      document.getElementById('tituloCardTipo').innerText = "🏷️ Editar Tipo";
+      document.getElementById('btnSalvarTipo').innerText = "Atualizar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoTipo() {
+      document.getElementById('editTipoId').value = '';
+      document.getElementById('inputNomeTipo').value = '';
+      document.getElementById('tituloCardTipo').innerText = "🏷️ Cadastro de Tipo";
+      document.getElementById('btnSalvarTipo').innerText = "Salvar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "none";
+    }
+
+    async function excluirTipo(id) {
+      if (!confirm("Deseja realmente excluir este tipo?")) return;
+      const { error } = await _supabase.from('tipos').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarTipos();
+    }
+
+    // --- CARREGAMENTO DE VENDEDORES ---
+    async function carregarVendedores() {
+      const tbody = document.getElementById('tabelaVendedores');
+      if (!tbody) return;
+      const { data, error } = await _supabase.from('vendedores').select('*');
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum vendedor encontrado.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.map(v => `
+        <tr>
+          <td>${v.nome || '-'}</td>
+          <td>${v.email || '-'}</td>
+          <td>${v.cidade || '-'}</td>
+          <td>${v.telefone || '-'}</td>
+          <td>${v.funcao || 'vendedor'}</td>
+          <td>
+            <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Remover</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function salvarVendedor() {
+      const email = document.getElementById('inputEmailVendedor').value.trim();
+      const nome = document.getElementById('inputNomeVendedor').value.trim();
+      const cidade = document.getElementById('inputCidadeVendedor').value.trim();
+      const telefone = document.getElementById('inputTelefoneVendedor').value.trim();
+      const funcao = document.getElementById('selectFuncaoVendedor').value;
+      const msg = document.getElementById('msgVendedor');
+
+      if (!email) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Informe o e-mail do vendedor.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const { error } = await _supabase.from('vendedores').upsert([{ email, nome, cidade, telefone, funcao }], { onConflict: 'email' });
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+        msg.style.display = "block";
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Vendedor salvo com sucesso!";
+        msg.style.display = "block";
+        document.getElementById('inputEmailVendedor').value = '';
+        document.getElementById('inputNomeVendedor').value = '';
+        document.getElementById('inputCidadeVendedor').value = '';
+        document.getElementById('inputTelefoneVendedor').value = '';
+        carregarVendedores();
+      }
+    }
+
+    async function excluirVendedor(email) {
+      if (!confirm("Remover este vendedor?")) return;
+      await _supabase.from('vendedores').delete().eq('email', email);
+      carregarVendedores();
+    }
+
+    // --- CARREGAMENTO DE CONTATOS E AJUDAS (placeholders seguros) ---
+    async function carregarContatos() {
+      const tbody = document.getElementById('tabelaContatos');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
+    }
+
+    async function carregarAjudas() {
+      const tbody = document.getElementById('tabelaAjudas');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr>`;
+    }
+
+    // --- CADASTRAR FIGURINHA ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
       const tipo_id = document.getElementById('selectTipoFigurinha').value;
@@ -344,7 +599,26 @@
         document.getElementById('inputSelecaoFigurinha').value = '';
       }
     }
-    // ... (restante das funções que você já tinha)
+
+    // --- INICIALIZAÇÃO AUTOMÁTICA AO ABRIR A PÁGINA ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      // 1. Verificar saudação do usuário logado
+      const { data: { user } } = await _supabase.auth.getUser();
+      if (user) {
+        const nomeUsuario = user.email ? user.email.split('@')[0] : 'Usuário';
+        document.getElementById('userGreeting').innerText = `Olá, ${nomeUsuario}`;
+      } else {
+        window.location.replace("login.html");
+        return;
+      }
+
+      // 2. Carregar dados das tabelas e selects
+      carregarAlbuns();
+      carregarTipos();
+      carregarVendedores();
+      carregarContatos();
+      carregarAjudas();
+    });
   </script>
 </body>
 </html>
