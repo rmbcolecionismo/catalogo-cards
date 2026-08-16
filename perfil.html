@@ -128,7 +128,7 @@
     return regex.test(s);
   }
 
-  async function verificarAcesso() {
+ async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
       authUserId = session.user.id;
@@ -145,44 +145,47 @@
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
 
-    if (idParam) {
-      let perfilAlvo = null;
+    let perfilAlvo = null;
 
-      // Se não for puramente numérico, tenta buscar pelo user_id (UUID)
+    if (idParam) {
+      // Se passou ID na URL, tenta buscar pelo user_id ou pelo id (se for UUID)
       if (!/^\d+$/.test(idParam)) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
         perfilAlvo = data;
       }
-
-      // Se ainda não achou e o parâmetro for um UUID válido, tenta buscar pelo campo id UUID
       if (!perfilAlvo && isUUID(idParam)) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
         perfilAlvo = data;
       }
-
-      if (perfilAlvo) {
-        perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
-        const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
-        preencherDadosPerfil(perfilAlvo, ehProprio);
-      } else {
-        document.getElementById('userName').innerText = "Vendedor não encontrado";
-        return;
-      }
     } else if (usuarioLogado) {
-      preencherDadosPerfil(usuarioLogado, true);
-      perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
+      // Se não passou ID na URL, o alvo é o próprio usuário logado
+      perfilAlvo = usuarioLogado;
+    }
+
+    if (perfilAlvo) {
+      // PRIORIZA O user_id PARA A VITRINE (pois as ofertas usam o UUID de auth)
+      perfilAlvoUuid = perfilAlvo.user_id || (isUUID(perfilAlvo.id) ? perfilAlvo.id : null);
+      
+      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
+      preencherDadosPerfil(perfilAlvo, ehProprio);
     } else {
+      document.getElementById('userName').innerText = "Vendedor não encontrado";
+      document.getElementById('vitrineGrid').innerHTML = "Vendedor não encontrado.";
+      return;
+    }
+
+    if (!session && !idParam) {
       window.location.replace("login.html");
       return;
     }
 
     if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
     
-    // Garante que só vai carregar a vitrine se o identificador for um UUID válido
+    // Carrega a vitrine apenas se tivermos um UUID válido
     if (isUUID(perfilAlvoUuid)) {
       carregarVitrine(perfilAlvoUuid);
     } else {
-      document.getElementById('vitrineGrid').innerHTML = "ID do vendedor inválido para carregar a vitrine.";
+      document.getElementById('vitrineGrid').innerHTML = "Vitrine indisponível: o vendedor não possui um UUID de vínculo associado.";
     }
   }
 
