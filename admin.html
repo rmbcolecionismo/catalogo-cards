@@ -597,11 +597,12 @@
         publicUrl = urlData.data.publicUrl;
       }
 
-      msg.innerText = "Salvando figurinha...";
+     msg.innerText = "Salvando figurinha...";
 
+      // CORREÇÃO: troquei "tipo: tipo" por "tipo_id: tipo_id"
       const { error } = await _supabase.from('figurinhas').insert([{ 
         album_id: album_id, 
-        tipo_id: tipo,
+        tipo_id: tipo_id, 
         selecao_escuderia: selecao_escuderia, 
         numero: numero, 
         nome: nome, 
