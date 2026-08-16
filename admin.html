@@ -293,7 +293,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -583,7 +582,7 @@
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36.substring(2, 7))}.${fileExt}`;
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
         const filePath = `${fileName}`;
 
         msg.className = "msg-feedback msg-success";
@@ -669,76 +668,73 @@
       msg.style.display = "block";
     }
 
-    function editarVendedor(email, nome, cidade, telefone_whats, funcao) {
-      document.getElementById('editVendedorOriginalEmail').value = email;
-      document.getElementById('inputEmailVendedor').value = email;
-      document.getElementById('inputNomeVendedor').value = nome;
-      document.getElementById('inputCidadeVendedor').value = cidade;
-      document.getElementById('inputTelefoneVendedor').value = telefone_whats;
-      document.getElementById('selectFuncaoVendedor').value = funcao;
-      
-      document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor Autorizado";
-      document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
-      document.getElementById('btnCancelarVendedor').style.display = "inline-block";
+    function editarVendedor(email, nome, cidade, telefone, funcao) {
+        document.getElementById('editVendedorOriginalEmail').value = email;
+        document.getElementById('inputEmailVendedor').value = email;
+        document.getElementById('inputNomeVendedor').value = nome;
+        document.getElementById('inputCidadeVendedor').value = cidade;
+        document.getElementById('inputTelefoneVendedor').value = telefone;
+        document.getElementById('selectFuncaoVendedor').value = funcao;
+        
+        document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor";
+        document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
+        document.getElementById('btnCancelarVendedor').style.display = "inline-block";
     }
 
     function cancelarEdicaoVendedor() {
-      document.getElementById('editVendedorOriginalEmail').value = '';
-      document.getElementById('inputEmailVendedor').value = '';
-      document.getElementById('inputNomeVendedor').value = '';
-      document.getElementById('inputCidadeVendedor').value = '';
-      document.getElementById('inputTelefoneVendedor').value = '';
-      document.getElementById('selectFuncaoVendedor').value = 'vendedor';
-      
-      document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
-      document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
-      document.getElementById('btnCancelarVendedor').style.display = "none";
-      document.getElementById('msgVendedor').style.display = "none";
+        document.getElementById('editVendedorOriginalEmail').value = '';
+        document.getElementById('inputEmailVendedor').value = '';
+        document.getElementById('inputNomeVendedor').value = '';
+        document.getElementById('inputCidadeVendedor').value = '';
+        document.getElementById('inputTelefoneVendedor').value = '';
+        document.getElementById('selectFuncaoVendedor').value = 'vendedor';
+        
+        document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
+        document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
+        document.getElementById('btnCancelarVendedor').style.display = "none";
+        document.getElementById('msgVendedor').style.display = "none";
     }
 
     async function excluirVendedor(email) {
-      if (!confirm("Deseja revogar e excluir este vendedor?")) return;
+      if (!confirm("Deseja excluir este vendedor?")) return;
       const { error } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarVendedores();
     }
 
-
-    // --- CONTATOS RECEBIDOS (contato_vendedores) ---
     async function carregarContatos() {
-      const tbody = document.getElementById('tabelaContatos');
-      const { data, error } = await _supabase.from('contato_vendedores').select('*').order('criado_em', { ascending: false });
-      
-      if (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`; return; }
-      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido ainda.</td></tr>`; return; }
-
-      tbody.innerHTML = data.map(c => `
-        <tr>
-          <td>${c.nome || '-'}</td>
-          <td>${c.email || '-'}</td>
-          <td>${c.cidade || '-'}</td>
-          <td>${c.telefone || '-'}</td>
-          <td>${c.albuns || '-'}</td>
-          <td><button class="btn-excluir" onclick="excluirContato(${c.id})">Excluir</button></td>
-        </tr>
-      `).join('');
+        const { data } = await _supabase.from('contato_vendedores').select('*').order('created_at', { ascending: false });
+        const tbody = document.getElementById('tabelaContatos');
+        if (!tbody) return;
+        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato pendente.</td></tr>`; return; }
+        
+        tbody.innerHTML = data.map(c => `
+          <tr>
+            <td>${c.nome}</td>
+            <td>${c.email}</td>
+            <td>${c.cidade}</td>
+            <td>${c.telefone}</td>
+            <td>${c.albuns || '-'}</td>
+            <td class="acoes-btns">
+                <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
+            </td>
+          </tr>
+        `).join('');
     }
 
     async function excluirContato(id) {
-      if (!confirm("Deseja apagar este contato?")) return;
-      const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
-      if (error) alert("Erro ao excluir: " + error.message);
-      else carregarContatos();
+        if (!confirm("Deseja remover este contato?")) return;
+        const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else carregarContatos();
     }
 
+    // Inicialização básica ao carregar a página
+    window.onload = async () => {
+        await verificarAdminMaster();
+        mudarAba('albuns', null);
+    };
 
-    async function inicializarAdmin() {
-      const autorizado = await verificarAdminMaster();
-      if (!autorizado) return;
-      carregarAlbuns();
-    }
-
-    inicializarAdmin();
   </script>
 </body>
 </html>
