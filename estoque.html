@@ -51,18 +51,18 @@
     .tabela-estoque td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     .tabela-estoque tr:hover { background: rgba(255, 255, 255, 0.02); }
 
-    .item-foto-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 75px; }
-    .item-foto { width: 55px; height: 70px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid var(--border-color); padding: 2px; }
+    .item-foto-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 85px; margin: 0 auto; }
+    .item-foto { width: 60px; height: 75px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid var(--border-color); padding: 2px; }
     
     .input-tabela { padding: 0.45rem 0.6rem; font-size: 0.8rem; border-radius: 6px; }
     
-    .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.35rem 0.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: all 0.2s; width: 100%; text-align: center; white-space: nowrap; }
     .btn-acao:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
 
     .btn-excluir { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
     .btn-excluir:hover { background: #ef4444; color: white; border-color: #ef4444; }
 
-    .acoes-grupo { display: flex; gap: 0.4rem; align-items: center; }
+    .acoes-grupo { display: flex; gap: 0.4rem; align-items: center; justify-content: center; }
     .file-input-hidden { display: none; }
 
     .load-more-container { text-align: center; margin: 1.5rem 0 3rem 0; }
@@ -104,7 +104,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: #001, 1, Messi, Brasil...">
+        <input type="text" id="search" placeholder="🔍 Ex: #001, 001, 1, Messi, Brasil...">
       </div>
     </div>
 
@@ -112,13 +112,13 @@
       <table class="tabela-estoque">
         <thead>
           <tr>
-            <th style="width: 100px; text-align: center;">Foto</th>
+            <th style="width: 110px; text-align: center;">Foto</th>
             <th style="width: 250px;">Álbum</th>
             <th style="width: 110px;">Código</th>
             <th>Nome da Figurinha</th>
             <th style="width: 180px;">Seleção / Escuderia</th>
             <th style="width: 160px;">Tipo</th>
-            <th style="width: 190px; text-align: center;">Ações</th>
+            <th style="width: 120px; text-align: center;">Ações</th>
           </tr>
         </thead>
         <tbody id="tabelaCorpo">
@@ -142,8 +142,6 @@
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let listaAlbunsSelectOptions = '';
-    let mapaTipos = {};
-    let listaTiposSelectOptions = '';
     let paginaAtual = 0;
 
     async function verificarAcesso() {
@@ -178,22 +176,9 @@
           listaAlbunsSelectOptions += `<option value="${a.id}">${a.nome}</option>`;
         });
       }
-
-      const { data: tipos } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
-      if (tipos) {
-        tipos.forEach(t => {
-          mapaTipos[t.id] = t.nome;
-          listaTiposSelectOptions += `<option value="${t.id}">${t.nome}</option>`;
-        });
-      }
     }
 
-    async function aplicarFiltros() {
-      paginaAtual = 0;
-      figurinhasGlobal = [];
-      const albumId = document.getElementById('filterAlbum').value;
-      let termo = document.getElementById('search').value.trim();
-      
+    function construirQueryFiltro(albumId, termo) {
       let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       
       if (albumId !== 'todos') {
@@ -201,15 +186,29 @@
       }
 
       if (termo !== "") {
-        const termoSemHash = termo.replace('#', '');
+        const termoLimpo = termo.trim();
+        const termoSemHash = termoLimpo.replace('#', '');
+        
+        // Trata buscas numéricas completas ou parciais (#001, 001, 1) combinadas com nome
         if (!isNaN(termoSemHash) && termoSemHash !== "") {
-          query = query.or(`numero.eq.${termoSemHash},numero.eq.${termo},nome.ilike.%${termo}%`);
+          const numInt = parseInt(termoSemHash, 10);
+          query = query.or(`numero.eq.${numInt},numero.eq.${termoSemHash},numero.eq.${termoLimpo},nome.ilike.%${termoLimpo}%`);
         } else {
-          query = query.ilike('nome', `%${termo}%`);
+          query = query.ilike('nome', `%${termoLimpo}%`);
         }
       }
+      return query;
+    }
 
+    async function aplicarFiltros() {
+      paginaAtual = 0;
+      figurinhasGlobal = [];
+      const albumId = document.getElementById('filterAlbum').value;
+      let termo = document.getElementById('search').value;
+      
+      let query = construirQueryFiltro(albumId, termo);
       const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
+      
       if (error) {
         console.error("Erro ao buscar:", error);
         return;
@@ -230,21 +229,11 @@
       paginaAtual++;
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       const albumId = document.getElementById('filterAlbum').value;
-      let termo = document.getElementById('search').value.trim();
+      let termo = document.getElementById('search').value;
 
-      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      
-      if (termo !== "") {
-        const termoSemHash = termo.replace('#', '');
-        if (!isNaN(termoSemHash) && termoSemHash !== "") {
-          query = query.or(`numero.eq.${termoSemHash},numero.eq.${termo},nome.ilike.%${termo}%`);
-        } else {
-          query = query.ilike('nome', `%${termo}%`);
-        }
-      }
-
+      let query = construirQueryFiltro(albumId, termo);
       const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
+      
       if (data && data.length > 0) {
         figurinhasGlobal = figurinhasGlobal.concat(data);
         renderizarTabela(figurinhasGlobal);
@@ -269,6 +258,7 @@
               <div class="item-foto-wrapper">
                 <img id="img-${f.id}" src="${imgUrl}" class="item-foto" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
                 <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarFoto(${f.id}, this)">
+                <button class="btn-acao" onclick="document.getElementById('file-${f.id}').click()">🖼️ Trocar Foto</button>
               </div>
             </td>
             <td>
@@ -284,18 +274,14 @@
               <input type="text" class="input-tabela" id="nome-${f.id}" value="${f.nome || ''}" onchange="atualizarCampo(${f.id}, 'nome', this.value)">
             </td>
             <td>
-              <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao || ''}" onchange="atualizarCampo(${f.id}, 'selecao', this.value)">
+              <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao_escuderia || ''}" onchange="atualizarCampo(${f.id}, 'selecao_escuderia', this.value)">
             </td>
             <td>
-              <select class="input-tabela" id="tipo-${f.id}" onchange="atualizarCampo(${f.id}, 'tipo_id', this.value)">
-                <option value="">Nenhum...</option>
-                ${listaTiposSelectOptions.replace(`value="${f.tipo_id}"`, `value="${f.tipo_id}" selected`)}
-              </select>
+              <input type="text" class="input-tabela" id="tipo-${f.id}" value="${f.tipo || ''}" onchange="atualizarCampo(${f.id}, 'tipo', this.value)">
             </td>
             <td style="text-align: center;">
-              <div class="acoes-grupo" style="justify-content: center;">
-                <button class="btn-acao" onclick="document.getElementById('file-${f.id}').click()">🖼️ Foto</button>
-                <button class="btn-excluir" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️</button>
+              <div class="acoes-grupo">
+                <button class="btn-excluir" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️ Excluir</button>
               </div>
             </td>
           </tr>
