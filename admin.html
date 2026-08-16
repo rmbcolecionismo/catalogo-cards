@@ -261,8 +261,8 @@
       <div class="card">
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <table class="lista-tabela">
-          <thead><tr><th style="width: 60px;">Foto</th><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
-          <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr></tbody>
+          <thead><tr><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
+          <tbody id="tabelaAjudas"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -576,46 +576,73 @@
       }
     }
 
-    // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
+    // --- CARREGAMENTO DE CONTATOS ---
     async function carregarContatos() {
-  const tbody = document.getElementById('tabelaContatos');
-  if (!tbody) return;
+      const tbody = document.getElementById('tabelaContatos');
+      if (!tbody) return;
 
-  // Faz a consulta na tabela correta do Supabase
-  const { data, error } = await _supabase.from('contatos_vendedores').select('*');
+      const { data, error } = await _supabase.from('contatos_vendedores').select('*');
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
+        return;
+      }
 
-  if (error || !data || data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
-    return;
-  }
+      tbody.innerHTML = data.map(c => `
+        <tr>
+          <td>${c.nome || '-'}</td>
+          <td>${c.email || '-'}</td>
+          <td>${c.cidade || '-'}</td>
+          <td>${c.telefone || c.telemóvel || '-'}</td>
+          <td>${c.albuns || '-'}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
 
-  // Preenche a tabela com os dados reais do banco
-  tbody.innerHTML = data.map(c => `
-    <tr>
-      <td>${c.nome || '-'}</td>
-      <td>${c.email || '-'}</td>
-      <td>${c.cidade || '-'}</td>
-      <td>${c.telefone || c.telemóvel || '-'}</td>
-      <td>${c.albuns || '-'}</td>
-      <td>
-        <div class="acoes-btns">
-          <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-}
+    async function excluirContato(id) {
+      if (!confirm("Deseja realmente excluir este contato?")) return;
+      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarContatos();
+    }
 
-// Opcional: Função para excluir o contato caso necessário
-async function excluirContato(id) {
-  if (!confirm("Deseja realmente excluir este contato?")) return;
-  const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-  if (error) {
-    alert("Erro ao excluir: " + error.message);
-  } else {
-    carregarContatos();
-  }
-}
+    // --- CARREGAMENTO DE AJUDAS ---
+    async function carregarAjudas() {
+      const tbody = document.getElementById('tabelaAjudas');
+      if (!tbody) return;
+
+      // Supondo que a tabela se chame 'ajudas'
+      const { data, error } = await _supabase.from('ajudas').select('*');
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(a => `
+        <tr>
+          <td>${a.remetente || '-'}</td>
+          <td>${a.figurinha || '-'}</td>
+          <td>${a.status || 'Pendente'}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-excluir" onclick="excluirAjuda('${a.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function excluirAjuda(id) {
+        if (!confirm("Deseja realmente excluir esta ajuda?")) return;
+        const { error } = await _supabase.from('ajudas').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else carregarAjudas();
+    }
+
     // --- CADASTRAR FIGURINHA ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
