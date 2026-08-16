@@ -146,19 +146,14 @@
     let perfilAlvo = null;
 
     if (idParam) {
-      // Tenta buscar no campo 'user_id' (que geralmente guarda o UUID do Auth)
       let { data: d1 } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
-      
-      // Se não achar, tenta buscar no campo 'id' (caso a tabela use o UUID como ID primário)
       let { data: d2 } = !d1 ? await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle() : { data: null };
-      
       perfilAlvo = d1 || d2;
     } else if (usuarioLogado) {
       perfilAlvo = usuarioLogado;
     }
 
     if (perfilAlvo) {
-      // Define o UUID que será usado para filtrar a vitrine
       perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
       const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
@@ -171,12 +166,6 @@
     }
 
     if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
-  }    
-    if (perfilAlvoUuid) {
-      carregarVitrine(perfilAlvoUuid);
-    } else {
-      document.getElementById('vitrineGrid').innerHTML = "Vitrine indisponível para este vendedor.";
-    }
   }
 
   function preencherDadosPerfil(perfil, ehProprio) {
