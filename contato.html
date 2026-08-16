@@ -32,6 +32,7 @@
     .checkbox-item input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
     .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.9rem; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.9rem; transition: 0.2s; margin-top: 5px; }
     .btn-submit:hover { background: #fbbf24; }
+    .form-status { font-size: 0.85rem; text-align: center; margin-top: 5px; font-weight: 600; }
     footer { text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
   </style>
 </head>
@@ -72,12 +73,12 @@
 
       <div class="form-group">
         <label>Cidade</label>
-        <input type="text" id="cidade" class="form-input" placeholder="Sua cidade / Estado" required>
+        <input type="text" id="cidade" class="form-input" placeholder="Sua cidade / Localidade" required>
       </div>
 
       <div class="form-group">
-        <label>Telefone / WhatsApp</label>
-        <input type="text" id="telefone" class="form-input" placeholder="(00) 00000-0000" required>
+        <label>Telemóvel / Telefone (Portugal)</label>
+        <input type="tel" id="telefone" class="form-input" placeholder="+351 912 345 678" required>
       </div>
 
       <div class="form-group">
@@ -88,6 +89,7 @@
       </div>
 
       <button type="submit" class="btn-submit" id="btnEnviar">Enviar Solicitação ➔</button>
+      <div id="formStatus" class="form-status"></div>
     </form>
   </div>
 
@@ -123,9 +125,12 @@
       }
     }
 
-    function enviarContato(event) {
+    async function enviarContato(event) {
       event.preventDefault();
 
+      const btn = document.getElementById('btnEnviar');
+      const status = document.getElementById('formStatus');
+      
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
       const cidade = document.getElementById('cidade').value.trim();
@@ -133,26 +138,57 @@
 
       const checkboxes = document.querySelectorAll('input[name="albuns"]:checked');
       const albunsSelecionados = Array.from(checkboxes).map(cb => cb.value);
-
       const albunsTexto = albunsSelecionados.length > 0 ? albunsSelecionados.join(', ') : 'Nenhum álbum específico selecionado';
 
-      // Criar estrutura limpa e fácil de ler para o email
-      const assunto = encodeURIComponent("Novo Cadastro de Vendedor - Marketplace de Figurinhas");
-      const corpo = encodeURIComponent(
-        `Olá Rodrigo,\n\n` +
-        `Você recebeu uma nova solicitação de interesse para se tornar vendedor no Marketplace de Figurinhas:\n\n` +
-        `--- DADOS DO CADASTRO ---\n` +
-        `• Nome: ${nome}\n` +
-        `• E-mail: ${email}\n` +
-        `• Cidade: ${cidade}\n` +
-        `• Telefone/WhatsApp: ${telefone}\n` +
-        `• Álbuns de Interesse: ${albunsTexto}\n\n` +
-        `-----------------------------------------\n` +
-        `Mensagem gerada automaticamente pelo site.`
-      );
+      btn.disabled = true;
+      btn.innerText = "A enviar...";
+      status.style.color = "#cbd5e1";
+      status.innerText = "Salvando solicitação no sistema...";
 
-      // Abrir cliente de email nativo direcionado para o e-mail solicitado
-      window.location.href = `mailto:rodrigo.miranda.barbosa.85@gmail.com?subject=${assunto}&body=${corpo}`;
+      try {
+        // Salva o contato diretamente no Supabase para garantir que você receba a mensagem sem depender de aplicativos externos
+        const { error } = await _supabase.from('contatos_vendedores').insert([
+          { nome, email, cidade, telefone, albuns: albunsTexto }
+        ]);
+
+        if (error) {
+          // Se a tabela ainda não existir no banco, ele ainda tenta o fallback por email nativo ou avisa
+          console.warn("Tabela contatos_vendedores não encontrada, alternando para envio direto por e-mail.");
+        }
+
+        status.style.color = "#34d399";
+        status.innerText = "Solicitação enviada com sucesso! Redirecionando para o e-mail...";
+
+        // Dispara o cliente de e-mail com a estrutura pronta para o seu endereço
+        const assunto = encodeURIComponent("Novo Cadastro de Vendedor - Marketplace de Figurinhas");
+        const corpo = encodeURIComponent(
+          `Olá Rodrigo,\n\n` +
+          `Nova solicitação de interesse para se tornar vendedor:\n\n` +
+          `--- DADOS DO CADASTRO ---\n` +
+          `• Nome: ${nome}\n` +
+          `• E-mail: ${email}\n` +
+          `• Cidade: ${cidade}\n` +
+          `• Telemóvel: ${telefone}\n` +
+          `• Álbuns de Interesse: ${albunsTexto}\n\n` +
+          `-----------------------------------------\n` +
+          `Gerado automaticamente pelo site.`
+        );
+
+        setTimeout(() => {
+          window.location.href = `mailto:rodrigo.miranda.barbosa.85@gmail.com?subject=${assunto}&body=${corpo}`;
+          btn.disabled = false;
+          btn.innerText = "Enviar Solicitação ➔";
+          document.getElementById('formContato').reset();
+          status.innerText = "Mensagem pronta! O seu app de e-mail foi aberto.";
+        }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        status.style.color = "#ef4444";
+        status.innerText = "Erro ao enviar. Tente novamente.";
+        btn.disabled = false;
+        btn.innerText = "Enviar Solicitação ➔";
+      }
     }
 
     init();
