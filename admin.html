@@ -467,7 +467,7 @@
       else carregarTipos();
     }
 
-    // --- CARREGAMENTO DE VENDEDORES (USANDO telefone_whats) ---
+    // --- CARREGAMENTO DE VENDEDORES ---
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
       if (!tbody) return;
@@ -522,10 +522,43 @@
       }
     }
 
+    // --- EXCLUIR VENDEDOR, SUA VITRINE E OS ARTIGOS ASSOCIADOS ---
     async function excluirVendedor(email) {
-      if (!confirm("Remover este vendedor?")) return;
-      await _supabase.from('vendedores_autorizados').delete().eq('email', email);
-      carregarVendedores();
+      if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos os artigos associados.")) return;
+
+      // 1. Busca as vitrines pertencentes a este vendedor pelo e-mail
+      const { data: vitrines, error: errVitrineBusca } = await _supabase
+        .from('vitrines')
+        .select('id')
+        .eq('email', email);
+
+      if (!errVitrineBusca && vitrines && vitrines.length > 0) {
+        const vitrineIds = vitrines.map(v => v.id);
+
+        // 2. Exclui os artigos associados a essas vitrines
+        await _supabase
+          .from('artigos_vitrine')
+          .delete()
+          .in('vitrine_id', vitrineIds);
+
+        // 3. Exclui as vitrines do vendedor
+        await _supabase
+          .from('vitrines')
+          .delete()
+          .eq('email', email);
+      }
+
+      // 4. Por fim, exclui o registro do vendedor autorizado
+      const { error: errDelVendedor } = await _supabase
+        .from('vendedores_autorizados')
+        .delete()
+        .eq('email', email);
+
+      if (errDelVendedor) {
+        alert("Erro ao remover vendedor: " + errDelVendedor.message);
+      } else {
+        carregarVendedores();
+      }
     }
 
     // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
