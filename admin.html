@@ -248,7 +248,7 @@
     <div id="aba-contatos" class="tab-content">
       <div class="card">
         <h2>📬 Gerir Contatos Recebidos (Quero ser Vendedor)</h2>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Solicitações enviadas através da tabela contato_vendedores.</p>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Solicitações enviadas através da tabela contatos_vendedores.</p>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
             <thead>
@@ -611,7 +611,7 @@
 
     // --- CONTATOS RECEBIDOS ---
     async function carregarContatos() {
-      const { data, error } = await _supabase.from('contato_vendedores').select('*').order('id', { ascending: false });
+      const { data, error } = await _supabase.from('contatos_vendedores').select('*').order('id', { ascending: false });
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
       if (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`; return; }
@@ -633,7 +633,7 @@
 
     async function excluirContato(id) {
       if (!confirm("Deseja excluir este contato?")) return;
-      const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
+      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarContatos();
     }
