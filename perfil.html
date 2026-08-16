@@ -245,7 +245,7 @@
     grid.innerHTML = ofertas.map(item => {
       const f = figsMap[item.figurinha_id || item.id_figurinha] || {};
       const nomeAlbum = albunsMap[f.album_id] || '-';
-      const selecaoEscuderia = f.selecao || f.escuderia || '-';
+      const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
       return `
         <div class="sticker-card">
