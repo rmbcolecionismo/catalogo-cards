@@ -67,9 +67,6 @@
     .btn-acao:hover { background: #3b82f6; color: white; }
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
-
-    .mini-ajuda-img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.5); cursor: pointer; transition: transform 0.2s; background: #0f172a; }
-    .mini-ajuda-img:hover { transform: scale(1.15); }
   </style>
 </head>
 <body>
@@ -470,11 +467,11 @@
       else carregarTipos();
     }
 
-    // --- CARREGAMENTO DE VENDEDORES ---
+    // --- CARREGAMENTO DE VENDEDORES (ATUALIZADO PARA vendedores_autorizados) ---
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
       if (!tbody) return;
-      const { data, error } = await _supabase.from('vendedores').select('*');
+      const { data, error } = await _supabase.from('vendedores_autorizados').select('*');
       if (error || !data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum vendedor encontrado.</td></tr>`;
         return;
@@ -508,7 +505,7 @@
         return;
       }
 
-      const { error } = await _supabase.from('vendedores').upsert([{ email, nome, cidade, telefone, funcao }], { onConflict: 'email' });
+      const { error } = await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone, funcao }], { onConflict: 'email' });
       if (error) {
         msg.className = "msg-feedback msg-error";
         msg.innerText = "Erro: " + error.message;
@@ -527,7 +524,7 @@
 
     async function excluirVendedor(email) {
       if (!confirm("Remover este vendedor?")) return;
-      await _supabase.from('vendedores').delete().eq('email', email);
+      await _supabase.from('vendedores_autorizados').delete().eq('email', email);
       carregarVendedores();
     }
 
