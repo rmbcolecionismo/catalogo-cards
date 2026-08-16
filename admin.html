@@ -32,7 +32,6 @@
     
     .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
     
-    /* Sistema de Abas / Botões de Navegação */
     .admin-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; background: rgba(15, 23, 42, 0.6); padding: 0.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
     .tab-btn { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .tab-btn:hover { background: rgba(245, 158, 11, 0.2); color: var(--gold); }
@@ -95,7 +94,6 @@
 
   <div class="container">
     
-    <!-- Botões de Navegação por Abas -->
     <div class="admin-tabs">
       <button class="tab-btn active" onclick="mudarAba('albuns', event)">📂 Álbuns</button>
       <button class="tab-btn" onclick="mudarAba('tipos', event)">🏷️ Tipos</button>
@@ -206,8 +204,8 @@
           <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
         </div>
         <div class="form-group">
-          <label>Link da Imagem</label>
-          <input type="text" id="inputImagemFigurinha" placeholder="https://exemplo.com/imagem.jpg">
+          <label>Fazer Upload da Imagem</label>
+          <input type="file" id="inputArquivoFigurinha" accept="image/*">
         </div>
         <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
         <div id="msgFigurinha" class="msg-feedback"></div>
@@ -235,7 +233,7 @@
             <input type="text" id="inputCidadeVendedor" placeholder="Ex: Lisboa">
           </div>
           <div class="form-group">
-            <label>Telefone / Telemóvel</label>
+            <label>Telefone / WhatsApp</label>
             <input type="text" id="inputTelefoneVendedor" placeholder="+351 912 345 678">
           </div>
         </div>
@@ -260,7 +258,7 @@
                 <th>Nome</th>
                 <th>E-mail</th>
                 <th>Cidade</th>
-                <th>Telefone</th>
+                <th>Telefone / WhatsApp</th>
                 <th>Função</th>
                 <th style="width: 130px;">Ações</th>
               </tr>
@@ -275,7 +273,7 @@
     <div id="aba-contatos" class="tab-content">
       <div class="card">
         <h2>📬 Gerir Contatos Recebidos (Quero ser Vendedor)</h2>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Solicitações enviadas através da página de contato.</p>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Solicitações enviadas através da tabela contato_vendedores.</p>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
             <thead>
@@ -304,7 +302,6 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Sistema de Troca de Abas
     function mudarAba(abaId, event) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -312,7 +309,6 @@
       document.getElementById('aba-' + abaId).classList.add('active');
       if(event) event.currentTarget.classList.add('active');
 
-      // Recarrega os dados da aba correspondente
       if (abaId === 'albuns') carregarAlbuns();
       if (abaId === 'tipos') carregarTipos();
       if (abaId === 'selecoes') carregarSelecoes();
@@ -544,7 +540,7 @@
     }
 
 
-    // --- SELECTS PARA FIGURINHAS ---
+    // --- SELECTS E UPLOAD PARA FIGURINHAS ---
     async function carregarAlbunsSelect() {
       const { data } = await _supabase.from('albuns').select('*');
       const select = document.getElementById('selectAlbumFigurinha');
@@ -575,20 +571,47 @@
       const selecao_escuderia = document.getElementById('selectSelecaoFigurinha').value;
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
-      const imagem = document.getElementById('inputImagemFigurinha').value.trim();
+      const fileInput = document.getElementById('inputArquivoFigurinha');
       const msg = document.getElementById('msgFigurinha');
 
       if (!album_id || !tipo_id || !numero || !nome) {
         msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha os campos obrigatórios."; msg.style.display = "block"; return;
       }
 
-      const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, selecao_escuderia, numero, nome, imagem }]);
-      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
-      else {
-        msg.className = "msg-feedback msg-success"; msg.innerText = "Figurinha cadastrada com sucesso!";
+      let imagemUrl = "";
+
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36.substring(2, 7))}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Fazendo upload da imagem...";
+        msg.style.display = "block";
+
+        const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(filePath, file);
+
+        if (uploadError) {
+          msg.className = "msg-feedback msg-error";
+          msg.innerText = "Erro no upload da imagem: " + uploadError.message;
+          return;
+        }
+
+        const { data: publicData } = _supabase.storage.from('figurinhas').getPublicUrl(filePath);
+        imagemUrl = publicData.publicUrl;
+      }
+
+      const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, selecao_escuderia, numero, nome, imagem: imagemUrl }]);
+      if (error) { 
+        msg.className = "msg-feedback msg-error"; 
+        msg.innerText = "Erro ao salvar figurinha: " + error.message; 
+      } else {
+        msg.className = "msg-feedback msg-success"; 
+        msg.innerText = "Figurinha cadastrada com sucesso!";
         document.getElementById('inputNumeroFigurinha').value = '';
         document.getElementById('inputNomeFigurinha').value = '';
-        document.getElementById('inputImagemFigurinha').value = '';
+        fileInput.value = '';
       }
       msg.style.display = "block";
     }
@@ -605,10 +628,10 @@
           <td>${v.nome || '-'}</td>
           <td>${v.email}</td>
           <td>${v.cidade || '-'}</td>
-          <td>${v.telefone || '-'}</td>
+          <td>${v.telefone_whats || '-'}</td>
           <td>${v.funcao || 'vendedor'}</td>
           <td class="acoes-btns">
-            <button class="btn-acao" onclick="editarVendedor('${v.email}', '${(v.nome||'').replace(/'/g, "\\'")}', '${(v.cidade||'').replace(/'/g, "\\'")}', '${(v.telefone||'').replace(/'/g, "\\'")}', '${v.funcao||'vendedor'}')">Editar</button>
+            <button class="btn-acao" onclick="editarVendedor('${v.email}', '${(v.nome||'').replace(/'/g, "\\'")}', '${(v.cidade||'').replace(/'/g, "\\'")}', '${(v.telefone_whats||'').replace(/'/g, "\\'")}', '${v.funcao||'vendedor'}')">Editar</button>
             <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Excluir</button>
           </td>
         </tr>
@@ -620,7 +643,7 @@
       const email = document.getElementById('inputEmailVendedor').value.trim();
       const nome = document.getElementById('inputNomeVendedor').value.trim();
       const cidade = document.getElementById('inputCidadeVendedor').value.trim();
-      const telefone = document.getElementById('inputTelefoneVendedor').value.trim();
+      const telefone_whats = document.getElementById('inputTelefoneVendedor').value.trim();
       const funcao = document.getElementById('selectFuncaoVendedor').value;
       const msg = document.getElementById('msgVendedor');
 
@@ -630,12 +653,11 @@
 
       let error;
       if (originalEmail && originalEmail !== email) {
-        // Se alterou o email, remove o antigo e insere o novo
         await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
       }
 
       ({ error } = await _supabase.from('vendedores_autorizados').upsert([
-        { email, nome, cidade, telefone, funcao, is_admin }
+        { email, nome, cidade, telefone_whats, funcao, is_admin }
       ], { onConflict: 'email' }));
 
       if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
@@ -647,12 +669,12 @@
       msg.style.display = "block";
     }
 
-    function editarVendedor(email, nome, cidade, telefone, funcao) {
+    function editarVendedor(email, nome, cidade, telefone_whats, funcao) {
       document.getElementById('editVendedorOriginalEmail').value = email;
       document.getElementById('inputEmailVendedor').value = email;
       document.getElementById('inputNomeVendedor').value = nome;
       document.getElementById('inputCidadeVendedor').value = cidade;
-      document.getElementById('inputTelefoneVendedor').value = telefone;
+      document.getElementById('inputTelefoneVendedor').value = telefone_whats;
       document.getElementById('selectFuncaoVendedor').value = funcao;
       
       document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor Autorizado";
@@ -682,10 +704,10 @@
     }
 
 
-    // --- CONTATOS RECEBIDOS ---
+    // --- CONTATOS RECEBIDOS (contato_vendedores) ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
-      const { data, error } = await _supabase.from('contatos_vendedores').select('*').order('criado_em', { ascending: false });
+      const { data, error } = await _supabase.from('contato_vendedores').select('*').order('criado_em', { ascending: false });
       
       if (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`; return; }
       if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido ainda.</td></tr>`; return; }
@@ -704,7 +726,7 @@
 
     async function excluirContato(id) {
       if (!confirm("Deseja apagar este contato?")) return;
-      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
+      const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarContatos();
     }
@@ -713,7 +735,7 @@
     async function inicializarAdmin() {
       const autorizado = await verificarAdminMaster();
       if (!autorizado) return;
-      carregarAlbuns(); // Inicia na aba padrão (Álbuns)
+      carregarAlbuns();
     }
 
     inicializarAdmin();
