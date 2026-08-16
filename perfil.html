@@ -18,28 +18,10 @@
     
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
-    .sticker-card { 
-      background: rgba(30, 41, 59, 0.85); 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
-      border-radius: 12px; 
-      overflow: hidden; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-      color: #f8fafc; 
-      display: flex; 
-      flex-direction: column; 
-      transition: 0.3s; 
-    }
+    .sticker-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #f8fafc; display: flex; flex-direction: column; transition: 0.3s; }
     .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
-    .sticker-img-wrap { 
-      height: 190px; 
-      background: #0f172a; 
-      padding: 12px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
+    .sticker-img-wrap { height: 190px; background: #0f172a; padding: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
     
     .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
@@ -53,17 +35,14 @@
     .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
     .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
     .btn-edit { background: #3b82f6; color: white; }
-    .btn-edit:hover { background: #2563eb; }
     .btn-delete { background: #ef4444; color: white; }
-    .btn-delete:hover { background: #dc2626; }
 
-    .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
+    .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
-    button:hover { opacity: 0.9; }
     .btn-logout { background: #ef4444; color: white; }
     .btn-gold { background: var(--gold); color: #0f172a; }
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-box { background: #1e293b; border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 320px; }
   </style>
 </head>
@@ -80,18 +59,20 @@
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
       <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
-      <button id="btnEditarPerfil" style="display:none;" onclick="toggleEdit()">Editar Perfil</button>
+      <a id="linkWhatsApp" href="#" target="_blank" style="display:none; color: var(--gold); font-size: 0.9rem; text-decoration: none; font-weight: 600;">💬 Falar no WhatsApp</a>
+      <button id="btnEditarPerfil" style="display:none; margin-top:15px;" onclick="toggleEdit()">Editar Perfil</button>
     </div>
 
     <div id="editMode" style="display:none; margin-top:20px;">
       <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
-      <input type="text" id="editNome" class="edit-field" placeholder="Seu Nome">
-      
+      <input type="text" id="editNome" class="edit-field">
       <label style="font-size: 0.75rem; color: var(--gold);">Cidade:</label>
-      <input type="text" id="editCidade" class="edit-field" placeholder="Sua Cidade">
+      <input type="text" id="editCidade" class="edit-field">
+      <label style="font-size: 0.75rem; color: var(--gold);">WhatsApp (apenas números):</label>
+      <input type="text" id="editWhatsApp" class="edit-field" placeholder="Ex: 5511999999999">
       
       <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
-      <button onclick="toggleEdit()" style="background:transparent; border:1px solid white">Cancelar</button>
+      <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;">Cancelar</button>
     </div>
 
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
@@ -100,7 +81,6 @@
         <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
         <div id="adminLinks" style="display:none;">
           <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
-          <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
         </div>
         <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
       </div>
@@ -116,19 +96,15 @@
   </div>
 </div>
 
-<!-- Modal de Edição de Oferta -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
-    
     <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
-    
-    <label style="font-size: 0.75rem; color: #94a3b8;">Estoque/Qtd:</label>
+    <label style="font-size: 0.75rem; color: #94a3b8;">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
-    
-    <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar Alterações</button>
+    <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
     <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
 </div>
@@ -145,18 +121,12 @@
 
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
-    
     if (session) {
       authUserId = session.user.id;
-      const { data: perfilLogado } = await _supabase
-        .from('vendedores_autorizados')
-        .select('*')
-        .eq('email', session.user.email)
-        .maybeSingle();
-
+      const { data: perfilLogado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
       if (perfilLogado) {
         usuarioLogado = perfilLogado;
-        isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
+        isAdminOrMaster = (perfilLogado.is_admin || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
       }
       document.getElementById('loggedMenu').style.display = 'block';
     } else {
@@ -167,43 +137,30 @@
     const idParam = urlParams.get('id');
 
     if (idParam) {
-      const isNumeric = !isNaN(idParam);
-      const queryCol = isNumeric ? 'id' : 'user_id';
-      
-      const { data: perfilAlvo } = await _supabase
-        .from('vendedores_autorizados')
-        .select('*')
-        .eq(queryCol, idParam)
-        .maybeSingle();
+      // Tenta buscar por ID sequencial, se não achar, busca por UUID (user_id)
+      let { data: perfilAlvo } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
+      if (!perfilAlvo) {
+        const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+        perfilAlvo = data;
+      }
 
       if (perfilAlvo) {
         perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
         const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
         preencherDadosPerfil(perfilAlvo, ehProprio);
       } else {
-        if (usuarioLogado) {
-          preencherDadosPerfil(usuarioLogado, true);
-          perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
-        } else {
-          document.getElementById('userName').innerText = "Vendedor não encontrado";
-          document.getElementById('vitrineGrid').innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Perfil não encontrado.</p>";
-          return;
-        }
-      }
-    } else {
-      if (usuarioLogado) {
-        preencherDadosPerfil(usuarioLogado, true);
-        perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
-      } else {
-        window.location.replace("login.html");
+        document.getElementById('userName').innerText = "Vendedor não encontrado";
         return;
       }
+    } else if (usuarioLogado) {
+      preencherDadosPerfil(usuarioLogado, true);
+      perfilAlvoUuid = usuarioLogado.user_id || usuarioLogado.id;
+    } else {
+      window.location.replace("login.html");
+      return;
     }
 
-    if (isAdminOrMaster) {
-      document.getElementById('adminLinks').style.display = 'block';
-    }
-
+    if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
     carregarVitrine(perfilAlvoUuid);
   }
 
@@ -212,8 +169,15 @@
     document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
     
+    if (perfil.telefone_whats) {
+      const linkWpp = document.getElementById('linkWhatsApp');
+      linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
+      linkWpp.style.display = 'block';
+    }
+    
     document.getElementById('editNome').value = perfil.nome || '';
     document.getElementById('editCidade').value = perfil.cidade || '';
+    document.getElementById('editWhatsApp').value = perfil.telefone_whats || '';
 
     if (ehProprio || isAdminOrMaster) {
       document.getElementById('btnTrocarFoto').style.display = 'block';
@@ -221,25 +185,14 @@
     }
   }
 
-  async function uploadAvatar(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
-    const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
-    if (error) return alert("Erro no upload: " + error.message);
-    
-    const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
-    await _supabase.from('vendedores_autorizados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
-    location.reload();
-  }
-
   async function salvarPerfil() {
     const updates = {
       nome: document.getElementById('editNome').value,
-      cidade: document.getElementById('editCidade').value
+      cidade: document.getElementById('editCidade').value,
+      telefone_whats: document.getElementById('editWhatsApp').value
     };
     const { error } = await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
-    if (error) alert("Erro ao atualizar perfil: " + error.message);
+    if (error) alert("Erro ao atualizar: " + error.message);
     else location.reload();
   }
 
@@ -250,120 +203,60 @@
     edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
   }
 
+  async function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
+    const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
+    if (error) return alert("Erro no upload: " + error.message);
+    const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+    await _supabase.from('vendedores_autorizados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
+    location.reload();
+  }
+
   async function carregarVitrine(uuidVal) {
     const grid = document.getElementById('vitrineGrid');
+    const { data: ofertas, error } = await _supabase.from('vitrine_ofertas').select('*').eq('user_id', uuidVal);
+    if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
+    if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
     
-    const { data: ofertas, error } = await _supabase
-      .from('vitrine_ofertas')
-      .select('*')
-      .eq('user_id', uuidVal);
-
-    if (error) {
-      console.error("Erro ao carregar vitrine:", error);
-      grid.innerHTML = `<p style='color: #ef4444; grid-column: 1/-1;'>Erro ao carregar vitrine: ${error.message}</p>`;
-      return;
-    }
-
-    if (!ofertas || ofertas.length === 0) { 
-      grid.innerHTML = "<p style='color: #94a3b8; grid-column: 1/-1;'>Esta vitrine está vazia.</p>"; 
-      return; 
-    }
-
-    const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha).filter(Boolean);
-    let figurinhasMap = {};
-    
-    if (figIds.length > 0) {
-      const { data: figs } = await _supabase
-        .from('figurinhas')
-        .select('*')
-        .in('id', figIds);
-        
-      if (figs) {
-        figs.forEach(f => { figurinhasMap[f.id] = f; });
-      }
-    }
+    const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha);
+    const { data: figs } = await _supabase.from('figurinhas').select('*').in('id', figIds);
+    const figsMap = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
 
     grid.innerHTML = ofertas.map(item => {
-      const fId = item.figurinha_id || item.id_figurinha;
-      const f = figurinhasMap[fId] || {};
-      const precoNum = item.preco || 0;
-      const precoFormatado = Number(precoNum).toFixed(2).replace('.', ',');
-
-      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || (usuarioLogado && String(item.user_id) === String(usuarioLogado.id)) || isAdminOrMaster);
-
+      const f = figsMap[item.figurinha_id || item.id_figurinha] || {};
+      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
       return `
         <div class="sticker-card">
-          <div class="sticker-img-wrap">
-            <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="${f.nome || 'Figurinha'}">
-          </div>
+          <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
           <div class="sticker-info">
             <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
-            <div class="card-row">Código: <span>${f.numero || 'N/A'}</span></div>
-            <div class="card-row">Seleção: <span>${f.selecao_escuderia || 'N/A'}</span></div>
-            <div class="card-row">Tipo: <span>${f.tipo || 'N/A'}</span></div>
-            <div class="sticker-qtd" style="margin-top: 2px;">Disponível: ${item.estoque || 0}</div>
-            <div class="sticker-price">€ ${precoFormatado}</div>
-            
-            ${podeGerenciar ? `
-              <div class="card-actions">
-                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button>
-                <button class="btn-card-action btn-delete" onclick="deletarOferta('${item.id}')">Excluir</button>
-              </div>
-            ` : ''}
+            <div class="sticker-qtd">Estoque: ${item.estoque || 0}</div>
+            <div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>
+            ${podeGerenciar ? `<div class="card-actions"><button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button></div>` : ''}
           </div>
         </div>
       `;
     }).join('');
   }
 
-  function abrirModalEdicao(ofertaId, precoAtual, estoqueAtual) {
-    document.getElementById('modalOfertaId').value = ofertaId;
-    document.getElementById('modalPreco').value = precoAtual;
-    document.getElementById('modalEstoque').value = estoqueAtual;
+  function abrirModalEdicao(id, preco, estoq) {
+    document.getElementById('modalOfertaId').value = id;
+    document.getElementById('modalPreco').value = preco;
+    document.getElementById('modalEstoque').value = estoq;
     document.getElementById('editModal').style.display = 'flex';
   }
 
-  function fecharModal() {
-    document.getElementById('editModal').style.display = 'none';
-  }
+  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
 
   async function salvarEdicaoOferta() {
-    const ofertaId = document.getElementById('modalOfertaId').value;
-    const novoPreco = parseFloat(document.getElementById('modalPreco').value);
-    const novoEstoque = parseInt(document.getElementById('modalEstoque').value);
-
-    const { error } = await _supabase
-      .from('vitrine_ofertas')
-      .update({ preco: novoPreco, estoque: novoEstoque })
-      .eq('id', ofertaId);
-
-    if (error) {
-      alert("Erro ao atualizar oferta: " + error.message);
-    } else {
-      fecharModal();
-      location.reload();
-    }
+    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', document.getElementById('modalOfertaId').value);
+    if (error) alert("Erro: " + error.message);
+    else location.reload();
   }
 
-  async function deletarOferta(ofertaId) {
-    if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
-
-    const { error } = await _supabase
-      .from('vitrine_ofertas')
-      .delete()
-      .eq('id', ofertaId);
-
-    if (error) {
-      alert("Erro ao excluir oferta: " + error.message);
-    } else {
-      location.reload();
-    }
-  }
-
-  async function fazerLogout() {
-    await _supabase.auth.signOut();
-    window.location.replace("index.html");
-  }
+  async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
 
   verificarAcesso();
 </script>
