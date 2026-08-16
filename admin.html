@@ -29,25 +29,45 @@
 
     h1 { font-size: 1.8rem; font-weight: 800; color: var(--gold); }
     p.subtitle { color: #94a3b8; font-size: 0.85rem; }
+    
     .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
-    .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; }
+    
+    /* Sistema de Abas / Botões de Navegação */
+    .admin-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; background: rgba(15, 23, 42, 0.6); padding: 0.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+    .tab-btn { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { background: rgba(245, 158, 11, 0.2); color: var(--gold); }
+    .tab-btn.active { background: var(--gold); color: #0f172a; border-color: var(--gold); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
     .card h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.5rem; }
+    
     .form-group { margin-bottom: 1rem; }
     .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
     .form-row .form-group { flex: 1; min-width: 200px; }
+    
     label { display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: 600; }
     input, select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; font-size: 0.9rem; outline: none; }
     input:focus, select:focus { border-color: var(--gold); }
+    
     .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
     .btn-submit:hover { background: #d97706; }
+    
     .msg-feedback { margin-top: 0.8rem; font-size: 0.85rem; padding: 0.6rem; border-radius: 6px; display: none; }
     .msg-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
     .msg-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+
     .lista-tabela { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
-    .lista-tabela th, .lista-tabela td { padding: 0.6rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .lista-tabela th, .lista-tabela td { padding: 0.7rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .lista-tabela th { color: var(--gold); font-weight: 700; }
-    .btn-acao { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-    .btn-acao:hover { background: #ef4444; color: white; }
+    
+    .acoes-btns { display: flex; gap: 0.4rem; }
+    .btn-acao { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .btn-acao:hover { background: #3b82f6; color: white; }
+    .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .btn-excluir:hover { background: #ef4444; color: white; }
   </style>
 </head>
 <body>
@@ -70,140 +90,209 @@
     </div>
 
     <h1>⚙️ Painel de Administração</h1>
-    <p class="subtitle">Gerencie cadastros do sistema e contatos recebidos</p>
+    <p class="subtitle">Gerencie os cadastros e dados do sistema por categorias</p>
   </header>
 
   <div class="container">
     
-    <!-- CARD: Cadastrar Álbum -->
-    <div class="card">
-      <h2>📂 Cadastro de Álbum</h2>
-      <div class="form-group">
-        <label>Nome do Álbum</label>
-        <input type="text" id="inputNomeAlbum" placeholder="Ex: Copa do Mundo 2026">
-      </div>
-      <button class="btn-submit" onclick="cadastrarAlbum()">Salvar Álbum</button>
-      <div id="msgAlbum" class="msg-feedback"></div>
+    <!-- Botões de Navegação por Abas -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="mudarAba('albuns', event)">📂 Álbuns</button>
+      <button class="tab-btn" onclick="mudarAba('tipos', event)">🏷️ Tipos</button>
+      <button class="tab-btn" onclick="mudarAba('selecoes', event)">⚽ Seleções / Escuderias</button>
+      <button class="tab-btn" onclick="mudarAba('figurinhas', event)">🃏 Figurinhas</button>
+      <button class="tab-btn" onclick="mudarAba('vendedores', event)">👥 Vendedores</button>
+      <button class="tab-btn" onclick="mudarAba('contatos', event)">📬 Contatos Recebidos</button>
     </div>
 
-    <!-- CARD: Cadastrar Tipo -->
-    <div class="card">
-      <h2>🏷️ Cadastro de Tipos</h2>
-      <div class="form-group">
-        <label>Nome do Tipo</label>
-        <input type="text" id="inputNomeTipo" placeholder="Ex: Rara, Lendária, Comum">
-      </div>
-      <button class="btn-submit" onclick="cadastrarTipo()">Salvar Tipo</button>
-      <div id="msgTipo" class="msg-feedback"></div>
-    </div>
-
-    <!-- CARD: Cadastrar Seleção / Escuderia -->
-    <div class="card">
-      <h2>⚽ Cadastro de Seleção / Escuderia</h2>
-      <div class="form-group">
-        <label>Nome da Seleção ou Escuderia</label>
-        <input type="text" id="inputNomeSelecao" placeholder="Ex: Portugal, Brasil, Ferrari">
-      </div>
-      <button class="btn-submit" onclick="cadastrarSelecao()">Salvar Seleção / Escuderia</button>
-      <div id="msgSelecao" class="msg-feedback"></div>
-    </div>
-
-    <!-- CARD: Cadastrar Figurinha / Card -->
-    <div class="card">
-      <h2>🃏 Cadastrar Figurinha / Card</h2>
-      <div class="form-row">
+    <!-- ABA: ÁLBUNS -->
+    <div id="aba-albuns" class="tab-content active">
+      <div class="card">
+        <h2 id="tituloCardAlbum">📂 Cadastro de Álbum</h2>
+        <input type="hidden" id="editAlbumId">
         <div class="form-group">
-          <label>Álbum</label>
-          <select id="selectAlbumFigurinha">
-            <option value="">Selecione o álbum...</option>
+          <label>Nome do Álbum</label>
+          <input type="text" id="inputNomeAlbum" placeholder="Ex: Copa do Mundo 2026">
+        </div>
+        <button class="btn-submit" id="btnSalvarAlbum" onclick="salvarAlbum()">Salvar Álbum</button>
+        <button class="btn-acao" id="btnCancelarAlbum" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoAlbum()">Cancelar</button>
+        <div id="msgAlbum" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Álbuns Cadastrados</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Nome do Álbum</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaAlbuns"><tr><td colspan="2" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: TIPOS -->
+    <div id="aba-tipos" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardTipo">🏷️ Cadastro de Tipo</h2>
+        <input type="hidden" id="editTipoId">
+        <div class="form-group">
+          <label>Nome do Tipo</label>
+          <input type="text" id="inputNomeTipo" placeholder="Ex: Rara, Lendária, Comum">
+        </div>
+        <button class="btn-submit" id="btnSalvarTipo" onclick="salvarTipo()">Salvar Tipo</button>
+        <button class="btn-acao" id="btnCancelarTipo" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoTipo()">Cancelar</button>
+        <div id="msgTipo" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Tipos Cadastrados</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Nome do Tipo</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaTipos"><tr><td colspan="2" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: SELEÇÕES / ESCUDERIAS -->
+    <div id="aba-selecoes" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardSelecao">⚽ Cadastro de Seleção / Escuderia</h2>
+        <input type="hidden" id="editSelecaoId">
+        <div class="form-group">
+          <label>Nome da Seleção ou Escuderia</label>
+          <input type="text" id="inputNomeSelecao" placeholder="Ex: Portugal, Brasil, Ferrari">
+        </div>
+        <button class="btn-submit" id="btnSalvarSelecao" onclick="salvarSelecao()">Salvar Seleção / Escuderia</button>
+        <button class="btn-acao" id="btnCancelarSelecao" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoSelecao()">Cancelar</button>
+        <div id="msgSelecao" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Seleções / Escuderias Cadastradas</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Nome</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaSelecoes"><tr><td colspan="2" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: FIGURINHAS -->
+    <div id="aba-figurinhas" class="tab-content">
+      <div class="card">
+        <h2>🃏 Cadastrar Figurinha / Card</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Álbum</label>
+            <select id="selectAlbumFigurinha"><option value="">Selecione o álbum...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="selectTipoFigurinha"><option value="">Selecione o tipo...</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Seleção / Escuderia</label>
+            <select id="selectSelecaoFigurinha"><option value="">Selecione...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Número</label>
+            <input type="text" id="inputNumeroFigurinha" placeholder="Ex: 001">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nome da Figurinha</label>
+          <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
+        </div>
+        <div class="form-group">
+          <label>Link da Imagem</label>
+          <input type="text" id="inputImagemFigurinha" placeholder="https://exemplo.com/imagem.jpg">
+        </div>
+        <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
+        <div id="msgFigurinha" class="msg-feedback"></div>
+      </div>
+    </div>
+
+    <!-- ABA: VENDEDORES -->
+    <div id="aba-vendedores" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardVendedor">👥 Cadastro de Vendedor Autorizado</h2>
+        <input type="hidden" id="editVendedorOriginalEmail">
+        <div class="form-row">
+          <div class="form-group">
+            <label>E-mail do Vendedor</label>
+            <input type="email" id="inputEmailVendedor" placeholder="vendedor@email.com">
+          </div>
+          <div class="form-group">
+            <label>Nome do Vendedor</label>
+            <input type="text" id="inputNomeVendedor" placeholder="Nome Completo">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="inputCidadeVendedor" placeholder="Ex: Lisboa">
+          </div>
+          <div class="form-group">
+            <label>Telefone / Telemóvel</label>
+            <input type="text" id="inputTelefoneVendedor" placeholder="+351 912 345 678">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Função / Permissão</label>
+          <select id="selectFuncaoVendedor">
+            <option value="vendedor">Vendedor</option>
+            <option value="admin">Administrador</option>
+            <option value="master">Master</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Tipo</label>
-          <select id="selectTipoFigurinha">
-            <option value="">Selecione o tipo...</option>
-          </select>
+        <button class="btn-submit" id="btnSalvarVendedor" onclick="salvarVendedor()">Autorizar / Salvar Vendedor</button>
+        <button class="btn-acao" id="btnCancelarVendedor" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoVendedor()">Cancelar</button>
+        <div id="msgVendedor" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Vendedores Autorizados</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Cidade</th>
+                <th>Telefone</th>
+                <th>Função</th>
+                <th style="width: 130px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaVendedores"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Seleção / Escuderia</label>
-          <select id="selectSelecaoFigurinha">
-            <option value="">Selecione...</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Número</label>
-          <input type="text" id="inputNumeroFigurinha" placeholder="Ex: 001">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Nome da Figurinha</label>
-        <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
-      </div>
-      <div class="form-group">
-        <label>Link da Imagem</label>
-        <input type="text" id="inputImagemFigurinha" placeholder="https://exemplo.com/imagem.jpg">
-      </div>
-      <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
-      <div id="msgFigurinha" class="msg-feedback"></div>
     </div>
 
-    <!-- CARD: Cadastro de Vendedores Autorizados -->
-    <div class="card">
-      <h2>👥 Cadastro de Vendedores Autorizados</h2>
-      <div class="form-row">
-        <div class="form-group">
-          <label>E-mail do Vendedor</label>
-          <input type="email" id="inputEmailVendedor" placeholder="vendedor@email.com">
+    <!-- ABA: CONTATOS RECEBIDOS -->
+    <div id="aba-contatos" class="tab-content">
+      <div class="card">
+        <h2>📬 Gerir Contatos Recebidos (Quero ser Vendedor)</h2>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Solicitações enviadas através da página de contato.</p>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Cidade</th>
+                <th>Telemóvel</th>
+                <th>Álbuns</th>
+                <th style="width: 80px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContatos">
+              <tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="form-group">
-          <label>Nome do Vendedor</label>
-          <input type="text" id="inputNomeVendedor" placeholder="Nome Completo">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Cidade</label>
-          <input type="text" id="inputCidadeVendedor" placeholder="Ex: Lisboa">
-        </div>
-        <div class="form-group">
-          <label>Telefone / Telemóvel</label>
-          <input type="text" id="inputTelefoneVendedor" placeholder="+351 912 345 678">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Função / Permissão</label>
-        <select id="selectFuncaoVendedor">
-          <option value="vendedor">Vendedor</option>
-          <option value="admin">Administrador</option>
-          <option value="master">Master</option>
-        </select>
-      </div>
-      <button class="btn-submit" onclick="liberarVendedor()">Autorizar / Salvar Vendedor</button>
-      <div id="msgVendedor" class="msg-feedback"></div>
-    </div>
-
-    <!-- CARD: Gerir Contatos Recebidos -->
-    <div class="card">
-      <h2>📬 Gerir Contatos Recebidos (Quero ser Vendedor)</h2>
-      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Lista de solicitações enviadas através da página de contato.</p>
-      <div style="overflow-x: auto;">
-        <table class="lista-tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Cidade</th>
-              <th>Telemóvel</th>
-              <th>Álbuns</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaContatos">
-            <tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
 
@@ -215,33 +304,32 @@
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Sistema de Troca de Abas
+    function mudarAba(abaId, event) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById('aba-' + abaId).classList.add('active');
+      if(event) event.currentTarget.classList.add('active');
+
+      // Recarrega os dados da aba correspondente
+      if (abaId === 'albuns') carregarAlbuns();
+      if (abaId === 'tipos') carregarTipos();
+      if (abaId === 'selecoes') carregarSelecoes();
+      if (abaId === 'figurinhas') { carregarAlbunsSelect(); carregarTiposSelect(); carregarSelecoesSelect(); }
+      if (abaId === 'vendedores') carregarVendedores();
+      if (abaId === 'contatos') carregarContatos();
+    }
+
     async function verificarAdminMaster() {
       try {
         const { data: { session } } = await _supabase.auth.getSession();
-        
-        if (!session) {
-          window.location.replace("login.html");
-          return false;
-        }
+        if (!session) { window.location.replace("login.html"); return false; }
 
         const emailUser = session.user.email;
+        const { data: autorizado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', emailUser).maybeSingle();
 
-        const { data: autorizado, error } = await _supabase
-          .from('vendedores_autorizados')
-          .select('*')
-          .eq('email', emailUser)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Erro ao verificar permissão:", error);
-        }
-
-        const isAdminOuMaster = autorizado && (
-          autorizado.is_admin === true || 
-          autorizado.funcao === 'admin' || 
-          autorizado.funcao === 'master'
-        );
-
+        const isAdminOuMaster = autorizado && (autorizado.is_admin === true || autorizado.funcao === 'admin' || autorizado.funcao === 'master');
         if (!isAdminOuMaster) {
           alert("Acesso restrito a administradores.");
           window.location.replace("perfil.html");
@@ -250,14 +338,9 @@
 
         const nomeExibicao = (autorizado && autorizado.nome) ? autorizado.nome : emailUser.split('@')[0];
         document.getElementById('userGreeting').innerText = `Olá, ${nomeExibicao}`;
-        
-        if (autorizado && autorizado.avatar) {
-          document.getElementById('userAvatar').src = autorizado.avatar;
-        }
-
+        if (autorizado && autorizado.avatar) document.getElementById('userAvatar').src = autorizado.avatar;
         return true;
       } catch (err) {
-        console.error("Erro crítico na autenticação:", err);
         window.location.replace("login.html");
         return false;
       }
@@ -265,113 +348,225 @@
 
     async function fazerLogout() {
       await _supabase.auth.signOut();
-      localStorage.clear();
-      sessionStorage.clear();
+      localStorage.clear(); sessionStorage.clear();
       window.location.replace("login.html");
     }
 
-    // Funções de carregamento para selects
+    // --- CRUD: ÁLBUNS ---
     async function carregarAlbuns() {
-      const { data } = await _supabase.from('albuns').select('*');
-      const select = document.getElementById('selectAlbumFigurinha');
-      if (!select) return;
-      select.innerHTML = '<option value="">Selecione o álbum...</option>';
-      if (data) {
-        data.forEach(album => {
-          select.innerHTML += `<option value="${album.id}">${album.nome}</option>`;
-        });
-      }
+      const { data } = await _supabase.from('albuns').select('*').order('nome');
+      const tbody = document.getElementById('tabelaAlbuns');
+      if (!tbody) return;
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum álbum cadastrado.</td></tr>`; return; }
+      tbody.innerHTML = data.map(a => `
+        <tr>
+          <td>${a.nome}</td>
+          <td class="acoes-btns">
+            <button class="btn-acao" onclick="editarAlbum(${a.id}, '${a.nome.replace(/'/g, "\\'")}')">Editar</button>
+            <button class="btn-excluir" onclick="excluirAlbum(${a.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    async function carregarTipos() {
-      const { data } = await _supabase.from('tipos').select('*');
-      const select = document.getElementById('selectTipoFigurinha');
-      if (!select) return;
-      select.innerHTML = '<option value="">Selecione o tipo...</option>';
-      if (data) {
-        data.forEach(tipo => {
-          select.innerHTML += `<option value="${tipo.id}">${tipo.nome}</option>`;
-        });
-      }
-    }
-
-    async function carregarSelecoes() {
-      const { data } = await _supabase.from('selecoes_escuderias').select('*');
-      const select = document.getElementById('selectSelecaoFigurinha');
-      if (!select) return;
-      select.innerHTML = '<option value="">Selecione...</option>';
-      if (data) {
-        data.forEach(sel => {
-          select.innerHTML += `<option value="${sel.nome}">${sel.nome}</option>`;
-        });
-      }
-    }
-
-    // Funções de cadastro
-    async function cadastrarAlbum() {
+    async function salvarAlbum() {
+      const id = document.getElementById('editAlbumId').value;
       const nome = document.getElementById('inputNomeAlbum').value.trim();
       const msg = document.getElementById('msgAlbum');
-      if (!nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Preencha o nome do álbum.";
-        msg.style.display = "block";
-        return;
-      }
-      const { error } = await _supabase.from('albuns').insert([{ nome }]);
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
+      if (!nome) { msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha o nome."; msg.style.display = "block"; return; }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase.from('albuns').update({ nome }).eq('id', id));
       } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Álbum cadastrado com sucesso!";
-        document.getElementById('inputNomeAlbum').value = '';
+        ({ error } = await _supabase.from('albuns').insert([{ nome }]));
+      }
+
+      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
+      else {
+        msg.className = "msg-feedback msg-success"; msg.innerText = "Álbum salvo com sucesso!";
+        cancelarEdicaoAlbum();
         carregarAlbuns();
       }
       msg.style.display = "block";
     }
 
-    async function cadastrarTipo() {
+    function editarAlbum(id, nome) {
+      document.getElementById('editAlbumId').value = id;
+      document.getElementById('inputNomeAlbum').value = nome;
+      document.getElementById('tituloCardAlbum').innerText = "📂 Editar Álbum";
+      document.getElementById('btnSalvarAlbum').innerText = "Atualizar Álbum";
+      document.getElementById('btnCancelarAlbum').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoAlbum() {
+      document.getElementById('editAlbumId').value = '';
+      document.getElementById('inputNomeAlbum').value = '';
+      document.getElementById('tituloCardAlbum').innerText = "📂 Cadastro de Álbum";
+      document.getElementById('btnSalvarAlbum').innerText = "Salvar Álbum";
+      document.getElementById('btnCancelarAlbum').style.display = "none";
+      document.getElementById('msgAlbum').style.display = "none";
+    }
+
+    async function excluirAlbum(id) {
+      if (!confirm("Deseja excluir este álbum?")) return;
+      const { error } = await _supabase.from('albuns').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarAlbuns();
+    }
+
+
+    // --- CRUD: TIPOS ---
+    async function carregarTipos() {
+      const { data } = await _supabase.from('tipos').select('*').order('nome');
+      const tbody = document.getElementById('tabelaTipos');
+      if (!tbody) return;
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum tipo cadastrado.</td></tr>`; return; }
+      tbody.innerHTML = data.map(t => `
+        <tr>
+          <td>${t.nome}</td>
+          <td class="acoes-btns">
+            <button class="btn-acao" onclick="editarTipo(${t.id}, '${t.nome.replace(/'/g, "\\'")}')">Editar</button>
+            <button class="btn-excluir" onclick="excluirTipo(${t.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function salvarTipo() {
+      const id = document.getElementById('editTipoId').value;
       const nome = document.getElementById('inputNomeTipo').value.trim();
       const msg = document.getElementById('msgTipo');
-      if (!nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Preencha o nome do tipo.";
-        msg.style.display = "block";
-        return;
-      }
-      const { error } = await _supabase.from('tipos').insert([{ nome }]);
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
+      if (!nome) { msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha o nome."; msg.style.display = "block"; return; }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase.from('tipos').update({ nome }).eq('id', id));
       } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Tipo cadastrado com sucesso!";
-        document.getElementById('inputNomeTipo').value = '';
+        ({ error } = await _supabase.from('tipos').insert([{ nome }]));
+      }
+
+      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
+      else {
+        msg.className = "msg-feedback msg-success"; msg.innerText = "Tipo salvo com sucesso!";
+        cancelarEdicaoTipo();
         carregarTipos();
       }
       msg.style.display = "block";
     }
 
-    async function cadastrarSelecao() {
+    function editarTipo(id, nome) {
+      document.getElementById('editTipoId').value = id;
+      document.getElementById('inputNomeTipo').value = nome;
+      document.getElementById('tituloCardTipo').innerText = "🏷️ Editar Tipo";
+      document.getElementById('btnSalvarTipo').innerText = "Atualizar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoTipo() {
+      document.getElementById('editTipoId').value = '';
+      document.getElementById('inputNomeTipo').value = '';
+      document.getElementById('tituloCardTipo').innerText = "🏷️ Cadastro de Tipo";
+      document.getElementById('btnSalvarTipo').innerText = "Salvar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "none";
+      document.getElementById('msgTipo').style.display = "none";
+    }
+
+    async function excluirTipo(id) {
+      if (!confirm("Deseja excluir este tipo?")) return;
+      const { error } = await _supabase.from('tipos').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarTipos();
+    }
+
+
+    // --- CRUD: SELEÇÕES / ESCUDERIAS ---
+    async function carregarSelecoes() {
+      const { data } = await _supabase.from('selecoes_escuderias').select('*').order('nome');
+      const tbody = document.getElementById('tabelaSelecoes');
+      if (!tbody) return;
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhuma seleção cadastrada.</td></tr>`; return; }
+      tbody.innerHTML = data.map(s => `
+        <tr>
+          <td>${s.nome}</td>
+          <td class="acoes-btns">
+            <button class="btn-acao" onclick="editarSelecao(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">Editar</button>
+            <button class="btn-excluir" onclick="excluirSelecao(${s.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function salvarSelecao() {
+      const id = document.getElementById('editSelecaoId').value;
       const nome = document.getElementById('inputNomeSelecao').value.trim();
       const msg = document.getElementById('msgSelecao');
-      if (!nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Preencha o nome da seleção ou escuderia.";
-        msg.style.display = "block";
-        return;
-      }
-      const { error } = await _supabase.from('selecoes_escuderias').insert([{ nome }]);
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
+      if (!nome) { msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha o nome."; msg.style.display = "block"; return; }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase.from('selecoes_escuderias').update({ nome }).eq('id', id));
       } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Seleção/Escuderia cadastrada com sucesso!";
-        document.getElementById('inputNomeSelecao').value = '';
+        ({ error } = await _supabase.from('selecoes_escuderias').insert([{ nome }]));
+      }
+
+      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
+      else {
+        msg.className = "msg-feedback msg-success"; msg.innerText = "Salvo com sucesso!";
+        cancelarEdicaoSelecao();
         carregarSelecoes();
       }
       msg.style.display = "block";
+    }
+
+    function editarSelecao(id, nome) {
+      document.getElementById('editSelecaoId').value = id;
+      document.getElementById('inputNomeSelecao').value = nome;
+      document.getElementById('tituloCardSelecao').innerText = "⚽ Editar Seleção / Escuderia";
+      document.getElementById('btnSalvarSelecao').innerText = "Atualizar";
+      document.getElementById('btnCancelarSelecao').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoSelecao() {
+      document.getElementById('editSelecaoId').value = '';
+      document.getElementById('inputNomeSelecao').value = '';
+      document.getElementById('tituloCardSelecao').innerText = "⚽ Cadastro de Seleção / Escuderia";
+      document.getElementById('btnSalvarSelecao').innerText = "Salvar Seleção / Escuderia";
+      document.getElementById('btnCancelarSelecao').style.display = "none";
+      document.getElementById('msgSelecao').style.display = "none";
+    }
+
+    async function excluirSelecao(id) {
+      if (!confirm("Deseja excluir?")) return;
+      const { error } = await _supabase.from('selecoes_escuderias').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarSelecoes();
+    }
+
+
+    // --- SELECTS PARA FIGURINHAS ---
+    async function carregarAlbunsSelect() {
+      const { data } = await _supabase.from('albuns').select('*');
+      const select = document.getElementById('selectAlbumFigurinha');
+      if (select && data) {
+        select.innerHTML = '<option value="">Selecione o álbum...</option>' + data.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      }
+    }
+
+    async function carregarTiposSelect() {
+      const { data } = await _supabase.from('tipos').select('*');
+      const select = document.getElementById('selectTipoFigurinha');
+      if (select && data) {
+        select.innerHTML = '<option value="">Selecione o tipo...</option>' + data.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+      }
+    }
+
+    async function carregarSelecoesSelect() {
+      const { data } = await _supabase.from('selecoes_escuderias').select('*');
+      const select = document.getElementById('selectSelecaoFigurinha');
+      if (select && data) {
+        select.innerHTML = '<option value="">Selecione...</option>' + data.map(s => `<option value="${s.nome}">${s.nome}</option>`).join('');
+      }
     }
 
     async function cadastrarFigurinha() {
@@ -384,19 +579,13 @@
       const msg = document.getElementById('msgFigurinha');
 
       if (!album_id || !tipo_id || !numero || !nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Preencha os campos obrigatórios.";
-        msg.style.display = "block";
-        return;
+        msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha os campos obrigatórios."; msg.style.display = "block"; return;
       }
 
       const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, selecao_escuderia, numero, nome, imagem }]);
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Figurinha cadastrada com sucesso!";
+      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
+      else {
+        msg.className = "msg-feedback msg-success"; msg.innerText = "Figurinha cadastrada com sucesso!";
         document.getElementById('inputNumeroFigurinha').value = '';
         document.getElementById('inputNomeFigurinha').value = '';
         document.getElementById('inputImagemFigurinha').value = '';
@@ -404,7 +593,30 @@
       msg.style.display = "block";
     }
 
-    async function liberarVendedor() {
+
+    // --- CRUD: VENDEDORES ---
+    async function carregarVendedores() {
+      const { data } = await _supabase.from('vendedores_autorizados').select('*').order('nome');
+      const tbody = document.getElementById('tabelaVendedores');
+      if (!tbody) return;
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum vendedor cadastrado.</td></tr>`; return; }
+      tbody.innerHTML = data.map(v => `
+        <tr>
+          <td>${v.nome || '-'}</td>
+          <td>${v.email}</td>
+          <td>${v.cidade || '-'}</td>
+          <td>${v.telefone || '-'}</td>
+          <td>${v.funcao || 'vendedor'}</td>
+          <td class="acoes-btns">
+            <button class="btn-acao" onclick="editarVendedor('${v.email}', '${(v.nome||'').replace(/'/g, "\\'")}', '${(v.cidade||'').replace(/'/g, "\\'")}', '${(v.telefone||'').replace(/'/g, "\\'")}', '${v.funcao||'vendedor'}')">Editar</button>
+            <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function salvarVendedor() {
+      const originalEmail = document.getElementById('editVendedorOriginalEmail').value;
       const email = document.getElementById('inputEmailVendedor').value.trim();
       const nome = document.getElementById('inputNomeVendedor').value.trim();
       const cidade = document.getElementById('inputCidadeVendedor').value.trim();
@@ -412,47 +624,71 @@
       const funcao = document.getElementById('selectFuncaoVendedor').value;
       const msg = document.getElementById('msgVendedor');
 
-      if (!email) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Informe o e-mail do vendedor.";
-        msg.style.display = "block";
-        return;
-      }
+      if (!email) { msg.className = "msg-feedback msg-error"; msg.innerText = "Informe o e-mail do vendedor."; msg.style.display = "block"; return; }
 
       const is_admin = (funcao === 'admin' || funcao === 'master');
 
-      const { error } = await _supabase.from('vendedores_autorizados').upsert([
-        { email, nome, cidade, telefone, funcao, is_admin }
-      ], { onConflict: 'email' });
+      let error;
+      if (originalEmail && originalEmail !== email) {
+        // Se alterou o email, remove o antigo e insere o novo
+        await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
+      }
 
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Vendedor autorizado/atualizado com sucesso!";
-        document.getElementById('inputEmailVendedor').value = '';
-        document.getElementById('inputNomeVendedor').value = '';
-        document.getElementById('inputCidadeVendedor').value = '';
-        document.getElementById('inputTelefoneVendedor').value = '';
+      ({ error } = await _supabase.from('vendedores_autorizados').upsert([
+        { email, nome, cidade, telefone, funcao, is_admin }
+      ], { onConflict: 'email' }));
+
+      if (error) { msg.className = "msg-feedback msg-error"; msg.innerText = "Erro: " + error.message; }
+      else {
+        msg.className = "msg-feedback msg-success"; msg.innerText = "Vendedor salvo com sucesso!";
+        cancelarEdicaoVendedor();
+        carregarVendedores();
       }
       msg.style.display = "block";
     }
 
-    // Gestão de Contatos Recebidos
+    function editarVendedor(email, nome, cidade, telefone, funcao) {
+      document.getElementById('editVendedorOriginalEmail').value = email;
+      document.getElementById('inputEmailVendedor').value = email;
+      document.getElementById('inputNomeVendedor').value = nome;
+      document.getElementById('inputCidadeVendedor').value = cidade;
+      document.getElementById('inputTelefoneVendedor').value = telefone;
+      document.getElementById('selectFuncaoVendedor').value = funcao;
+      
+      document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor Autorizado";
+      document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoVendedor() {
+      document.getElementById('editVendedorOriginalEmail').value = '';
+      document.getElementById('inputEmailVendedor').value = '';
+      document.getElementById('inputNomeVendedor').value = '';
+      document.getElementById('inputCidadeVendedor').value = '';
+      document.getElementById('inputTelefoneVendedor').value = '';
+      document.getElementById('selectFuncaoVendedor').value = 'vendedor';
+      
+      document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
+      document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "none";
+      document.getElementById('msgVendedor').style.display = "none";
+    }
+
+    async function excluirVendedor(email) {
+      if (!confirm("Deseja revogar e excluir este vendedor?")) return;
+      const { error } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarVendedores();
+    }
+
+
+    // --- CONTATOS RECEBIDOS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       const { data, error } = await _supabase.from('contatos_vendedores').select('*').order('criado_em', { ascending: false });
       
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido ainda.</td></tr>`;
-        return;
-      }
+      if (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`; return; }
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido ainda.</td></tr>`; return; }
 
       tbody.innerHTML = data.map(c => `
         <tr>
@@ -461,29 +697,23 @@
           <td>${c.cidade || '-'}</td>
           <td>${c.telefone || '-'}</td>
           <td>${c.albuns || '-'}</td>
-          <td><button class="btn-acao" onclick="excluirContato(${c.id})">Excluir</button></td>
+          <td><button class="btn-excluir" onclick="excluirContato(${c.id})">Excluir</button></td>
         </tr>
       `).join('');
     }
 
     async function excluirContato(id) {
-      if (!confirm("Tem certeza que deseja apagar este contato?")) return;
+      if (!confirm("Deseja apagar este contato?")) return;
       const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir: " + error.message);
-      } else {
-        carregarContatos();
-      }
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarContatos();
     }
+
 
     async function inicializarAdmin() {
       const autorizado = await verificarAdminMaster();
       if (!autorizado) return;
-
-      carregarAlbuns();
-      carregarTipos();
-      carregarSelecoes();
-      carregarContatos();
+      carregarAlbuns(); // Inicia na aba padrão (Álbuns)
     }
 
     inicializarAdmin();
