@@ -81,6 +81,7 @@
         <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
         <div id="adminLinks" style="display:none;">
           <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
+          <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
         </div>
         <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
       </div>
@@ -126,7 +127,7 @@
       const { data: perfilLogado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
       if (perfilLogado) {
         usuarioLogado = perfilLogado;
-        isAdminOrMaster = (perfilLogado.is_admin || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
+        isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
       }
       document.getElementById('loggedMenu').style.display = 'block';
     } else {
@@ -137,7 +138,6 @@
     const idParam = urlParams.get('id');
 
     if (idParam) {
-      // Tenta buscar por ID sequencial, se não achar, busca por UUID (user_id)
       let { data: perfilAlvo } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
       if (!perfilAlvo) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
