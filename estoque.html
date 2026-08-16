@@ -179,7 +179,8 @@
     }
 
     function executarConsultaSupabase(albumId, termo, inicio, fim) {
-      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
+      // Ordenação primária pelo campo número (código) em ordem crescente
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       
       if (albumId !== 'todos') {
         query = query.eq('album_id', albumId);
@@ -189,14 +190,8 @@
         const t = termo.trim();
         const tSemHash = t.replace('#', '');
         
-        // Verificamos se o termo digitado corresponde a um número puro ou com formato de texto no banco
-        if (!isNaN(tSemHash) && tSemHash !== "") {
-          const numInt = parseInt(tSemHash, 10);
-          // Usamos string literal para garantir que o PostgREST processe o filtro corretamente
-          query = query.or(`numero.eq.${numInt},numero.eq.${tSemHash},numero.eq.${t},nome.ilike.%${t}%`);
-        } else {
-          query = query.or(`nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
-        }
+        // Se a coluna número for textual ou numérica, fazemos busca combinada de texto ILIKE em todos os campos relevantes
+        query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
       }
 
       return query.range(inicio, fim);
