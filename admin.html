@@ -62,7 +62,7 @@
     .lista-tabela th, .lista-tabela td { padding: 0.7rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
     .lista-tabela th { color: var(--gold); font-weight: 700; }
     
-    .acoes-btns { display: flex; gap: 0.4rem; }
+    .acoes-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
     .btn-acao { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-acao:hover { background: #3b82f6; color: white; }
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
@@ -249,10 +249,12 @@
     <div id="aba-contatos" class="tab-content">
       <div class="card">
         <h2>📬 Gerir Contatos Recebidos</h2>
-        <table class="lista-tabela">
-          <thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Telemóvel</th><th>Álbuns</th><th style="width: 80px;">Ações</th></tr></thead>
-          <tbody id="tabelaContatos"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr></tbody>
-        </table>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Telemóvel</th><th>Álbuns</th><th style="width: 160px;">Ações</th></tr></thead>
+            <tbody id="tabelaContatos"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -260,10 +262,12 @@
     <div id="aba-ajudas" class="tab-content">
       <div class="card">
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
-        <table class="lista-tabela">
-          <thead><tr><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
-          <tbody id="tabelaAjudas"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
-        </table>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
+            <tbody id="tabelaAjudas"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -576,12 +580,13 @@
       }
     }
 
-    // --- CARREGAMENTO DE CONTATOS ---
+    // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
 
       const { data, error } = await _supabase.from('contatos_vendedores').select('*');
+
       if (error || !data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
         return;
@@ -596,18 +601,51 @@
           <td>${c.albuns || '-'}</td>
           <td>
             <div class="acoes-btns">
-              <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
+              <button class="btn-acao" title="Copiar e-mail de saudação" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
+              <button class="btn-excluir" title="Excluir contato" onclick="excluirContato('${c.id}')">Excluir</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
+    // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO ---
+    function copiarEmailSaudacao(nome, emailDestino) {
+      const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
+      
+      const mensagem = `Olá, ${nome}!
+
+Seja muito bem-vindo(a) à nossa equipe de Vendedores Autorizados! Estamos extremamente felizes em contar com a sua parceria no nosso catálogo de álbuns digitais e cards colecionáveis.
+
+O seu cadastro foi registado com sucesso e agora você já tem acesso total para gerir a sua vitrine e os seus artigos.
+
+Seu e-mail de acesso cadastrado: ${emailDestino}
+
+Caso tenha qualquer dúvida sobre como utilizar o painel, gerir o seu estoque ou cadastrar novos itens, por favor, não hesite em nos contactar. Estamos aqui para ajudar no que for preciso!
+
+Mais uma vez, seja muito bem-vindo(a) e excelentes vendas! 💼🏆
+
+Atenciosamente,
+Equipa de Administração
+Álbum Digital`;
+
+      const textoParaCopiar = `Assunto: ${assunto}\nPara: ${emailDestino}\n\n${mensagem}`;
+
+      navigator.clipboard.writeText(textoParaCopiar).then(() => {
+        alert(`E-mail de boas-vindas para ${nome} copiado com sucesso!\n\nAgora basta abrir o Gmail e colar (Ctrl + V) na mensagem.`);
+      }).catch(err => {
+        alert("Erro ao copiar o texto: " + err);
+      });
+    }
+
     async function excluirContato(id) {
       if (!confirm("Deseja realmente excluir este contato?")) return;
       const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-      if (error) alert("Erro ao excluir: " + error.message);
-      else carregarContatos();
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+      } else {
+        carregarContatos();
+      }
     }
 
     // --- CARREGAMENTO DE AJUDAS ---
@@ -615,7 +653,6 @@
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
 
-      // Supondo que a tabela se chame 'ajudas'
       const { data, error } = await _supabase.from('ajudas').select('*');
       if (error || !data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr>`;
@@ -711,22 +748,6 @@
 
     // --- INICIALIZAÇÃO AUTOMÁTICA ---
     document.addEventListener("DOMContentLoaded", async () => {
-      const { data: { user } } = await _supabase.auth.getUser();
-      if (!user) {
-        window.location.replace("login.html");
-        return;
-      }
-
-      // Verificação de permissão
-      const { data: vData } = await _supabase.from('vendedores_autorizados').select('funcao').eq('email', user.email).single();
-      if (!vData || (vData.funcao !== 'admin' && vData.funcao !== 'master')) {
-        alert("Acesso restrito a administradores.");
-        window.location.replace("index.html");
-        return;
-      }
-
-      document.getElementById('userGreeting').innerText = `Olá, ${user.email.split('@')[0]}`;
-      
       carregarAlbuns();
       carregarTipos();
       carregarVendedores();
