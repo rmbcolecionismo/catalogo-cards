@@ -183,7 +183,7 @@
           <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
         </div>
         <div class="form-group">
-          <label>Fazer Upload da Imagem</label>
+          <label>Fazer Upload da Imagem (Opcional)</label>
           <input type="file" id="inputArquivoFigurinha" accept="image/*">
         </div>
         <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
@@ -297,34 +297,51 @@
       const fileInput = document.getElementById('inputArquivoFigurinha');
       const msg = document.getElementById('msgFigurinha');
 
-      if (!album_id || !tipo_id || !numero || !nome || !fileInput.files[0]) {
-        msg.className = "msg-feedback msg-error"; msg.innerText = "Preencha todos os campos e selecione uma imagem."; msg.style.display = "block"; return;
+      if (!album_id || !tipo_id || !numero || !nome) {
+        msg.className = "msg-feedback msg-error"; 
+        msg.innerText = "Preencha todos os campos obrigatórios."; 
+        msg.style.display = "block"; 
+        return;
       }
 
-      msg.innerText = "Fazendo upload..."; msg.style.display = "block";
+      msg.className = "msg-feedback";
+      msg.innerText = "Salvando figurinha..."; 
+      msg.style.display = "block";
 
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      let publicUrl = "https://rmbcolecionismo.github.io/catalogo-cards/sem-foto.jpg";
 
-      const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(fileName, file);
+      if (fileInput.files && fileInput.files[0]) {
+        msg.innerText = "Fazendo upload da imagem...";
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
-      if (uploadError) {
-        msg.innerText = "Erro no upload: " + uploadError.message; return;
+        const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(fileName, file);
+
+        if (uploadError) {
+          msg.className = "msg-feedback msg-error";
+          msg.innerText = "Erro no upload: " + uploadError.message; 
+          return;
+        }
+
+        const urlData = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
+        publicUrl = urlData.data.publicUrl;
       }
-
-      const { data: { publicUrl } } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
 
       const { error } = await _supabase.from('figurinhas').insert([{ 
         album_id, tipo_id, selecao_escuderia, numero, nome, imagem: publicUrl 
       }]);
 
       if (error) { 
+        msg.className = "msg-feedback msg-error";
         msg.innerText = "Erro ao salvar figurinha: " + error.message; 
       } else {
         msg.className = "msg-feedback msg-success"; 
         msg.innerText = "Figurinha cadastrada com sucesso!";
         fileInput.value = '';
+        document.getElementById('inputNumeroFigurinha').value = '';
+        document.getElementById('inputNomeFigurinha').value = '';
+        document.getElementById('inputSelecaoFigurinha').value = '';
       }
     }
     // ... (restante das funções que você já tinha)
