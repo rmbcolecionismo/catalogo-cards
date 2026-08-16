@@ -147,7 +147,7 @@
     }
 
     if (idParam) {
-      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').or(`user_id.eq.${idParam},id.eq.${idParam}`).maybeSingle();
+      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
       if (error) console.error("Erro na busca:", error);
       perfilAlvo = data;
     } else if (usuarioLogado) {
