@@ -146,16 +146,17 @@
     let perfilAlvo = null;
 
     if (idParam) {
-      let { data: d1 } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
-      let { data: d2 } = !d1 ? await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle() : { data: null };
-      perfilAlvo = d1 || d2;
+      // Busca APENAS no campo 'user_id' para evitar o erro 400 da coluna numérica
+      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+      if (error) console.error("Erro na busca:", error);
+      perfilAlvo = data;
     } else if (usuarioLogado) {
       perfilAlvo = usuarioLogado;
     }
 
     if (perfilAlvo) {
-      perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
-      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
+      perfilAlvoUuid = perfilAlvo.user_id;
+      const ehProprio = usuarioLogado && (perfilAlvo.user_id === usuarioLogado.user_id || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
     } else {
