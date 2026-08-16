@@ -99,6 +99,7 @@
             nome: f.nome || 'Sem Nome',
             imagem: f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
             selecao_escuderia: f.selecao_escuderia || f.selecao || f.escuderia || 'N/A',
+            albumId: f.album_id || '',
             album: f.albumNome,
             tipo: f.tipo || 'N/A',
             preco: o.preco || 0,
@@ -106,12 +107,63 @@
           };
         });
 
+        // Preencher selects de filtros dinamicamente
+        const albunsUnicos = {};
+        const selecoesUnicas = new Set();
+        const tiposUnicos = new Set();
+
+        allData.forEach(item => {
+          if (item.albumId && item.album && item.album !== 'N/A') albunsUnicos[item.albumId] = item.album;
+          if (item.selecao_escuderia && item.selecao_escuderia !== 'N/A') selecoesUnicas.add(item.selecao_escuderia);
+          if (item.tipo && item.tipo !== 'N/A') tiposUnicos.add(item.tipo);
+        });
+
+        const selectAlbum = document.getElementById('filterAlbum');
+        selectAlbum.innerHTML = '<option value="">📂 Todos os Álbuns</option>' + 
+          Object.entries(albunsUnicos).map(([id, nome]) => `<option value="${id}">${nome}</option>`).join('');
+
+        const selectColecao = document.getElementById('filterColecao');
+        selectColecao.innerHTML = '<option value="">⚽ Todas as Seleções / Escuderias</option>' + 
+          [...selecoesUnicas].sort().map(s => `<option value="${s}">${s}</option>`).join('');
+
+        const selectTipo = document.getElementById('filterTipo');
+        selectTipo.innerHTML = '<option value="">🏷️ Todos os Tipos</option>' + 
+          [...tiposUnicos].sort().map(t => `<option value="${t}">${t}</option>`).join('');
+
         renderizar(allData);
       } catch (err) { console.error(err); }
     }
 
+    function filtrar() {
+      const termoBusca = document.getElementById('search').value.toLowerCase().trim().replace(/^#/, '');
+      const albumFiltro = document.getElementById('filterAlbum').value;
+      const colecaoFiltro = document.getElementById('filterColecao').value;
+      const tipoFiltro = document.getElementById('filterTipo').value;
+
+      const filtrados = allData.filter(item => {
+        const numLimpo = String(item.numero).toLowerCase().replace(/^#/, '');
+        const nomeMatch = item.nome.toLowerCase().includes(termoBusca);
+        const numeroMatch = numLimpo.includes(termoBusca);
+        const buscaMatch = !termoBusca || nomeMatch || numeroMatch;
+
+        const albumMatch = !albumFiltro || String(item.albumId) === String(albumFiltro);
+        const colecaoMatch = !colecaoFiltro || item.selecao_escuderia === colecaoFiltro;
+        const tipoMatch = !tipoFiltro || item.tipo === tipoFiltro;
+
+        return buscaMatch && albumMatch && colecaoMatch && tipoMatch;
+      });
+
+      renderizar(filtrados);
+    }
+
     function renderizar(lista) {
-      document.getElementById('catalog').innerHTML = lista.map(f => `
+      const catalog = document.getElementById('catalog');
+      if (!lista || lista.length === 0) {
+        catalog.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Nenhuma figurinha encontrada com esses filtros.</p>';
+        return;
+      }
+
+      catalog.innerHTML = lista.map(f => `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem}" alt="${f.nome}"></div>
           <div class="sticker-info">
