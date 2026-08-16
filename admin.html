@@ -509,7 +509,6 @@
         return;
       }
 
-      // Se o e-mail mudou, removemos o antigo (para simular a atualização de PK)
       if (originalEmail && originalEmail !== email) {
         await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
       }
@@ -524,10 +523,6 @@
         msg.className = "msg-feedback msg-success";
         msg.innerText = "Vendedor salvo com sucesso!";
         msg.style.display = "block";
-        document.getElementById('inputEmailVendedor').value = '';
-        document.getElementById('inputNomeVendedor').value = '';
-        document.getElementById('inputCidadeVendedor').value = '';
-        document.getElementById('inputTelefoneVendedor').value = '';
         cancelarEdicaoVendedor();
         carregarVendedores();
       }
@@ -558,7 +553,6 @@
       document.getElementById('btnCancelarVendedor').style.display = "none";
     }
 
-    // --- EXCLUIR VENDEDOR, SUA VITRINE E OS ARTIGOS ASSOCIADOS ---
     async function excluirVendedor(email) {
       if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos os artigos associados.")) return;
 
@@ -656,21 +650,27 @@
         document.getElementById('inputNumeroFigurinha').value = '';
         document.getElementById('inputNomeFigurinha').value = '';
         document.getElementById('inputSelecaoFigurinha').value = '';
-        document.getElementById('selectTipoFigurinha').value = '';
       }
     }
 
-    // --- INICIALIZAÇÃO AUTOMÁTICA AO ABRIR A PÁGINA ---
+    // --- INICIALIZAÇÃO AUTOMÁTICA ---
     document.addEventListener("DOMContentLoaded", async () => {
       const { data: { user } } = await _supabase.auth.getUser();
-      if (user) {
-        const nomeUsuario = user.email ? user.email.split('@')[0] : 'Usuário';
-        document.getElementById('userGreeting').innerText = `Olá, ${nomeUsuario}`;
-      } else {
+      if (!user) {
         window.location.replace("login.html");
         return;
       }
 
+      // Verificação de permissão
+      const { data: vData } = await _supabase.from('vendedores_autorizados').select('funcao').eq('email', user.email).single();
+      if (!vData || (vData.funcao !== 'admin' && vData.funcao !== 'master')) {
+        alert("Acesso restrito a administradores.");
+        window.location.replace("index.html");
+        return;
+      }
+
+      document.getElementById('userGreeting').innerText = `Olá, ${user.email.split('@')[0]}`;
+      
       carregarAlbuns();
       carregarTipos();
       carregarVendedores();
