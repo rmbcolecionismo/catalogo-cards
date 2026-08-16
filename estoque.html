@@ -56,7 +56,7 @@
     
     .input-tabela { padding: 0.45rem 0.6rem; font-size: 0.8rem; border-radius: 6px; }
     
-    .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.35rem 0.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: all 0.2s; width: 100%; text-align: center; white-space: nowrap; }
+    .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.35rem 0.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: all 0.2s; width: 100%; text-align: center; white-space: nowrap; display: block; }
     .btn-acao:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
 
     .btn-excluir { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
@@ -178,7 +178,7 @@
       }
     }
 
-    function construirQueryFiltro(albumId, termo) {
+    function executarConsultaSupabase(albumId, termo, inicio, fim) {
       let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       
       if (albumId !== 'todos') {
@@ -186,18 +186,20 @@
       }
 
       if (termo !== "") {
-        const termoLimpo = termo.trim();
-        const termoSemHash = termoLimpo.replace('#', '');
+        const t = termo.trim();
+        const tSemHash = t.replace('#', '');
         
-        // Trata buscas numéricas completas ou parciais (#001, 001, 1) combinadas com nome
-        if (!isNaN(termoSemHash) && termoSemHash !== "") {
-          const numInt = parseInt(termoSemHash, 10);
-          query = query.or(`numero.eq.${numInt},numero.eq.${termoSemHash},numero.eq.${termoLimpo},nome.ilike.%${termoLimpo}%`);
+        // Verificamos se o termo digitado corresponde a um número puro ou com formato de texto no banco
+        if (!isNaN(tSemHash) && tSemHash !== "") {
+          const numInt = parseInt(tSemHash, 10);
+          // Usamos string literal para garantir que o PostgREST processe o filtro corretamente
+          query = query.or(`numero.eq.${numInt},numero.eq.${tSemHash},numero.eq.${t},nome.ilike.%${t}%`);
         } else {
-          query = query.ilike('nome', `%${termoLimpo}%`);
+          query = query.or(`nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
         }
       }
-      return query;
+
+      return query.range(inicio, fim);
     }
 
     async function aplicarFiltros() {
@@ -206,8 +208,7 @@
       const albumId = document.getElementById('filterAlbum').value;
       let termo = document.getElementById('search').value;
       
-      let query = construirQueryFiltro(albumId, termo);
-      const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
+      const { data, error } = await executarConsultaSupabase(albumId, termo, 0, ITENS_POR_PAGINA - 1);
       
       if (error) {
         console.error("Erro ao buscar:", error);
@@ -228,13 +229,13 @@
     async function carregarMaisFigurinhas() {
       paginaAtual++;
       const inicio = paginaAtual * ITENS_POR_PAGINA;
+      const fim = inicio + ITENS_POR_PAGINA - 1;
       const albumId = document.getElementById('filterAlbum').value;
       let termo = document.getElementById('search').value;
 
-      let query = construirQueryFiltro(albumId, termo);
-      const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
+      const { data, error } = await executarConsultaSupabase(albumId, termo, inicio, fim);
       
-      if (data && data.length > 0) {
+      if (!error && data && data.length > 0) {
         figurinhasGlobal = figurinhasGlobal.concat(data);
         renderizarTabela(figurinhasGlobal);
         document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
@@ -258,7 +259,7 @@
               <div class="item-foto-wrapper">
                 <img id="img-${f.id}" src="${imgUrl}" class="item-foto" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
                 <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarFoto(${f.id}, this)">
-                <button class="btn-acao" onclick="document.getElementById('file-${f.id}').click()">🖼️ Trocar Foto</button>
+                <button class="btn-acao" onclick="document.getElementById('file-${f.id}').click()">Trocar</button>
               </div>
             </td>
             <td>
