@@ -294,12 +294,12 @@
         return false;
       }
 
-      // Filtro por Nome ou Código (# ou sem)
+      // Filtro por Nome ou Código (permite busca parcial por código ou nome)
       if (filtroBuscaVal) {
         const nomeFig = (f.nome || '').toLowerCase();
         const numFig = String(f.numero || '').toLowerCase().replace('#', '');
         const matchNome = nomeFig.includes(filtroBuscaVal);
-        const matchNum = numFig === filtroBuscaVal;
+        const matchNum = numFig.includes(filtroBuscaVal);
         if (!matchNome && !matchNum) return false;
       }
 
