@@ -600,11 +600,11 @@
       msg.innerText = "Salvando figurinha...";
 
       const { error } = await _supabase.from('figurinhas').insert([{ 
-        album_id, 
-        tipos: nomeTipo, 
-        selecao_escuderia, 
-        numero, 
-        nome, 
+        album_id: album_id, 
+        tipo_id: tipo,
+        selecao_escuderia: selecao_escuderia, 
+        numero: numero, 
+        nome: nome, 
         imagem: publicUrl 
       }]);
 
