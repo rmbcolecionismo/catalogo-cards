@@ -127,7 +127,13 @@
   }
 
   async function verificarAcesso() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idParam = urlParams.get('id');
+
     const { data: { session } } = await _supabase.auth.getSession();
+    
+    let perfilAlvo = null;
+
     if (session) {
       authUserId = session.user.id;
       const { data: perfilLogado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
@@ -140,13 +146,7 @@
       document.getElementById('unloggedMenu').style.display = 'block';
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const idParam = urlParams.get('id');
-
-    let perfilAlvo = null;
-
     if (idParam) {
-      // Busca APENAS no campo 'user_id' para evitar o erro 400 da coluna numérica
       const { data, error } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
       if (error) console.error("Erro na busca:", error);
       perfilAlvo = data;
@@ -154,15 +154,15 @@
       perfilAlvo = usuarioLogado;
     }
 
-    if (perfilAlvo) {
-      perfilAlvoUuid = perfilAlvo.user_id;
-      const ehProprio = usuarioLogado && (perfilAlvo.user_id === usuarioLogado.user_id || perfilAlvo.user_id === authUserId);
+    if (perfilAlvo && (perfilAlvo.user_id || perfilAlvo.id)) {
+      perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
+      const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
-      document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor no banco de dados.";
-      console.log("Erro de busca para ID:", idParam);
+      document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor no banco de dados ou a sessão expirou.";
+      console.warn("Nenhum perfil válido encontrado para carregar.");
       return;
     }
 
