@@ -120,15 +120,13 @@
   let perfilAlvoUuid = null;
   let isAdminOrMaster = false;
 
-  // Função auxiliar para validar se uma string é um UUID válido
   function isUUID(uuid) {
     if (!uuid) return false;
-    const s = String(uuid);
     const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return regex.test(s);
+    return regex.test(String(uuid));
   }
 
- async function verificarAcesso() {
+  async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
       authUserId = session.user.id;
@@ -148,44 +146,35 @@
     let perfilAlvo = null;
 
     if (idParam) {
-      // Se passou ID na URL, tenta buscar pelo user_id ou pelo id (se for UUID)
-      if (!/^\d+$/.test(idParam)) {
-        const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
-        perfilAlvo = data;
-      }
+      // 1. Tenta buscar pelo campo user_id (caso o ID da URL seja o UUID do Auth)
+      let { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+      perfilAlvo = data;
+
+      // 2. Se não achar, tenta buscar pelo campo id padrão (se for um UUID válido)
       if (!perfilAlvo && isUUID(idParam)) {
-        const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
-        perfilAlvo = data;
+        const { data: dataId } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
+        perfilAlvo = dataId;
       }
     } else if (usuarioLogado) {
-      // Se não passou ID na URL, o alvo é o próprio usuário logado
       perfilAlvo = usuarioLogado;
     }
 
     if (perfilAlvo) {
-      // PRIORIZA O user_id PARA A VITRINE (pois as ofertas usam o UUID de auth)
-      perfilAlvoUuid = perfilAlvo.user_id || (isUUID(perfilAlvo.id) ? perfilAlvo.id : null);
-      
+      perfilAlvoUuid = perfilAlvo.user_id || (isUUID(perfilAlvo.id) ? perfilAlvo.id : idParam);
       const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
-      document.getElementById('vitrineGrid').innerHTML = "Vendedor não encontrado.";
-      return;
-    }
-
-    if (!session && !idParam) {
-      window.location.replace("login.html");
+      document.getElementById('vitrineGrid').innerHTML = "Vendedor não encontrado ou sem permissão de leitura pública.";
       return;
     }
 
     if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
     
-    // Carrega a vitrine apenas se tivermos um UUID válido
-    if (isUUID(perfilAlvoUuid)) {
+    if (perfilAlvoUuid) {
       carregarVitrine(perfilAlvoUuid);
     } else {
-      document.getElementById('vitrineGrid').innerHTML = "Vitrine indisponível: o vendedor não possui um UUID de vínculo associado.";
+      document.getElementById('vitrineGrid').innerHTML = "Vitrine indisponível para este vendedor.";
     }
   }
 
@@ -211,9 +200,7 @@
   }
 
   async function salvarPerfil() {
-    if (!usuarioLogado || !isUUID(usuarioLogado.id)) {
-      return alert("Erro: ID do usuário logado inválido.");
-    }
+    if (!usuarioLogado) return alert("Você precisa estar logado.");
     const updates = {
       nome: document.getElementById('editNome').value,
       cidade: document.getElementById('editCidade').value,
@@ -233,7 +220,7 @@
 
   async function uploadAvatar(event) {
     const file = event.target.files[0];
-    if (!file || !usuarioLogado || !isUUID(usuarioLogado.id)) return alert("Erro: usuário inválido.");
+    if (!file || !usuarioLogado) return;
     const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
     const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
     if (error) return alert("Erro no upload: " + error.message);
@@ -244,10 +231,6 @@
 
   async function carregarVitrine(uuidVal) {
     const grid = document.getElementById('vitrineGrid');
-    if (!isUUID(uuidVal)) {
-      grid.innerHTML = "Vitrine indisponível (UUID inválido).";
-      return;
-    }
     const { data: ofertas, error } = await _supabase.from('vitrine_ofertas').select('*').eq('user_id', uuidVal);
     if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
     if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
@@ -283,9 +266,7 @@
   function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
 
   async function salvarEdicaoOferta() {
-    const ofertaId = document.getElementById('modalOfertaId').value;
-    if (!isUUID(ofertaId)) return alert("ID da oferta inválido.");
-    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', ofertaId);
+    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', document.getElementById('modalOfertaId').value);
     if (error) alert("Erro: " + error.message);
     else location.reload();
   }
