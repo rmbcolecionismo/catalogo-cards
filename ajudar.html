@@ -239,10 +239,10 @@
       const filePath = `colaboracoes/${fileName}`;
 
       msg.className = "msg-feedback msg-success";
-      msg.innerText = "A enviar imagem para moderação...";
+      msg.innerText = "A enviar imagem e registando contribuição...";
       msg.style.display = "block";
 
-      // Faz o upload para a pasta 'colaboracoes' no storage
+      // 1. Faz o upload para a pasta 'colaboracoes' no storage
       const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(filePath, file);
 
       if (uploadError) {
@@ -251,8 +251,27 @@
         return;
       }
 
+      // Obtém a URL pública da imagem enviada
+      const { data: publicData } = _supabase.storage.from('figurinhas').getPublicUrl(filePath);
+      const novaImagemUrl = publicData.publicUrl;
+
+      // 2. Insere os dados na tabela 'colaboracoes' do banco de dados
+      const { error: dbError } = await _supabase.from('colaboracoes').insert([{
+        figurinha_id: figurinhaSelecionadaObj.id,
+        album_id: figurinhaSelecionadaObj.album_id,
+        nova_imagem_url: novaImagemUrl,
+        colaborador: colaborador || 'Anônimo',
+        status: 'pendente'
+      }]);
+
+      if (dbError) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro ao salvar dados da contribuição: " + dbError.message;
+        return;
+      }
+
       msg.className = "msg-feedback msg-success";
-      msg.innerText = "Obrigado! A sua imagem foi enviada com sucesso para a nossa pasta de moderação. Vamos analisar e atualizar em breve!";
+      msg.innerText = "Obrigado! A sua imagem foi enviada e registada com sucesso para moderação. Vamos analisar e atualizar em breve!";
       
       // Limpar campos
       fileInput.value = '';
