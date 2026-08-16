@@ -3,50 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciador de Cadastro de Figurinhas - Álbum Digital</title>
+  <title>Gerenciador de Cadastro de Figurinhas - Painel Profissional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    :root { 
+      --gold: #f59e0b; 
+      --gold-dark: #d97706;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+    }
+    
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg-gradient); min-height: 100vh; color: white; padding: 1rem; }
-    header { max-width: 1300px; margin: 0 auto 1.5rem; }
-    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-right: 15px; }
-    .top-nav a:hover { color: var(--gold); }
-    .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 30px; }
-    .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
-    .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-    h1 { font-size: 1.8rem; color: var(--gold); }
     
-    .container { max-width: 1300px; margin: 0 auto; }
-    .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
-    .filter-group { flex: 1; min-width: 200px; }
-    label { display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: 600; }
-    input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; font-size: 0.85rem; }
-    input:focus, select:focus { border-color: var(--gold); }
-
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.6rem; }
-    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding: 1.5rem; }
     
-    .card-edit-group { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 0.2rem; }
-    .card-edit-group label { font-size: 0.65rem; color: var(--gold); }
-    .card-edit-group input, .card-edit-group select { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+    header { max-width: 1400px; margin: 0 auto 1.5rem; }
+    
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem; background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); backdrop-filter: blur(10px); }
+    
+    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--gold); }
+    
+    .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 30px; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+    .user-greeting { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; }
+    .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
+    .btn-logout:hover { background: #ef4444; color: white; }
 
-    .card-row { display: flex; gap: 0.5rem; width: 100%; }
-    .card-row .card-edit-group { flex: 1; }
+    h1 { font-size: 1.7rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 0.5rem; }
+    
+    .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    
+    .controls-panel { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    .filter-group { flex: 1; min-width: 250px; }
+    
+    label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select { width: 100%; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #0f172a; color: white; outline: none; font-size: 0.85rem; transition: border-color 0.2s; }
+    input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15); }
 
-    .btn-action { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; width: 100%; padding: 0.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
-    .btn-action:hover { background: #3b82f6; color: white; }
+    .tabela-container { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    
+    .tabela-estoque { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 1050px; }
+    .tabela-estoque th { background: rgba(15, 23, 42, 0.8); color: var(--gold); padding: 1rem; font-weight: 700; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    .tabela-estoque td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    .tabela-estoque tr:hover { background: rgba(255, 255, 255, 0.02); }
 
-    .btn-delete { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; width: 100%; padding: 0.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; margin-top: 0.2rem; }
-    .btn-delete:hover { background: #ef4444; color: white; }
+    .item-foto-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 75px; }
+    .item-foto { width: 55px; height: 70px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid var(--border-color); padding: 2px; }
+    
+    .input-tabela { padding: 0.45rem 0.6rem; font-size: 0.8rem; border-radius: 6px; }
+    
+    .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .btn-acao:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
 
+    .btn-excluir { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .btn-excluir:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+    .acoes-grupo { display: flex; gap: 0.4rem; align-items: center; }
     .file-input-hidden { display: none; }
 
-    .load-more-container { text-align: center; margin: 2rem 0; }
-    .btn-load-more { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .load-more-container { text-align: center; margin: 1.5rem 0 3rem 0; }
+    .btn-load-more { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+    .btn-load-more:hover { background: var(--gold); color: #0f172a; }
+
+    .vazio-mensagem { text-align: center; padding: 3rem; color: #94a3b8; font-size: 0.95rem; }
   </style>
 </head>
 <body>
@@ -64,7 +87,7 @@
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-        <span id="userGreeting" style="font-size: 0.85rem; font-weight: 600;">Carregando...</span>
+        <span id="userGreeting" class="user-greeting">Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
@@ -85,8 +108,23 @@
       </div>
     </div>
 
-    <div class="cards-grid" id="vitrineGrid">
-      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando figurinhas...</div>
+    <div class="tabela-container">
+      <table class="tabela-estoque">
+        <thead>
+          <tr>
+            <th style="width: 100px; text-align: center;">Foto</th>
+            <th style="width: 250px;">Álbum</th>
+            <th style="width: 110px;">Código</th>
+            <th>Nome da Figurinha</th>
+            <th style="width: 180px;">Seleção / Escuderia</th>
+            <th style="width: 160px;">Tipo</th>
+            <th style="width: 190px; text-align: center;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpo">
+          <tr><td colspan="7" class="vazio-mensagem">Carregando figurinhas...</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="load-more-container" id="loadMoreContainer" style="display: none;">
@@ -131,7 +169,6 @@
     }
 
     async function carregarOpcoesAuxiliares() {
-      // Carregar álbuns
       const { data: albuns } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
       if (albuns) {
         const selectFiltro = document.getElementById('filterAlbum');
@@ -142,7 +179,6 @@
         });
       }
 
-      // Carregar tipos
       const { data: tipos } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
       if (tipos) {
         tipos.forEach(t => {
@@ -180,7 +216,7 @@
       }
 
       figurinhasGlobal = data || [];
-      renderizarCards(figurinhasGlobal);
+      renderizarTabela(figurinhasGlobal);
       document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
     }
 
@@ -211,63 +247,58 @@
       const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
       if (data && data.length > 0) {
         figurinhasGlobal = figurinhasGlobal.concat(data);
-        renderizarCards(figurinhasGlobal);
+        renderizarTabela(figurinhasGlobal);
         document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
       } else {
         document.getElementById('loadMoreContainer').style.display = 'none';
       }
     }
 
-    function renderizarCards(lista) {
-      const grid = document.getElementById('vitrineGrid');
+    function renderizarTabela(lista) {
+      const tbody = document.getElementById('tabelaCorpo');
       if (!lista || lista.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Nenhuma figurinha encontrada.</div>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="vazio-mensagem">Nenhuma figurinha encontrada.</td></tr>`;
         return;
       }
 
-      grid.innerHTML = lista.map(f => {
+      tbody.innerHTML = lista.map(f => {
         const imgUrl = f.imagem_url || f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         return `
-          <div class="card" id="card-${f.id}">
-            <img id="img-${f.id}" src="${imgUrl}" alt="Figurinha" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-            
-            <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarFoto(${f.id}, this)">
-            <button class="btn-action" onclick="document.getElementById('file-${f.id}').click()">🖼️ Trocar Foto</button>
-
-            <div class="card-edit-group">
-              <label>Álbum:</label>
-              <select id="album-${f.id}" onchange="atualizarCampo(${f.id}, 'album_id', this.value)">
+          <tr id="row-${f.id}">
+            <td style="text-align: center;">
+              <div class="item-foto-wrapper">
+                <img id="img-${f.id}" src="${imgUrl}" class="item-foto" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarFoto(${f.id}, this)">
+              </div>
+            </td>
+            <td>
+              <select class="input-tabela" id="album-${f.id}" onchange="atualizarCampo(${f.id}, 'album_id', this.value)">
                 <option value="">Selecione...</option>
                 ${listaAlbunsSelectOptions.replace(`value="${f.album_id}"`, `value="${f.album_id}" selected`)}
               </select>
-            </div>
-
-            <div class="card-row">
-              <div class="card-edit-group">
-                <label>Número:</label>
-                <input type="text" id="numero-${f.id}" value="${f.numero || ''}" onchange="atualizarCampo(${f.id}, 'numero', this.value)">
+            </td>
+            <td>
+              <input type="text" class="input-tabela" id="numero-${f.id}" value="${f.numero || ''}" onchange="atualizarCampo(${f.id}, 'numero', this.value)">
+            </td>
+            <td>
+              <input type="text" class="input-tabela" id="nome-${f.id}" value="${f.nome || ''}" onchange="atualizarCampo(${f.id}, 'nome', this.value)">
+            </td>
+            <td>
+              <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao || ''}" onchange="atualizarCampo(${f.id}, 'selecao', this.value)">
+            </td>
+            <td>
+              <select class="input-tabela" id="tipo-${f.id}" onchange="atualizarCampo(${f.id}, 'tipo_id', this.value)">
+                <option value="">Nenhum...</option>
+                ${listaTiposSelectOptions.replace(`value="${f.tipo_id}"`, `value="${f.tipo_id}" selected`)}
+              </select>
+            </td>
+            <td style="text-align: center;">
+              <div class="acoes-grupo" style="justify-content: center;">
+                <button class="btn-acao" onclick="document.getElementById('file-${f.id}').click()">🖼️ Foto</button>
+                <button class="btn-excluir" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️</button>
               </div>
-              <div class="card-edit-group">
-                <label>Tipo:</label>
-                <select id="tipo-${f.id}" onchange="atualizarCampo(${f.id}, 'tipo_id', this.value)">
-                  <option value="">Nenhum...</option>
-                  ${listaTiposSelectOptions.replace(`value="${f.tipo_id}"`, `value="${f.tipo_id}" selected`)}
-                </select>
-              </div>
-            </div>
-
-            <div class="card-edit-group">
-              <label>Nome da Figurinha:</label>
-              <input type="text" id="nome-${f.id}" value="${f.nome || ''}" onchange="atualizarCampo(${f.id}, 'nome', this.value)">
-            </div>
-
-            <div class="card-edit-group">
-              <label>Seleção / Escuderia:</label>
-              <input type="text" id="selecao-${f.id}" value="${f.selecao || ''}" onchange="atualizarCampo(${f.id}, 'selecao', this.value)">
-            </div>
-
-            <button class="btn-delete" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️ Excluir Figurinha</button>
-          </div>
+            </td>
+          </tr>
         `;
       }).join('');
     }
@@ -319,10 +350,8 @@
         return;
       }
 
-      // 1. Remover registros da vitrine de ofertas associados a esta figurinha
       await _supabase.from('vitrine_ofertas').delete().eq('figurinha_id', id);
 
-      // 2. Tentar remover a imagem do Storage do Supabase se for do bucket local
       if (imagemUrl && imagemUrl.includes('/storage/v1/object/public/figurinhas/')) {
         const partes = imagemUrl.split('/figurinhas/');
         if (partes.length > 1) {
@@ -331,14 +360,13 @@
         }
       }
 
-      // 3. Deletar a figurinha da tabela principal
       const { error } = await _supabase.from('figurinhas').delete().eq('id', id);
 
       if (error) {
         alert("Erro ao excluir figurinha: " + error.message);
       } else {
-        const cardElement = document.getElementById(`card-${id}`);
-        if (cardElement) cardElement.remove();
+        const rowElement = document.getElementById(`row-${id}`);
+        if (rowElement) rowElement.remove();
         alert("Figurinha excluída com sucesso!");
       }
     }
