@@ -277,6 +277,41 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // --- VERIFICAR SESSÃO E CARREGAR DADOS DO UTILIZADOR ---
+    async function verificarSessao() {
+      const { data: { session }, error } = await _supabase.auth.getSession();
+      
+      if (error || !session) {
+        window.location.replace("login.html");
+        return;
+      }
+
+      const user = session.user;
+      
+      const { data: vendedor } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', user.email)
+        .single();
+
+      const nomeExibicao = vendedor?.nome || user.user_metadata?.full_name || user.email.split('@')[0];
+      
+      const greetingEl = document.getElementById('userGreeting');
+      if (greetingEl) {
+        greetingEl.innerText = `Olá, ${nomeExibicao}`;
+      }
+
+      // Carregar dados iniciais das tabelas
+      carregarAlbuns();
+      carregarTipos();
+      carregarVendedores();
+      carregarContatos();
+      carregarAjudas();
+    }
+
+    // Executa ao carregar a página
+    window.addEventListener('DOMContentLoaded', verificarSessao);
+
     async function fazerLogout() {
       await _supabase.auth.signOut();
       window.location.replace("login.html");
@@ -705,56 +740,52 @@ Equipa de Administração
       let publicUrl = "https://rmbcolecionismo.github.io/catalogo-cards/sem-foto.jpg";
 
       if (fileInput.files && fileInput.files[0]) {
-        msg.innerText = "Fazendo upload da imagem...";
         const file = fileInput.files[0];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-        const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(fileName, file);
+        const { error: uploadError } = await _supabase.storage
+          .from('figurinhas')
+          .upload(filePath, file);
 
         if (uploadError) {
           msg.className = "msg-feedback msg-error";
-          msg.innerText = "Erro no upload: " + uploadError.message; 
+          msg.innerText = "Erro ao fazer upload da imagem: " + uploadError.message;
+          msg.style.display = "block";
           return;
         }
 
-        const urlData = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
-        publicUrl = urlData.data.publicUrl;
+        const { data: publicData } = _supabase.storage
+          .from('figurinhas')
+          .getPublicUrl(filePath);
+
+        publicUrl = publicData.publicUrl;
       }
 
-      msg.innerText = "Salvando figurinha...";
-
-      const { error } = await _supabase.from('figurinhas').insert([{ 
-        album_id: album_id, 
-        tipo: tipo_id, 
-        selecao_escuderia: selecao_escuderia, 
-        numero: numero, 
-        nome: nome, 
-        imagem: publicUrl,
-        preco: 0 
+      const { error: insertError } = await _supabase.from('figurinhas').insert([{
+        album_id,
+        tipo_id,
+        selecao_escuderia,
+        numero,
+        nome,
+        imagem_url: publicUrl
       }]);
 
-      if (error) { 
+      if (insertError) {
         msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro ao salvar figurinha: " + error.message; 
+        msg.innerText = "Erro ao cadastrar figurinha: " + insertError.message;
+        msg.style.display = "block";
       } else {
-        msg.className = "msg-feedback msg-success"; 
+        msg.className = "msg-feedback msg-success";
         msg.innerText = "Figurinha cadastrada com sucesso!";
-        fileInput.value = '';
+        msg.style.display = "block";
+        document.getElementById('inputSelecaoFigurinha').value = '';
         document.getElementById('inputNumeroFigurinha').value = '';
         document.getElementById('inputNomeFigurinha').value = '';
-        document.getElementById('inputSelecaoFigurinha').value = '';
+        fileInput.value = '';
       }
     }
-
-    // --- INICIALIZAÇÃO AUTOMÁTICA ---
-    document.addEventListener("DOMContentLoaded", async () => {
-      carregarAlbuns();
-      carregarTipos();
-      carregarVendedores();
-      carregarContatos();
-      carregarAjudas();
-    });
   </script>
 </body>
 </html>
