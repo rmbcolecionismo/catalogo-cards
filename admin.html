@@ -59,7 +59,7 @@
     .msg-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
 
     .lista-tabela { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
-    .lista-tabela th, .lista-tabela td { padding: 0.7rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .lista-tabela th, .lista-tabela td { padding: 0.7rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
     .lista-tabela th { color: var(--gold); font-weight: 700; }
     
     .acoes-btns { display: flex; gap: 0.4rem; }
@@ -67,6 +67,10 @@
     .btn-acao:hover { background: #3b82f6; color: white; }
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
+
+    /* Miniatura de Imagem para Ajudas */
+    .mini-ajuda-img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.5); cursor: pointer; transition: transform 0.2s; background: #0f172a; }
+    .mini-ajuda-img:hover { transform: scale(1.15); }
   </style>
 </head>
 <body>
@@ -99,7 +103,8 @@
       <button class="tab-btn" onclick="mudarAba('tipos', event)">🏷️ Tipos</button>
       <button class="tab-btn" onclick="mudarAba('figurinhas', event)">🃏 Figurinhas</button>
       <button class="tab-btn" onclick="mudarAba('vendedores', event)">👥 Vendedores</button>
-      <button class="tab-btn" onclick="mudarAba('contatos', event)">📬 Contatos Recebidos</button>
+      <button class="tab-btn" onclick="mudarAba('contatos', event)">📬 Contatos</button>
+      <button class="tab-btn" onclick="mudarAba('ajudas', event)">🤝 Ajudas</button>
     </div>
 
     <!-- ABA: ÁLBUNS -->
@@ -268,6 +273,31 @@
         </div>
       </div>
     </div>
+
+    <!-- ABA: AJUDAS (COLABORAÇÕES) -->
+    <div id="aba-ajudas" class="tab-content">
+      <div class="card">
+        <h2>🤝 Gestão de Ajudas e Colaborações (Imagens Enviadas)</h2>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Imagens e relatórios enviados pelos colaboradores para melhoria do catálogo.</p>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead>
+              <tr>
+                <th style="width: 60px;">Foto</th>
+                <th>Remetente / E-mail</th>
+                <th>Detalhes / Mensagem</th>
+                <th>Data</th>
+                <th style="width: 80px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAjudas">
+              <tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -279,7 +309,7 @@
     // Inicialização ao carregar a página
     document.addEventListener("DOMContentLoaded", async () => {
       const autorizado = await verificarAdminMaster();
-      if (autorizedOrNot = autorizado) {
+      if (autorizado) {
         carregarAlbuns();
       }
     });
@@ -296,6 +326,7 @@
       if (abaId === 'figurinhas') { carregarAlbunsSelect(); carregarTiposSelect(); }
       if (abaId === 'vendedores') carregarVendedores();
       if (abaId === 'contatos') carregarContatos();
+      if (abaId === 'ajudas') carregarAjudas();
     }
 
     async function verificarAdminMaster() {
@@ -636,6 +667,44 @@
       const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarContatos();
+    }
+
+    // --- GESTÃO DE AJUDAS (COLABORAÇÕES) ---
+    async function carregarAjudas() {
+      // Ajuste o nome da tabela no Supabase conforme o seu projeto (ex: 'ajudas' ou 'colaboracoes')
+      const { data, error } = await _supabase.from('ajudas').select('*').order('id', { ascending: false });
+      const tbody = document.getElementById('tabelaAjudas');
+      if (!tbody) return;
+      if (error) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Erro ao carregar ajudas (verifique o nome da tabela).</td></tr>`; return; }
+      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda recebida.</td></tr>`; return; }
+
+      tbody.innerHTML = data.map(a => {
+        const imagemSrc = a.imagem || a.foto || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        const dataEnvio = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '-';
+        return `
+          <tr>
+            <td>
+              <img src="${imagemSrc}" alt="Miniatura" class="mini-ajuda-img" onclick="window.open('${imagemSrc}', '_blank')" title="Clique para ver em tamanho real">
+            </td>
+            <td>
+              <strong>${a.nome || 'Anônimo'}</strong><br>
+              <span style="font-size: 0.75rem; color: #94a3b8;">${a.email || '-'}</span>
+            </td>
+            <td>${a.mensagem || a.descricao || a.detalhes || 'Sem mensagem informada.'}</td>
+            <td>${dataEnvio}</td>
+            <td class="acoes-btns">
+              <button class="btn-excluir" onclick="excluirAjuda(${a.id})">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function excluirAjuda(id) {
+      if (!confirm("Deseja excluir este registro de ajuda?")) return;
+      const { error } = await _supabase.from('ajudas').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarAjudas();
     }
   </script>
 </body>
