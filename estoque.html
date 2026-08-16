@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minha Vitrine - Álbum Digital</title>
+  <title>Gerenciador de Cadastro de Figurinhas - Álbum Digital</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -22,20 +22,29 @@
     .container { max-width: 1300px; margin: 0 auto; }
     .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
-    input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
+    label { display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: 600; }
+    input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; font-size: 0.85rem; }
     input:focus, select:focus { border-color: var(--gold); }
 
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; }
-    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
-    .card-title { font-size: 0.9rem; font-weight: 600; }
-    .card-subtitle { font-size: 0.75rem; color: #94a3b8; }
-    .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .input-wrapper { flex: 1; text-align: left; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); }
-    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+    .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.6rem; }
+    .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
     
+    .card-edit-group { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-edit-group label { font-size: 0.65rem; color: var(--gold); }
+    .card-edit-group input, .card-edit-group select { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+
+    .card-row { display: flex; gap: 0.5rem; width: 100%; }
+    .card-row .card-edit-group { flex: 1; }
+
+    .btn-action { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; width: 100%; padding: 0.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+    .btn-action:hover { background: #3b82f6; color: white; }
+
+    .btn-delete { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; width: 100%; padding: 0.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; margin-top: 0.2rem; }
+    .btn-delete:hover { background: #ef4444; color: white; }
+
+    .file-input-hidden { display: none; }
+
     .load-more-container { text-align: center; margin: 2rem 0; }
     .btn-load-more { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
   </style>
@@ -47,19 +56,19 @@
       <div class="nav-links">
         <a href="index.html">🏠 Home</a>
         <a href="perfil.html">👤 Meu Perfil</a>
-        <a href="vitrine.html" style="color: var(--gold);">🛍️ Vitrine</a>
+        <a href="vitrine.html">🛍️ Vitrine</a>
         <div id="adminLinks" style="display:inline; display:none;">
           <a href="admin.html">⚙️ Painel Admin</a>
-          <a href="estoque.html">📊 Estoque</a>
+          <a href="estoque.html" style="color: var(--gold);">📊 Estoque</a>
         </div>
       </div>
       <div class="user-profile-top">
-        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar">
-        <span id="userGreeting">Carregando...</span>
+        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+        <span id="userGreeting" style="font-size: 0.85rem; font-weight: 600;">Carregando...</span>
         <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
       </div>
     </div>
-    <h1>🛍️ Gerenciar Minha Vitrine</h1>
+    <h1>📊 Gerenciador de Cadastro de Figurinhas</h1>
   </header>
 
   <div class="container">
@@ -72,7 +81,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" placeholder="🔍 Ex: 10, Messi, Brasil...">
+        <input type="text" id="search" placeholder="🔍 Ex: #001, 1, Messi, Brasil...">
       </div>
     </div>
 
@@ -94,7 +103,9 @@
     let usuarioLogado = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
-    let meusPrecosQtd = {};
+    let listaAlbunsSelectOptions = '';
+    let mapaTipos = {};
+    let listaTiposSelectOptions = '';
     let paginaAtual = 0;
 
     async function verificarAcesso() {
@@ -116,35 +127,47 @@
       if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
         document.getElementById('adminLinks').style.display = 'inline';
       }
+      return session;
+    }
 
-      const { data: vitrineSalva } = await _supabase
-        .from('vitrine_ofertas')
-        .select('figurinha_id, preco, estoque')
-        .eq('user_id', perfil.id);
-
-      if (vitrineSalva) {
-        vitrineSalva.forEach(item => {
-          meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque };
+    async function carregarOpcoesAuxiliares() {
+      // Carregar álbuns
+      const { data: albuns } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
+      if (albuns) {
+        const selectFiltro = document.getElementById('filterAlbum');
+        albuns.forEach(a => { 
+          mapaAlbuns[a.id] = a.nome; 
+          selectFiltro.innerHTML += `<option value="${a.id}">${a.nome}</option>`; 
+          listaAlbunsSelectOptions += `<option value="${a.id}">${a.nome}</option>`;
         });
       }
 
-      return session;
+      // Carregar tipos
+      const { data: tipos } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
+      if (tipos) {
+        tipos.forEach(t => {
+          mapaTipos[t.id] = t.nome;
+          listaTiposSelectOptions += `<option value="${t.id}">${t.nome}</option>`;
+        });
+      }
     }
 
     async function aplicarFiltros() {
       paginaAtual = 0;
       figurinhasGlobal = [];
       const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
-
+      let termo = document.getElementById('search').value.trim();
+      
       let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       
       if (albumId !== 'todos') {
         query = query.eq('album_id', albumId);
       }
+
       if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
+        const termoSemHash = termo.replace('#', '');
+        if (!isNaN(termoSemHash) && termoSemHash !== "") {
+          query = query.or(`numero.eq.${termoSemHash},numero.eq.${termo},nome.ilike.%${termo}%`);
         } else {
           query = query.ilike('nome', `%${termo}%`);
         }
@@ -171,13 +194,15 @@
       paginaAtual++;
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       const albumId = document.getElementById('filterAlbum').value;
-      const termo = document.getElementById('search').value.trim().replace('#', '');
+      let termo = document.getElementById('search').value.trim();
 
       let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
       if (albumId !== 'todos') query = query.eq('album_id', albumId);
+      
       if (termo !== "") {
-        if (!isNaN(termo)) {
-          query = query.or(`numero.eq.${termo},nome.ilike.%${termo}%`);
+        const termoSemHash = termo.replace('#', '');
+        if (!isNaN(termoSemHash) && termoSemHash !== "") {
+          query = query.or(`numero.eq.${termoSemHash},numero.eq.${termo},nome.ilike.%${termo}%`);
         } else {
           query = query.ilike('nome', `%${termo}%`);
         }
@@ -201,48 +226,120 @@
       }
 
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0 };
+        const imgUrl = f.imagem_url || f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         return `
-          <div class="card">
-            <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" alt="Figurinha">
-            <div class="card-title">${f.numero || ''} - ${f.nome || 'Sem Nome'}</div>
-            <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
+          <div class="card" id="card-${f.id}">
+            <img id="img-${f.id}" src="${imgUrl}" alt="Figurinha" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             
-            <div class="card-inputs">
-              <div class="input-wrapper">
-                <label>Preço (€)</label>
-                <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01">
+            <input type="file" id="file-${f.id}" class="file-input-hidden" accept="image/*" onchange="trocarFoto(${f.id}, this)">
+            <button class="btn-action" onclick="document.getElementById('file-${f.id}').click()">🖼️ Trocar Foto</button>
+
+            <div class="card-edit-group">
+              <label>Álbum:</label>
+              <select id="album-${f.id}" onchange="atualizarCampo(${f.id}, 'album_id', this.value)">
+                <option value="">Selecione...</option>
+                ${listaAlbunsSelectOptions.replace(`value="${f.album_id}"`, `value="${f.album_id}" selected`)}
+              </select>
+            </div>
+
+            <div class="card-row">
+              <div class="card-edit-group">
+                <label>Número:</label>
+                <input type="text" id="numero-${f.id}" value="${f.numero || ''}" onchange="atualizarCampo(${f.id}, 'numero', this.value)">
               </div>
-              <div class="input-wrapper">
-                <label>Qtd</label>
-                <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
+              <div class="card-edit-group">
+                <label>Tipo:</label>
+                <select id="tipo-${f.id}" onchange="atualizarCampo(${f.id}, 'tipo_id', this.value)">
+                  <option value="">Nenhum...</option>
+                  ${listaTiposSelectOptions.replace(`value="${f.tipo_id}"`, `value="${f.tipo_id}" selected`)}
+                </select>
               </div>
             </div>
 
-            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar na Vitrine</button>
+            <div class="card-edit-group">
+              <label>Nome da Figurinha:</label>
+              <input type="text" id="nome-${f.id}" value="${f.nome || ''}" onchange="atualizarCampo(${f.id}, 'nome', this.value)">
+            </div>
+
+            <div class="card-edit-group">
+              <label>Seleção / Escuderia:</label>
+              <input type="text" id="selecao-${f.id}" value="${f.selecao || ''}" onchange="atualizarCampo(${f.id}, 'selecao', this.value)">
+            </div>
+
+            <button class="btn-delete" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️ Excluir Figurinha</button>
           </div>
         `;
       }).join('');
     }
 
-    async function adicionarNaVitrine(figurinhaId) {
-      if (!usuarioLogado) return;
-      const preco = parseFloat(document.getElementById(`preco-${figurinhaId}`).value) || 0;
-      const estoque = parseInt(document.getElementById(`qtd-${figurinhaId}`).value) || 0;
-
-      meusPrecosQtd[figurinhaId] = { preco, estoque };
-
-      const { error } = await _supabase.from('vitrine_ofertas').upsert({
-        user_id: usuarioLogado.id,
-        figurinha_id: figurinhaId,
-        preco: preco,
-        estoque: estoque
-      }, { onConflict: 'user_id, figurinha_id' });
+    async function atualizarCampo(id, campo, valor) {
+      const valorFinal = (valor === "") ? null : valor;
+      const { error } = await _supabase
+        .from('figurinhas')
+        .update({ [campo]: valorFinal })
+        .eq('id', id);
 
       if (error) {
-        alert("Erro ao salvar na vitrine: " + error.message);
+        alert("Erro ao atualizar: " + error.message);
+      }
+    }
+
+    async function trocarFoto(id, input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const fileName = `${Date.now()}_${file.name}`;
+
+      const { error: uploadError } = await _supabase.storage
+        .from('figurinhas')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        alert("Erro no upload da imagem: " + uploadError.message);
+        return;
+      }
+
+      const { data: publicUrlData } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
+      const novaUrl = publicUrlData.publicUrl;
+
+      const { error: updateError } = await _supabase
+        .from('figurinhas')
+        .update({ imagem_url: novaUrl })
+        .eq('id', id);
+
+      if (updateError) {
+        alert("Erro ao salvar nova URL da imagem: " + updateError.message);
       } else {
-        alert("Figurinha salva na vitrine com sucesso!");
+        document.getElementById(`img-${id}`).src = novaUrl;
+        alert("Foto atualizada com sucesso!");
+      }
+    }
+
+    async function excluirFigurinha(id, imagemUrl) {
+      if (!confirm("Tem certeza que deseja excluir esta figurinha? Isto irá apagá-la permanentemente da base de dados, remover a imagem do storage e limpá-la de quaisquer vitrines de ofertas.")) {
+        return;
+      }
+
+      // 1. Remover registros da vitrine de ofertas associados a esta figurinha
+      await _supabase.from('vitrine_ofertas').delete().eq('figurinha_id', id);
+
+      // 2. Tentar remover a imagem do Storage do Supabase se for do bucket local
+      if (imagemUrl && imagemUrl.includes('/storage/v1/object/public/figurinhas/')) {
+        const partes = imagemUrl.split('/figurinhas/');
+        if (partes.length > 1) {
+          const nomeArquivoStorage = partes[1];
+          await _supabase.storage.from('figurinhas').remove([nomeArquivoStorage]);
+        }
+      }
+
+      // 3. Deletar a figurinha da tabela principal
+      const { error } = await _supabase.from('figurinhas').delete().eq('id', id);
+
+      if (error) {
+        alert("Erro ao excluir figurinha: " + error.message);
+      } else {
+        const cardElement = document.getElementById(`card-${id}`);
+        if (cardElement) cardElement.remove();
+        alert("Figurinha excluída com sucesso!");
       }
     }
 
@@ -250,13 +347,7 @@
       const session = await verificarAcesso();
       if (!session) return;
       
-      const { data: albuns } = await _supabase.from('albuns').select('*');
-      if (albuns) {
-        albuns.forEach(a => { 
-          mapaAlbuns[a.id] = a.nome; 
-          document.getElementById('filterAlbum').innerHTML += `<option value="${a.id}">${a.nome}</option>`; 
-        });
-      }
+      await carregarOpcoesAuxiliares();
       aplicarFiltros();
     }
 
