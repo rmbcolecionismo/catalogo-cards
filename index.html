@@ -16,6 +16,18 @@
     .top-nav a:hover { color: var(--gold); }
     .btn-nav-admin { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
     .btn-nav-admin:hover { background: var(--gold); color: #0f172a; }
+    
+    /* Estilos do Banner Animado de Topo */
+    .hero-banner { max-width: 1250px; margin: 1rem auto 0; padding: 0 1rem; }
+    .hero-banner-content { background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .hero-banner-content::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%); animation: pulseGlow 6s ease-in-out infinite; pointer-events: none; }
+    @keyframes pulseGlow { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+    .hero-text h2 { font-size: 1.4rem; font-weight: 800; color: var(--gold); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+    .hero-text p { color: #94a3b8; font-size: 0.85rem; max-width: 600px; }
+    .btn-hero-action { background: var(--gold); color: #0f172a; padding: 0.7rem 1.4rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s, background 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); animation: floatBtn 3s ease-in-out infinite; }
+    @keyframes floatBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .btn-hero-action:hover { background: #fbbf24; transform: scale(1.05); }
+
     header { padding: 1.5rem 1rem 1rem; text-align: center; }
     header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
@@ -46,8 +58,20 @@
     <div class="nav-links">
       <a href="index.html" style="color: var(--gold);">🏠 Home</a>
       <a href="contato.html">Quero ser Vendedor</a>
+      <a href="ajudar.html">🤝 Ajude o Projeto</a>
     </div>
     <a href="login.html" class="btn-nav-admin" id="btnAuth">🔐 Login / Painel</a>
+  </div>
+
+  <!-- Banner Animado de Topo -->
+  <div class="hero-banner">
+    <div class="hero-banner-content">
+      <div class="hero-text">
+        <h2>✨ Contribua para o Catálogo</h2>
+        <p>Encontrou alguma figurinha com qualidade baixa ou imagem ausente? Envie uma foto melhor e ajude a nossa comunidade de colecionadores!</p>
+      </div>
+      <a href="ajudar.html" class="btn-hero-action">Enviar Imagem ➔</a>
+    </div>
   </div>
 
   <header>
