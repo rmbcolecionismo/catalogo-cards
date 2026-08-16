@@ -484,7 +484,10 @@
           <td>${v.telefone_whats || '-'}</td>
           <td>${v.funcao || 'vendedor'}</td>
           <td>
-            <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Remover</button>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoVendedor('${v.email}', '${v.nome || ''}', '${v.cidade || ''}', '${v.telefone_whats || ''}', '${v.funcao || 'vendedor'}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Remover</button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -496,6 +499,7 @@
       const cidade = document.getElementById('inputCidadeVendedor').value.trim();
       const telefone_whats = document.getElementById('inputTelefoneVendedor').value.trim();
       const funcao = document.getElementById('selectFuncaoVendedor').value;
+      const originalEmail = document.getElementById('editVendedorOriginalEmail').value;
       const msg = document.getElementById('msgVendedor');
 
       if (!email) {
@@ -505,7 +509,13 @@
         return;
       }
 
+      // Se o e-mail mudou, removemos o antigo (para simular a atualização de PK)
+      if (originalEmail && originalEmail !== email) {
+        await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
+      }
+
       const { error } = await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone_whats, funcao }], { onConflict: 'email' });
+      
       if (error) {
         msg.className = "msg-feedback msg-error";
         msg.innerText = "Erro: " + error.message;
@@ -518,15 +528,40 @@
         document.getElementById('inputNomeVendedor').value = '';
         document.getElementById('inputCidadeVendedor').value = '';
         document.getElementById('inputTelefoneVendedor').value = '';
+        cancelarEdicaoVendedor();
         carregarVendedores();
       }
+    }
+
+    function prepararEdicaoVendedor(email, nome, cidade, telefone, funcao) {
+      document.getElementById('editVendedorOriginalEmail').value = email;
+      document.getElementById('inputEmailVendedor').value = email;
+      document.getElementById('inputNomeVendedor').value = nome;
+      document.getElementById('inputCidadeVendedor').value = cidade;
+      document.getElementById('inputTelefoneVendedor').value = telefone;
+      document.getElementById('selectFuncaoVendedor').value = funcao;
+      
+      document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor";
+      document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoVendedor() {
+      document.getElementById('editVendedorOriginalEmail').value = '';
+      document.getElementById('inputEmailVendedor').value = '';
+      document.getElementById('inputNomeVendedor').value = '';
+      document.getElementById('inputCidadeVendedor').value = '';
+      document.getElementById('inputTelefoneVendedor').value = '';
+      
+      document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
+      document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "none";
     }
 
     // --- EXCLUIR VENDEDOR, SUA VITRINE E OS ARTIGOS ASSOCIADOS ---
     async function excluirVendedor(email) {
       if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos os artigos associados.")) return;
 
-      // 1. Busca as vitrines pertencentes a este vendedor pelo e-mail
       const { data: vitrines, error: errVitrineBusca } = await _supabase
         .from('vitrines')
         .select('id')
@@ -534,25 +569,11 @@
 
       if (!errVitrineBusca && vitrines && vitrines.length > 0) {
         const vitrineIds = vitrines.map(v => v.id);
-
-        // 2. Exclui os artigos associados a essas vitrines
-        await _supabase
-          .from('artigos_vitrine')
-          .delete()
-          .in('vitrine_id', vitrineIds);
-
-        // 3. Exclui as vitrines do vendedor
-        await _supabase
-          .from('vitrines')
-          .delete()
-          .eq('email', email);
+        await _supabase.from('artigos_vitrine').delete().in('vitrine_id', vitrineIds);
+        await _supabase.from('vitrines').delete().eq('email', email);
       }
 
-      // 4. Por fim, exclui o registro do vendedor autorizado
-      const { error: errDelVendedor } = await _supabase
-        .from('vendedores_autorizados')
-        .delete()
-        .eq('email', email);
+      const { error: errDelVendedor } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
 
       if (errDelVendedor) {
         alert("Erro ao remover vendedor: " + errDelVendedor.message);
