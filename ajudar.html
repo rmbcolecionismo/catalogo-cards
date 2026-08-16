@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Quero ser Vendedor - Marketplace de Figurinhas</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Biblioteca EmailJS para envio direto de e-mail sem abrir programas -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #101827; --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 50px; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto; padding: 1rem 1rem 0; flex-wrap: wrap; gap: 10px; }
+    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    .top-nav a:hover { color: var(--gold); }
+    .btn-nav-admin { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
+    .btn-nav-admin:hover { background: var(--gold); color: #0f172a; }
+    header { padding: 1.5rem 1rem 1rem; text-align: center; }
+    header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 1rem; }
+    .info-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .info-card h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 0.8rem; }
+    .info-card p { font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem; }
+    .form-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+    .form-input, .form-select { width: 100%; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; font-size: 0.85rem; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: rgba(15, 23, 42, 0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #f8fafc; cursor: pointer; }
+    .checkbox-item input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
+    .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.9rem; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.9rem; transition: 0.2s; margin-top: 5px; }
+    .btn-submit:hover { background: #fbbf24; }
+    .form-status { font-size: 0.85rem; text-align: center; margin-top: 5px; font-weight: 600; }
+    footer { text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="contato.html" style="color: var(--gold);">Quero ser Vendedor</a>
+    </div>
+    <a href="login.html" class="btn-nav-admin" id="btnAuth">🔐 Login / Painel</a>
+  </div>
+
+  <header>
+    <h1>🤝 Quero ser Vendedor</h1>
+    <p>Cadastre-se para começar a vender suas figurinhas em nossa plataforma</p>
+  </header>
+
+  <div class="container">
+    <div class="info-card">
+      <h2>Como funciona o Marketplace?</h2>
+      <p>O nosso site é um ponto de encontro especializado para colecionadores e vendedores de figurinhas. Cada vendedor cadastrado ganha um <strong>perfil exclusivo e uma vitrine própria</strong> para publicar todas as figurinhas que deseja negociar.</p>
+      <p>Você tem total autonomia: <strong>define os seus próprios preços</strong> e gerencia a <strong>quantidade em estoque</strong> de cada item. Os colecionadores e visitantes entram no site, pesquisam pelas figurinhas que faltam e entram em contato direto com você para fechar a venda!</p>
+    </div>
+
+    <form class="form-card" id="formContato" onsubmit="enviarContato(event)">
+      <h2 style="font-size: 1.1rem; color: var(--gold); margin-bottom: 5px;">Preencha seus dados</h2>
+      
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" id="nome" class="form-input" placeholder="Seu nome completo" required>
+      </div>
+
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="email" class="form-input" placeholder="seu-email@exemplo.com" required>
+      </div>
+
+      <div class="form-group">
+        <label>Cidade</label>
+        <input type="text" id="cidade" class="form-input" placeholder="Sua cidade / Localidade" required>
+      </div>
+
+      <div class="form-group">
+        <label>Telemóvel / Telefone (Portugal)</label>
+        <input type="tel" id="telefone" class="form-input" placeholder="+351 912 345 678" required>
+      </div>
+
+      <div class="form-group">
+        <label>Álbuns que deseja publicar (Selecione um ou mais):</label>
+        <div class="checkbox-group" id="listaAlbuns">
+          <span style="color: #94a3b8; font-size: 0.8rem;">Carregando álbuns...</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnEnviar">Enviar Solicitação ➔</button>
+      <div id="formStatus" class="form-status"></div>
+    </form>
+  </div>
+
+  <footer>
+    <p>© 2026 Desenvolvido por RMB. Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Inicialização do EmailJS (Configuração gratuita para disparo direto invisível)
+    // Crie uma conta gratuita em emailjs.com, insira suas chaves abaixo caso queira disparo via emailjs.
+    // Como alternativa integrada e garantida sem configuração extra, salvamos também diretamente no Supabase para seu painel.
+    (function() {
+      emailjs.init("SEU_USER_ID_EMAILJS"); // Substitua se usar o EmailJS, ou utilize a gravação no banco abaixo
+    })();
+
+    async function init() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session) document.getElementById('btnAuth').innerText = "⚙️ Meu Painel";
+
+      try {
+        const { data: albuns } = await _supabase.from('albuns').select('id, nome');
+        const containerAlbuns = document.getElementById('listaAlbuns');
+
+        if (albuns && albuns.length > 0) {
+          containerAlbuns.innerHTML = albuns.map(a => `
+            <label class="checkbox-item">
+              <input type="checkbox" name="albuns" value="${a.nome}"> ${a.nome}
+            </label>
+          `).join('');
+        } else {
+          containerAlbuns.innerHTML = '<span style="color: #94a3b8; font-size: 0.8rem;">Nenhum álbum cadastrado no momento.</span>';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('listaAlbuns').innerHTML = '<span style="color: #ef4444; font-size: 0.8rem;">Erro ao carregar álbuns.</span>';
+      }
+    }
+
+    async function enviarContato(event) {
+      event.preventDefault();
+
+      const btn = document.getElementById('btnEnviar');
+      const status = document.getElementById('formStatus');
+      
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const cidade = document.getElementById('cidade').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+
+      const checkboxes = document.querySelectorAll('input[name="albuns"]:checked');
+      const albunsSelecionados = Array.from(checkboxes).map(cb => cb.value);
+      const albunsTexto = albunsSelecionados.length > 0 ? albunsSelecionados.join(', ') : 'Nenhum álbum específico selecionado';
+
+      btn.disabled = true;
+      btn.innerText = "Enviando...";
+      status.style.color = "#cbd5e1";
+      status.innerText = "A enviar sua solicitação...";
+
+      try {
+        // Grava diretamente no banco de dados Supabase na tabela 'contatos_vendedores'
+        // Assim, todos os pedidos ficam salvos e organizados para você consultar diretamente a qualquer momento!
+        const { error } = await _supabase.from('contatos_vendedores').insert([
+          { 
+            nome: nome, 
+            email: email, 
+            cidade: cidade, 
+            telefone: telefone, 
+            albuns: albunsTexto,
+            criado_em: new Date()
+          }
+        ]);
+
+        if (error) {
+          console.error("Erro ao salvar no banco:", error.message);
+          throw new Error("Não foi possível registrar os dados no momento.");
+        }
+
+        status.style.color = "#34d399";
+        status.innerText = "✨ Solicitação enviada com sucesso! Entraremos em contacto em breve.";
+        document.getElementById('formContato').reset();
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerText = "Enviar Solicitação ➔";
+          status.innerText = "";
+        }, 4000);
+
+      } catch (err) {
+        console.error(err);
+        status.style.color = "#ef4444";
+        status.innerText = "Erro ao enviar. Por favor, tente novamente.";
+        btn.disabled = false;
+        btn.innerText = "Enviar Solicitação ➔";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
