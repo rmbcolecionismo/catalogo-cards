@@ -283,11 +283,11 @@
           <table class="lista-tabela">
             <thead>
               <tr>
-                <th style="width: 60px;">Foto</th>
-                <th>Remetente / E-mail</th>
-                <th>Detalhes / Mensagem</th>
-                <th>Data</th>
-                <th style="width: 80px;">Ações</th>
+                <th style="width: 60px;">Foto Nova</th>
+                <th>Remetente</th>
+                <th>Figurinha Vinculada</th>
+                <th>Status / Data</th>
+                <th style="width: 150px;">Ações</th>
               </tr>
             </thead>
             <tbody id="tabelaAjudas">
@@ -653,7 +653,7 @@
           <td>${c.nome || '-'}</td>
           <td>${c.email || '-'}</td>
           <td>${c.cidade || '-'}</td>
-          <td>${c.telemovel || c.telefone || '-'}</td>
+          <td>${c.telefone || '-'}</td>
           <td>${c.albuns || '-'}</td>
           <td class="acoes-btns">
             <button class="btn-excluir" onclick="excluirContato(${c.id})">Excluir</button>
@@ -663,48 +663,107 @@
     }
 
     async function excluirContato(id) {
-      if (!confirm("Deseja excluir este contato?")) return;
+      if (!confirm("Deseja apagar este contato?")) return;
       const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarContatos();
     }
 
-    // --- GESTÃO DE AJUDAS (COLABORAÇÕES) ---
+    // --- AJUDAS (COLABORAÇÕES) ---
     async function carregarAjudas() {
-      // Ajuste o nome da tabela no Supabase conforme o seu projeto (ex: 'ajudas' ou 'colaboracoes')
-      const { data, error } = await _supabase.from('ajudas').select('*').order('id', { ascending: false });
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
-      if (error) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Erro ao carregar ajudas (verifique o nome da tabela).</td></tr>`; return; }
-      if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda recebida.</td></tr>`; return; }
 
-      tbody.innerHTML = data.map(a => {
-        const imagemSrc = a.imagem || a.foto || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        const dataEnvio = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '-';
+      // Busca as colaborações juntamente com os dados da figurinha relacionada (se houver foreign key configurada)
+      const { data, error } = await _supabase
+        .from('colaboracoes')
+        .select(`
+          *,
+          figurinhas (
+            id,
+            nome,
+            numero,
+            imagem
+          )
+        `)
+        .order('id', { ascending: false });
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Erro ao carregar colaborações: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => {
+        const fig = item.figurinhas;
+        const figInfo = fig ? `[Nº ${fig.numero || 'S/N'}] ${fig.nome}` : `ID da Figurinha: ${item.figurinha_id}`;
+        const dataEnvio = item.created_at ? new Date(item.created_at).toLocaleDateString('pt-BR') : '-';
+        const statusBadge = item.status === 'aprovado' 
+          ? '<span style="color: #10b981; font-weight: 650;">Aprovado</span>' 
+          : item.status === 'rejeitado' 
+          ? '<span style="color: #ef4444; font-weight: 650;">Rejeitado</span>' 
+          : '<span style="color: #f59e0b; font-weight: 650;">Pendente</span>';
+
         return `
           <tr>
             <td>
-              <img src="${imagemSrc}" alt="Miniatura" class="mini-ajuda-img" onclick="window.open('${imagemSrc}', '_blank')" title="Clique para ver em tamanho real">
+              <a href="${item.nova_imagem_url}" target="_blank">
+                <img src="${item.nova_imagem_url}" alt="Nova Imagem" class="mini-ajuda-img" title="Clique para ver em tamanho real">
+              </a>
             </td>
-            <td>
-              <strong>${a.nome || 'Anônimo'}</strong><br>
-              <span style="font-size: 0.75rem; color: #94a3b8;">${a.email || '-'}</span>
-            </td>
-            <td>${a.mensagem || a.descricao || a.detalhes || 'Sem mensagem informada.'}</td>
-            <td>${dataEnvio}</td>
+            <td><strong>${item.colaborador || 'Anônimo'}</strong></td>
+            <td>${figInfo}</td>
+            <td>${statusBadge}<br><small style="color: #94a3b8;">${dataEnvio}</small></td>
             <td class="acoes-btns">
-              <button class="btn-excluir" onclick="excluirAjuda(${a.id})">Excluir</button>
+              <button class="btn-acao" title="Aprovar e substituir imagem oficial" onclick="aprovarAjuda(${item.id}, ${item.figurinha_id}, '${item.nova_imagem_url}')">Aprovar</button>
+              <button class="btn-excluir" title="Rejeitar / Excluir" onclick="excluirAjuda(${item.id})">Excluir</button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
+    async function aprovarAjuda(colabId, figurinhaId, novaUrl) {
+      if (!confirm("Deseja aprovar esta colaboração? A imagem oficial da figurinha será substituída imediatamente por esta nova versão.")) return;
+
+      // 1. Atualiza a imagem oficial na tabela 'figurinhas'
+      const { error: updateFigError } = await _supabase
+        .from('figurinhas')
+        .update({ imagem: novaUrl })
+        .eq('id', figurinhaId);
+
+      if (updateFigError) {
+        alert("Erro ao atualizar a figurinha oficial: " + updateFigError.message);
+        return;
+      }
+
+      // 2. Atualiza o status da colaboração para 'aprovado'
+      const { error: updateColabError } = await _supabase
+        .from('colaboracoes')
+        .update({ status: 'aprovado' })
+        .eq('id', colabId);
+
+      if (updateColabError) {
+        alert("A imagem foi atualizada na figurinha, mas houve um erro ao alterar o status da colaboração: " + updateColabError.message);
+      } else {
+        alert("Colaboração aprovada e imagem atualizada com sucesso no catálogo!");
+      }
+
+      carregarAjudas();
+    }
+
     async function excluirAjuda(id) {
-      if (!confirm("Deseja excluir este registro de ajuda?")) return;
-      const { error } = await _supabase.from('ajudas').delete().eq('id', id);
-      if (error) alert("Erro ao excluir: " + error.message);
-      else carregarAjudas();
+      if (!confirm("Tem certeza que deseja apagar este registro de ajuda?")) return;
+      const { error } = await _supabase.from('colaboracoes').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir colaboração: " + error.message);
+      } else {
+        carregarAjudas();
+      }
     }
   </script>
 </body>
