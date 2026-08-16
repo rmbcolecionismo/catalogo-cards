@@ -43,6 +43,11 @@
     .msg-feedback { margin-top: 0.8rem; font-size: 0.85rem; padding: 0.6rem; border-radius: 6px; display: none; }
     .msg-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
     .msg-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+    .lista-tabela { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+    .lista-tabela th, .lista-tabela td { padding: 0.6rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .lista-tabela th { color: var(--gold); font-weight: 700; }
+    .btn-acao { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .btn-acao:hover { background: #ef4444; color: white; }
   </style>
 </head>
 <body>
@@ -65,13 +70,25 @@
     </div>
 
     <h1>⚙️ Painel de Administração</h1>
-    <p class="subtitle">Gerencie álbuns, tipos, vendedores e adicione figurinhas</p>
+    <p class="subtitle">Gerencie cadastros do sistema e contatos recebidos</p>
   </header>
 
   <div class="container">
+    
+    <!-- CARD: Cadastrar Álbum -->
+    <div class="card">
+      <h2>📂 Cadastro de Álbum</h2>
+      <div class="form-group">
+        <label>Nome do Álbum</label>
+        <input type="text" id="inputNomeAlbum" placeholder="Ex: Copa do Mundo 2026">
+      </div>
+      <button class="btn-submit" onclick="cadastrarAlbum()">Salvar Álbum</button>
+      <div id="msgAlbum" class="msg-feedback"></div>
+    </div>
+
     <!-- CARD: Cadastrar Tipo -->
     <div class="card">
-      <h2>🏷️ Cadastrar Tipo / Categoria</h2>
+      <h2>🏷️ Cadastro de Tipos</h2>
       <div class="form-group">
         <label>Nome do Tipo</label>
         <input type="text" id="inputNomeTipo" placeholder="Ex: Rara, Lendária, Comum">
@@ -80,7 +97,18 @@
       <div id="msgTipo" class="msg-feedback"></div>
     </div>
 
-    <!-- CARD: Cadastrar Figurinha -->
+    <!-- CARD: Cadastrar Seleção / Escuderia -->
+    <div class="card">
+      <h2>⚽ Cadastro de Seleção / Escuderia</h2>
+      <div class="form-group">
+        <label>Nome da Seleção ou Escuderia</label>
+        <input type="text" id="inputNomeSelecao" placeholder="Ex: Portugal, Brasil, Ferrari">
+      </div>
+      <button class="btn-submit" onclick="cadastrarSelecao()">Salvar Seleção / Escuderia</button>
+      <div id="msgSelecao" class="msg-feedback"></div>
+    </div>
+
+    <!-- CARD: Cadastrar Figurinha / Card -->
     <div class="card">
       <h2>🃏 Cadastrar Figurinha / Card</h2>
       <div class="form-row">
@@ -99,13 +127,19 @@
       </div>
       <div class="form-row">
         <div class="form-group">
+          <label>Seleção / Escuderia</label>
+          <select id="selectSelecaoFigurinha">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Número</label>
           <input type="text" id="inputNumeroFigurinha" placeholder="Ex: 001">
         </div>
-        <div class="form-group">
-          <label>Nome da Figurinha</label>
-          <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
-        </div>
+      </div>
+      <div class="form-group">
+        <label>Nome da Figurinha</label>
+        <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
       </div>
       <div class="form-group">
         <label>Link da Imagem</label>
@@ -115,9 +149,9 @@
       <div id="msgFigurinha" class="msg-feedback"></div>
     </div>
 
-    <!-- CARD: Liberar Vendedor -->
+    <!-- CARD: Cadastro de Vendedores Autorizados -->
     <div class="card">
-      <h2>👥 Liberar / Gerenciar Vendedor</h2>
+      <h2>👥 Cadastro de Vendedores Autorizados</h2>
       <div class="form-row">
         <div class="form-group">
           <label>E-mail do Vendedor</label>
@@ -126,6 +160,16 @@
         <div class="form-group">
           <label>Nome do Vendedor</label>
           <input type="text" id="inputNomeVendedor" placeholder="Nome Completo">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cidade</label>
+          <input type="text" id="inputCidadeVendedor" placeholder="Ex: Lisboa">
+        </div>
+        <div class="form-group">
+          <label>Telefone / Telemóvel</label>
+          <input type="text" id="inputTelefoneVendedor" placeholder="+351 912 345 678">
         </div>
       </div>
       <div class="form-group">
@@ -139,6 +183,30 @@
       <button class="btn-submit" onclick="liberarVendedor()">Autorizar / Salvar Vendedor</button>
       <div id="msgVendedor" class="msg-feedback"></div>
     </div>
+
+    <!-- CARD: Gerir Contatos Recebidos -->
+    <div class="card">
+      <h2>📬 Gerir Contatos Recebidos (Quero ser Vendedor)</h2>
+      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.8rem;">Lista de solicitações enviadas através da página de contato.</p>
+      <div style="overflow-x: auto;">
+        <table class="lista-tabela">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Cidade</th>
+              <th>Telemóvel</th>
+              <th>Álbuns</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaContatos">
+            <tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -227,7 +295,41 @@
       }
     }
 
+    async function carregarSelecoes() {
+      const { data } = await _supabase.from('selecoes_escuderias').select('*');
+      const select = document.getElementById('selectSelecaoFigurinha');
+      if (!select) return;
+      select.innerHTML = '<option value="">Selecione...</option>';
+      if (data) {
+        data.forEach(sel => {
+          select.innerHTML += `<option value="${sel.nome}">${sel.nome}</option>`;
+        });
+      }
+    }
+
     // Funções de cadastro
+    async function cadastrarAlbum() {
+      const nome = document.getElementById('inputNomeAlbum').value.trim();
+      const msg = document.getElementById('msgAlbum');
+      if (!nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Preencha o nome do álbum.";
+        msg.style.display = "block";
+        return;
+      }
+      const { error } = await _supabase.from('albuns').insert([{ nome }]);
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Álbum cadastrado com sucesso!";
+        document.getElementById('inputNomeAlbum').value = '';
+        carregarAlbuns();
+      }
+      msg.style.display = "block";
+    }
+
     async function cadastrarTipo() {
       const nome = document.getElementById('inputNomeTipo').value.trim();
       const msg = document.getElementById('msgTipo');
@@ -250,9 +352,32 @@
       msg.style.display = "block";
     }
 
+    async function cadastrarSelecao() {
+      const nome = document.getElementById('inputNomeSelecao').value.trim();
+      const msg = document.getElementById('msgSelecao');
+      if (!nome) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Preencha o nome da seleção ou escuderia.";
+        msg.style.display = "block";
+        return;
+      }
+      const { error } = await _supabase.from('selecoes_escuderias').insert([{ nome }]);
+      if (error) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro: " + error.message;
+      } else {
+        msg.className = "msg-feedback msg-success";
+        msg.innerText = "Seleção/Escuderia cadastrada com sucesso!";
+        document.getElementById('inputNomeSelecao').value = '';
+        carregarSelecoes();
+      }
+      msg.style.display = "block";
+    }
+
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
       const tipo_id = document.getElementById('selectTipoFigurinha').value;
+      const selecao_escuderia = document.getElementById('selectSelecaoFigurinha').value;
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
       const imagem = document.getElementById('inputImagemFigurinha').value.trim();
@@ -265,7 +390,7 @@
         return;
       }
 
-      const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, numero, nome, imagem }]);
+      const { error } = await _supabase.from('figurinhas').insert([{ album_id, tipo_id, selecao_escuderia, numero, nome, imagem }]);
       if (error) {
         msg.className = "msg-feedback msg-error";
         msg.innerText = "Erro: " + error.message;
@@ -282,6 +407,8 @@
     async function liberarVendedor() {
       const email = document.getElementById('inputEmailVendedor').value.trim();
       const nome = document.getElementById('inputNomeVendedor').value.trim();
+      const cidade = document.getElementById('inputCidadeVendedor').value.trim();
+      const telefone = document.getElementById('inputTelefoneVendedor').value.trim();
       const funcao = document.getElementById('selectFuncaoVendedor').value;
       const msg = document.getElementById('msgVendedor');
 
@@ -295,7 +422,7 @@
       const is_admin = (funcao === 'admin' || funcao === 'master');
 
       const { error } = await _supabase.from('vendedores_autorizados').upsert([
-        { email, nome, funcao, is_admin }
+        { email, nome, cidade, telefone, funcao, is_admin }
       ], { onConflict: 'email' });
 
       if (error) {
@@ -306,8 +433,47 @@
         msg.innerText = "Vendedor autorizado/atualizado com sucesso!";
         document.getElementById('inputEmailVendedor').value = '';
         document.getElementById('inputNomeVendedor').value = '';
+        document.getElementById('inputCidadeVendedor').value = '';
+        document.getElementById('inputTelefoneVendedor').value = '';
       }
       msg.style.display = "block";
+    }
+
+    // Gestão de Contatos Recebidos
+    async function carregarContatos() {
+      const tbody = document.getElementById('tabelaContatos');
+      const { data, error } = await _supabase.from('contatos_vendedores').select('*').order('criado_em', { ascending: false });
+      
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Erro ao carregar contatos.</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido ainda.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(c => `
+        <tr>
+          <td>${c.nome || '-'}</td>
+          <td>${c.email || '-'}</td>
+          <td>${c.cidade || '-'}</td>
+          <td>${c.telefone || '-'}</td>
+          <td>${c.albuns || '-'}</td>
+          <td><button class="btn-acao" onclick="excluirContato(${c.id})">Excluir</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function excluirContato(id) {
+      if (!confirm("Tem certeza que deseja apagar este contato?")) return;
+      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+      } else {
+        carregarContatos();
+      }
     }
 
     async function inicializarAdmin() {
@@ -316,6 +482,8 @@
 
       carregarAlbuns();
       carregarTipos();
+      carregarSelecoes();
+      carregarContatos();
     }
 
     inicializarAdmin();
