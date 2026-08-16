@@ -120,6 +120,14 @@
   let perfilAlvoUuid = null;
   let isAdminOrMaster = false;
 
+  // Função auxiliar para validar se uma string é um UUID válido
+  function isUUID(uuid) {
+    if (!uuid) return false;
+    const s = String(uuid);
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return regex.test(s);
+  }
+
   async function verificarAcesso() {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
@@ -139,14 +147,15 @@
 
     if (idParam) {
       let perfilAlvo = null;
-      const isNumeric = /^\d+$/.test(idParam);
 
-      if (!isNumeric) {
+      // Se não for puramente numérico, tenta buscar pelo user_id (UUID)
+      if (!/^\d+$/.test(idParam)) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
         perfilAlvo = data;
       }
 
-      if (!perfilAlvo) {
+      // Se ainda não achou e o parâmetro for um UUID válido, tenta buscar pelo campo id UUID
+      if (!perfilAlvo && isUUID(idParam)) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
         perfilAlvo = data;
       }
@@ -168,7 +177,13 @@
     }
 
     if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
-    carregarVitrine(perfilAlvoUuid);
+    
+    // Garante que só vai carregar a vitrine se o identificador for um UUID válido
+    if (isUUID(perfilAlvoUuid)) {
+      carregarVitrine(perfilAlvoUuid);
+    } else {
+      document.getElementById('vitrineGrid').innerHTML = "ID do vendedor inválido para carregar a vitrine.";
+    }
   }
 
   function preencherDadosPerfil(perfil, ehProprio) {
@@ -193,6 +208,9 @@
   }
 
   async function salvarPerfil() {
+    if (!usuarioLogado || !isUUID(usuarioLogado.id)) {
+      return alert("Erro: ID do usuário logado inválido.");
+    }
     const updates = {
       nome: document.getElementById('editNome').value,
       cidade: document.getElementById('editCidade').value,
@@ -212,7 +230,7 @@
 
   async function uploadAvatar(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file || !usuarioLogado || !isUUID(usuarioLogado.id)) return alert("Erro: usuário inválido.");
     const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
     const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
     if (error) return alert("Erro no upload: " + error.message);
@@ -223,6 +241,10 @@
 
   async function carregarVitrine(uuidVal) {
     const grid = document.getElementById('vitrineGrid');
+    if (!isUUID(uuidVal)) {
+      grid.innerHTML = "Vitrine indisponível (UUID inválido).";
+      return;
+    }
     const { data: ofertas, error } = await _supabase.from('vitrine_ofertas').select('*').eq('user_id', uuidVal);
     if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
     if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
@@ -258,7 +280,9 @@
   function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
 
   async function salvarEdicaoOferta() {
-    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', document.getElementById('modalOfertaId').value);
+    const ofertaId = document.getElementById('modalOfertaId').value;
+    if (!isUUID(ofertaId)) return alert("ID da oferta inválido.");
+    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', ofertaId);
     if (error) alert("Erro: " + error.message);
     else location.reload();
   }
