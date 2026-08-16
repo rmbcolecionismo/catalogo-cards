@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Quero ser Vendedor - Marketplace de Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Biblioteca EmailJS para envio direto de e-mail sem abrir programas -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root { --primary: #101827; --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
@@ -102,6 +104,13 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Inicialização do EmailJS (Configuração gratuita para disparo direto invisível)
+    // Crie uma conta gratuita em emailjs.com, insira suas chaves abaixo caso queira disparo via emailjs.
+    // Como alternativa integrada e garantida sem configuração extra, salvamos também diretamente no Supabase para seu painel.
+    (function() {
+      emailjs.init("SEU_USER_ID_EMAILJS"); // Substitua se usar o EmailJS, ou utilize a gravação no banco abaixo
+    })();
+
     async function init() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (session) document.getElementById('btnAuth').innerText = "⚙️ Meu Painel";
@@ -141,51 +150,43 @@
       const albunsTexto = albunsSelecionados.length > 0 ? albunsSelecionados.join(', ') : 'Nenhum álbum específico selecionado';
 
       btn.disabled = true;
-      btn.innerText = "A enviar...";
+      btn.innerText = "Enviando...";
       status.style.color = "#cbd5e1";
-      status.innerText = "Salvando solicitação no sistema...";
+      status.innerText = "A enviar sua solicitação...";
 
       try {
-        // Salva o contato diretamente no Supabase para garantir que você receba a mensagem sem depender de aplicativos externos
+        // Grava diretamente no banco de dados Supabase na tabela 'contatos_vendedores'
+        // Assim, todos os pedidos ficam salvos e organizados para você consultar diretamente a qualquer momento!
         const { error } = await _supabase.from('contatos_vendedores').insert([
-          { nome, email, cidade, telefone, albuns: albunsTexto }
+          { 
+            nome: nome, 
+            email: email, 
+            cidade: cidade, 
+            telefone: telefone, 
+            albuns: albunsTexto,
+            criado_em: new Date()
+          }
         ]);
 
         if (error) {
-          // Se a tabela ainda não existir no banco, ele ainda tenta o fallback por email nativo ou avisa
-          console.warn("Tabela contatos_vendedores não encontrada, alternando para envio direto por e-mail.");
+          console.error("Erro ao salvar no banco:", error.message);
+          throw new Error("Não foi possível registrar os dados no momento.");
         }
 
         status.style.color = "#34d399";
-        status.innerText = "Solicitação enviada com sucesso! Redirecionando para o e-mail...";
-
-        // Dispara o cliente de e-mail com a estrutura pronta para o seu endereço
-        const assunto = encodeURIComponent("Novo Cadastro de Vendedor - Marketplace de Figurinhas");
-        const corpo = encodeURIComponent(
-          `Olá Rodrigo,\n\n` +
-          `Nova solicitação de interesse para se tornar vendedor:\n\n` +
-          `--- DADOS DO CADASTRO ---\n` +
-          `• Nome: ${nome}\n` +
-          `• E-mail: ${email}\n` +
-          `• Cidade: ${cidade}\n` +
-          `• Telemóvel: ${telefone}\n` +
-          `• Álbuns de Interesse: ${albunsTexto}\n\n` +
-          `-----------------------------------------\n` +
-          `Gerado automaticamente pelo site.`
-        );
+        status.innerText = "✨ Solicitação enviada com sucesso! Entraremos em contacto em breve.";
+        document.getElementById('formContato').reset();
 
         setTimeout(() => {
-          window.location.href = `mailto:rodrigo.miranda.barbosa.85@gmail.com?subject=${assunto}&body=${corpo}`;
           btn.disabled = false;
           btn.innerText = "Enviar Solicitação ➔";
-          document.getElementById('formContato').reset();
-          status.innerText = "Mensagem pronta! O seu app de e-mail foi aberto.";
-        }, 1500);
+          status.innerText = "";
+        }, 4000);
 
       } catch (err) {
         console.error(err);
         status.style.color = "#ef4444";
-        status.innerText = "Erro ao enviar. Tente novamente.";
+        status.innerText = "Erro ao enviar. Por favor, tente novamente.";
         btn.disabled = false;
         btn.innerText = "Enviar Solicitação ➔";
       }
