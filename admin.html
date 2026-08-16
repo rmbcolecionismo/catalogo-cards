@@ -647,51 +647,29 @@
     // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO ---
     function copiarEmailSaudacao(nome, emailDestino) {
       const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
+      const mensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma!`;
       
-      const mensagem = `Olá, ${nome}!
-
-Seja muito bem-vindo(a) à nossa equipe de Vendedores Autorizados! Estamos extremamente felizes em contar com a sua parceria no nosso catálogo de álbuns digitais e cards colecionáveis.
-
-O seu cadastro foi registado com sucesso e agora você já tem acesso total para gerir a sua vitrine e os seus artigos.
-
-Seu e-mail de acesso cadastrado: ${emailDestino}
-Senha padrão: 123456
-
-Caso tenha qualquer dúvida sobre como utilizar o painel, gerir o seu estoque ou cadastrar novos itens, por favor, não hesite em nos contactar. Estamos aqui para ajudar no que for preciso!
-
-Mais uma vez, seja muito bem-vindo(a) e excelentes vendas! 💼🏆
-
-Atenciosamente,
-Equipa de Administração
-Álbum Digital`;
-
-      const textoParaCopiar = `Assunto: ${assunto}\nPara: ${emailDestino}\n\n${mensagem}`;
-
-      navigator.clipboard.writeText(textoParaCopiar).then(() => {
-        alert(`E-mail de boas-vindas para ${nome} copiado com sucesso!\n\nAgora basta abrir o Gmail e colar (Ctrl + V) na mensagem.`);
-      }).catch(err => {
-        alert("Erro ao copiar o texto: " + err);
-      });
-    }
-
-    async function excluirContato(id) {
-      if (!confirm("Deseja realmente excluir este contato?")) return;
-      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir: " + error.message);
+      if (emailDestino) {
+        window.location.href = `mailto:${emailDestino}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
       } else {
-        carregarContatos();
+        alert("E-mail do contato não disponível.");
       }
     }
 
-    // --- CARREGAMENTO DE AJUDAS ---
+    // --- CARREGAR AJUDAS E COLABORAÇÕES ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('ajudas').select('*');
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr>`;
+      const { data, error } = await _supabase.from('colaboracoes').select('*');
+      
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
         return;
       }
 
@@ -702,20 +680,48 @@ Equipa de Administração
           <td>${a.status || 'Pendente'}</td>
           <td>
             <div class="acoes-btns">
-              <button class="btn-excluir" onclick="excluirAjuda('${a.id}')">Excluir</button>
+              ${a.foto_url ? `<button class="btn-acao" onclick="window.open('${a.foto_url}', '_blank')">Ver Foto</button>` : ''}
+              <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
-    async function excluirAjuda(id) {
-      if (!confirm("Deseja realmente excluir esta ajuda?")) return;
-      const { error } = await _supabase.from('ajudas').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir: " + error.message);
-      } else {
+    // --- EXCLUIR AJUDA E O ARQUIVO DO STORAGE ---
+    async function excluirAjuda(id, fotoUrl) {
+      if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
+
+      try {
+        if (fotoUrl) {
+          const partesUrl = fotoUrl.split('/colaboracoes/');
+          if (partesUrl.length > 1) {
+            const caminhoArquivo = decodeURIComponent(partesUrl[1]);
+            
+            const { error: storageError } = await _supabase.storage
+              .from('colaboracoes')
+              .remove([caminhoArquivo]);
+
+            if (storageError) {
+              console.warn("Aviso ao remover arquivo do storage:", storageError.message);
+            }
+          }
+        }
+
+        const { error: dbError } = await _supabase
+          .from('colaboracoes')
+          .delete()
+          .eq('id', id);
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        alert("Ajuda excluída com sucesso!");
         carregarAjudas();
+
+      } catch (err) {
+        alert("Erro ao excluir ajuda: " + err.message);
       }
     }
   </script>
