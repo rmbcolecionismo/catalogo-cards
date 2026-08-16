@@ -545,14 +545,14 @@
     // --- CADASTRAR FIGURINHA ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
-      const tipo_id = document.getElementById('selectTipoFigurinha').value;
+      const tipo = document.getElementById('selectTipoFigurinha').value;
       const selecao_escuderia = document.getElementById('inputSelecaoFigurinha').value.trim();
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
       const fileInput = document.getElementById('inputArquivoFigurinha');
       const msg = document.getElementById('msgFigurinha');
 
-      if (!album_id || !tipo_id || !numero || !nome) {
+      if (!album_id || !tipo || !numero || !nome) {
         msg.className = "msg-feedback msg-error"; 
         msg.innerText = "Preencha todos os campos obrigatórios."; 
         msg.style.display = "block"; 
@@ -566,7 +566,7 @@
       const { data: tipoData, error: tipoError } = await _supabase
         .from('tipos')
         .select('nome')
-        .eq('id', tipo_id)
+        .eq('id', tipo)
         .single();
 
       if (tipoError || !tipoData) {
@@ -599,10 +599,10 @@
 
      msg.innerText = "Salvando figurinha...";
 
-      // CORREÇÃO: troquei "tipo: tipo" por "tipo_id: tipo_id"
+      // CORREÇÃO: troquei "tipo: tipo" por "tipo: tipo"
       const { error } = await _supabase.from('figurinhas').insert([{ 
         album_id: album_id, 
-        tipo_id: tipo_id, 
+        tipo: tipo, 
         selecao_escuderia: selecao_escuderia, 
         numero: numero, 
         nome: nome, 
