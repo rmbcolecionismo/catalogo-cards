@@ -51,7 +51,7 @@
 <div class="main-layout">
   <div class="profile-sidebar">
     <div style="text-align:center">
-      <img id="userAvatar" src="https://via.placeholder.com/120" class="avatar-img">
+      <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="avatar-img">
       <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
       <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
     </div>
@@ -147,16 +147,23 @@
     }
 
     if (idParam) {
-      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+      // Busca considerando que o id passado na URL pode ser o user_id real ou o id interno
+      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').or(`user_id.eq.${idParam},id.eq.${idParam}`).maybeSingle();
       if (error) console.error("Erro na busca:", error);
       perfilAlvo = data;
     } else if (usuarioLogado) {
       perfilAlvo = usuarioLogado;
     }
 
-    if (perfilAlvo && (perfilAlvo.user_id || perfilAlvo.id)) {
-      perfilAlvoUuid = perfilAlvo.user_id || perfilAlvo.id;
+    if (perfilAlvo && perfilAlvo.user_id) {
+      perfilAlvoUuid = perfilAlvo.user_id; // Garante o user_id real para bater com a vitrine_ofertas
       const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
+      preencherDadosPerfil(perfilAlvo, ehProprio);
+      carregarVitrine(perfilAlvoUuid);
+    } else if (perfilAlvo && perfilAlvo.id) {
+      // Fallback caso o user_id venha vazio mas o ID interno exista
+      perfilAlvoUuid = perfilAlvo.id;
+      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
     } else {
@@ -171,7 +178,7 @@
 
   function preencherDadosPerfil(perfil, ehProprio) {
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
-    document.getElementById('userAvatar').src = perfil.avatar || 'https://via.placeholder.com/120';
+    document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
     
     if (perfil.telefone_whats) {
