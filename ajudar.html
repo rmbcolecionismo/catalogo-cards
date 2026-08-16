@@ -2,197 +2,262 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Quero ser Vendedor - Marketplace de Figurinhas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajude o Projeto - Envie uma Imagem Melhor</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Biblioteca EmailJS para envio direto de e-mail sem abrir programas -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #101827; --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    :root {
+      --gold: #f59e0b;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 50px; }
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto; padding: 1rem 1rem 0; flex-wrap: wrap; gap: 10px; }
-    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+
+    body { background: var(--bg-gradient); min-height: 100vh; color: white; padding: 1.5rem 1rem; }
+    header { max-width: 800px; margin: 0 auto 1.5rem; text-align: center; }
+
+    .top-nav { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1rem; }
+    .top-nav a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
     .top-nav a:hover { color: var(--gold); }
-    .btn-nav-admin { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
-    .btn-nav-admin:hover { background: var(--gold); color: #0f172a; }
-    header { padding: 1.5rem 1rem 1rem; text-align: center; }
-    header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
-    .container { max-width: 800px; margin: 0 auto; padding: 0 1rem; }
-    .info-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-    .info-card h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 0.8rem; }
-    .info-card p { font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem; }
-    .form-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
-    .form-input, .form-select { width: 100%; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; font-size: 0.85rem; }
-    .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: rgba(15, 23, 42, 0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #f8fafc; cursor: pointer; }
-    .checkbox-item input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
-    .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.9rem; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.9rem; transition: 0.2s; margin-top: 5px; }
-    .btn-submit:hover { background: #fbbf24; }
-    .form-status { font-size: 0.85rem; text-align: center; margin-top: 5px; font-weight: 600; }
-    footer { text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
+
+    h1 { font-size: 1.8rem; font-weight: 800; color: var(--gold); margin-bottom: 0.5rem; }
+    p.subtitle { color: #94a3b8; font-size: 0.9rem; max-width: 600px; margin: 0 auto; }
+
+    .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; }
+    .card h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.5rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .form-row .form-group { flex: 1; min-width: 220px; }
+
+    label { display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: 600; }
+    input, select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; font-size: 0.9rem; outline: none; }
+    input:focus, select:focus { border-color: var(--gold); }
+
+    .preview-container { display: flex; align-items: center; gap: 1rem; background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2); margin-top: 0.5rem; }
+    .preview-img { width: 80px; height: 100px; object-fit: cover; border-radius: 6px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); }
+    .preview-info { font-size: 0.85rem; color: #cbd5e1; }
+    .preview-info strong { color: var(--gold); display: block; margin-bottom: 0.2rem; }
+
+    .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 1rem; }
+    .btn-submit:hover { background: #d97706; }
+
+    .msg-feedback { margin-top: 0.8rem; font-size: 0.85rem; padding: 0.6rem; border-radius: 6px; display: none; text-align: center; }
+    .msg-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
+    .msg-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
   </style>
 </head>
 <body>
 
-  <div class="top-nav">
-    <div class="nav-links">
-      <a href="index.html">🏠 Home</a>
-      <a href="contato.html" style="color: var(--gold);">Quero ser Vendedor</a>
-    </div>
-    <a href="login.html" class="btn-nav-admin" id="btnAuth">🔐 Login / Painel</a>
-  </div>
-
   <header>
-    <h1>🤝 Quero ser Vendedor</h1>
-    <p>Cadastre-se para começar a vender suas figurinhas em nossa plataforma</p>
+    <div class="top-nav">
+      <a href="index.html">🏠 Voltar para a Home</a>
+    </div>
+    <h1>🤝 Ajude o Nosso Projeto</h1>
+    <p class="subtitle">Encontrou uma figurinha com imagem ruim ou ausente? Envie uma foto melhor para analisarmos e atualizarmos no catálogo! (Máximo de 2 MB)</p>
   </header>
 
   <div class="container">
-    <div class="info-card">
-      <h2>Como funciona o Marketplace?</h2>
-      <p>O nosso site é um ponto de encontro especializado para colecionadores e vendedores de figurinhas. Cada vendedor cadastrado ganha um <strong>perfil exclusivo e uma vitrine própria</strong> para publicar todas as figurinhas que deseja negociar.</p>
-      <p>Você tem total autonomia: <strong>define os seus próprios preços</strong> e gerencia a <strong>quantidade em estoque</strong> de cada item. Os colecionadores e visitantes entram no site, pesquisam pelas figurinhas que faltam e entram em contato direto com você para fechar a venda!</p>
-    </div>
+    <div class="card">
+      <h2>📤 Formulário de Contribuição</h2>
 
-    <form class="form-card" id="formContato" onsubmit="enviarContato(event)">
-      <h2 style="font-size: 1.1rem; color: var(--gold); margin-bottom: 5px;">Preencha seus dados</h2>
-      
+      <!-- Seleção de Álbum -->
       <div class="form-group">
-        <label>Nome Completo</label>
-        <input type="text" id="nome" class="form-input" placeholder="Seu nome completo" required>
+        <label>1. Escolha o Álbum</label>
+        <select id="selectAlbum" onchange="carregarFigurinhaContexto()">
+          <option value="">Selecione o álbum...</option>
+        </select>
       </div>
 
-      <div class="form-group">
-        <label>E-mail</label>
-        <input type="email" id="email" class="form-input" placeholder="seu-email@exemplo.com" required>
-      </div>
-
-      <div class="form-group">
-        <label>Cidade</label>
-        <input type="text" id="cidade" class="form-input" placeholder="Sua cidade / Localidade" required>
-      </div>
-
-      <div class="form-group">
-        <label>Telemóvel / Telefone (Portugal)</label>
-        <input type="tel" id="telefone" class="form-input" placeholder="+351 912 345 678" required>
-      </div>
-
-      <div class="form-group">
-        <label>Álbuns que deseja publicar (Selecione um ou mais):</label>
-        <div class="checkbox-group" id="listaAlbuns">
-          <span style="color: #94a3b8; font-size: 0.8rem;">Carregando álbuns...</span>
+      <!-- Busca por Nome ou Código -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>2. Buscar por Nome ou Código / Número</label>
+          <input type="text" id="inputBusca" placeholder="Ex: 001 ou Nome do Jogador" oninput="buscarFigurinhaNaBase()">
+        </div>
+        <div class="form-group">
+          <label>Figurinha Selecionada no Sistema</label>
+          <select id="selectFigurinhaEncontrada" onchange="atualizarPreviewSelecionada()">
+            <option value="">Digite acima para buscar...</option>
+          </select>
         </div>
       </div>
 
-      <button type="submit" class="btn-submit" id="btnEnviar">Enviar Solicitação ➔</button>
-      <div id="formStatus" class="form-status"></div>
-    </form>
-  </div>
+      <!-- Preview da Imagem Atual -->
+      <div class="form-group">
+        <label>Preview da Imagem Atual no Banco</label>
+        <div class="preview-container">
+          <img id="imgPreviewAtual" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" alt="Preview" class="preview-img">
+          <div class="preview-info" id="infoFigurinhaAtual">
+            <strong>Nenhuma figurinha selecionada</strong>
+            Selecione um álbum e pesquise pelo nome ou número da figurinha para visualizar a imagem cadastrada atualmente.
+          </div>
+        </div>
+      </div>
 
-  <footer>
-    <p>© 2026 Desenvolvido por RMB. Todos os direitos reservados.</p>
-  </footer>
+      <!-- Upload da Nova Imagem -->
+      <div class="form-group" style="margin-top: 1.5rem;">
+        <label>3. Enviar a sua Versão Melhorada da Imagem (Até 2MB)</label>
+        <input type="file" id="inputNovaImagem" accept="image/*">
+      </div>
+
+      <!-- Opcional: Contato do colaborador -->
+      <div class="form-row" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label>Seu Nome ou E-mail (Opcional - para darmos créditos)</label>
+          <input type="text" id="inputColaborador" placeholder="Ex: João da Silva">
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="enviarColaboracao()">Enviar Contribuição para Análise</button>
+      <div id="msgFeedback" class="msg-feedback"></div>
+    </div>
+  </div>
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let cacheFigurinhas = [];
+    let figurinhaSelecionadaObj = null;
 
-    // Inicialização do EmailJS (Configuração gratuita para disparo direto invisível)
-    // Crie uma conta gratuita em emailjs.com, insira suas chaves abaixo caso queira disparo via emailjs.
-    // Como alternativa integrada e garantida sem configuração extra, salvamos também diretamente no Supabase para seu painel.
-    (function() {
-      emailjs.init("SEU_USER_ID_EMAILJS"); // Substitua se usar o EmailJS, ou utilize a gravação no banco abaixo
-    })();
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarAlbunsSelect();
+    });
 
-    async function init() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (session) document.getElementById('btnAuth').innerText = "⚙️ Meu Painel";
-
-      try {
-        const { data: albuns } = await _supabase.from('albuns').select('id, nome');
-        const containerAlbuns = document.getElementById('listaAlbuns');
-
-        if (albuns && albuns.length > 0) {
-          containerAlbuns.innerHTML = albuns.map(a => `
-            <label class="checkbox-item">
-              <input type="checkbox" name="albuns" value="${a.nome}"> ${a.nome}
-            </label>
-          `).join('');
-        } else {
-          containerAlbuns.innerHTML = '<span style="color: #94a3b8; font-size: 0.8rem;">Nenhum álbum cadastrado no momento.</span>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('listaAlbuns').innerHTML = '<span style="color: #ef4444; font-size: 0.8rem;">Erro ao carregar álbuns.</span>';
+    async function carregarAlbunsSelect() {
+      const { data } = await _supabase.from('albuns').select('*').order('nome');
+      const select = document.getElementById('selectAlbum');
+      if (select && data) {
+        select.innerHTML = '<option value="">Selecione o álbum...</option>' + data.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
       }
     }
 
-    async function enviarContato(event) {
-      event.preventDefault();
+    async function carregarFigurinhaContexto() {
+      const albumId = document.getElementById('selectAlbum').value;
+      if (!albumId) {
+        cacheFigurinhas = [];
+        document.getElementById('selectFigurinhaEncontrada').innerHTML = '<option value="">Selecione o álbum primeiro...</option>';
+        return;
+      }
+      const { data } = await _supabase.from('figurinhas').select('*').eq('album_id', albumId);
+      cacheFigurinhas = data || [];
+      filtrarListaLocal();
+    }
 
-      const btn = document.getElementById('btnEnviar');
-      const status = document.getElementById('formStatus');
+    function buscarFigurinhaNaBase() {
+      filtrarListaLocal();
+    }
+
+    function filtrarListaLocal() {
+      const termo = document.getElementById('inputBusca').value.toLowerCase().trim();
+      const selectFig = document.getElementById('selectFigurinhaEncontrada');
+
+      const filtradas = cacheFigurinhas.filter(f => {
+        const nomeMatch = f.nome && f.nome.toLowerCase().includes(termo);
+        const numMatch = f.numero && f.numero.toLowerCase().includes(termo);
+        return nomeMatch || numMatch;
+      });
+
+      if (filtradas.length === 0) {
+        selectFig.innerHTML = '<option value="">Nenhuma figurinha encontrada com este termo</option>';
+        limparPreview();
+        return;
+      }
+
+      selectFig.innerHTML = '<option value="">Selecione na lista abaixo...</option>' + filtradas.map(f => `
+        <option value="${f.id}">[${f.numero || 'S/N'}] ${f.nome} ${f.selecao_escuderia ? '- ' + f.selecao_escuderia : ''}</option>
+      `).join('');
+    }
+
+    function atualizarPreviewSelecionada() {
+      const idFig = document.getElementById('selectFigurinhaEncontrada').value;
+      if (!idFig) {
+        limparPreview();
+        return;
+      }
+
+      figurinhaSelecionadaObj = cacheFigurinhas.find(f => f.id == idFig);
+      if (figurinhaSelecionadaObj) {
+        const imgEl = document.getElementById('imgPreviewAtual');
+        const infoEl = document.getElementById('infoFigurinhaAtual');
+
+        imgEl.src = figurinhaSelecionadaObj.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        infoEl.innerHTML = `
+          <strong>${figurinhaSelecionadaObj.nome} (Nº ${figurinhaSelecionadaObj.numero || 'N/A'})</strong>
+          Seleção/Escuderia: ${figurinhaSelecionadaObj.selecao_escuderia || 'Não informada'}<br>
+          ID Interno no Sistema: ${figurinhaSelecionadaObj.id}
+        `;
+      }
+    }
+
+    function limparPreview() {
+      figurinhaSelecionadaObj = null;
+      document.getElementById('imgPreviewAtual').src = 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+      document.getElementById('infoFigurinhaAtual').innerHTML = `
+        <strong>Nenhuma figurinha selecionada</strong>
+        Selecione um álbum e pesquise pelo nome ou número da figurinha para visualizar a imagem cadastrada atualmente.
+      `;
+    }
+
+    async function enviarColaboracao() {
+      const msg = document.getElementById('msgFeedback');
+      const fileInput = document.getElementById('inputNovaImagem');
+      const colaborador = document.getElementById('inputColaborador').value.trim();
+
+      if (!figurinhaSelecionadaObj) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Por favor, selecione qual figurinha você está tentando ajudar a melhorar.";
+        msg.style.display = "block";
+        return;
+      }
+
+      if (!fileInput.files || !fileInput.files[0]) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Por favor, selecione o arquivo de imagem melhorada para enviar.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      // Validação de Tamanho Máximo (2 MB)
+      const tamanhoMaximoBytes = 2 * 1024 * 1024;
+      if (file.size > tamanhoMaximoBytes) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "A imagem é muito grande! O tamanho máximo permitido é de 2 MB para preservar o espaço do projeto.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `colab_${figurinhaSelecionadaObj.id}_${Date.now()}.${fileExt}`;
+      const filePath = `colaboracoes/${fileName}`;
+
+      msg.className = "msg-feedback msg-success";
+      msg.innerText = "A enviar imagem para moderação...";
+      msg.style.display = "block";
+
+      // Faz o upload para a pasta 'colaboracoes' no storage
+      const { error: uploadError } = await _supabase.storage.from('figurinhas').upload(filePath, file);
+
+      if (uploadError) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro ao enviar arquivo: " + uploadError.message;
+        return;
+      }
+
+      msg.className = "msg-feedback msg-success";
+      msg.innerText = "Obrigado! A sua imagem foi enviada com sucesso para a nossa pasta de moderação. Vamos analisar e atualizar em breve!";
       
-      const nome = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const cidade = document.getElementById('cidade').value.trim();
-      const telefone = document.getElementById('telefone').value.trim();
-
-      const checkboxes = document.querySelectorAll('input[name="albuns"]:checked');
-      const albunsSelecionados = Array.from(checkboxes).map(cb => cb.value);
-      const albunsTexto = albunsSelecionados.length > 0 ? albunsSelecionados.join(', ') : 'Nenhum álbum específico selecionado';
-
-      btn.disabled = true;
-      btn.innerText = "Enviando...";
-      status.style.color = "#cbd5e1";
-      status.innerText = "A enviar sua solicitação...";
-
-      try {
-        // Grava diretamente no banco de dados Supabase na tabela 'contatos_vendedores'
-        // Assim, todos os pedidos ficam salvos e organizados para você consultar diretamente a qualquer momento!
-        const { error } = await _supabase.from('contatos_vendedores').insert([
-          { 
-            nome: nome, 
-            email: email, 
-            cidade: cidade, 
-            telefone: telefone, 
-            albuns: albunsTexto,
-            criado_em: new Date()
-          }
-        ]);
-
-        if (error) {
-          console.error("Erro ao salvar no banco:", error.message);
-          throw new Error("Não foi possível registrar os dados no momento.");
-        }
-
-        status.style.color = "#34d399";
-        status.innerText = "✨ Solicitação enviada com sucesso! Entraremos em contacto em breve.";
-        document.getElementById('formContato').reset();
-
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerText = "Enviar Solicitação ➔";
-          status.innerText = "";
-        }, 4000);
-
-      } catch (err) {
-        console.error(err);
-        status.style.color = "#ef4444";
-        status.innerText = "Erro ao enviar. Por favor, tente novamente.";
-        btn.disabled = false;
-        btn.innerText = "Enviar Solicitação ➔";
-      }
+      // Limpar campos
+      fileInput.value = '';
+      document.getElementById('inputColaborador').value = '';
     }
-
-    init();
   </script>
 </body>
 </html>
