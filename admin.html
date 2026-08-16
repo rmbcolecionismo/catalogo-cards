@@ -67,6 +67,7 @@
     .btn-acao:hover { background: #3b82f6; color: white; }
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
+    .img-miniatura { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
   </style>
 </head>
 <body>
@@ -264,8 +265,17 @@
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead><tr><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
-            <tbody id="tabelaAjudas"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Álbum</th>
+                <th>Cód. Figurinha</th>
+                <th>Nome Figurinha</th>
+                <th>Crédito / E-mail</th>
+                <th style="width: 170px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAjudas"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -615,7 +625,7 @@
       }
     }
 
-    // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
+    // --- CARREGAMENTO DE CONTATOS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
@@ -644,7 +654,6 @@
       `).join('');
     }
 
-    // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO ---
     function copiarEmailSaudacao(nome, emailDestino) {
       const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
       const mensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma!`;
@@ -656,7 +665,7 @@
       }
     }
 
-    // --- CARREGAR AJUDAS E COLABORAÇÕES ---
+    // --- CARREGAR AJUDAS E COLABORAÇÕES (ATUALIZADO) ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
@@ -664,28 +673,53 @@
       const { data, error } = await _supabase.from('colaboracoes').select('*');
       
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map(a => `
-        <tr>
-          <td>${a.remetente || '-'}</td>
-          <td>${a.figurinha || '-'}</td>
-          <td>${a.status || 'Pendente'}</td>
-          <td>
-            <div class="acoes-btns">
-              ${a.foto_url ? `<button class="btn-acao" onclick="window.open('${a.foto_url}', '_blank')">Ver Foto</button>` : ''}
-              <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = data.map(a => {
+        // Tratamento flexível para colunas com possíveis variações de nomenclatura na tabela do banco
+        const album = a.album || a.álbum || '-';
+        const codigo = a.codigo_figurinha || a.codigo || a.numero || '-';
+        const nomeFigurinha = a.nome_figurinha || a.figurinha || '-';
+        const credito = a.email_ou_nome_para_credito || a.email || a.credito || a.remetente || '-';
+        const fotoUrl = a.foto_url || a.foto || '';
+
+        return `
+          <tr>
+            <td>
+              ${fotoUrl ? `<img src="${fotoUrl}" alt="Foto" class="img-miniatura" onclick="window.open('${fotoUrl}', '_blank')" title="Clique para ampliar">` : 'Sem foto'}
+            </td>
+            <td>${album}</td>
+            <td>${codigo}</td>
+            <td>${nomeFigurinha}</td>
+            <td>${credito}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" title="Enviar E-mail de Agradecimento" onclick="enviarEmailAgradecimento('${credito}', '${nomeFigurinha}')">✉️ E-mail</button>
+                <button class="btn-excluir" title="Excluir ajuda e foto" onclick="excluirAjuda('${a.id}', '${fotoUrl}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- FUNÇÃO PARA ENVIAR E-MAIL DE AGRADECIMENTO PELA AJUDA ---
+    function enviarEmailAgradecimento(emailDestino, nomeFigurinha) {
+      // Verifica se o texto do crédito se parece com um e-mail válido
+      const ehEmail = emailDestino && emailDestino.includes('@');
+      const destinatario = ehEmail ? emailDestino : '';
+      
+      const assunto = "Muito obrigado pela sua colaboração! 🌟";
+      const mensagem = `Olá!\n\nGostaríamos de agradecer imensamente pela sua ajuda ao enviar a foto da figurinha (${nomeFigurinha}) para completar o nosso catálogo.\n\nA sua contribuição é essencial para manter o nosso álbum digital atualizado e completo para todos os colecionadores.\n\nMuito obrigado!`;
+      
+      window.location.href = `mailto:${destinatario}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
     }
 
     // --- EXCLUIR AJUDA E O ARQUIVO DO STORAGE ---
