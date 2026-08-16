@@ -578,15 +578,44 @@
 
     // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
     async function carregarContatos() {
-      const tbody = document.getElementById('tabelaContatos');
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
-    }
+  const tbody = document.getElementById('tabelaContatos');
+  if (!tbody) return;
 
-    async function carregarAjudas() {
-      const tbody = document.getElementById('tabelaAjudas');
-      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr>`;
-    }
+  // Faz a consulta na tabela correta do Supabase
+  const { data, error } = await _supabase.from('contatos_vendedores').select('*');
 
+  if (error || !data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
+    return;
+  }
+
+  // Preenche a tabela com os dados reais do banco
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${c.nome || '-'}</td>
+      <td>${c.email || '-'}</td>
+      <td>${c.cidade || '-'}</td>
+      <td>${c.telefone || c.telemóvel || '-'}</td>
+      <td>${c.albuns || '-'}</td>
+      <td>
+        <div class="acoes-btns">
+          <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Opcional: Função para excluir o contato caso necessário
+async function excluirContato(id) {
+  if (!confirm("Deseja realmente excluir este contato?")) return;
+  const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
+  if (error) {
+    alert("Erro ao excluir: " + error.message);
+  } else {
+    carregarContatos();
+  }
+}
     // --- CADASTRAR FIGURINHA ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
