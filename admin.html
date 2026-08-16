@@ -669,72 +669,81 @@
     }
 
     function editarVendedor(email, nome, cidade, telefone, funcao) {
-        document.getElementById('editVendedorOriginalEmail').value = email;
-        document.getElementById('inputEmailVendedor').value = email;
-        document.getElementById('inputNomeVendedor').value = nome;
-        document.getElementById('inputCidadeVendedor').value = cidade;
-        document.getElementById('inputTelefoneVendedor').value = telefone;
-        document.getElementById('selectFuncaoVendedor').value = funcao;
-        
-        document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor";
-        document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
-        document.getElementById('btnCancelarVendedor').style.display = "inline-block";
+      document.getElementById('editVendedorOriginalEmail').value = email;
+      document.getElementById('inputEmailVendedor').value = email;
+      document.getElementById('inputNomeVendedor').value = nome;
+      document.getElementById('inputCidadeVendedor').value = cidade;
+      document.getElementById('inputTelefoneVendedor').value = telefone;
+      document.getElementById('selectFuncaoVendedor').value = funcao;
+      document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor Autorizado";
+      document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "inline-block";
     }
 
     function cancelarEdicaoVendedor() {
-        document.getElementById('editVendedorOriginalEmail').value = '';
-        document.getElementById('inputEmailVendedor').value = '';
-        document.getElementById('inputNomeVendedor').value = '';
-        document.getElementById('inputCidadeVendedor').value = '';
-        document.getElementById('inputTelefoneVendedor').value = '';
-        document.getElementById('selectFuncaoVendedor').value = 'vendedor';
-        
-        document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
-        document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
-        document.getElementById('btnCancelarVendedor').style.display = "none";
-        document.getElementById('msgVendedor').style.display = "none";
+      document.getElementById('editVendedorOriginalEmail').value = '';
+      document.getElementById('inputEmailVendedor').value = '';
+      document.getElementById('inputNomeVendedor').value = '';
+      document.getElementById('inputCidadeVendedor').value = '';
+      document.getElementById('inputTelefoneVendedor').value = '';
+      document.getElementById('selectFuncaoVendedor').value = 'vendedor';
+      document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
+      document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
+      document.getElementById('btnCancelarVendedor').style.display = "none";
+      document.getElementById('msgVendedor').style.display = "none";
     }
 
     async function excluirVendedor(email) {
-      if (!confirm("Deseja excluir este vendedor?")) return;
+      if (!confirm("Deseja remover este vendedor?")) return;
       const { error } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
       if (error) alert("Erro ao excluir: " + error.message);
       else carregarVendedores();
     }
 
+    // --- CRUD: CONTATOS RECEBIDOS (CONTATO_VENDEDORES) ---
     async function carregarContatos() {
-        const { data } = await _supabase.from('contato_vendedores').select('*').order('created_at', { ascending: false });
-        const tbody = document.getElementById('tabelaContatos');
-        if (!tbody) return;
-        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato pendente.</td></tr>`; return; }
-        
-        tbody.innerHTML = data.map(c => `
-          <tr>
-            <td>${c.nome}</td>
-            <td>${c.email}</td>
-            <td>${c.cidade}</td>
-            <td>${c.telefone}</td>
-            <td>${c.albuns || '-'}</td>
-            <td class="acoes-btns">
-                <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
-            </td>
-          </tr>
-        `).join('');
+      const { data, error } = await _supabase.from('contato_vendedores').select('*');
+      const tbody = document.getElementById('tabelaContatos');
+      if (!tbody) return;
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recebido.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(c => `
+        <tr>
+          <td>${c.nome || '-'}</td>
+          <td>${c.email || '-'}</td>
+          <td>${c.cidade || '-'}</td>
+          <td>${c.telefone || c.telemóvel || '-'}</td>
+          <td>${c.albuns || '-'}</td>
+          <td class="acoes-btns">
+            <button class="btn-excluir" onclick="excluirContato(${c.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
     }
 
     async function excluirContato(id) {
-        if (!confirm("Deseja remover este contato?")) return;
-        const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
-        if (error) alert("Erro ao excluir: " + error.message);
-        else carregarContatos();
+      if (!confirm("Deseja excluir este contato?")) return;
+      const { error } = await _supabase.from('contato_vendedores').delete().eq('id', id);
+      if (error) alert("Erro ao excluir: " + error.message);
+      else carregarContatos();
     }
 
-    // Inicialização básica ao carregar a página
+    // Inicialização ao carregar a página
     window.onload = async () => {
-        await verificarAdminMaster();
-        mudarAba('albuns', null);
+      const autorizado = await verificarAdminMaster();
+      if (autorized !== false && autorizado) {
+        carregarAlbuns();
+      }
     };
-
   </script>
 </body>
 </html>
