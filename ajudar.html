@@ -76,12 +76,12 @@
       <div class="form-row">
         <div class="form-group">
           <label>2. Buscar por Nome ou Código / Número</label>
-          <input type="text" id="inputBusca" placeholder="Ex: 001 ou Nome do Jogador" oninput="buscarFigurinhaNaBase()">
+          <input type="text" id="inputBusca" placeholder="Ex: #001 ou Nome do Jogador" oninput="buscarFigurinhaNaBase()">
         </div>
         <div class="form-group">
           <label>Figurinha Selecionada no Sistema</label>
           <select id="selectFigurinhaEncontrada" onchange="atualizarPreviewSelecionada()">
-            <option value="">Digite acima para buscar...</option>
+            <option value="">Selecione o álbum primeiro...</option>
           </select>
         </div>
       </div>
@@ -139,12 +139,17 @@
 
     async function carregarFigurinhaContexto() {
       const albumId = document.getElementById('selectAlbum').value;
+      const selectFig = document.getElementById('selectFigurinhaEncontrada');
+      
       if (!albumId) {
         cacheFigurinhas = [];
-        document.getElementById('selectFigurinhaEncontrada').innerHTML = '<option value="">Selecione o álbum primeiro...</option>';
+        selectFig.innerHTML = '<option value="">Selecione o álbum primeiro...</option>';
+        limparPreview();
         return;
       }
-      const { data } = await _supabase.from('figurinhas').select('*').eq('album_id', albumId);
+
+      selectFig.innerHTML = '<option value="">A carregar figurinhas...</option>';
+      const { data } = await _supabase.from('figurinhas').select('*').eq('album_id', albumId).order('numero', { ascending: true });
       cacheFigurinhas = data || [];
       filtrarListaLocal();
     }
@@ -153,14 +158,30 @@
       filtrarListaLocal();
     }
 
+    function removerAcentos(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
     function filtrarListaLocal() {
-      const termo = document.getElementById('inputBusca').value.toLowerCase().trim();
+      const termoRaw = document.getElementById('inputBusca').value.trim();
+      const termo = removerAcentos(termoRaw.replace(/#/g, '')); // Remove acentos e o '#' para busca flexível
       const selectFig = document.getElementById('selectFigurinhaEncontrada');
 
+      if (cacheFigurinhas.length === 0) {
+        selectFig.innerHTML = '<option value="">Selecione o álbum primeiro...</option>';
+        return;
+      }
+
       const filtradas = cacheFigurinhas.filter(f => {
-        const nomeMatch = f.nome && f.nome.toLowerCase().includes(termo);
-        const numMatch = f.numero && f.numero.toLowerCase().includes(termo);
-        return nomeMatch || numMatch;
+        const nomeNorm = f.nome ? removerAcentos(f.nome) : '';
+        const numNorm = f.numero ? removerAcentos(String(f.numero)) : '';
+        const selecaoNorm = f.selecao_escuderia ? removerAcentos(f.selecao_escuderia) : '';
+
+        const nomeMatch = nomeNorm.includes(termo);
+        const numMatch = numNorm.includes(termo);
+        const selecaoMatch = selecaoNorm.includes(termo);
+
+        return nomeMatch || numMatch || selecaoMatch;
       });
 
       if (filtradas.length === 0) {
@@ -170,7 +191,7 @@
       }
 
       selectFig.innerHTML = '<option value="">Selecione na lista abaixo...</option>' + filtradas.map(f => `
-        <option value="${f.id}">[${f.numero || 'S/N'}] ${f.nome} ${f.selecao_escuderia ? '- ' + f.selecao_escuderia : ''}</option>
+        <option value="${f.id}">[#${f.numero || 'S/N'}] ${f.nome} ${f.selecao_escuderia ? '- ' + f.selecao_escuderia : ''}</option>
       `).join('');
     }
 
@@ -188,7 +209,7 @@
 
         imgEl.src = figurinhaSelecionadaObj.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         infoEl.innerHTML = `
-          <strong>${figurinhaSelecionadaObj.nome} (Nº ${figurinhaSelecionadaObj.numero || 'N/A'})</strong>
+          <strong>${figurinhaSelecionadaObj.nome} (Nº #${figurinhaSelecionadaObj.numero || 'N/A'})</strong>
           Seleção/Escuderia: ${figurinhaSelecionadaObj.selecao_escuderia || 'Não informada'}<br>
           ID Interno no Sistema: ${figurinhaSelecionadaObj.id}
         `;
@@ -276,6 +297,8 @@
       // Limpar campos
       fileInput.value = '';
       document.getElementById('inputColaborador').value = '';
+      document.getElementById('inputBusca').value = '';
+      limparPreview();
     }
   </script>
 </body>
