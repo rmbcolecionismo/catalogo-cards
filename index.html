@@ -10,8 +10,9 @@
     :root { --primary: #101827; --gold: #f59e0b; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding-bottom: 50px; }
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto; padding: 1rem 1rem 0; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-right: 15px; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto; padding: 1rem 1rem 0; flex-wrap: wrap; gap: 10px; }
+    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
     .top-nav a:hover { color: var(--gold); }
     .btn-nav-admin { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
     .btn-nav-admin:hover { background: var(--gold); color: #0f172a; }
@@ -36,12 +37,16 @@
     .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
     .btn-vendedor { background: var(--gold); color: #0f172a; border: none; padding: 0.6rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; }
     .btn-vendedor:hover { background: #fbbf24; }
+    footer { text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
   </style>
 </head>
 <body>
 
   <div class="top-nav">
-    <div class="nav-links"><a href="index.html" style="color: var(--gold);">🏠 Home</a></div>
+    <div class="nav-links">
+      <a href="index.html" style="color: var(--gold);">🏠 Home</a>
+      <a href="contato.html">Quero ser Vendedor</a>
+    </div>
     <a href="login.html" class="btn-nav-admin" id="btnAuth">🔐 Login / Painel</a>
   </div>
 
@@ -62,6 +67,10 @@
     <div class="grid" id="catalog"><p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Carregando vitrine...</p></div>
   </div>
 
+  <footer>
+    <p>© 2026 Desenvolvido por RMB. Todos os direitos reservados.</p>
+  </footer>
+
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
@@ -69,7 +78,6 @@
     let allData = [];
 
     async function init() {
-      // Ajuste visual do botão de login se estiver logado
       const { data: { session } } = await _supabase.auth.getSession();
       if (session) document.getElementById('btnAuth').innerText = "⚙️ Meu Painel";
 
@@ -90,7 +98,7 @@
             numero: f.numero || 'N/A',
             nome: f.nome || 'Sem Nome',
             imagem: f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg',
-            selecao_escuderia: f.selecao_escuderia || 'N/A',
+            selecao_escuderia: f.selecao_escuderia || f.selecao || f.escuderia || 'N/A',
             album: f.albumNome,
             tipo: f.tipo || 'N/A',
             preco: o.preco || 0,
@@ -99,7 +107,6 @@
         });
 
         renderizar(allData);
-        // ... (código de preenchimento dos filtros continua igual)
       } catch (err) { console.error(err); }
     }
 
@@ -109,9 +116,13 @@
           <div class="sticker-img-wrap"><img src="${f.imagem}" alt="${f.nome}"></div>
           <div class="sticker-info">
             <div class="vendedor-label">👤 ${f.vendedorNome}</div>
+            <div class="card-row">Álbum: <span>${f.album}</span></div>
+            <div class="card-row">Número: <span>${f.numero}</span></div>
             <div class="sticker-title">${f.nome}</div>
-            <div class="card-row">Código: <span>${f.numero}</span></div>
-            <div class="sticker-price">€ ${f.preco.toFixed(2).replace('.', ',')}</div>
+            <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
+            <div class="card-row">Tipo: <span>${f.tipo}</span></div>
+            <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${f.quantidade}</div>
+            <div class="sticker-price">€ ${Number(f.preco).toFixed(2).replace('.', ',')}</div>
             <a href="perfil.html?id=${f.vendedorId}" class="btn-vendedor">Ver Vendedor ➔</a>
           </div>
         </div>
