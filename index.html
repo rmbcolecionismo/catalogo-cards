@@ -28,9 +28,18 @@
     @keyframes floatBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     .btn-hero-action:hover { background: #fbbf24; transform: scale(1.05); }
 
-    header { padding: 1.5rem 1rem 1rem; text-align: center; }
-    header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    header p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
+    /* Novo Banner Visual em CSS Puro (Substituindo o Header Antigo) */
+    .css-banner-header { max-width: 1250px; margin: 1.5rem auto 1.5rem; padding: 0 1rem; }
+    .css-banner-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #111827 100%); border: 2px solid rgba(245, 158, 11, 0.4); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+    .css-banner-box::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: shineLine 3s linear infinite; }
+    @keyframes shineLine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    
+    .css-banner-badges { display: flex; justify-content: center; gap: 10px; margin-bottom: 0.8rem; flex-wrap: wrap; }
+    .css-badge { background: rgba(245, 158, 11, 0.15); color: var(--gold); font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .css-banner-box h1 { font-size: 2.3rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+    .css-banner-box p { color: #94a3b8; font-size: 0.95rem; max-width: 600px; margin: 0 auto; }
+
     .controls-wrapper { max-width: 1250px; margin: 0 auto 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 10px; }
     .filters-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-select, .filter-input { flex: 1; min-width: 200px; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; font-size: 0.85rem; }
@@ -74,10 +83,18 @@
     </div>
   </div>
 
-  <header>
-    <h1>🛍️ Marketplace de Figurinhas</h1>
-    <p>Encontre figurinhas disponíveis e visite o perfil dos vendedores</p>
-  </header>
+  <!-- Novo Banner Visual em CSS Puro Substituindo o Header Antigo -->
+  <div class="css-banner-header">
+    <div class="css-banner-box">
+      <div class="css-banner-badges">
+        <span class="css-badge">🏆 Catálogo Oficial</span>
+        <span class="css-badge">⭐ Figurinhas & Cards</span>
+        <span class="css-badge">🛡️ Vendedores Verificados</span>
+      </div>
+      <h1>🛍️ Marketplace de Figurinhas</h1>
+      <p>Encontre figurinhas disponíveis e visite o perfil dos vendedores</p>
+    </div>
+  </div>
 
   <div class="container">
     <div class="controls-wrapper">
