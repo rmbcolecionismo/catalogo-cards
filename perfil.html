@@ -138,9 +138,16 @@
     const idParam = urlParams.get('id');
 
     if (idParam) {
-      let { data: perfilAlvo } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
-      if (!perfilAlvo) {
+      let perfilAlvo = null;
+      const isNumeric = /^\d+$/.test(idParam);
+
+      if (!isNumeric) {
         const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+        perfilAlvo = data;
+      }
+
+      if (!perfilAlvo) {
+        const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('id', idParam).maybeSingle();
         perfilAlvo = data;
       }
 
