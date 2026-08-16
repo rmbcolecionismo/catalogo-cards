@@ -467,7 +467,7 @@
       else carregarTipos();
     }
 
-    // --- CARREGAMENTO DE VENDEDORES (ATUALIZADO PARA vendedores_autorizados) ---
+    // --- CARREGAMENTO DE VENDEDORES (USANDO telefone_whats) ---
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
       if (!tbody) return;
@@ -481,7 +481,7 @@
           <td>${v.nome || '-'}</td>
           <td>${v.email || '-'}</td>
           <td>${v.cidade || '-'}</td>
-          <td>${v.telefone || '-'}</td>
+          <td>${v.telefone_whats || '-'}</td>
           <td>${v.funcao || 'vendedor'}</td>
           <td>
             <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Remover</button>
@@ -494,7 +494,7 @@
       const email = document.getElementById('inputEmailVendedor').value.trim();
       const nome = document.getElementById('inputNomeVendedor').value.trim();
       const cidade = document.getElementById('inputCidadeVendedor').value.trim();
-      const telefone = document.getElementById('inputTelefoneVendedor').value.trim();
+      const telefone_whats = document.getElementById('inputTelefoneVendedor').value.trim();
       const funcao = document.getElementById('selectFuncaoVendedor').value;
       const msg = document.getElementById('msgVendedor');
 
@@ -505,7 +505,7 @@
         return;
       }
 
-      const { error } = await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone, funcao }], { onConflict: 'email' });
+      const { error } = await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone_whats, funcao }], { onConflict: 'email' });
       if (error) {
         msg.className = "msg-feedback msg-error";
         msg.innerText = "Erro: " + error.message;
@@ -528,7 +528,7 @@
       carregarVendedores();
     }
 
-    // --- CARREGAMENTO DE CONTATOS E AJUDAS (placeholders seguros) ---
+    // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
@@ -608,7 +608,6 @@
 
     // --- INICIALIZAÇÃO AUTOMÁTICA AO ABRIR A PÁGINA ---
     document.addEventListener("DOMContentLoaded", async () => {
-      // 1. Verificar saudação do usuário logado
       const { data: { user } } = await _supabase.auth.getUser();
       if (user) {
         const nomeUsuario = user.email ? user.email.split('@')[0] : 'Usuário';
@@ -618,7 +617,6 @@
         return;
       }
 
-      // 2. Carregar dados das tabelas e selects
       carregarAlbuns();
       carregarTipos();
       carregarVendedores();
