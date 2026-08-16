@@ -265,7 +265,7 @@
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <table class="lista-tabela">
           <thead><tr><th style="width: 60px;">Foto</th><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
-          <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+          <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda pendente.</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -560,8 +560,22 @@
       }
 
       msg.className = "msg-feedback";
-      msg.innerText = "Salvando figurinha..."; 
+      msg.innerText = "Buscando dados do tipo..."; 
       msg.style.display = "block";
+
+      const { data: tipoData, error: tipoError } = await _supabase
+        .from('tipos')
+        .select('nome')
+        .eq('id', tipo_id)
+        .single();
+
+      if (tipoError || !tipoData) {
+        msg.className = "msg-feedback msg-error";
+        msg.innerText = "Erro ao identificar o tipo selecionado."; 
+        return;
+      }
+
+      const nomeTipo = tipoData.nome;
 
       let publicUrl = "https://rmbcolecionismo.github.io/catalogo-cards/sem-foto.jpg";
 
@@ -583,8 +597,15 @@
         publicUrl = urlData.data.publicUrl;
       }
 
+      msg.innerText = "Salvando figurinha...";
+
       const { error } = await _supabase.from('figurinhas').insert([{ 
-        album_id, tipo_id, selecao_escuderia, numero, nome, imagem: publicUrl 
+        album_id, 
+        tipos: nomeTipo, 
+        selecao_escuderia, 
+        numero, 
+        nome, 
+        imagem: publicUrl 
       }]);
 
       if (error) { 
@@ -597,6 +618,7 @@
         document.getElementById('inputNumeroFigurinha').value = '';
         document.getElementById('inputNomeFigurinha').value = '';
         document.getElementById('inputSelecaoFigurinha').value = '';
+        document.getElementById('selectTipoFigurinha').value = '';
       }
     }
 
