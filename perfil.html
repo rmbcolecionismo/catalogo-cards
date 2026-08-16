@@ -15,6 +15,11 @@
     .profile-sidebar { width: 300px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
+
+    /* Filtros da Vitrine */
+    .vitrine-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
+    .filter-field:focus { border-color: var(--gold); }
     
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
@@ -93,7 +98,19 @@
 
   <div class="vitrine-content">
     <h2>🛍️ Vitrine de Ofertas</h2>
+    
+    <!-- Filtros solicitados -->
+    <div class="vitrine-filters">
+      <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
+        <option value="">Filtrar por Álbum (Todos)</option>
+      </select>
+      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
+    </div>
+
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
+    <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
+      <button class="btn-gold" style="width: 200px;" onclick="carregarMais()">Carregar Mais</button>
+    </div>
   </div>
 </div>
 
@@ -119,6 +136,11 @@
   let authUserId = null;
   let perfilAlvoUuid = null;
   let isAdminOrMaster = false;
+
+  let todasOfertas = [];
+  let figsMapGlobal = {};
+  let albunsMapGlobal = {};
+  let limiteExibicao = 30;
 
   function isUUID(uuid) {
     if (!uuid) return false;
@@ -231,22 +253,79 @@
     if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
     if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
     
+    todasOfertas = ofertas;
     const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha);
     const { data: figs } = await _supabase.from('figurinhas').select('*').in('id', figIds);
-    const figsMap = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
+    figsMapGlobal = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
 
-    const albumIds = [...new Set(Object.values(figsMap).map(f => f.album_id).filter(Boolean))];
-    let albunsMap = {};
+    const albumIds = [...new Set(Object.values(figsMapGlobal).map(f => f.album_id).filter(Boolean))];
     if (albumIds.length > 0) {
       const { data: albuns } = await _supabase.from('albuns').select('*').in('id', albumIds);
-      if (albuns) albunsMap = Object.fromEntries(albuns.map(a => [a.id, a.nome]));
+      if (albuns) {
+        albunsMapGlobal = Object.fromEntries(albuns.map(a => [a.id, a.nome]));
+        const selectAlbum = document.getElementById('filtroAlbum');
+        selectAlbum.innerHTML = '<option value="">Filtrar por Álbum (Todos)</option>' + albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      }
     }
 
-    grid.innerHTML = ofertas.map(item => {
-      const f = figsMap[item.figurinha_id || item.id_figurinha] || {};
-      const nomeAlbum = albunsMap[f.album_id] || '-';
+    renderizarGridFiltrado();
+  }
+
+  function aplicarFiltros() {
+    limiteExibicao = 30; // Reseta a paginação ao filtrar
+    renderizarGridFiltrado();
+  }
+
+  function carregarMais() {
+    limiteExibicao += 30;
+    renderizarGridFiltrado();
+  }
+
+  function renderizarGridFiltrado() {
+    const grid = document.getElementById('vitrineGrid');
+    const filtroAlbumVal = document.getElementById('filtroAlbum').value;
+    const filtroBuscaVal = document.getElementById('filtroBusca').value.trim().toLowerCase().replace('#', '');
+
+    let filtradas = todasOfertas.filter(item => {
+      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
+      
+      // Filtro por Álbum
+      if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) {
+        return false;
+      }
+
+      // Filtro por Nome ou Código (# ou sem)
+      if (filtroBuscaVal) {
+        const nomeFig = (f.nome || '').toLowerCase();
+        const numFig = String(f.numero || '').toLowerCase().replace('#', '');
+        const matchNome = nomeFig.includes(filtroBuscaVal);
+        const matchNum = numFig === filtroBuscaVal;
+        if (!matchNome && !matchNum) return false;
+      }
+
+      return true;
+    });
+
+    if (filtradas.length === 0) {
+      grid.innerHTML = "Nenhuma figurinha encontrada com esses filtros.";
+      document.getElementById('carregarMaisContainer').style.display = 'none';
+      return;
+    }
+
+    const visiveis = filtradas.slice(0, limiteExibicao);
+    const btnMais = document.getElementById('carregarMaisContainer');
+    if (filtradas.length > limiteExibicao) {
+      btnMais.style.display = 'block';
+    } else {
+      btnMais.style.display = 'none';
+    }
+
+    grid.innerHTML = visiveis.map(item => {
+      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
+      const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
       const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
+      
       return `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
@@ -258,7 +337,11 @@
             <div class="card-row">Tipo: <span>${f.tipo || '-'}</span></div>
             <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
             <div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>
-            ${podeGerenciar ? `<div class="card-actions"><button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button></div>` : ''}
+            ${podeGerenciar ? `
+              <div class="card-actions">
+                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button>
+                <button class="btn-card-action btn-delete" onclick="excluirOfertaVitrine('${item.id}')">Excluir</button>
+              </div>` : ''}
           </div>
         </div>
       `;
@@ -278,6 +361,16 @@
     const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', document.getElementById('modalOfertaId').value);
     if (error) alert("Erro: " + error.message);
     else location.reload();
+  }
+
+  async function excluirOfertaVitrine(id) {
+    if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
+    const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
+    if (error) {
+      alert("Erro ao excluir: " + error.message);
+    } else {
+      location.reload();
+    }
   }
 
   async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
