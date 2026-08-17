@@ -653,6 +653,15 @@
       const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoMensagem)}`;
       window.open(urlGmail, '_blank');
     }
+    async function excluirContato(id) {
+      if (!confirm("Deseja realmente excluir este contato?")) return;
+      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir contato: " + error.message);
+        return;
+      }
+      carregarContatos();
+    }
 
     // --- CARREGAR AJUDAS ---
     async function carregarAjudas() {
