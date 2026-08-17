@@ -179,7 +179,6 @@
     }
 
     function executarConsultaSupabase(albumId, termo, inicio, fim) {
-      // Ordenação primária pelo campo número (código) em ordem crescente
       let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       
       if (albumId !== 'todos') {
@@ -189,8 +188,6 @@
       if (termo !== "") {
         const t = termo.trim();
         const tSemHash = t.replace('#', '');
-        
-        // Se a coluna número for textual ou numérica, fazemos busca combinada de texto ILIKE em todos os campos relevantes
         query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
       }
 
@@ -247,7 +244,7 @@
       }
 
       tbody.innerHTML = lista.map(f => {
-        const imgUrl = f.imagem_url || f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        const imgUrl = f.imagem || f.imagem_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         return `
           <tr id="row-${f.id}">
             <td style="text-align: center;">
@@ -316,7 +313,7 @@
 
       const { error: updateError } = await _supabase
         .from('figurinhas')
-        .update({ imagem_url: novaUrl })
+        .update({ imagem: novaUrl })
         .eq('id', id);
 
       if (updateError) {
