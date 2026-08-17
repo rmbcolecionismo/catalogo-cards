@@ -45,7 +45,7 @@
     .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 1rem; }
     .btn-submit:hover { background: #d97706; }
 
-    .msg-feedback { margin-top: 0.8rem; font-size: 0.85rem; padding: 0.6rem; border-radius: 6px; display: none; text-align: center; }
+    .msg-feedback { margin-top: 0.8rem; font-size: 0.85rem; padding: 0.8rem; border-radius: 6px; display: none; text-align: center; line-height: 1.4; }
     .msg-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
     .msg-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
   </style>
@@ -104,14 +104,6 @@
         <input type="file" id="inputNovaImagem" accept="image/*">
       </div>
 
-      <!-- Opcional: Contato do colaborador -->
-      <div class="form-row" style="margin-top: 1rem;">
-        <div class="form-group">
-          <label>Seu Nome ou E-mail (Opcional - para darmos créditos)</label>
-          <input type="text" id="inputColaborador" placeholder="Ex: João da Silva">
-        </div>
-      </div>
-
       <button class="btn-submit" onclick="enviarColaboracao()">Enviar Contribuição para Análise</button>
       <div id="msgFeedback" class="msg-feedback"></div>
     </div>
@@ -164,7 +156,7 @@
 
     function filtrarListaLocal() {
       const termoRaw = document.getElementById('inputBusca').value.trim();
-      const termo = removerAcentos(termoRaw.replace(/#/g, '')); // Remove acentos e o '#' para busca flexível
+      const termo = removerAcentos(termoRaw.replace(/#/g, ''));
       const selectFig = document.getElementById('selectFigurinhaEncontrada');
 
       if (cacheFigurinhas.length === 0) {
@@ -228,7 +220,6 @@
     async function enviarColaboracao() {
       const msg = document.getElementById('msgFeedback');
       const fileInput = document.getElementById('inputNovaImagem');
-      const colaborador = document.getElementById('inputColaborador').value.trim();
 
       if (!figurinhaSelecionadaObj) {
         msg.className = "msg-feedback msg-error";
@@ -276,12 +267,12 @@
       const { data: publicData } = _supabase.storage.from('figurinhas').getPublicUrl(filePath);
       const novaImagemUrl = publicData.publicUrl;
 
-      // 2. Insere os dados na tabela 'colaboracoes' do banco de dados
+      // 2. Insere os dados na tabela 'colaboracoes' do banco de dados (remetente fixado como Anônimo)
       const { error: dbError } = await _supabase.from('colaboracoes').insert([{
         figurinha_id: figurinhaSelecionadaObj.id,
         album_id: figurinhaSelecionadaObj.album_id,
         nova_imagem_url: novaImagemUrl,
-        colaborador: colaborador || 'Anônimo',
+        colaborador: 'Anônimo',
         status: 'pendente'
       }]);
 
@@ -292,11 +283,10 @@
       }
 
       msg.className = "msg-feedback msg-success";
-      msg.innerText = "Obrigado! A sua imagem foi enviada e registada com sucesso para moderação. Vamos analisar e atualizar em breve!";
+      msg.innerHTML = "🌟 <strong>Muito obrigado pela sua contribuição!</strong> A sua ajuda é essencial para mantermos o nosso catálogo completo e de alta qualidade. A imagem foi enviada com sucesso para moderação!";
       
       // Limpar campos
       fileInput.value = '';
-      document.getElementById('inputColaborador').value = '';
       document.getElementById('inputBusca').value = '';
       limparPreview();
     }
