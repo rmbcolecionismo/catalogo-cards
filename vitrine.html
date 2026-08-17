@@ -156,7 +156,7 @@
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim();
 
-      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       query = aplicarFiltroQuery(query, termo, albumId);
 
       const { data, error } = await query.range(0, ITENS_POR_PAGINA - 1);
@@ -182,7 +182,7 @@
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim();
 
-      let query = _supabase.from('figurinhas').select('*').order('id', { ascending: true });
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       query = aplicarFiltroQuery(query, termo, albumId);
 
       const { data } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
