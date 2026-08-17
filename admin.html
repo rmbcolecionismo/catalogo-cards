@@ -282,13 +282,14 @@
             <thead>
               <tr>
                 <th>Remetente</th>
-                <th>Figurinha</th>
+                <th>Álbum</th>
+                <th>Figurinha (Nº / Nome)</th>
                 <th>Foto</th>
                 <th>Status</th>
                 <th style="width: 120px;">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+            <tbody id="tabelaAjudas"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -300,7 +301,6 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- VERIFICAR SESSÃO E CARREGAR DADOS DO UTILIZADOR ---
     async function verificarSessao() {
       const { data: { session }, error } = await _supabase.auth.getSession();
       
@@ -310,7 +310,6 @@
       }
 
       const user = session.user;
-      
       const { data: vendedor } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
@@ -324,7 +323,6 @@
         greetingEl.innerText = `Olá, ${nomeExibicao}`;
       }
 
-      // Carregar dados iniciais das tabelas
       carregarAlbuns();
       carregarTipos();
       carregarVendedores();
@@ -332,7 +330,6 @@
       carregarAjudas();
     }
 
-    // Executa ao carregar a página
     window.addEventListener('DOMContentLoaded', verificarSessao);
 
     async function fazerLogout() {
@@ -347,38 +344,30 @@
       if(event) event.currentTarget.classList.add('active');
     }
 
-    // --- CARREGAMENTO DE ÁLBUNS ---
     async function carregarAlbuns() {
       const tbody = document.getElementById('tabelaAlbuns');
       const selectFig = document.getElementById('selectAlbumFigurinha');
       if (!tbody) return;
 
       const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
-        return;
-      }
+      if (error) return;
 
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum álbum cadastrado.</td></tr>`;
-        if (selectFig) selectFig.innerHTML = `<option value="">Selecione o álbum...</option>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(item => `
-        <tr>
-          <td>${item.nome}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${item.nome}')">Editar</button>
-              <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-
-      if (selectFig) {
+      if (data && selectFig) {
         selectFig.innerHTML = `<option value="">Selecione o álbum...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      }
+      
+      if (data && tbody) {
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td>${item.nome}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${item.nome}')">Editar</button>
+                <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
       }
     }
 
@@ -387,12 +376,7 @@
       const nome = document.getElementById('inputNomeAlbum').value.trim();
       const msg = document.getElementById('msgAlbum');
 
-      if (!nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Digite o nome do álbum.";
-        msg.style.display = "block";
-        return;
-      }
+      if (!nome) return;
 
       let error;
       if (id) {
@@ -401,14 +385,7 @@
         ({ error } = await _supabase.from('albuns').insert([{ nome }]));
       }
 
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
-        msg.style.display = "block";
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Álbum salvo com sucesso!";
-        msg.style.display = "block";
+      if (!error) {
         document.getElementById('inputNomeAlbum').value = '';
         cancelarEdicaoAlbum();
         carregarAlbuns();
@@ -433,77 +410,47 @@
 
     async function excluirAlbum(id) {
       if (!confirm("Deseja realmente excluir este álbum?")) return;
-      const { error } = await _supabase.from('albuns').delete().eq('id', id);
-      if (error) alert("Erro ao excluir: " + error.message);
-      else carregarAlbuns();
+      await _supabase.from('albuns').delete().eq('id', id);
+      carregarAlbuns();
     }
 
-    // --- CARREGAMENTO DE TIPOS ---
     async function carregarTipos() {
       const tbody = document.getElementById('tabelaTipos');
       const selectTip = document.getElementById('selectTipoFigurinha');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #fca5a5;">Erro ao carregar: ${error.message}</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum tipo cadastrado.</td></tr>`;
-        if (selectTip) selectTip.innerHTML = `<option value="">Selecione o tipo...</option>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(item => `
-        <tr>
-          <td>${item.nome}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-acao" onclick="prepararEdicaoTipo('${item.id}', '${item.nome}')">Editar</button>
-              <button class="btn-excluir" onclick="excluirTipo('${item.id}')">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-
-      if (selectTip) {
+      const { data } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
+      if (data && selectTip) {
         selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      }
+      if (data && tbody) {
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td>${item.nome}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" onclick="prepararEdicaoTipo('${item.id}', '${item.nome}')">Editar</button>
+                <button class="btn-excluir" onclick="excluirTipo('${item.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
       }
     }
 
     async function salvarTipo() {
       const id = document.getElementById('editTipoId').value;
       const nome = document.getElementById('inputNomeTipo').value.trim();
-      const msg = document.getElementById('msgTipo');
+      if (!nome) return;
 
-      if (!nome) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Digite o nome do tipo.";
-        msg.style.display = "block";
-        return;
-      }
-
-      let error;
       if (id) {
-        ({ error } = await _supabase.from('tipos').update({ nome }).eq('id', id));
+        await _supabase.from('tipos').update({ nome }).eq('id', id);
       } else {
-        ({ error } = await _supabase.from('tipos').insert([{ nome }]));
+        await _supabase.from('tipos').insert([{ nome }]);
       }
-
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
-        msg.style.display = "block";
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Tipo salvo com sucesso!";
-        msg.style.display = "block";
-        document.getElementById('inputNomeTipo').value = '';
-        cancelarEdicaoTipo();
-        carregarTipos();
-      }
+      document.getElementById('inputNomeTipo').value = '';
+      cancelarEdicaoTipo();
+      carregarTipos();
     }
 
     function prepararEdicaoTipo(id, nome) {
@@ -524,17 +471,15 @@
 
     async function excluirTipo(id) {
       if (!confirm("Deseja realmente excluir este tipo?")) return;
-      const { error } = await _supabase.from('tipos').delete().eq('id', id);
-      if (error) alert("Erro ao excluir: " + error.message);
-      else carregarTipos();
+      await _supabase.from('tipos').delete().eq('id', id);
+      carregarTipos();
     }
 
-    // --- CARREGAMENTO DE VENDEDORES ---
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
       if (!tbody) return;
-      const { data, error } = await _supabase.from('vendedores_autorizados').select('*');
-      if (error || !data || data.length === 0) {
+      const { data } = await _supabase.from('vendedores_autorizados').select('*');
+      if (!data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum vendedor encontrado.</td></tr>`;
         return;
       }
@@ -562,32 +507,16 @@
       const telefone_whats = document.getElementById('inputTelefoneVendedor').value.trim();
       const funcao = document.getElementById('selectFuncaoVendedor').value;
       const originalEmail = document.getElementById('editVendedorOriginalEmail').value;
-      const msg = document.getElementById('msgVendedor');
 
-      if (!email) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Informe o e-mail do vendedor.";
-        msg.style.display = "block";
-        return;
-      }
+      if (!email) return;
 
       if (originalEmail && originalEmail !== email) {
         await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
       }
 
-      const { error } = await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone_whats, funcao }], { onConflict: 'email' });
-      
-      if (error) {
-        msg.className = "msg-feedback msg-error";
-        msg.innerText = "Erro: " + error.message;
-        msg.style.display = "block";
-      } else {
-        msg.className = "msg-feedback msg-success";
-        msg.innerText = "Vendedor salvo com sucesso!";
-        msg.style.display = "block";
-        cancelarEdicaoVendedor();
-        carregarVendedores();
-      }
+      await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone_whats, funcao }], { onConflict: 'email' });
+      cancelarEdicaoVendedor();
+      carregarVendedores();
     }
 
     function prepararEdicaoVendedor(email, nome, cidade, telefone, funcao) {
@@ -616,36 +545,17 @@
     }
 
     async function excluirVendedor(email) {
-      if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos the artigos associados.")) return;
-
-      const { data: vitrines, error: errVitrineBusca } = await _supabase
-        .from('vitrines')
-        .select('id')
-        .eq('email', email);
-
-      if (!errVitrineBusca && vitrines && vitrines.length > 0) {
-        const vitrineIds = vitrines.map(v => v.id);
-        await _supabase.from('artigos_vitrine').delete().in('vitrine_id', vitrineIds);
-        await _supabase.from('vitrines').delete().eq('email', email);
-      }
-
-      const { error: errDelVendedor } = await _supabase.from('vendedores_autorizados').delete().eq('email', email);
-
-      if (errDelVendedor) {
-        alert("Erro ao remover vendedor: " + errDelVendedor.message);
-      } else {
-        carregarVendedores();
-      }
+      if (!confirm("Tem certeza que deseja remover este vendedor?")) return;
+      await _supabase.from('vendedores_autorizados').delete().eq('email', email);
+      carregarVendedores();
     }
 
-    // --- CARREGAMENTO DE CONTATOS E AJUDAS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('contatos_vendedores').select('*');
-
-      if (error || !data || data.length === 0) {
+      const { data } = await _supabase.from('contatos_vendedores').select('*');
+      if (!data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
         return;
       }
@@ -659,74 +569,77 @@
           <td>${c.albuns || '-'}</td>
           <td>
             <div class="acoes-btns">
-              <button class="btn-acao" title="Copiar saudação e abrir Gmail" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
-              <button class="btn-excluir" title="Excluir contato" onclick="excluirContato('${c.id}')">Excluir</button>
+              <button class="btn-acao" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
+              <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
-    // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO E ABRIR O GMAIL ---
     async function copiarEmailSaudacao(nome, emailDestino) {
       const assunto = "Bem-vindo(a) à nossa equipa de Vendedores Autorizados! 🚀";
-      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa equipa de Vendedores Autorizados! Estamos extremamente felizes em contar com a sua parceria no nosso catálogo de álbuns digitais e cards colecionáveis.\n\nO seu cadastro foi registado com sucesso e agora você já tem acesso total para gerir a sua vitrine e os seus artigos.\n\nSeu e-mail de acesso cadastrado: ${emailDestino}\nSenha para acesso padrão: 123456\n\nCaso tenha qualquer dúvida sobre como utilizar o painel, gerir o seu estoque ou cadastrar novos itens, por favor, não hesite em nos contactar. Estamos aqui para ajudar no que for preciso!\n\nMais uma vez, seja muito bem-vindo(a) e excelentes vendas!\n\nAtenciosamente,\nEquipa de Administração\nÁlbum Digital`;
-      
-      if (!emailDestino) {
-        alert("E-mail do contato não disponível.");
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(corpoMensagem);
-        alert(`Texto de saudação copiado com sucesso!\n\nO Gmail será aberto agora. Basta colar (Ctrl+V) no corpo da mensagem.`);
-        
-        const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}`;
-        window.open(urlGmail, '_blank');
-      } catch (err) {
-        alert("Não foi possível copiar automaticamente. Copie manualmente e use o link.");
-        const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoMensagem)}`;
-        window.open(urlGmail, '_blank');
-      }
+      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa equipa de Vendedores Autorizados!`;
+      const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoMensagem)}`;
+      window.open(urlGmail, '_blank');
     }
 
-    // --- CARREGAR AJUDAS E COLABORAÇÕES ---
+    // --- CARREGAR AJUDAS COM RELACIONAMENTO COM AS TABELAS DE FIGURINHAS E ÁLBUNS ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('colaboracoes').select('*');
+      // Realiza a consulta com relacionamento (Join) do Supabase
+      const { data, error } = await _supabase
+        .from('colaboracoes')
+        .select(`
+          *,
+          figurinhas (
+            numero,
+            nome,
+            albuns (
+              nome
+            )
+          )
+        `);
       
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map(a => `
-        <tr>
-          <td>${a.remetente || '-'}</td>
-          <td>${a.figurinha || '-'}</td>
-          <td>
-            ${a.foto_url 
-              ? `<img src="${a.foto_url}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${a.foto_url}', '_blank')" title="Clique para abrir em tamanho real">` 
-              : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
-          </td>
-          <td>${a.status || 'Pendente'}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = data.map(a => {
+        // Extrai dados da tabela relacionada ou utiliza o valor direto caso venha preenchido como texto antigo
+        const albumNome = a.figurinhas?.albuns?.nome || a.album_nome || '-';
+        const figNumero = a.figurinhas?.numero || a.figurinha || '-';
+        const figNome = a.figurinhas?.nome ? ` - ${a.figurinhas.nome}` : '';
+
+        return `
+          <tr>
+            <td>${a.remetente || '-'}</td>
+            <td>${albumNome}</td>
+            <td>Nº ${figNumero}${figNome}</td>
+            <td>
+              ${a.foto_url 
+                ? `<img src="${a.foto_url}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${a.foto_url}', '_blank')" title="Clique para abrir em tamanho real">` 
+                : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
+            </td>
+            <td>${a.status || 'Pendente'}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    // --- EXCLUIR AJUDA E O ARQUIVO DO STORAGE ---
     async function excluirAjuda(id, fotoUrl) {
       if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
 
@@ -735,29 +648,12 @@
           const partesUrl = fotoUrl.split('/colaboracoes/');
           if (partesUrl.length > 1) {
             const caminhoArquivo = decodeURIComponent(partesUrl[1]);
-            
-            const { error: storageError } = await _supabase.storage
-              .from('colaboracoes')
-              .remove([caminhoArquivo]);
-
-            if (storageError) {
-              console.warn("Aviso ao remover arquivo do storage:", storageError.message);
-            }
+            await _supabase.storage.from('colaboracoes').remove([caminhoArquivo]);
           }
         }
 
-        const { error: dbError } = await _supabase
-          .from('colaboracoes')
-          .delete()
-          .eq('id', id);
-
-        if (dbError) {
-          throw dbError;
-        }
-
-        alert("Ajuda excluída com sucesso!");
+        await _supabase.from('colaboracoes').delete().eq('id', id);
         carregarAjudas();
-
       } catch (err) {
         alert("Erro ao excluir ajuda: " + err.message);
       }
