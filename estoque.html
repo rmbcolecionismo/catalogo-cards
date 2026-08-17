@@ -142,7 +142,6 @@
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let listaAlbunsSelectOptions = '';
-    let listaTiposSelectOptions = '';
     let paginaAtual = 0;
 
     async function verificarAcesso() {
@@ -168,7 +167,6 @@
     }
 
     async function carregarOpcoesAuxiliares() {
-      // Carregar álbuns
       const { data: albuns } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
       if (albuns) {
         const selectFiltro = document.getElementById('filterAlbum');
@@ -178,21 +176,10 @@
           listaAlbunsSelectOptions += `<option value="${a.id}">${a.nome}</option>`;
         });
       }
-
-      // Carregar tipos (tabela 'tipos')
-      const { data: tipos } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
-      if (tipos) {
-        tipos.forEach(t => {
-          // Ajuste dependendo se o ID do tipo for o próprio nome ou ID numérico/UUID. Usaremos t.id ou t.nome (geralmente t.id ou t.nome se for texto).
-          // Caso a coluna tipo na tabela figurinhas guarde o ID ou nome, adaptamos para o valor correspondente.
-          const valorTipo = t.id !== undefined ? t.id : t.nome;
-          const nomeTipo = t.nome || t.descricao || t.id;
-          listaTiposSelectOptions += `<option value="${valorTipo}">${nomeTipo}</option>`;
-        });
-      }
     }
 
     function executarConsultaSupabase(albumId, termo, inicio, fim) {
+      // Ordenação primária pelo campo número (código) em ordem crescente
       let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       
       if (albumId !== 'todos') {
@@ -203,7 +190,8 @@
         const t = termo.trim();
         const tSemHash = t.replace('#', '');
         
-        query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%`);
+        // Se a coluna número for textual ou numérica, fazemos busca combinada de texto ILIKE em todos os campos relevantes
+        query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
       }
 
       return query.range(inicio, fim);
@@ -260,11 +248,6 @@
 
       tbody.innerHTML = lista.map(f => {
         const imgUrl = f.imagem_url || f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        
-        // Substituição segura para manter a seleção correta no select de álbum e tipo
-        const optionsAlbumHtml = listaAlbunsSelectOptions.replace(`value="${f.album_id}"`, `value="${f.album_id}" selected`);
-        const optionsTipoHtml = listaTiposSelectOptions.replace(`value="${f.tipo}"`, `value="${f.tipo}" selected`);
-
         return `
           <tr id="row-${f.id}">
             <td style="text-align: center;">
@@ -277,7 +260,7 @@
             <td>
               <select class="input-tabela" id="album-${f.id}" onchange="atualizarCampo(${f.id}, 'album_id', this.value)">
                 <option value="">Selecione...</option>
-                ${optionsAlbumHtml}
+                ${listaAlbunsSelectOptions.replace(`value="${f.album_id}"`, `value="${f.album_id}" selected`)}
               </select>
             </td>
             <td>
@@ -290,10 +273,7 @@
               <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao_escuderia || ''}" onchange="atualizarCampo(${f.id}, 'selecao_escuderia', this.value)">
             </td>
             <td>
-              <select class="input-tabela" id="tipo-${f.id}" onchange="atualizarCampo(${f.id}, 'tipo', this.value)">
-                <option value="">Selecione...</option>
-                ${optionsTipoHtml}
-              </select>
+              <input type="text" class="input-tabela" id="tipo-${f.id}" value="${f.tipo || ''}" onchange="atualizarCampo(${f.id}, 'tipo', this.value)">
             </td>
             <td style="text-align: center;">
               <div class="acoes-grupo">
