@@ -636,7 +636,7 @@
           <td>${c.albuns || '-'}</td>
           <td>
             <div class="acoes-btns">
-              <button class="btn-acao" title="Copiar e-mail de saudação" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
+              <button class="btn-acao" title="Copiar saudação e abrir Gmail" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
               <button class="btn-excluir" title="Excluir contato" onclick="excluirContato('${c.id}')">Excluir</button>
             </div>
           </td>
@@ -644,15 +644,26 @@
       `).join('');
     }
 
-    // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO ---
-    function copiarEmailSaudacao(nome, emailDestino) {
+    // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO E ABRIR O GMAIL ---
+    async function copiarEmailSaudacao(nome, emailDestino) {
       const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
-      const mensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma!`;
+      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma de álbuns digitais. Estamos muito felizes em ter você conosco!\n\nAtenciosamente,\nEquipe de Suporte.`;
       
-      if (emailDestino) {
-        window.location.href = `mailto:${emailDestino}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
-      } else {
+      if (!emailDestino) {
         alert("E-mail do contato não disponível.");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(corpoMensagem);
+        alert(`Texto de saudação copiado com sucesso!\n\nO Gmail será aberto agora. Basta colar (Ctrl+V) no corpo da mensagem.`);
+        
+        const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}`;
+        window.open(urlGmail, '_blank');
+      } catch (err) {
+        alert("Não foi possível copiar automaticamente. Copie manualmente e use o link.");
+        const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoMensagem)}`;
+        window.open(urlGmail, '_blank');
       }
     }
 
