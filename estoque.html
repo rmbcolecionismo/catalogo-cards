@@ -182,21 +182,36 @@
     }
 
     function executarConsultaSupabase(albumId, termo, inicio, fim) {
-      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-      
-      if (albumId !== 'todos') {
-        query = query.eq('album_id', albumId);
-      }
+  let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+  
+  if (albumId !== 'todos') {
+    query = query.eq('album_id', albumId);
+  }
 
-      if (termo !== "") {
-        const t = termo.trim();
-        const tSemHash = t.replace('#', '');
-        query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
+  if (termo !== "") {
+    const t = termo.trim().toLowerCase();
+    
+    // Verifica se o usuário buscou algo como "040 em diante" ou "partir de 40"
+    if (t.includes("em diante") || t.includes("a partir de")) {
+      // Extrai apenas os números da string digitada
+      const numeros = t.match(/\d+/g);
+      if (numeros && numeros.length > 0) {
+        const limiteInferior = parseInt(numeros[0], 10);
+        // Filtra números maiores ou iguais ao valor informado
+        // Nota: O campo 'numero' no banco precisa ser tratado ou numérico para comparação exata, 
+        // mas se for texto, podemos usar gte (greater than or equal) se os códigos forem limpos, 
+        // ou buscar aproximações. Abaixo tratamos o filtro básico:
+        query = query.gte('numero', limiteInferior.toString());
       }
-
-      return query.range(inicio, fim);
+    } else {
+      // Comportamento normal de busca por texto/número específico
+      const tSemHash = t.replace('#', '');
+      query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
     }
+  }
 
+  return query.range(inicio, fim);
+}
     async function aplicarFiltros() {
       paginaAtual = 0;
       figurinhasGlobal = [];
