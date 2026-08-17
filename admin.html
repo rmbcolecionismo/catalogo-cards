@@ -472,6 +472,79 @@
       carregarTipos();
     }
 
+    // --- FUNÇÃO DE CADASTRO DE FIGURINHA ---
+    async function cadastrarFigurinha() {
+      const album_id = document.getElementById('selectAlbumFigurinha').value;
+      const tipo_id = document.getElementById('selectTipoFigurinha').value;
+      const selecao_escuderia = document.getElementById('inputSelecaoFigurinha').value.trim();
+      const numero = document.getElementById('inputNumeroFigurinha').value.trim();
+      const nome = document.getElementById('inputNomeFigurinha').value.trim();
+      const inputFile = document.getElementById('inputArquivoFigurinha');
+      const msgDiv = document.getElementById('msgFigurinha');
+
+      msgDiv.style.display = "block";
+      msgDiv.className = "msg-feedback";
+
+      if (!album_id || !numero || !nome) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = "Preencha pelo menos o Álbum, o Número e o Nome da Figurinha.";
+        return;
+      }
+
+      msgDiv.className = "msg-feedback msg-success";
+      msgDiv.innerText = "A cadastrar figurinha...";
+
+      let imagemUrl = null;
+
+      try {
+        if (inputFile.files && inputFile.files.length > 0) {
+          const file = inputFile.files[0];
+          const fileName = `fig_${Date.now()}_${file.name}`;
+          
+          const { error: uploadError } = await _supabase.storage
+            .from('figurinhas')
+            .upload(fileName, file);
+
+          if (uploadError) throw new Error("Erro no upload da imagem: " + uploadError.message);
+
+          const { data: publicUrlData } = _supabase.storage
+            .from('figurinhas')
+            .getPublicUrl(fileName);
+
+          imagemUrl = publicUrlData.publicUrl;
+        }
+
+        const { error: insertError } = await _supabase
+          .from('figurinhas')
+          .insert([{
+            album_id: album_id,
+            tipo_id: tipo_id || null,
+            selecao_escuderia: selecao_escuderia || null,
+            numero: numero,
+            nome: nome,
+            imagem: imagemUrl
+          }]);
+
+        if (insertError) throw new Error("Erro ao salvar no banco: " + insertError.message);
+
+        msgDiv.className = "msg-feedback msg-success";
+        msgDiv.innerText = "Figurinha cadastrada com sucesso!";
+
+        document.getElementById('inputSelecaoFigurinha').value = '';
+        document.getElementById('inputNumeroFigurinha').value = '';
+        document.getElementById('inputNomeFigurinha').value = '';
+        document.getElementById('inputArquivoFigurinha').value = '';
+        document.getElementById('selectAlbumFigurinha').value = '';
+        document.getElementById('selectTipoFigurinha').value = '';
+
+        setTimeout(() => { msgDiv.style.display = "none"; }, 4000);
+
+      } catch (err) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = err.message;
+      }
+    }
+
     async function carregarVendedores() {
       const tbody = document.getElementById('tabelaVendedores');
       if (!tbody) return;
