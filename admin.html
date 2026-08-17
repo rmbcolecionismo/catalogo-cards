@@ -518,7 +518,7 @@
           .from('figurinhas')
           .insert([{
             album_id: album_id,
-            tipo_id: tipo_id || null,
+            tipo: tipo_id || null,
             selecao_escuderia: selecao_escuderia || null,
             numero: numero,
             nome: nome,
@@ -654,7 +654,7 @@
       window.open(urlGmail, '_blank');
     }
 
-    // --- CARREGAR AJUDAS (SEM A COLUNA REMETENTE) ---
+    // --- CARREGAR AJUDAS ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
@@ -712,15 +712,36 @@
       if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
 
       try {
-        if (fotoUrl) {
+        if (fotoUrl && fotoUrl.trim() !== '') {
+          // Extrai o nome exato do arquivo no bucket 'colaboracoes'
           const partesUrl = fotoUrl.split('/colaboracoes/');
           if (partesUrl.length > 1) {
-            const caminhoArquivo = decodeURIComponent(partesUrl[1]);
-            await _supabase.storage.from('colaboracoes').remove([caminhoArquivo]);
+            let caminhoArquivo = partesUrl[1];
+            // Remove eventuais parâmetros de query string (ex: ?t=...)
+            if (caminhoArquivo.includes('?')) {
+              caminhoArquivo = caminhoArquivo.split('?')[0];
+            }
+            caminhoArquivo = decodeURIComponent(caminhoArquivo);
+            
+            const { error: storageError } = await _supabase.storage
+              .from('colaboracoes')
+              .remove([caminhoArquivo]);
+              
+            if (storageError) {
+              console.warn("Aviso ao remover arquivo do storage:", storageError.message);
+            }
           }
         }
 
-        await _supabase.from('colaboracoes').delete().eq('id', id);
+        const { error: deleteError } = await _supabase
+          .from('colaboracoes')
+          .delete()
+          .eq('id', id);
+
+        if (deleteError) {
+          throw new Error("Erro ao excluir registro do banco: " + deleteError.message);
+        }
+
         carregarAjudas();
       } catch (err) {
         alert("Erro ao excluir ajuda: " + err.message);
