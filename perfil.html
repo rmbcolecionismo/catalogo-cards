@@ -349,26 +349,66 @@
   }
 
   function abrirModalEdicao(id, preco, estoq) {
+    console.log("Abrindo modal para a oferta ID:", id); // Verifica se o UUID está chegando correto
     document.getElementById('modalOfertaId').value = id;
     document.getElementById('modalPreco').value = preco;
     document.getElementById('modalEstoque').value = estoq;
     document.getElementById('editModal').style.display = 'flex';
   }
 
-  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
+  function fecharModal() { 
+    document.getElementById('editModal').style.display = 'none'; 
+  }
 
   async function salvarEdicaoOferta() {
-    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: document.getElementById('modalPreco').value, estoque: document.getElementById('modalEstoque').value }).eq('id', document.getElementById('modalOfertaId').value);
-    if (error) alert("Erro: " + error.message);
-    else location.reload();
+    const ofertaId = document.getElementById('modalOfertaId').value;
+    const novoPreco = document.getElementById('modalPreco').value;
+    const novoEstoque = document.getElementById('modalEstoque').value;
+
+    console.log("Salvando ID:", ofertaId, "Preço:", novoPreco, "Estoque:", novoEstoque);
+
+    if (!ofertaId) {
+      alert("Erro: ID da oferta está vazio!");
+      return;
+    }
+
+    const { data, error } = await _supabase
+      .from('vitrine_ofertas')
+      .update({ 
+        preco: parseFloat(novoPreco) || 0, 
+        estoque: parseInt(novoEstoque) || 0 
+      })
+      .eq('id', ofertaId)
+      .select(); // Retorna o registro alterado para validação
+
+    if (error) {
+      console.error("Erro do Supabase:", error);
+      alert("Erro ao atualizar: " + error.message);
+    } else if (!data || data.length === 0) {
+      alert("Aviso: Nenhuma linha foi atualizada. Verifique se o RLS (Row Level Security) do Supabase está bloqueando sua edição ou se você é o dono deste registro.");
+    } else {
+      console.log("Atualizado com sucesso:", data);
+      location.reload();
+    }
   }
 
   async function excluirOfertaVitrine(id) {
+    console.log("Tentando excluir oferta ID:", id);
     if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
-    const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
+
+    const { data, error } = await _supabase
+      .from('vitrine_ofertas')
+      .delete()
+      .eq('id', id)
+      .select();
+
     if (error) {
+      console.error("Erro do Supabase ao excluir:", error);
       alert("Erro ao excluir: " + error.message);
+    } else if (!data || data.length === 0) {
+      alert("Aviso: Nenhuma linha foi excluída. Verifique as políticas de segurança (RLS) do Supabase.");
     } else {
+      console.log("Excluído com sucesso:", data);
       location.reload();
     }
   }
