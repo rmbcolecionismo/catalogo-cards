@@ -721,27 +721,34 @@
       if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
 
       try {
+        // Tenta remover a imagem do Storage, se houver
         if (fotoUrl && fotoUrl.trim() !== '') {
-          // Extrai o nome exato do arquivo no bucket 'colaboracoes'
-          const partesUrl = fotoUrl.split('/colaboracoes/');
-          if (partesUrl.length > 1) {
-            let caminhoArquivo = partesUrl[1];
-            // Remove eventuais parâmetros de query string (ex: ?t=...)
-            if (caminhoArquivo.includes('?')) {
-              caminhoArquivo = caminhoArquivo.split('?')[0];
+          try {
+            // Extrai o caminho do arquivo de forma mais segura buscando pelo nome do bucket
+            let caminhoArquivo = '';
+            if (fotoUrl.includes('/object/public/colaboracoes/')) {
+              caminhoArquivo = fotoUrl.split('/object/public/colaboracoes/')[1];
+            } else if (fotoUrl.includes('/colaboracoes/')) {
+              const partes = fotoUrl.split('/colaboracoes/');
+              caminhoArquivo = partes[partes.length - 1];
             }
-            caminhoArquivo = decodeURIComponent(caminhoArquivo);
-            
-            const { error: storageError } = await _supabase.storage
-              .from('colaboracoes')
-              .remove([caminhoArquivo]);
+
+            if (caminhoArquivo) {
+              if (caminhoArquivo.includes('?')) {
+                caminhoArquivo = caminhoArquivo.split('?')[0];
+              }
+              caminhoArquivo = decodeURIComponent(caminhoArquivo);
               
-            if (storageError) {
-              console.warn("Aviso ao remover arquivo do storage:", storageError.message);
+              await _supabase.storage
+                .from('colaboracoes')
+                .remove([caminhoArquivo]);
             }
+          } catch (storageErr) {
+            console.warn("Aviso ao tentar apagar arquivo do Storage (continuando exclusão do registro):", storageErr);
           }
         }
 
+        // Exclui o registro da tabela colaboracoes independentemente do arquivo do storage
         const { error: deleteError } = await _supabase
           .from('colaboracoes')
           .delete()
@@ -751,6 +758,7 @@
           throw new Error("Erro ao excluir registro do banco: " + deleteError.message);
         }
 
+        // Recarrega a lista de ajudas na tela
         carregarAjudas();
       } catch (err) {
         alert("Erro ao excluir ajuda: " + err.message);
