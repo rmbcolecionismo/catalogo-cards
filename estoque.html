@@ -46,7 +46,7 @@
 
     .tabela-container { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
     
-    .tabela-estoque { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 1050px; }
+    .tabela-estoque { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 1100px; }
     .tabela-estoque th { background: rgba(15, 23, 42, 0.8); color: var(--gold); padding: 1rem; font-weight: 700; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
     .tabela-estoque td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     .tabela-estoque tr:hover { background: rgba(255, 255, 255, 0.02); }
@@ -58,6 +58,9 @@
     
     .btn-acao { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 0.35rem 0.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: all 0.2s; width: 100%; text-align: center; white-space: nowrap; display: block; }
     .btn-acao:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+    .btn-salvar { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .btn-salvar:hover { background: #10b981; color: white; border-color: #10b981; }
 
     .btn-excluir { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 0.45rem 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
     .btn-excluir:hover { background: #ef4444; color: white; border-color: #ef4444; }
@@ -113,12 +116,12 @@
         <thead>
           <tr>
             <th style="width: 110px; text-align: center;">Foto</th>
-            <th style="width: 250px;">Álbum</th>
-            <th style="width: 110px;">Código</th>
+            <th style="width: 220px;">Álbum</th>
+            <th style="width: 100px;">Código</th>
             <th>Nome da Figurinha</th>
-            <th style="width: 180px;">Seleção / Escuderia</th>
-            <th style="width: 160px;">Tipo</th>
-            <th style="width: 120px; text-align: center;">Ações</th>
+            <th style="width: 160px;">Seleção / Escuderia</th>
+            <th style="width: 140px;">Tipo</th>
+            <th style="width: 180px; text-align: center;">Ações</th>
           </tr>
         </thead>
         <tbody id="tabelaCorpo">
@@ -255,25 +258,26 @@
               </div>
             </td>
             <td>
-              <select class="input-tabela" id="album-${f.id}" onchange="atualizarCampo(${f.id}, 'album_id', this.value)">
+              <select class="input-tabela" id="album-${f.id}">
                 <option value="">Selecione...</option>
                 ${listaAlbunsSelectOptions.replace(`value="${f.album_id}"`, `value="${f.album_id}" selected`)}
               </select>
             </td>
             <td>
-              <input type="text" class="input-tabela" id="numero-${f.id}" value="${f.numero || ''}" onchange="atualizarCampo(${f.id}, 'numero', this.value)">
+              <input type="text" class="input-tabela" id="numero-${f.id}" value="${f.numero || ''}">
             </td>
             <td>
-              <input type="text" class="input-tabela" id="nome-${f.id}" value="${f.nome || ''}" onchange="atualizarCampo(${f.id}, 'nome', this.value)">
+              <input type="text" class="input-tabela" id="nome-${f.id}" value="${f.nome || ''}">
             </td>
             <td>
-              <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao_escuderia || ''}" onchange="atualizarCampo(${f.id}, 'selecao_escuderia', this.value)">
+              <input type="text" class="input-tabela" id="selecao-${f.id}" value="${f.selecao_escuderia || ''}">
             </td>
             <td>
-              <input type="text" class="input-tabela" id="tipo-${f.id}" value="${f.tipo || ''}" onchange="atualizarCampo(${f.id}, 'tipo', this.value)">
+              <input type="text" class="input-tabela" id="tipo-${f.id}" value="${f.tipo || ''}">
             </td>
             <td style="text-align: center;">
               <div class="acoes-grupo">
+                <button class="btn-salvar" onclick="salvarLinha(${f.id})">💾 Salvar</button>
                 <button class="btn-excluir" onclick="excluirFigurinha(${f.id}, '${imgUrl}')">🗑️ Excluir</button>
               </div>
             </td>
@@ -282,15 +286,33 @@
       }).join('');
     }
 
-    async function atualizarCampo(id, campo, valor) {
-      const valorFinal = (valor === "") ? null : valor;
+    async function salvarLinha(id) {
+      const album_id = document.getElementById(`album-${id}`).value;
+      const numero = document.getElementById(`numero-${id}`).value.trim();
+      const nome = document.getElementById(`nome-${id}`).value.trim();
+      const selecao_escuderia = document.getElementById(`selecao-${id}`).value.trim();
+      const tipo = document.getElementById(`tipo-${id}`).value.trim();
+
+      if (!album_id || !numero || !nome) {
+        alert("Preencha pelo menos o Álbum, o Código e o Nome da Figurinha.");
+        return;
+      }
+
       const { error } = await _supabase
         .from('figurinhas')
-        .update({ [campo]: valorFinal })
+        .update({
+          album_id: album_id || null,
+          numero: numero || null,
+          nome: nome || null,
+          selecao_escuderia: selecao_escuderia || null,
+          tipo: tipo || null
+        })
         .eq('id', id);
 
       if (error) {
-        alert("Erro ao atualizar: " + error.message);
+        alert("Erro ao salvar alterações: " + error.message);
+      } else {
+        alert("Figurinha salva com sucesso!");
       }
     }
 
