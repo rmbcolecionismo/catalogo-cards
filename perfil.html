@@ -50,7 +50,7 @@
 
     /* Área de Avaliações */
     .reviews-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
-    .review-card { background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.05); }
+    .review-card { background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.05); position: relative; }
     .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
@@ -87,7 +87,6 @@
       <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;">Cancelar</button>
     </div>
 
-    <!-- Seção de Avaliações na Sidebar -->
     <div class="reviews-section">
       <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);">⭐ Avaliações do Vendedor</h4>
       <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">Carregando avaliações...</div>
@@ -127,7 +126,6 @@
   </div>
 </div>
 
-<!-- Modal para Editar Oferta (Preço, Estoque e Nota de Qualidade) -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
@@ -152,7 +150,6 @@
   </div>
 </div>
 
-<!-- Modal para Deixar Avaliação -->
 <div class="modal-overlay" id="modalAvaliar">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">⭐ Avaliar Vendedor</h3>
@@ -185,6 +182,7 @@
   let usuarioLogado = null;
   let authUserId = null;
   let perfilAlvoUuid = null;
+  let perfilAlvoIdNumerico = null;
   let isAdminOrMaster = false;
 
   let todasOfertas = [];
@@ -220,12 +218,14 @@
 
     if (perfilAlvo && perfilAlvo.user_id) {
       perfilAlvoUuid = perfilAlvo.user_id;
+      perfilAlvoIdNumerico = perfilAlvo.id;
       const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
       carregarAvaliacoes(perfilAlvoUuid);
     } else if (perfilAlvo && perfilAlvo.id) {
       perfilAlvoUuid = perfilAlvo.id;
+      perfilAlvoIdNumerico = perfilAlvo.id;
       const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
@@ -417,12 +417,9 @@
   }
 
   // --- Funções de Avaliações ---
- async function carregarAvaliacoes(vendedorUuid) {
+  async function carregarAvaliacoes(vendedorUuid) {
     const container = document.getElementById('listaAvaliacoes');
     
-    // Verificamos se quem está vendo a página é um Admin
-    // (A variável 'isAdminOrMaster' já é definida pelo seu script original)
-
     const { data: avaliacoes, error } = await _supabase
       .from('avaliacoes_vendedores')
       .select('*')
@@ -433,13 +430,18 @@
     
     if (!avaliacoes || avaliacoes.length === 0) {
       container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Nenhuma avaliação ainda.</p>";
+      document.getElementById('mediaEstrelas').innerHTML = "";
       return;
     }
+
+    let soma = avaliacoes.reduce((acc, curr) => acc + curr.estrelas, 0);
+    let media = (soma / avaliacoes.length).toFixed(1);
+    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${'⭐'.repeat(Math.round(media))}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media}</span>`;
 
     container.innerHTML = avaliacoes.map(av => `
       <div class="review-card" style="position: relative;">
         ${isAdminOrMaster ? `
-            <button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:10px; cursor:pointer;">X</button>
+            <button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:10px; cursor:pointer;" title="Excluir">X</button>
         ` : ''}
         <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
           <strong>${av.visitante_nome}</strong>
@@ -450,7 +452,6 @@
     `).join('');
   }
 
-  // Nova função para deletar
   async function excluirAvaliacao(id) {
     if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
     
@@ -463,7 +464,34 @@
       alert("Erro ao excluir: " + error.message);
     } else {
       alert("Comentário removido!");
-      carregarAvaliacoes(perfilAlvoUuid); // Recarrega a lista
+      carregarAvaliacoes(perfilAlvoUuid); // Recarrega a listagem e limpa da tela instantaneamente
+    }
+  }
+
+  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
+  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
+
+  async function enviarAvaliacao() {
+    const nome = document.getElementById('avaliacaoNome').value.trim();
+    const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
+    const comentario = document.getElementById('avaliacaoComentario').value.trim();
+
+    if (!nome) return alert("Por favor, digite seu nome.");
+    if (!perfilAlvoUuid) return alert("Erro: Perfil do vendedor não identificado.");
+
+    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{
+      vendedor_id: perfilAlvoUuid,
+      visitante_nome: nome,
+      estrelas: estrelas,
+      comentario: comentario
+    }]);
+
+    if (error) {
+      alert("Erro ao enviar avaliação: " + error.message);
+    } else {
+      alert("Avaliação enviada com sucesso!");
+      fecharModalAvaliacao();
+      carregarAvaliacoes(perfilAlvoUuid);
     }
   }
 
