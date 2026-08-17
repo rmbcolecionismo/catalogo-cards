@@ -282,14 +282,13 @@
             <thead>
               <tr>
                 <th>Foto</th>
-                <th>Remetente</th>
                 <th>Álbum</th>
                 <th>Figurinha (Nº / Nome)</th>
                 <th>Status</th>
                 <th style="width: 120px;">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaAjudas"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+            <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -582,7 +581,7 @@
       window.open(urlGmail, '_blank');
     }
 
-    // --- CARREGAR AJUDAS (USANDO nova_imagem_url COMO PRIMEIRA COLUNA) ---
+    // --- CARREGAR AJUDAS (SEM A COLUNA REMETENTE) ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
@@ -601,12 +600,12 @@
         `);
       
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
         return;
       }
 
@@ -614,7 +613,7 @@
         const albumNome = a.figurinhas?.albuns?.nome || a.album_nome || '-';
         const figNumero = a.figurinhas?.numero || a.figurinha || '-';
         const figNome = a.figurinhas?.nome ? ` - ${a.figurinhas.nome}` : '';
-        const imagemUrl = a.nova_imagem_url || a.foto_url; // Compatibilidade caso use uma ou outra
+        const imagemUrl = a.nova_imagem_url || a.foto_url;
 
         return `
           <tr>
@@ -623,7 +622,6 @@
                 ? `<img src="${imagemUrl}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${imagemUrl}', '_blank')" title="Clique para abrir em tamanho real">` 
                 : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
             </td>
-            <td>${a.remetente || '-'}</td>
             <td>${albumNome}</td>
             <td>Nº ${figNumero}${figNome}</td>
             <td>${a.status || 'Pendente'}</td>
