@@ -281,10 +281,10 @@
           <table class="lista-tabela">
             <thead>
               <tr>
+                <th>Foto</th>
                 <th>Remetente</th>
                 <th>Álbum</th>
                 <th>Figurinha (Nº / Nome)</th>
-                <th>Foto</th>
                 <th>Status</th>
                 <th style="width: 120px;">Ações</th>
               </tr>
@@ -374,8 +374,6 @@
     async function salvarAlbum() {
       const id = document.getElementById('editAlbumId').value;
       const nome = document.getElementById('inputNomeAlbum').value.trim();
-      const msg = document.getElementById('msgAlbum');
-
       if (!nome) return;
 
       let error;
@@ -584,12 +582,11 @@
       window.open(urlGmail, '_blank');
     }
 
-    // --- CARREGAR AJUDAS COM RELACIONAMENTO COM AS TABELAS DE FIGURINHAS E ÁLBUNS ---
+    // --- CARREGAR AJUDAS (USANDO nova_imagem_url COMO PRIMEIRA COLUNA) ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
 
-      // Realiza a consulta com relacionamento (Join) do Supabase
       const { data, error } = await _supabase
         .from('colaboracoes')
         .select(`
@@ -614,25 +611,25 @@
       }
 
       tbody.innerHTML = data.map(a => {
-        // Extrai dados da tabela relacionada ou utiliza o valor direto caso venha preenchido como texto antigo
         const albumNome = a.figurinhas?.albuns?.nome || a.album_nome || '-';
         const figNumero = a.figurinhas?.numero || a.figurinha || '-';
         const figNome = a.figurinhas?.nome ? ` - ${a.figurinhas.nome}` : '';
+        const imagemUrl = a.nova_imagem_url || a.foto_url; // Compatibilidade caso use uma ou outra
 
         return `
           <tr>
+            <td>
+              ${imagemUrl 
+                ? `<img src="${imagemUrl}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${imagemUrl}', '_blank')" title="Clique para abrir em tamanho real">` 
+                : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
+            </td>
             <td>${a.remetente || '-'}</td>
             <td>${albumNome}</td>
             <td>Nº ${figNumero}${figNome}</td>
-            <td>
-              ${a.foto_url 
-                ? `<img src="${a.foto_url}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${a.foto_url}', '_blank')" title="Clique para abrir em tamanho real">` 
-                : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
-            </td>
             <td>${a.status || 'Pendente'}</td>
             <td>
               <div class="acoes-btns">
-                <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
+                <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${imagemUrl || ''}')">Excluir</button>
               </div>
             </td>
           </tr>
