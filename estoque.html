@@ -316,33 +316,94 @@
       }
     }
 
+    // Função auxiliar para converter imagem para WebP e formatar nome
+    function converterParaWebP(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error("Falha ao converter a imagem para WebP."));
+              }
+            }, 'image/webp', 0.85); // Qualidade de compressão webp de 85%
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
     async function trocarFoto(id, input) {
       if (!input.files || input.files.length === 0) return;
       const file = input.files[0];
-      const fileName = `${Date.now()}_${file.name}`;
 
-      const { error: uploadError } = await _supabase.storage
-        .from('figurinhas')
-        .upload(fileName, file);
+      // 1. Obter o nome do álbum e o número preenchidos na linha atual
+      const selectAlbum = document.getElementById(`album-${id}`);
+      const albumIdSelecionado = selectAlbum.value;
+      const numeroFigurinha = document.getElementById(`numero-${id}`).value.trim() || 's-num';
 
-      if (uploadError) {
-        alert("Erro no upload da imagem: " + uploadError.message);
+      if (!albumIdSelecionado) {
+        alert("Por favor, selecione um álbum na linha antes de alterar a foto.");
+        input.value = "";
         return;
       }
 
-      const { data: publicUrlData } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
-      const novaUrl = publicUrlData.publicUrl;
+      // Nome do álbum obtido do mapa de álbuns carregados
+      let nomeAlbumStr = mapaAlbuns[albumIdSelecionado] || 'Album';
+      // Limpar caracteres especiais ou espaços para um nome de arquivo seguro
+      nomeAlbumStr = nomeAlbumStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9-_]/g, "_");
+      const numSeguro = numeroFigurinha.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9-_]/g, "_");
 
-      const { error: updateError } = await _supabase
-        .from('figurinhas')
-        .update({ imagem: novaUrl })
-        .eq('id', id);
+      const nomeArquivo = `${nomeAlbumStr}-${numSeguro}_${Date.now()}.webp`;
 
-      if (updateError) {
-        alert("Erro ao salvar nova URL da imagem: " + updateError.message);
-      } else {
-        document.getElementById(`img-${id}`).src = novaUrl;
-        alert("Foto atualizada com sucesso!");
+      try {
+        // 2. Converter imagem para WebP
+        const webpBlob = await converterParaWebP(file);
+
+        // 3. Upload para o Storage do Supabase
+        const { error: uploadError } = await _supabase.storage
+          .from('figurinhas')
+          .upload(nomeArquivo, webpBlob, {
+            contentType: 'image/webp',
+            upsert: true
+          });
+
+        if (uploadError) {
+          alert("Erro no upload da imagem: " + uploadError.message);
+          return;
+        }
+
+        const { data: publicUrlData } = _supabase.storage.from('figurinhas').getPublicUrl(nomeArquivo);
+        const novaUrl = publicUrlData.publicUrl;
+
+        // 4. Atualizar registro da figurinha no banco de dados
+        const { error: updateError } = await _supabase
+          .from('figurinhas')
+          .update({ imagem: novaUrl })
+          .eq('id', id);
+
+        if (updateError) {
+          alert("Erro ao salvar nova URL da imagem: " + updateError.message);
+        } else {
+          document.getElementById(`img-${id}`).src = novaUrl;
+          alert("Foto convertida para WebP e atualizada com sucesso!");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Ocorreu um erro ao processar a imagem.");
+      } finally {
+        input.value = "";
       }
     }
 
