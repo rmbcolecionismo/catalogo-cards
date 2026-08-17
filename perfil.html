@@ -50,7 +50,7 @@
 
     /* Área de Avaliações */
     .reviews-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
-    .review-card { background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.05); }
+    .review-card { background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.05); position: relative; }
     .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
@@ -87,7 +87,6 @@
       <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;">Cancelar</button>
     </div>
 
-    <!-- Seção de Avaliações na Sidebar -->
     <div class="reviews-section">
       <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);">⭐ Avaliações do Vendedor</h4>
       <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">Carregando avaliações...</div>
@@ -112,14 +111,12 @@
 
   <div class="vitrine-content">
     <h2>🛍️ Vitrine de Ofertas</h2>
-    
     <div class="vitrine-filters">
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="">Filtrar por Álbum (Todos)</option>
       </select>
       <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
     </div>
-
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
     <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
       <button class="btn-gold" style="width: 200px;" onclick="carregarMais()">Carregar Mais</button>
@@ -127,18 +124,14 @@
   </div>
 </div>
 
-<!-- Modal para Editar Oferta (Preço, Estoque e Nota de Qualidade) -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
-    
     <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
-    
     <label style="font-size: 0.75rem; color: #94a3b8;">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
-
     <label style="font-size: 0.75rem; color: #94a3b8;">Nota de Qualidade / Estado:</label>
     <select id="modalQualidade" class="edit-field">
       <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
@@ -146,32 +139,26 @@
       <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
       <option value="Com marcas de uso">📌 Com marcas de uso</option>
     </select>
-
     <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
     <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
 </div>
 
-<!-- Modal para Deixar Avaliação -->
 <div class="modal-overlay" id="modalAvaliar">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">⭐ Avaliar Vendedor</h3>
-    
     <label style="font-size: 0.75rem; color: #94a3b8;">Seu Nome:</label>
     <input type="text" id="avaliacaoNome" class="edit-field" placeholder="Como te chamam?">
-    
     <label style="font-size: 0.75rem; color: #94a3b8;">Nota (Estrelas):</label>
     <select id="avaliacaoEstrelas" class="edit-field">
-      <option value="5">⭐⭐⭐⭐⭐ (5/5 - Excelente)</option>
-      <option value="4">⭐⭐⭐⭐ (4/5 - Muito Bom)</option>
-      <option value="3">⭐⭐⭐ (3/5 - Regular)</option>
-      <option value="2">⭐⭐ (2/5 - Ruim)</option>
-      <option value="1">⭐ (1/5 - Péssimo)</option>
+      <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+      <option value="4">⭐⭐⭐⭐ (4/5)</option>
+      <option value="3">⭐⭐⭐ (3/5)</option>
+      <option value="2">⭐⭐ (2/5)</option>
+      <option value="1">⭐ (1/5)</option>
     </select>
-
     <label style="font-size: 0.75rem; color: #94a3b8;">Comentário:</label>
-    <textarea id="avaliacaoComentario" class="edit-field" rows="3" placeholder="Escreva sobre sua experiência com o vendedor..."></textarea>
-
+    <textarea id="avaliacaoComentario" class="edit-field" rows="3" placeholder="Sua experiência..."></textarea>
     <button class="btn-gold" onclick="enviarAvaliacao()">Enviar Avaliação</button>
     <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
@@ -186,7 +173,6 @@
   let authUserId = null;
   let perfilAlvoUuid = null;
   let isAdminOrMaster = false;
-
   let todasOfertas = [];
   let figsMapGlobal = {};
   let albunsMapGlobal = {};
@@ -195,7 +181,6 @@
   async function verificarAcesso() {
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
-
     const { data: { session } } = await _supabase.auth.getSession();
     let perfilAlvo = null;
 
@@ -224,18 +209,10 @@
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
       carregarAvaliacoes(perfilAlvoUuid);
-    } else if (perfilAlvo && perfilAlvo.id) {
-      perfilAlvoUuid = perfilAlvo.id;
-      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
-      preencherDadosPerfil(perfilAlvo, ehProprio);
-      carregarVitrine(perfilAlvoUuid);
-      carregarAvaliacoes(perfilAlvoUuid);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
       document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor.";
-      return;
     }
-
     if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
   }
 
@@ -243,180 +220,20 @@
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
-    
     if (perfil.telefone_whats) {
       const linkWpp = document.getElementById('linkWhatsApp');
       linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
       linkWpp.style.display = 'block';
     }
-    
     document.getElementById('editNome').value = perfil.nome || '';
     document.getElementById('editCidade').value = perfil.cidade || '';
     document.getElementById('editWhatsApp').value = perfil.telefone_whats || '';
-
     if (ehProprio || isAdminOrMaster) {
       document.getElementById('btnTrocarFoto').style.display = 'block';
       document.getElementById('btnEditarPerfil').style.display = 'block';
     }
   }
 
-  async function salvarPerfil() {
-    if (!usuarioLogado) return alert("Você precisa estar logado.");
-    const updates = {
-      nome: document.getElementById('editNome').value,
-      cidade: document.getElementById('editCidade').value,
-      telefone_whats: document.getElementById('editWhatsApp').value
-    };
-    const { error } = await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
-    if (error) alert("Erro ao atualizar: " + error.message);
-    else location.reload();
-  }
-
-  function toggleEdit() {
-    const view = document.getElementById('viewMode');
-    const edit = document.getElementById('editMode');
-    view.style.display = (view.style.display === 'none') ? 'block' : 'none';
-    edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
-  }
-
-  async function uploadAvatar(event) {
-    const file = event.target.files[0];
-    if (!file || !usuarioLogado) return;
-    const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
-    const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
-    if (error) return alert("Erro no upload: " + error.message);
-    const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
-    await _supabase.from('vendedores_autorizados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
-    location.reload();
-  }
-
-  async function carregarVitrine(uuidVal) {
-    const grid = document.getElementById('vitrineGrid');
-    const { data: ofertas, error } = await _supabase.from('vitrine_ofertas').select('*').eq('user_id', uuidVal);
-    if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
-    if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
-    
-    todasOfertas = ofertas;
-    const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha);
-    const { data: figs } = await _supabase.from('figurinhas').select('*').in('id', figIds);
-    figsMapGlobal = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
-
-    const albumIds = [...new Set(Object.values(figsMapGlobal).map(f => f.album_id).filter(Boolean))];
-    if (albumIds.length > 0) {
-      const { data: albuns } = await _supabase.from('albuns').select('*').in('id', albumIds);
-      if (albuns) {
-        albunsMapGlobal = Object.fromEntries(albuns.map(a => [a.id, a.nome]));
-        const selectAlbum = document.getElementById('filtroAlbum');
-        selectAlbum.innerHTML = '<option value="">Filtrar por Álbum (Todos)</option>' + albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
-      }
-    }
-
-    renderizarGridFiltrado();
-  }
-
-  function aplicarFiltros() {
-    limiteExibicao = 30;
-    renderizarGridFiltrado();
-  }
-
-  function carregarMais() {
-    limiteExibicao += 30;
-    renderizarGridFiltrado();
-  }
-
-  function renderizarGridFiltrado() {
-    const grid = document.getElementById('vitrineGrid');
-    const filtroAlbumVal = document.getElementById('filtroAlbum').value;
-    const filtroBuscaVal = document.getElementById('filtroBusca').value.trim().toLowerCase().replace('#', '');
-
-    let filtradas = todasOfertas.filter(item => {
-      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
-      if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) return false;
-      if (filtroBuscaVal) {
-        const nomeFig = (f.nome || '').toLowerCase();
-        const numFig = String(f.numero || '').toLowerCase().replace('#', '');
-        if (!nomeFig.includes(filtroBuscaVal) && !numFig.includes(filtroBuscaVal)) return false;
-      }
-      return true;
-    });
-
-    if (filtradas.length === 0) {
-      grid.innerHTML = "Nenhuma figurinha encontrada com esses filtros.";
-      document.getElementById('carregarMaisContainer').style.display = 'none';
-      return;
-    }
-
-    const visiveis = filtradas.slice(0, limiteExibicao);
-    document.getElementById('carregarMaisContainer').style.display = (filtradas.length > limiteExibicao) ? 'block' : 'none';
-
-    grid.innerHTML = visiveis.map(item => {
-      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
-      const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
-      const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
-      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
-      const qualid = item.qualidade || '100% (Nova / Perfeita)';
-      
-      return `
-        <div class="sticker-card">
-          <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
-          <div class="sticker-info">
-            <div class="card-row">Álbum: <span>${nomeAlbum}</span></div>
-            <div class="card-row">Número: <span>${f.numero || '-'}</span></div>
-            <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
-            <div class="card-row">Seleção: <span>${selecaoEscuderia}</span></div>
-            <div class="sticker-qualidade">📌 ${qualid}</div>
-            <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
-            <div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>
-            ${podeGerenciar ? `
-              <div class="card-actions">
-                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque}, '${qualid}')">Editar</button>
-                <button class="btn-card-action btn-delete" onclick="excluirOfertaVitrine('${item.id}')">Excluir</button>
-              </div>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function abrirModalEdicao(id, preco, estoq, qualidadeAtual) {
-    document.getElementById('modalOfertaId').value = id;
-    document.getElementById('modalPreco').value = preco;
-    document.getElementById('modalEstoque').value = estoq;
-    document.getElementById('modalQualidade').value = qualidadeAtual;
-    document.getElementById('editModal').style.display = 'flex';
-  }
-
-  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
-
-  async function salvarEdicaoOferta() {
-    const ofertaId = document.getElementById('modalOfertaId').value;
-    const novoPreco = document.getElementById('modalPreco').value;
-    const novoEstoque = document.getElementById('modalEstoque').value;
-    const novaQualidade = document.getElementById('modalQualidade').value;
-
-    if (!ofertaId) return alert("Erro: ID da oferta vazio!");
-
-    const { error } = await _supabase
-      .from('vitrine_ofertas')
-      .update({ 
-        preco: parseFloat(novoPreco) || 0, 
-        estoque: parseInt(novoEstoque) || 0,
-        qualidade: novaQualidade
-      })
-      .eq('id', ofertaId);
-
-    if (error) alert("Erro ao atualizar: " + error.message);
-    else location.reload();
-  }
-
-  async function excluirOfertaVitrine(id) {
-    if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
-    const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
-    if (error) alert("Erro ao excluir: " + error.message);
-    else location.reload();
-  }
-
-  // --- Funções de Avaliações ---
   async function carregarAvaliacoes(vendedorUuid) {
     const container = document.getElementById('listaAvaliacoes');
     const { data: avaliacoes, error } = await _supabase
@@ -434,12 +251,12 @@
 
     let soma = avaliacoes.reduce((acc, curr) => acc + curr.estrelas, 0);
     let media = (soma / avaliacoes.length).toFixed(1);
-    let estrelasStr = "⭐".repeat(Math.round(media));
-    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${estrelasStr}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media} (${avaliacoes.length} avaliações)</span>`;
+    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${"⭐".repeat(Math.round(media))}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media}</span>`;
 
     container.innerHTML = avaliacoes.map(av => `
       <div class="review-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+        ${isAdminOrMaster ? `<button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer;">X</button>` : ''}
+        <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
           <strong>${av.visitante_nome}</strong>
           <span style="color:var(--gold);">${'⭐'.repeat(av.estrelas)}</span>
         </div>
@@ -448,33 +265,28 @@
     `).join('');
   }
 
-  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
-  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
+  async function excluirAvaliacao(id) {
+    if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
+    const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
+    if (error) alert("Erro ao excluir: " + error.message);
+    else { alert("Comentário removido!"); carregarAvaliacoes(perfilAlvoUuid); }
+  }
 
   async function enviarAvaliacao() {
     const nome = document.getElementById('avaliacaoNome').value.trim();
     const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
     const comentario = document.getElementById('avaliacaoComentario').value.trim();
-
     if (!nome) return alert("Por favor, digite seu nome.");
-    if (!perfilAlvoUuid) return alert("Erro: Perfil do vendedor não identificado.");
-
-    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{
-      vendedor_id: perfilAlvoUuid,
-      visitante_nome: nome,
-      estrelas: estrelas,
-      comentario: comentario
-    }]);
-
-    if (error) {
-      alert("Erro ao enviar avaliação: " + error.message);
-    } else {
-      alert("Avaliação enviada com sucesso!");
-      fecharModalAvaliacao();
-      carregarAvaliacoes(perfilAlvoUuid);
-    }
+    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{ vendedor_id: perfilAlvoUuid, visitante_nome: nome, estrelas: estrelas, comentario: comentario }]);
+    if (error) alert("Erro ao enviar: " + error.message);
+    else { alert("Avaliação enviada!"); fecharModalAvaliacao(); carregarAvaliacoes(perfilAlvoUuid); }
   }
 
+  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
+  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
+  function abrirModalEdicao(id, preco, estoq, qual) { document.getElementById('modalOfertaId').value = id; document.getElementById('modalPreco').value = preco; document.getElementById('modalEstoque').value = estoq; document.getElementById('modalQualidade').value = qual; document.getElementById('editModal').style.display = 'flex'; }
+  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
+  function toggleEdit() { const view = document.getElementById('viewMode'); const edit = document.getElementById('editMode'); view.style.display = (view.style.display === 'none') ? 'block' : 'none'; edit.style.display = (edit.style.display === 'none') ? 'block' : 'none'; }
   async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
 
   verificarAcesso();
