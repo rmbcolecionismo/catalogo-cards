@@ -646,8 +646,8 @@
 
     // --- FUNÇÃO PARA COPIAR E-MAIL DE SAUDAÇÃO E ABRIR O GMAIL ---
     async function copiarEmailSaudacao(nome, emailDestino) {
-      const assunto = "Bem-vindo(a) à nossa plataforma de Álbuns Digitais! 🚀";
-      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa plataforma de álbuns digitais. Estamos muito felizes em ter você conosco!\n\nAtenciosamente,\nEquipe de Suporte.`;
+      const assunto = "Bem-vindo(a) à nossa equipa de Vendedores Autorizados! 🚀";
+      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa equipa de Vendedores Autorizados! Estamos extremamente felizes em contar com a sua parceria no nosso catálogo de álbuns digitais e cards colecionáveis.\n\nO seu cadastro foi registado com sucesso e agora você já tem acesso total para gerir a sua vitrine e os seus artigos.\n\nSeu e-mail de acesso cadastrado: ${emailDestino}\nSenha para acesso padrão: 123456\n\nCaso tenha qualquer dúvida sobre como utilizar o painel, gerir o seu estoque ou cadastrar novos itens, por favor, não hesite em nos contactar. Estamos aqui para ajudar no que for preciso!\n\nMais uma vez, seja muito bem-vindo(a) e excelentes vendas!\n\nAtenciosamente,\nEquipa de Administração\nÁlbum Digital`;
       
       if (!emailDestino) {
         alert("E-mail do contato não disponível.");
