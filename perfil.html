@@ -12,7 +12,7 @@
     body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; }
     
     .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
-    .profile-sidebar { width: 300px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
+    .profile-sidebar { width: 320px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
 
@@ -36,19 +36,25 @@
     .sticker-title { font-size: 0.9rem; font-weight: 700; color: #f8fafc; margin: 2px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
     .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+    .sticker-qualidade { font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 4px; }
 
     .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
     .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
     .btn-edit { background: #3b82f6; color: white; }
     .btn-delete { background: #ef4444; color: white; }
 
-    .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; }
+    .edit-field { background: #0f172a; border: 1px solid var(--gold); color: white; padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; font-size: 0.9rem; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-logout { background: #ef4444; color: white; }
     .btn-gold { background: var(--gold); color: #0f172a; }
 
+    /* Área de Avaliações */
+    .reviews-section { margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px; }
+    .review-card { background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.05); }
+    .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
+
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-box { background: #1e293b; border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 320px; }
+    .modal-box { background: #1e293b; border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 340px; }
   </style>
 </head>
 <body>
@@ -64,8 +70,9 @@
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
       <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
-      <a id="linkWhatsApp" href="#" target="_blank" style="display:none; color: var(--gold); font-size: 0.9rem; text-decoration: none; font-weight: 600;">💬 Falar no WhatsApp</a>
-      <button id="btnEditarPerfil" style="display:none; margin-top:15px;" onclick="toggleEdit()">Editar Perfil</button>
+      <div id="mediaEstrelas" style="margin-bottom: 10px;"></div>
+      <a id="linkWhatsApp" href="#" target="_blank" style="display:none; color: var(--gold); font-size: 0.9rem; text-decoration: none; font-weight: 600; display:block; margin-bottom:10px;">💬 Falar no WhatsApp</a>
+      <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()">Editar Perfil</button>
     </div>
 
     <div id="editMode" style="display:none; margin-top:20px;">
@@ -78,6 +85,13 @@
       
       <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
       <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;">Cancelar</button>
+    </div>
+
+    <!-- Seção de Avaliações na Sidebar -->
+    <div class="reviews-section">
+      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);">⭐ Avaliações do Vendedor</h4>
+      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">Carregando avaliações...</div>
+      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()">Deixar Avaliação</button>
     </div>
 
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
@@ -99,7 +113,6 @@
   <div class="vitrine-content">
     <h2>🛍️ Vitrine de Ofertas</h2>
     
-    <!-- Filtros solicitados -->
     <div class="vitrine-filters">
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="">Filtrar por Álbum (Todos)</option>
@@ -114,16 +127,53 @@
   </div>
 </div>
 
+<!-- Modal para Editar Oferta (Preço, Estoque e Nota de Qualidade) -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
+
+    <label style="font-size: 0.75rem; color: #94a3b8;">Nota de Qualidade / Estado:</label>
+    <select id="modalQualidade" class="edit-field">
+      <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
+      <option value="Ótimo estado">👍 Ótimo estado</option>
+      <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
+      <option value="Com marcas de uso">📌 Com marcas de uso</option>
+    </select>
+
     <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
     <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal para Deixar Avaliação -->
+<div class="modal-overlay" id="modalAvaliar">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 15px; color: var(--gold);">⭐ Avaliar Vendedor</h3>
+    
+    <label style="font-size: 0.75rem; color: #94a3b8;">Seu Nome:</label>
+    <input type="text" id="avaliacaoNome" class="edit-field" placeholder="Como te chamam?">
+    
+    <label style="font-size: 0.75rem; color: #94a3b8;">Nota (Estrelas):</label>
+    <select id="avaliacaoEstrelas" class="edit-field">
+      <option value="5">⭐⭐⭐⭐⭐ (5/5 - Excelente)</option>
+      <option value="4">⭐⭐⭐⭐ (4/5 - Muito Bom)</option>
+      <option value="3">⭐⭐⭐ (3/5 - Regular)</option>
+      <option value="2">⭐⭐ (2/5 - Ruim)</option>
+      <option value="1">⭐ (1/5 - Péssimo)</option>
+    </select>
+
+    <label style="font-size: 0.75rem; color: #94a3b8;">Comentário:</label>
+    <textarea id="avaliacaoComentario" class="edit-field" rows="3" placeholder="Escreva sobre sua experiência com o vendedor..."></textarea>
+
+    <button class="btn-gold" onclick="enviarAvaliacao()">Enviar Avaliação</button>
+    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
 </div>
 
@@ -142,18 +192,11 @@
   let albunsMapGlobal = {};
   let limiteExibicao = 30;
 
-  function isUUID(uuid) {
-    if (!uuid) return false;
-    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return regex.test(String(uuid));
-  }
-
   async function verificarAcesso() {
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
 
     const { data: { session } } = await _supabase.auth.getSession();
-    
     let perfilAlvo = null;
 
     if (session) {
@@ -169,8 +212,7 @@
     }
 
     if (idParam) {
-      const { data, error } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
-      if (error) console.error("Erro na busca:", error);
+      const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
       perfilAlvo = data;
     } else if (usuarioLogado) {
       perfilAlvo = usuarioLogado;
@@ -181,15 +223,16 @@
       const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
+      carregarAvaliacoes(perfilAlvoUuid);
     } else if (perfilAlvo && perfilAlvo.id) {
       perfilAlvoUuid = perfilAlvo.id;
       const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
       preencherDadosPerfil(perfilAlvo, ehProprio);
       carregarVitrine(perfilAlvoUuid);
+      carregarAvaliacoes(perfilAlvoUuid);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
-      document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor no banco de dados ou a sessão expirou.";
-      console.warn("Nenhum perfil válido encontrado para carregar.");
+      document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor.";
       return;
     }
 
@@ -272,7 +315,7 @@
   }
 
   function aplicarFiltros() {
-    limiteExibicao = 30; // Reseta a paginação ao filtrar
+    limiteExibicao = 30;
     renderizarGridFiltrado();
   }
 
@@ -288,21 +331,12 @@
 
     let filtradas = todasOfertas.filter(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
-      
-      // Filtro por Álbum
-      if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) {
-        return false;
-      }
-
-      // Filtro por Nome ou Código (permite busca parcial por código ou nome)
+      if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) return false;
       if (filtroBuscaVal) {
         const nomeFig = (f.nome || '').toLowerCase();
         const numFig = String(f.numero || '').toLowerCase().replace('#', '');
-        const matchNome = nomeFig.includes(filtroBuscaVal);
-        const matchNum = numFig.includes(filtroBuscaVal);
-        if (!matchNome && !matchNum) return false;
+        if (!nomeFig.includes(filtroBuscaVal) && !numFig.includes(filtroBuscaVal)) return false;
       }
-
       return true;
     });
 
@@ -313,18 +347,14 @@
     }
 
     const visiveis = filtradas.slice(0, limiteExibicao);
-    const btnMais = document.getElementById('carregarMaisContainer');
-    if (filtradas.length > limiteExibicao) {
-      btnMais.style.display = 'block';
-    } else {
-      btnMais.style.display = 'none';
-    }
+    document.getElementById('carregarMaisContainer').style.display = (filtradas.length > limiteExibicao) ? 'block' : 'none';
 
     grid.innerHTML = visiveis.map(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
       const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
       const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
+      const qualid = item.qualidade || '100% (Nova / Perfeita)';
       
       return `
         <div class="sticker-card">
@@ -334,12 +364,12 @@
             <div class="card-row">Número: <span>${f.numero || '-'}</span></div>
             <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
             <div class="card-row">Seleção: <span>${selecaoEscuderia}</span></div>
-            <div class="card-row">Tipo: <span>${f.tipo || '-'}</span></div>
+            <div class="sticker-qualidade">📌 ${qualid}</div>
             <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
             <div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>
             ${podeGerenciar ? `
               <div class="card-actions">
-                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button>
+                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque}, '${qualid}')">Editar</button>
                 <button class="btn-card-action btn-delete" onclick="excluirOfertaVitrine('${item.id}')">Excluir</button>
               </div>` : ''}
           </div>
@@ -348,68 +378,100 @@
     }).join('');
   }
 
-  function abrirModalEdicao(id, preco, estoq) {
-    console.log("Abrindo modal para a oferta ID:", id); // Verifica se o UUID está chegando correto
+  function abrirModalEdicao(id, preco, estoq, qualidadeAtual) {
     document.getElementById('modalOfertaId').value = id;
     document.getElementById('modalPreco').value = preco;
     document.getElementById('modalEstoque').value = estoq;
+    document.getElementById('modalQualidade').value = qualidadeAtual;
     document.getElementById('editModal').style.display = 'flex';
   }
 
-  function fecharModal() { 
-    document.getElementById('editModal').style.display = 'none'; 
-  }
+  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
 
   async function salvarEdicaoOferta() {
     const ofertaId = document.getElementById('modalOfertaId').value;
     const novoPreco = document.getElementById('modalPreco').value;
     const novoEstoque = document.getElementById('modalEstoque').value;
+    const novaQualidade = document.getElementById('modalQualidade').value;
 
-    console.log("Salvando ID:", ofertaId, "Preço:", novoPreco, "Estoque:", novoEstoque);
+    if (!ofertaId) return alert("Erro: ID da oferta vazio!");
 
-    if (!ofertaId) {
-      alert("Erro: ID da oferta está vazio!");
-      return;
-    }
-
-    const { data, error } = await _supabase
+    const { error } = await _supabase
       .from('vitrine_ofertas')
       .update({ 
         preco: parseFloat(novoPreco) || 0, 
-        estoque: parseInt(novoEstoque) || 0 
+        estoque: parseInt(novoEstoque) || 0,
+        qualidade: novaQualidade
       })
-      .eq('id', ofertaId)
-      .select(); // Retorna o registro alterado para validação
+      .eq('id', ofertaId);
 
-    if (error) {
-      console.error("Erro do Supabase:", error);
-      alert("Erro ao atualizar: " + error.message);
-    } else if (!data || data.length === 0) {
-      alert("Aviso: Nenhuma linha foi atualizada. Verifique se o RLS (Row Level Security) do Supabase está bloqueando sua edição ou se você é o dono deste registro.");
-    } else {
-      console.log("Atualizado com sucesso:", data);
-      location.reload();
-    }
+    if (error) alert("Erro ao atualizar: " + error.message);
+    else location.reload();
   }
 
   async function excluirOfertaVitrine(id) {
-    console.log("Tentando excluir oferta ID:", id);
     if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
+    const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
+    if (error) alert("Erro ao excluir: " + error.message);
+    else location.reload();
+  }
 
-    const { data, error } = await _supabase
-      .from('vitrine_ofertas')
-      .delete()
-      .eq('id', id)
-      .select();
+  // --- Funções de Avaliações ---
+  async function carregarAvaliacoes(vendedorUuid) {
+    const container = document.getElementById('listaAvaliacoes');
+    const { data: avaliacoes, error } = await _supabase
+      .from('avaliacoes_vendedores')
+      .select('*')
+      .eq('vendedor_id', vendedorUuid)
+      .order('created_at', { ascending: false });
+
+    if (error) { container.innerHTML = "Erro ao carregar avaliações."; return; }
+    if (!avaliacoes || avaliacoes.length === 0) {
+      container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Nenhuma avaliação ainda.</p>";
+      document.getElementById('mediaEstrelas').innerHTML = "<span style='font-size:0.8rem; color:#94a3b8;'>Sem avaliações</span>";
+      return;
+    }
+
+    let soma = avaliacoes.reduce((acc, curr) => acc + curr.estrelas, 0);
+    let media = (soma / avaliacoes.length).toFixed(1);
+    let estrelasStr = "⭐".repeat(Math.round(media));
+    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${estrelasStr}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media} (${avaliacoes.length} avaliações)</span>`;
+
+    container.innerHTML = avaliacoes.map(av => `
+      <div class="review-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+          <strong>${av.visitante_nome}</strong>
+          <span style="color:var(--gold);">${'⭐'.repeat(av.estrelas)}</span>
+        </div>
+        <p style="color:#cbd5e1;">${av.comentario || ''}</p>
+      </div>
+    `).join('');
+  }
+
+  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
+  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
+
+  async function enviarAvaliacao() {
+    const nome = document.getElementById('avaliacaoNome').value.trim();
+    const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
+    const comentario = document.getElementById('avaliacaoComentario').value.trim();
+
+    if (!nome) return alert("Por favor, digite seu nome.");
+    if (!perfilAlvoUuid) return alert("Erro: Perfil do vendedor não identificado.");
+
+    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{
+      vendedor_id: perfilAlvoUuid,
+      visitante_nome: nome,
+      estrelas: estrelas,
+      comentario: comentario
+    }]);
 
     if (error) {
-      console.error("Erro do Supabase ao excluir:", error);
-      alert("Erro ao excluir: " + error.message);
-    } else if (!data || data.length === 0) {
-      alert("Aviso: Nenhuma linha foi excluída. Verifique as políticas de segurança (RLS) do Supabase.");
+      alert("Erro ao enviar avaliação: " + error.message);
     } else {
-      console.log("Excluído com sucesso:", data);
-      location.reload();
+      alert("Avaliação enviada com sucesso!");
+      fecharModalAvaliacao();
+      carregarAvaliacoes(perfilAlvoUuid);
     }
   }
 
