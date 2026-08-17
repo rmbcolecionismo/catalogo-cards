@@ -111,12 +111,14 @@
 
   <div class="vitrine-content">
     <h2>🛍️ Vitrine de Ofertas</h2>
+    
     <div class="vitrine-filters">
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="">Filtrar por Álbum (Todos)</option>
       </select>
       <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
     </div>
+
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
     <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
       <button class="btn-gold" style="width: 200px;" onclick="carregarMais()">Carregar Mais</button>
@@ -128,10 +130,13 @@
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
+
     <label style="font-size: 0.75rem; color: #94a3b8;">Nota de Qualidade / Estado:</label>
     <select id="modalQualidade" class="edit-field">
       <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
@@ -139,6 +144,7 @@
       <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
       <option value="Com marcas de uso">📌 Com marcas de uso</option>
     </select>
+
     <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
     <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
   </div>
@@ -147,149 +153,10 @@
 <div class="modal-overlay" id="modalAvaliar">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">⭐ Avaliar Vendedor</h3>
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Seu Nome:</label>
     <input type="text" id="avaliacaoNome" class="edit-field" placeholder="Como te chamam?">
+    
     <label style="font-size: 0.75rem; color: #94a3b8;">Nota (Estrelas):</label>
     <select id="avaliacaoEstrelas" class="edit-field">
-      <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-      <option value="4">⭐⭐⭐⭐ (4/5)</option>
-      <option value="3">⭐⭐⭐ (3/5)</option>
-      <option value="2">⭐⭐ (2/5)</option>
-      <option value="1">⭐ (1/5)</option>
-    </select>
-    <label style="font-size: 0.75rem; color: #94a3b8;">Comentário:</label>
-    <textarea id="avaliacaoComentario" class="edit-field" rows="3" placeholder="Sua experiência..."></textarea>
-    <button class="btn-gold" onclick="enviarAvaliacao()">Enviar Avaliação</button>
-    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
-  </div>
-</div>
-
-<script>
-  const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-  let usuarioLogado = null;
-  let authUserId = null;
-  let perfilAlvoUuid = null;
-  let isAdminOrMaster = false;
-  let todasOfertas = [];
-  let figsMapGlobal = {};
-  let albunsMapGlobal = {};
-  let limiteExibicao = 30;
-
-  async function verificarAcesso() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idParam = urlParams.get('id');
-    const { data: { session } } = await _supabase.auth.getSession();
-    let perfilAlvo = null;
-
-    if (session) {
-      authUserId = session.user.id;
-      const { data: perfilLogado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
-      if (perfilLogado) {
-        usuarioLogado = perfilLogado;
-        isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
-      }
-      document.getElementById('loggedMenu').style.display = 'block';
-    } else {
-      document.getElementById('unloggedMenu').style.display = 'block';
-    }
-
-    if (idParam) {
-      const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
-      perfilAlvo = data;
-    } else if (usuarioLogado) {
-      perfilAlvo = usuarioLogado;
-    }
-
-    if (perfilAlvo && perfilAlvo.user_id) {
-      perfilAlvoUuid = perfilAlvo.user_id;
-      const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
-      preencherDadosPerfil(perfilAlvo, ehProprio);
-      carregarVitrine(perfilAlvoUuid);
-      carregarAvaliacoes(perfilAlvoUuid);
-    } else {
-      document.getElementById('userName').innerText = "Vendedor não encontrado";
-      document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor.";
-    }
-    if (isAdminOrMaster) document.getElementById('adminLinks').style.display = 'block';
-  }
-
-  function preencherDadosPerfil(perfil, ehProprio) {
-    document.getElementById('userName').innerText = perfil.nome || "Usuário";
-    document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
-    if (perfil.telefone_whats) {
-      const linkWpp = document.getElementById('linkWhatsApp');
-      linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
-      linkWpp.style.display = 'block';
-    }
-    document.getElementById('editNome').value = perfil.nome || '';
-    document.getElementById('editCidade').value = perfil.cidade || '';
-    document.getElementById('editWhatsApp').value = perfil.telefone_whats || '';
-    if (ehProprio || isAdminOrMaster) {
-      document.getElementById('btnTrocarFoto').style.display = 'block';
-      document.getElementById('btnEditarPerfil').style.display = 'block';
-    }
-  }
-
-  async function carregarAvaliacoes(vendedorUuid) {
-    const container = document.getElementById('listaAvaliacoes');
-    const { data: avaliacoes, error } = await _supabase
-      .from('avaliacoes_vendedores')
-      .select('*')
-      .eq('vendedor_id', vendedorUuid)
-      .order('created_at', { ascending: false });
-
-    if (error) { container.innerHTML = "Erro ao carregar avaliações."; return; }
-    if (!avaliacoes || avaliacoes.length === 0) {
-      container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Nenhuma avaliação ainda.</p>";
-      document.getElementById('mediaEstrelas').innerHTML = "<span style='font-size:0.8rem; color:#94a3b8;'>Sem avaliações</span>";
-      return;
-    }
-
-    let soma = avaliacoes.reduce((acc, curr) => acc + curr.estrelas, 0);
-    let media = (soma / avaliacoes.length).toFixed(1);
-    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${"⭐".repeat(Math.round(media))}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media}</span>`;
-
-    container.innerHTML = avaliacoes.map(av => `
-      <div class="review-card">
-        ${isAdminOrMaster ? `<button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer;">X</button>` : ''}
-        <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
-          <strong>${av.visitante_nome}</strong>
-          <span style="color:var(--gold);">${'⭐'.repeat(av.estrelas)}</span>
-        </div>
-        <p style="color:#cbd5e1;">${av.comentario || ''}</p>
-      </div>
-    `).join('');
-  }
-
-  async function excluirAvaliacao(id) {
-    if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
-    const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
-    if (error) alert("Erro ao excluir: " + error.message);
-    else { alert("Comentário removido!"); carregarAvaliacoes(perfilAlvoUuid); }
-  }
-
-  async function enviarAvaliacao() {
-    const nome = document.getElementById('avaliacaoNome').value.trim();
-    const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
-    const comentario = document.getElementById('avaliacaoComentario').value.trim();
-    if (!nome) return alert("Por favor, digite seu nome.");
-    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{ vendedor_id: perfilAlvoUuid, visitante_nome: nome, estrelas: estrelas, comentario: comentario }]);
-    if (error) alert("Erro ao enviar: " + error.message);
-    else { alert("Avaliação enviada!"); fecharModalAvaliacao(); carregarAvaliacoes(perfilAlvoUuid); }
-  }
-
-  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
-  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
-  function abrirModalEdicao(id, preco, estoq, qual) { document.getElementById('modalOfertaId').value = id; document.getElementById('modalPreco').value = preco; document.getElementById('modalEstoque').value = estoq; document.getElementById('modalQualidade').value = qual; document.getElementById('editModal').style.display = 'flex'; }
-  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
-  function toggleEdit() { const view = document.getElementById('viewMode'); const edit = document.getElementById('editMode'); view.style.display = (view.style.display === 'none') ? 'block' : 'none'; edit.style.display = (edit.style.display === 'none') ? 'block' : 'none'; }
-  async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
-
-  verificarAcesso();
-</script>
-</body>
-</html>
+      <option value="5">⭐⭐⭐⭐⭐ (5/5 - Excelente)</option>
