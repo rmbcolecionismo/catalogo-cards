@@ -62,11 +62,26 @@
     .lista-tabela th, .lista-tabela td { padding: 0.7rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
     .lista-tabela th { color: var(--gold); font-weight: 700; }
     
-    .acoes-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .acoes-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
     .btn-acao { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-acao:hover { background: #3b82f6; color: white; }
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
+
+    /* Estilo para a miniatura da foto na tabela de ajudas */
+    .miniatura-foto {
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .miniatura-foto:hover {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -264,8 +279,16 @@
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead><tr><th>Remetente</th><th>Figurinha</th><th>Status</th><th style="width: 150px;">Ações</th></tr></thead>
-            <tbody id="tabelaAjudas"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+            <thead>
+              <tr>
+                <th>Remetente</th>
+                <th>Figurinha</th>
+                <th>Foto</th>
+                <th>Status</th>
+                <th style="width: 120px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -593,7 +616,7 @@
     }
 
     async function excluirVendedor(email) {
-      if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos os artigos associados.")) return;
+      if (!confirm("Tem certeza que deseja remover este vendedor? Isso também apagará permanentemente a vitrine dele e todos the artigos associados.")) return;
 
       const { data: vitrines, error: errVitrineBusca } = await _supabase
         .from('vitrines')
@@ -675,12 +698,12 @@
       const { data, error } = await _supabase.from('colaboracoes').select('*');
       
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
         return;
       }
 
@@ -688,10 +711,14 @@
         <tr>
           <td>${a.remetente || '-'}</td>
           <td>${a.figurinha || '-'}</td>
+          <td>
+            ${a.foto_url 
+              ? `<img src="${a.foto_url}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${a.foto_url}', '_blank')" title="Clique para abrir em tamanho real">` 
+              : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
+          </td>
           <td>${a.status || 'Pendente'}</td>
           <td>
             <div class="acoes-btns">
-              ${a.foto_url ? `<button class="btn-acao" onclick="window.open('${a.foto_url}', '_blank')">Ver Foto</button>` : ''}
               <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${a.foto_url || ''}')">Excluir</button>
             </div>
           </td>
