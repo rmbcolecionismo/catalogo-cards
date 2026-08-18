@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --gold: #f59e0b; --bg: #0f172a; --primary: #3b82f6; }
+    :root { --gold: #f59e0b; --bg: #0f172a; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 50px; }
     
@@ -19,43 +19,57 @@
     .container { max-width: 1250px; margin: 0 auto; }
     
     /* Painel de Estatísticas */
-    .stats-panel { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .stats-info h2 { font-size: 1.5rem; color: var(--gold); margin-bottom: 5px; }
-    .stats-numbers { display: flex; gap: 20px; flex-wrap: wrap; }
-    .stat-box { background: rgba(15, 23, 42, 0.6); padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); text-align: center; min-width: 110px; }
+    .stats-numbers { display: flex; gap: 15px; flex-wrap: wrap; }
+    .stat-box { background: rgba(15, 23, 42, 0.6); padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); text-align: center; min-width: 100px; }
     .stat-box span { display: block; font-size: 0.75rem; color: #94a3b8; }
     .stat-box strong { font-size: 1.1rem; color: #f8fafc; }
 
     /* Controles e Filtros */
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
     .filter-field:focus { border-color: var(--gold); }
     
-    .btn-action { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
-    .btn-action:hover { background: #fbbf24; }
+    .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold:hover { background: #fbbf24; }
+
+    /* Menu de Compartilhamento WhatsApp (Dropdown) */
+    .share-dropdown { position: relative; display: inline-block; }
+    .share-menu-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
+    .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.15); color: var(--gold); }
+    .share-dropdown.active .share-menu-content { display: block; }
 
     /* Grid da Cardeneta */
-    .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+    .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     
-    .fig-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s ease; position: relative; }
+    .fig-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .fig-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
-    /* Estado: Figurinha que JÁ TEM (Ofuscada) */
-    .fig-card.possui { background: rgba(15, 23, 42, 0.5); border-color: rgba(52, 211, 153, 0.4); }
-    .fig-card.possui img { opacity: 0.35; filter: grayscale(30%); }
-    .fig-card.possui .fig-footer { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+    /* Estado: Figurinha que JÁ TEM (Ofuscada / Verde) */
+    .fig-card.possui { background: rgba(15, 23, 42, 0.7); border-color: rgba(52, 211, 153, 0.5); }
+    .fig-card.possui img { opacity: 0.4; filter: grayscale(20%); }
+    .fig-card.possui .fig-footer { background: rgba(52, 211, 153, 0.2); color: #34d399; }
 
-    .fig-img-wrap { height: 160px; background: #0f172a; padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
-    .fig-card img { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.2s; }
+    .fig-img-wrap { height: 170px; background: #0f172a; padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .fig-card img { width: 100%; height: 100%; object-fit: contain; }
     
-    .fig-badge-status { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .fig-badge-status { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.65rem; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
     .fig-card.possui .fig-badge-status { background: #34d399; color: #0f172a; }
 
-    .fig-content { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .fig-content { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .fig-numero { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
     .fig-nome { font-size: 0.8rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .fig-footer { margin-top: auto; padding: 4px; text-align: center; font-size: 0.7rem; font-weight: 700; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; }
+    .fig-selecao { font-size: 0.7rem; color: #94a3b8; }
+    
+    /* Controles de Quantidade (Botões + e -) */
+    .fig-actions-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); }
+    .qty-btn { background: #334155; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+    .qty-btn:hover { background: var(--gold); color: #0f172a; }
+    .qty-display { font-size: 0.75rem; font-weight: 700; color: #cbd5e1; }
 
+    .fig-footer { padding: 6px; text-align: center; font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.05); color: #94a3b8; }
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
   </style>
 </head>
@@ -64,7 +78,7 @@
   <div class="container">
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Voltar ao Marketplace</a>
+        <a href="index.html">🏠 Home</a>
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
@@ -76,15 +90,15 @@
     <div class="stats-panel">
       <div class="stats-info">
         <h2>📖 Minha Cardeneta</h2>
-        <p style="font-size: 0.85rem; color: #94a3b8;">Clique em uma figurinha para marcar ou desmarcar da sua coleção.</p>
+        <p style="font-size: 0.85rem; color: #94a3b8;">Clique na imagem para marcar/desmarcar ou use os botões para controlar repetidas.</p>
       </div>
       <div class="stats-numbers">
         <div class="stat-box">
-          <span>Total</span>
+          <span>Total Álbum</span>
           <strong id="statTotal">0</strong>
         </div>
         <div class="stat-box">
-          <span>Possui</span>
+          <span>Possui + Rep</span>
           <strong id="statPossui" style="color: #34d399;">0</strong>
         </div>
         <div class="stat-box">
@@ -108,7 +122,18 @@
         <option value="faltam">❌ Mostrar Apenas o que Faltam</option>
         <option value="possui">✅ Mostrar Apenas o que Possui</option>
       </select>
-      <button class="btn-action" onclick="copiarFaltantes()">📋 Copiar Faltantes p/ WhatsApp</button>
+      
+      <!-- Botão Compartilhar WhatsApp com Dropdown -->
+      <div class="share-dropdown" id="shareDropdown">
+        <button class="btn-gold" onclick="toggleShareMenu()">
+          📤 Compartilhar WhatsApp ▾
+        </button>
+        <div class="share-menu-content">
+          <button onclick="enviarWhatsApp('ambos')">📋 Faltantes e Repetidas</button>
+          <button onclick="enviarWhatsApp('faltantes')">❌ Apenas Faltantes</button>
+          <button onclick="enviarWhatsApp('repetidas')">🔁 Apenas Repetidas</button>
+        </div>
+      </div>
     </div>
 
     <!-- Grid da Coleção -->
@@ -124,8 +149,9 @@
 
     let usuarioAtual = null;
     let albumAtualId = null;
+    let nomeAlbumAtual = "";
     let figurinhasDoAlbum = [];
-    let minhasFigurinhasIds = new Set(); // Armazena os IDs que o usuário já possui
+    let mapaCadernetaUsuario = {}; // Mapeia figurinha_id -> quantidade do usuario
 
     async function initCardeneta() {
       const { data: { session } } = await _supabase.auth.getSession();
@@ -137,7 +163,6 @@
       usuarioAtual = session.user;
       document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
 
-      // Carregar álbuns disponíveis no sistema
       const { data: albuns, error } = await _supabase.from('albuns').select('id, nome');
       if (error) {
         alert("Erro ao carregar álbuns: " + error.message);
@@ -150,14 +175,17 @@
     }
 
     async function mudarAlbum() {
-      albumAtualId = document.getElementById('selectAlbum').value;
+      const selectElement = document.getElementById('selectAlbum');
+      albumAtualId = selectElement.value;
+      nomeAlbumAtual = selectElement.options[selectElement.selectedIndex]?.text || '';
+
       if (!albumAtualId) {
         document.getElementById('cardenetaGrid').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0);
         return;
       }
 
-      // 1. Carregar todas as figurinhas deste álbum
+      // Carregar figurinhas
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
@@ -170,16 +198,17 @@
       }
       figurinhasDoAlbum = figs || [];
 
-      // 2. Carregar quais figurinhas o usuário já tem marcadas na sua caderneta
-      const { data: userColecao, error: errCol } = await _supabase
-        .from('usuario_cardeneta') // Sugestão de tabela para salvar a coleção do usuário
-        .select('figurinha_id')
+      // Carregar dados da caderneta do usuário logado
+      const { data: userColecao } = await _supabase
+        .from('usuario_cardeneta')
+        .select('figurinha_id, quantidade')
         .eq('user_id', usuarioAtual.id);
 
-      // Nota: Caso queira usar uma tabela dedicada para a cardeneta, crie-a com user_id e figurinha_id.
-      minhasFigurinhasIds = new Set();
+      mapaCadernetaUsuario = {};
       if (userColecao) {
-        userColecao.forEach(item => minhasFigurinhasIds.add(item.figurinha_id));
+        userColecao.forEach(item => {
+          mapaCadernetaUsuario[item.figurinha_id] = item.quantidade;
+        });
       }
 
       renderizarGrid();
@@ -196,13 +225,16 @@
       }
 
       let filtradas = figurinhasDoAlbum.filter(f => {
-        const possui = minhasFigurinhasIds.has(f.id);
+        const qtd = mapaCadernetaUsuario[f.id] || 0;
+        const possui = qtd > 0;
         if (filtroStatus === 'possui' && !possui) return false;
         if (filtroStatus === 'faltam' && possui) return false;
         return true;
       });
 
-      atualizarEstatisticas(figurinhasDoAlbum.length, minhasFigurinhasIds.size);
+      // Calcular total de possuídas (itens únicos que tem pelo menos 1)
+      const totalPossuiUnicas = Object.values(mapaCadernetaUsuario.filter ? Object.values(mapaCadernetaUsuario) : Object.keys(mapaCadernetaUsuario)).filter(id => mapaCadernetaUsuario[id] > 0).length;
+      atualizarEstatisticas(figurinhasDoAlbum.length, totalPossuiUnicas);
 
       if (filtradas.length === 0) {
         grid.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com este filtro.</div>';
@@ -210,47 +242,109 @@
       }
 
       grid.innerHTML = filtradas.map(f => {
-        const possui = minhasFigurinhasIds.has(f.id);
+        const qtd = mapaCadernetaUsuario[f.id] || 0;
+        const possui = qtd > 0;
         const classeCard = possui ? 'fig-card possui' : 'fig-card';
-        const textoStatus = possui ? '✅ Já tenho' : '❌ Falta';
+        const textoStatus = possui ? (qtd > 1 ? `✅ Possui (${qtd})` : '✅ Já tenho') : '❌ Falta';
         const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
 
         return `
-          <div class="${classeCard}" onclick="toggleFigurinha('${f.id}')">
-            <div class="fig-img-wrap">
-              <span class="fig-badge-status">${textoStatus}</span>
+          <div class="${classeCard}" id="card-${f.id}">
+            <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta">
+              <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
               <img src="${imgUrl}" alt="${f.nome || 'Figurinha'}">
             </div>
-            <div class="fig-content">
+            <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
               <div class="fig-numero"># ${f.numero || '-'}</div>
               <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
+              ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
             </div>
-            <div class="fig-footer">${possui ? 'Possuo' : 'Falta'}</div>
+            <div class="fig-actions-row">
+              <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
+              <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+              <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
+            </div>
+            <div class="fig-footer">${possui ? (qtd > 1 ? `Possui + ${qtd-1} Repetida(s)` : 'Possuo') : 'Falta'}</div>
           </div>
         `;
       }).join('');
     }
 
-    async function toggleFigurinha(figurinhaId) {
-      const jaTem = minhasFigurinhasIds.has(figurinhaId);
+    // Clique direto na imagem/card alterna entre 0 e 1 (ou desmarca se já tiver)
+    async function clicarMarcar(figurinhaId) {
+      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
+      const novaQtd = qtdAtual > 0 ? 0 : 1;
+      await salvarQuantidadeBanco(figurinhaId, novaQtd);
+    }
 
-      if (jaTem) {
-        // Remove do banco
-        minhasFigurinhasIds.delete(figurinhaId);
+    // Ações de botões + e -
+    async function alterarQtd(figurinhaId, delta) {
+      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
+      let novaQtd = qtdAtual + delta;
+      if (novaQtd < 0) novaQtd = 0;
+      await salvarQuantidadeBanco(figurinhaId, novaQtd);
+    }
+
+    async function salvarQuantidadeBanco(figurinhaId, novaQtd) {
+      // Atualização otimista imediata na memória e na UI (sem refresh)
+      if (novaQtd === 0) {
+        delete mapaCadernetaUsuario[figurinhaId];
+      } else {
+        mapaCadernetaUsuario[figurinhaId] = novaQtd;
+      }
+
+      atualizarCardVisual(figurinhaId);
+      recalcularEstatisticasGlobais();
+
+      // Sincronização em background com Supabase
+      if (novaQtd === 0) {
         await _supabase
           .from('usuario_cardeneta')
           .delete()
           .eq('user_id', usuarioAtual.id)
           .eq('figurinha_id', figurinhaId);
       } else {
-        // Adiciona no banco
-        minhasFigurinhasIds.add(figurinhaId);
         await _supabase
           .from('usuario_cardeneta')
-          .insert([{ user_id: usuarioAtual.id, figurinha_id: figurinhaId }]);
+          .upsert([{ 
+            user_id: usuarioAtual.id, 
+            figurinha_id: figurinhaId, 
+            quantidade: novaQtd 
+          }], { onConflict: 'user_id, figurinha_id' });
       }
+    }
 
-      renderizarGrid();
+    function atualizarCardVisual(figurinhaId) {
+      const card = document.getElementById(`card-${figurinhaId}`);
+      if (!card) return;
+
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      const possui = qtd > 0;
+      const badge = document.getElementById(`badge-${figurinhaId}`);
+      const qtyDisplay = document.getElementById(`qty-${figurinhaId}`);
+      const footer = card.querySelector('.fig-footer');
+
+      if (possui) {
+        card.classList.add('possui');
+        badge.innerText = qtd > 1 ? `✅ Possui (${qtd})` : '✅ Já tenho';
+        badge.style.background = "#34d399";
+        badge.style.color = "#0f172a";
+        footer.innerText = qtd > 1 ? `Possui + ${qtd-1} Repetida(s)` : 'Possuo';
+      } else {
+        card.classList.remove('possui');
+        badge.innerText = '❌ Falta';
+        badge.style.background = "rgba(0,0,0,0.7)";
+        badge.style.color = "white";
+        footer.innerText = 'Falta';
+      }
+      qtyDisplay.innerText = `Qtd: ${qtd}`;
+    }
+
+    function recalcularEstatisticasGlobais() {
+      const total = figurinhasDoAlbum.length;
+      const possuiUnicas = Object.keys(mapaCadernetaUsuario).filter(id => mapaCadernetaUsuario[id] > 0).length;
+      atualizarEstatisticas(total, possuiUnicas);
     }
 
     function atualizarEstatisticas(total, possui) {
@@ -263,21 +357,75 @@
       document.getElementById('statPorcentagem').innerText = porcentagem + '%';
     }
 
-    function copiarFaltantes() {
+    // Toggle do menu de compartilhamento
+    function toggleShareMenu() {
+      const dropdown = document.getElementById('shareDropdown');
+      dropdown.classList.toggle('active');
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.btn-gold') && !event.target.closest('.share-dropdown')) {
+        document.getElementById('shareDropdown').classList.remove('active');
+      }
+    }
+
+    // Gerador de mensagem visual baseada no seu exemplo
+    function enviarWhatsApp(tipo) {
       if (!albumAtualId) return alert("Selecione um álbum primeiro.");
-      
-      const faltantes = figurinhasDoAlbum
-        .filter(f => !minhasFigurinhasIds.has(f.id))
-        .map(f => f.numero)
-        .join(', ');
+      document.getElementById('shareDropdown').classList.remove('active');
 
-      if (!faltantes) return alert("Parabéns! Você concluiu este álbum!");
+      let texto = `⚽ *${nomeAlbumAtual || 'Minha Coleção'}*\n`;
 
-      const texto = `⚽ Olá! Estas são as figurinhas que **faltam** na minha caderneta:\n\n${faltantes}\n\nAlguém tem para troca ou venda?`;
-      
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("Lista de faltantes copiada para a área de transferência! Cole no WhatsApp.");
-      });
+      // 1. Processar Faltantes por Seleção/Categoria
+      if (tipo === 'ambos' || tipo === 'faltantes') {
+        const faltantesObj = {};
+        figurinhasDoAlbum.forEach(f => {
+          const qtd = mapaCadernetaUsuario[f.id] || 0;
+          if (qtd === 0) {
+            const cat = f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
+            if (!faltantesObj[cat]) faltantesObj[cat] = [];
+            faltantesObj[cat].push(f.numero);
+          }
+        });
+
+        if (Object.keys(faltantesObj).length > 0) {
+          texto += `\n❌ *Faltantes*\n`;
+          for (let cat in faltantesObj) {
+            texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
+          }
+        } else {
+          texto += `\n❌ *Faltantes*: Álbum Completo! 🎉\n`;
+        }
+      }
+
+      // 2. Processar Repetidas por Seleção/Categoria (Qtd > 1)
+      if (tipo === 'ambos' || tipo === 'repetidas') {
+        const repetidasObj = {};
+        figurinhasDoAlbum.forEach(f => {
+          const qtd = mapaCadernetaUsuario[f.id] || 0;
+          if (qtd > 1) {
+            const cat = f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
+            if (!repetidasObj[cat]) repetidasObj[cat] = [];
+            const numRepetidasExtras = qtd - 1;
+            const sufixo = numRepetidasExtras > 1 ? ` (×${qtd})` : '';
+            repetidasObj[cat].push(`${f.numero}${sufixo}`);
+          }
+        });
+
+        if (Object.keys(repetidasObj).length > 0) {
+          texto += `\n🔁 *Repetidas*\n`;
+          for (let cat in repetidasObj) {
+            texto += `• ${cat}: ${repetidasObj[cat].join(', ')}\n`;
+          }
+        } else if (tipo === 'repetidas') {
+          texto += `\n🔁 *Repetidas*: Nenhuma cadastrada.\n`;
+        }
+      }
+
+      texto += `\nAlguém tem interesse em troca ou venda?`;
+
+      const urlWpp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(urlWpp, '_blank');
     }
 
     initCardeneta();
