@@ -159,7 +159,7 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem oficial exata pedida para Adrenalyn XL 2026
+    // Ordem oficial exata pedida para Adrenalyn XL 2026 com bandeiras/ícones na frente
     const ordemAdrenalynXL = [
       "Golden Ballers ⭐",
       "Argélia", "Argentina", "Austrália", "Áustria e Bélgica", "Brasil", "Canadá", 
@@ -174,7 +174,7 @@
       "Official Emblems & Mascots 🏆", "Eternos 22"
     ];
 
-    // Bandeiras / Icones para grupos específicos
+    // Bandeiras / Icones para grupos específicos atualizados
     const iconesGrupos = {
       "Argélia": "🇩🇿", "Argentina": "🇦🇷", "Austrália": "🇦🇺", "Áustria e Bélgica": "🇦🇹🇧🇪", 
       "Brasil": "🇧🇷", "Canadá": "🇨🇦", "Cabo Verde": "🇨🇻", "Colômbia": "🇨🇴", "Croácia": "🇭🇷", 
@@ -289,7 +289,7 @@
         return;
       }
 
-      // Agrupar figurinhas conforme a regra do Adrenalyn XL (ou agrupamento padrão se não estiver na lista)
+      // Agrupar figurinhas conforme a regra do Adrenalyn XL
       let gruposMap = {};
       filtradas.forEach(f => {
         let categoria = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
@@ -310,10 +310,10 @@
       let htmlFinal = '';
 
       chavesOrdenadas.forEach(cat => {
-        let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
+        let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
         htmlFinal += `
           <div class="secao-grupo">
-            <div class="secao-titulo">${cat}${icone}</div>
+            <div class="secao-titulo">${icone}${cat}</div>
             <div class="cardeneta-grid">
         `;
 
@@ -322,7 +322,6 @@
           const possui = qtd > 0;
           const classeCard = possui ? 'fig-card possui' : 'fig-card';
           
-          // Sem "Possuo" fixo se quantidade for 1, aparece "Tenho +1 Repetidas" se for > 1
           let textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1} Repetida(s)` : '✅ Já tenho') : '❌ Falta';
           let footerTexto = possui ? (qtd > 1 ? `Tenho +${qtd-1} Repetida(s)` : '') : 'Falta';
 
@@ -330,7 +329,6 @@
           const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
           const tipoCard = f.tipo || '';
 
-          // Correção do número para evitar duplicar caracteres ou prefixos extra (#)
           let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
 
           return `
@@ -446,7 +444,6 @@
 
     function atualizarEstatisticas(total, tenho, repetidas) {
       const faltam = total - tenho;
-      // O progresso considera apenas as unicas possuídas (Tenho), sem contar as repetidas como avanço de coleção
       const porcentagem = total > 0 ? ((tenho / total) * 100).toFixed(1) : 0;
 
       document.getElementById('statTotal').innerText = total;
@@ -488,8 +485,8 @@
         if (Object.keys(faltantesObj).length > 0) {
           texto += `\n❌ *Faltantes*\n`;
           for (let cat in faltantesObj) {
-            let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
-            texto += `• ${cat}${icone}: ${faltantesObj[cat].join(', ')}\n`;
+            let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
+            texto += `• ${icone}${cat}: ${faltantesObj[cat].join(', ')}\n`;
           }
         } else {
           texto += `\n❌ *Faltantes*: Álbum Completo! 🎉\n`;
@@ -513,8 +510,8 @@
         if (Object.keys(repetidasObj).length > 0) {
           texto += `\n🔁 *Repetidas*\n`;
           for (let cat in repetidasObj) {
-            let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
-            texto += `• ${cat}${icone}: ${repetidasObj[cat].join(', ')}\n`;
+            let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
+            texto += `• ${icone}${cat}: ${repetidasObj[cat].join(', ')}\n`;
           }
         } else if (tipo === 'repetidas') {
           texto += `\n🔁 *Repetidas*: Nenhuma cadastrada.\n`;
