@@ -130,6 +130,8 @@
         const btn = document.createElement('button');
         btn.innerText = i + 1;
         btn.className = `btn-page ${i === paginaAtual ? 'active' : ''}`;
+        btnPrev.onclick = () => { paginaAtual = i; buscarDados(); window.scrollTo(0, 0); };
+        // Correção de escopo do botão de página
         btn.onclick = () => { paginaAtual = i; buscarDados(); window.scrollTo(0, 0); };
         nav.appendChild(btn);
       }
@@ -153,14 +155,15 @@
         if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
         if (perfil.is_admin || perfil.funcao === 'admin' || perfil.funcao === 'master') document.getElementById('adminLinks').style.display = 'inline';
       }
-      // Busca também a coluna 'tipo' salva na vitrine
-      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque, tipo').eq('user_id', authUserId);
+      // Busca também as colunas 'tipo' e 'qualidade' salvas na vitrine
+      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque, tipo, qualidade').eq('user_id', authUserId);
       if (vitrineSalva) {
         vitrineSalva.forEach(item => {
           meusPrecosQtd[item.figurinha_id] = { 
             preco: item.preco, 
             estoque: item.estoque, 
-            tipo: item.tipo || 'venda' 
+            tipo: item.tipo || 'venda',
+            qualidade: item.qualidade || '100% (Nova / Perfeita)'
           };
         });
       }
@@ -171,7 +174,7 @@
       const grid = document.getElementById('vitrineGrid');
       if (!lista.length) { grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 2rem; color: #94a3b8;">Nenhuma figurinha encontrada.</div>`; return; }
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, tipo: 'venda' };
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, tipo: 'venda', qualidade: '100% (Nova / Perfeita)' };
         const estiloPreco = salvo.tipo === 'troca' ? 'display: none;' : 'display: block;';
 
         return `<div class="card">
@@ -180,12 +183,23 @@
             <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
             
             <div class="card-inputs">
-              <!-- Select de Tipo acima -->
+              <!-- Select de Tipo -->
               <div class="input-wrapper">
                 <label>Tipo de Anúncio</label>
                 <select id="tipo-${f.id}" onchange="alternarTipo(${f.id})">
                   <option value="venda" ${salvo.tipo === 'venda' ? 'selected' : ''}>Venda</option>
                   <option value="troca" ${salvo.tipo === 'troca' ? 'selected' : ''}>Troca</option>
+                </select>
+              </div>
+
+              <!-- Select de Qualidade (inserido abaixo do tipo) -->
+              <div class="input-wrapper">
+                <label>Qualidade</label>
+                <select id="qualidade-${f.id}">
+                  <option value="100% (Nova / Perfeita)" ${salvo.qualidade === '100% (Nova / Perfeita)' ? 'selected' : ''}>✨ 100% (Nova / Perfeita)</option>
+                  <option value="Ótimo estado" ${salvo.qualidade === 'Ótimo estado' ? 'selected' : ''}>👍 Ótimo estado</option>
+                  <option value="Leve detalhe / Amassadinha" ${salvo.qualidade === 'Leve detalhe / Amassadinha' ? 'selected' : ''}>⚠️ Leve detalhe / Amassadinha</option>
+                  <option value="Com marcas de uso" ${salvo.qualidade === 'Com marcas de uso' ? 'selected' : ''}>📌 Com marcas de uso</option>
                 </select>
               </div>
 
@@ -221,9 +235,10 @@
 
     async function adicionarNaVitrine(fId) {
       const tipo = document.getElementById(`tipo-${fId}`).value;
+      const qualidade = document.getElementById(`qualidade-${fId}`).value;
       // Se for troca, define o preço automaticamente como 0
       const preco = tipo === 'troca' ? 0 : (parseFloat(document.getElementById(`preco-${fId}`).value) || 0);
-      const estoque = parseInt(document.getElementById(`qtd-${fId}` ).value) || 0;
+      const estoque = parseInt(document.getElementById(`qtd-${fId}`).value) || 0;
 
       const { error } = await _supabase.from('vitrine_ofertas').upsert({ 
         user_id: authUserId, 
@@ -231,13 +246,14 @@
         preco: preco, 
         estoque: estoque, 
         tipo: tipo, 
+        qualidade: qualidade,
         nome_vendedor: usuarioLogado.nome 
       }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
         alert("Erro ao salvar: " + error.message);
       } else {
-        meusPrecosQtd[fId] = { preco, estoque, tipo };
+        meusPrecosQtd[fId] = { preco, estoque, tipo, qualidade };
         alert("Salvo com sucesso!");
       }
     }
