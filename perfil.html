@@ -346,10 +346,9 @@
 
     let filtradas = todasOfertas.filter(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
-      
-      // Filtro por tipo (venda ou troca)
+      const tipoItem = (item.tipo && item.tipo.trim() !== '') ? item.tipo : 'venda';
+
       if (filtroTipoVal !== 'todos') {
-        const tipoItem = item.tipo || 'venda';
         if (tipoItem !== filtroTipoVal) return false;
       }
 
@@ -378,7 +377,8 @@
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
       const qualid = item.qualidade || '100% (Nova / Perfeita)';
       
-      const isTroca = item.tipo === 'troca';
+      const tipoItem = (item.tipo && item.tipo.trim() !== '') ? item.tipo : 'venda';
+      const isTroca = tipoItem === 'troca';
       const classeCard = isTroca ? 'sticker-card card-troca' : 'sticker-card';
       const badgeHtml = isTroca 
         ? `<span class="badge-tipo badge-troca">🔄 Troca</span>` 
@@ -472,7 +472,7 @@
     container.innerHTML = avaliacoes.map(av => `
       <div class="review-card" id="review-card-${av.id}" style="position: relative;">
         ${isAdminOrMaster ? `
-            <button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:10px; cursor:pointer;" title="Excluir">X</button>
+            <button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer;" title="Excluir">X</button>
         ` : ''}
         <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
           <strong>${av.visitante_nome}</strong>
@@ -486,20 +486,22 @@
   async function excluirAvaliacao(id) {
     if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
     
+    // Executa a exclusão de fato no banco de dados e aguarda a resposta
     const { error } = await _supabase
       .from('avaliacoes_vendedores')
       .delete()
       .eq('id', id);
 
     if (error) {
-      alert("Erro ao excluir: " + error.message);
+      // Se der erro, avisa na tela o motivo (geralmente problema de permissão RLS do Supabase)
+      alert("Erro ao excluir no banco de dados: " + error.message);
     } else {
-      // Correção imediata do item na tela sem precisar recarregar a página inteira
+      // Remove o elemento visualmente apenas após confirmar o sucesso no banco
       const el = document.getElementById(`review-card-${id}`);
       if (el) el.remove();
       
-      alert("Comentário removido!");
-      carregarAvaliacoes(perfilAlvoUuid); // Recarrega para atualizar a média de estrelas corretamente
+      alert("Comentário removido com sucesso!");
+      carregarAvaliacoes(perfilAlvoUuid);
     }
   }
 
