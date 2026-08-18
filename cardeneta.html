@@ -28,7 +28,7 @@
 
     /* Controles e Filtros */
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
-    .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
+    .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
     
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
@@ -124,6 +124,9 @@
       <select id="selectAlbum" class="filter-field" onchange="mudarAlbum()">
         <option value="">Selecione um Álbum...</option>
       </select>
+      <select id="selectFiltroTipo" class="filter-field" onchange="renderizarGrid()">
+        <option value="todos">📂 Todas as Categorias / Tipos</option>
+      </select>
       <select id="selectFiltroStatus" class="filter-field" onchange="renderizarGrid()">
         <option value="todos">👁️ Mostrar Todas</option>
         <option value="faltam">❌ Mostrar Apenas o que Faltam</option>
@@ -160,9 +163,9 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem exata solicitada
+    // Ordem exata e prioritária solicitada pelo usuário
     const ordemAdrenalynXL = [
-      "Golden Ballers ⭐",
+      "Golden Ballers",
       "Argélia", 
       "Argentina", 
       "Austrália", 
@@ -212,18 +215,18 @@
       "Polônia", 
       "Suécia", 
       "Turquia", 
-      "Top Keepers 🧤", 
-      "Defensive Rocks 🛡️", 
-      "Modfield Maestros 🎯", 
-      "Goal Machines ⚽", 
-      "Master Rookies 🌟", 
-      "Official Emblems & Mascots 🏆", 
+      "Top Keepers", 
+      "Defensive Rocks", 
+      "Modfield Maestros", 
+      "Goal Machines", 
+      "Master Rookies", 
+      "Official Emblems & Mascots", 
       "Eternos 22", 
       "Momemtum", 
       "Limited Edition"
     ];
 
-    // Dicionário de normalização para unificar variações comuns de escrita (incluindo tratamento para Team logo, Icon, Hero, Fan Favourite)
+    // Dicionário de normalização para unificar variações comuns de escrita
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia",
       "algeria": "Argélia",
@@ -311,20 +314,20 @@
       "suecia": "Suécia",
       "suécia": "Suécia",
       "turquia": "Turquia",
-      "golden ballers": "Golden Ballers ⭐",
-      "golden ballers ⭐": "Golden Ballers ⭐",
-      "top keepers": "Top Keepers 🧤",
-      "top keepers 🧤": "Top Keepers 🧤",
-      "defensive rocks": "Defensive Rocks 🛡️",
-      "defensive rocks 🛡️": "Defensive Rocks 🛡️",
-      "modfield maestros": "Modfield Maestros 🎯",
-      "modfield maestros 🎯": "Modfield Maestros 🎯",
-      "goal machines": "Goal Machines ⚽",
-      "goal machines ⚽": "Goal Machines ⚽",
-      "master rookies": "Master Rookies 🌟",
-      "master rookies 🌟": "Master Rookies 🌟",
-      "official emblems & mascots": "Official Emblems & Mascots 🏆",
-      "official emblems & mascots 🏆": "Official Emblems & Mascots 🏆",
+      "golden ballers": "Golden Ballers",
+      "golden ballers ⭐": "Golden Ballers",
+      "top keepers": "Top Keepers",
+      "top keepers 🧤": "Top Keepers",
+      "defensive rocks": "Defensive Rocks",
+      "defensive rocks 🛡️": "Defensive Rocks",
+      "modfield maestros": "Modfield Maestros",
+      "modfield maestros 🎯": "Modfield Maestros",
+      "goal machines": "Goal Machines",
+      "goal machines ⚽": "Goal Machines",
+      "master rookies": "Master Rookies",
+      "master rookies 🌟": "Master Rookies",
+      "official emblems & mascots": "Official Emblems & Mascots",
+      "official emblems & mascots 🏆": "Official Emblems & Mascots",
       "eternos 22": "Eternos 22",
       "momemtum": "Momemtum",
       "limited edition": "Limited Edition",
@@ -382,10 +385,9 @@
       "Suécia": "https://flagcdn.com/w40/se.png",
       "Turquia": "https://flagcdn.com/w40/tr.png",
       "Eternos 22": "https://flagcdn.com/w40/ar.png"
-    };
+    ];
 
     function obterCategoriaPadrao(f) {
-      // Verifica se o tipo é um daqueles que devem cair obrigatoriamente dentro da seleção (Team logo, Icon, Hero, Fan Favourite)
       let tipoBruto = String(f.tipo || '').trim().toLowerCase();
       if (tipoBruto === 'team logo' || tipoBruto === 'icon' || tipoBruto === 'hero' || tipoBruto === 'fan favourite') {
         let selecaoBruta = f.selecao_escuderia || f.selecao || f.escuderia;
@@ -394,7 +396,6 @@
           if (mapaNormalizacaoCategorias[selLimpa]) {
             return mapaNormalizacaoCategorias[selLimpa];
           }
-          // Busca parcial para a seleção caso exista no dicionário
           for (let chave in mapaNormalizacaoCategorias) {
             if (selLimpa.includes(chave)) {
               return mapaNormalizacaoCategorias[chave];
@@ -411,7 +412,6 @@
         return mapaNormalizacaoCategorias[valorLimpo];
       }
 
-      // Tenta busca parcial caso contenha extras
       for (let chave in mapaNormalizacaoCategorias) {
         if (valorLimpo.includes(chave)) {
           return mapaNormalizacaoCategorias[chave];
@@ -450,6 +450,7 @@
       if (!albumAtualId) {
         document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0, 0);
+        atualizarSelectFiltroTipos([]);
         return;
       }
 
@@ -477,12 +478,40 @@
         });
       }
 
+      popularSelectFiltroTipos();
       renderizarGrid();
+    }
+
+    function popularSelectFiltroTipos() {
+      const selectTipo = document.getElementById('selectFiltroTipo');
+      
+      // Descobrir quais categorias existem de fato neste álbum e ordená-las com base na lista oficial (ordemAdrenalynXL)
+      let categoriasEncontradas = new Set();
+      figurinhasDoAlbum.forEach(f => {
+        categoriasEncontradas.add(obterCategoriaPadrao(f));
+      });
+
+      let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
+        let indexA = ordemAdrenalynXL.indexOf(a);
+        let indexB = ordemAdrenalynXL.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
+      let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+      categoriasOrdenadas.forEach(cat => {
+        html += `<option value="${cat}">${cat}</option>`;
+      });
+      selectTipo.innerHTML = html;
+      selectTipo.value = 'todos';
     }
 
     function renderizarGrid() {
       const container = document.getElementById('cardenetaContainer');
       const filtroStatus = document.getElementById('selectFiltroStatus').value;
+      const filtroTipo = document.getElementById('selectFiltroTipo').value;
 
       if (figurinhasDoAlbum.length === 0) {
         container.innerHTML = '<div class="empty-state">Este álbum ainda não possui figurinhas cadastradas.</div>';
@@ -509,20 +538,26 @@
       let filtradas = figurinhasDoAlbum.filter(f => {
         const qtd = mapaCadernetaUsuario[f.id] || 0;
         const possui = qtd > 0;
+        
         if (filtroStatus === 'possui' && !possui) return false;
         if (filtroStatus === 'faltam' && possui) return false;
+        
+        if (filtroTipo !== 'todos') {
+          let catFig = obterCategoriaPadrao(f);
+          if (catFig !== filtroTipo) return false;
+        }
+
         return true;
       });
 
       if (filtradas.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com este filtro.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com estes filtros.</div>';
         return;
       }
 
       let gruposMap = {};
       filtradas.forEach(f => {
         let categoria = obterCategoriaPadrao(f);
-
         if (!gruposMap[categoria]) gruposMap[categoria] = [];
         gruposMap[categoria].push(f);
       });
