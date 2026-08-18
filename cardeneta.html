@@ -164,7 +164,7 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem exata e prioritária solicitada pelo usuário
+    // Ordem exata e prioritária para Adrenalyn XL
     const ordemAdrenalynXL = [
       "Golden Ballers",
       "Argélia", 
@@ -227,7 +227,7 @@
       "Limited Edition"
     ];
 
-    // Dicionário de normalização tratado para aceitar variações e nomes sem emojis (como "Golden Baller")
+    // Dicionário de normalização tratado para categorias gerais / Adrenalyn
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia",
       "algeria": "Argélia",
@@ -457,6 +457,31 @@
         albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
 
+    // Função de ordenação customizada para o F1 Turbo Attax 2026 e outros álbuns
+    function ordenarFigurinhasAlbum(a, b) {
+      let numA = String(a.numero || '').trim();
+      let numB = String(b.numero || '').trim();
+
+      // Remove o '#' inicial para comparação numérica/alfanumérica limpa
+      let limpoA = numA.startsWith('#') ? numA.substring(1) : numA;
+      let limpoB = numB.startsWith('#') ? numB.substring(1) : numB;
+
+      let isNumA = /^\d+$/.test(limpoA);
+      let isNumB = /^\d+$/.test(limpoB);
+
+      // Se ambos forem estritamente numéricos (ex: #001, #120), ordena matematicamente
+      if (isNumA && isNumB) {
+        return parseInt(limpoA, 10) - parseInt(limpoB, 10);
+      }
+      // Se apenas o A for numérico, ele vem antes de códigos alfanuméricos
+      if (isNumA && !isNumB) return -1;
+      // Se apenas o B for numérico, o B vem antes
+      if (!isNumA && isNumB) return 1;
+
+      // Se ambos forem alfanuméricos (ex: #RR-01, #RR-WEB), ordenação padrão de texto
+      return limpoA.localeCompare(limpoB);
+    }
+
     async function mudarAlbum() {
       const selectElement = document.getElementById('selectAlbum');
       albumAtualId = selectElement.value;
@@ -469,17 +494,21 @@
         return;
       }
 
+      // Busca as figurinhas do álbum
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
-        .eq('album_id', albumAtualId)
-        .order('numero', { ascending: true });
+        .eq('album_id', albumAtualId);
 
       if (error) {
         alert("Erro ao buscar figurinhas do álbum.");
         return;
       }
+      
       figurinhasDoAlbum = figs || [];
+      
+      // Aplica a ordenação inteligente (suporta numéricas e alfanuméricas tipo F1 Turbo Attax de #001 até #RR-WEB)
+      figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
       const { data: userColecao } = await _supabase
         .from('usuario_cardeneta')
@@ -623,7 +652,11 @@
           const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
           const tipoCard = f.tipo || '';
 
-          let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+          // Exibe o número exatamente como está gravado ou limpo de '#' duplicados
+          let numFormatado = String(f.numero || '').trim();
+          if (!numFormatado.startsWith('#')) {
+            numFormatado = '#' + numFormatado;
+          }
 
           return `
             <div class="${classeCard}" id="card-${f.id}">
@@ -632,7 +665,7 @@
                 <img src="${imgUrl}" class="fig-img" alt="${f.nome || 'Figurinha'}">
               </div>
               <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
-                <div class="fig-numero"># ${numLimpo}</div>
+                <div class="fig-numero">${numFormatado}</div>
                 <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
                 ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
                 ${tipoCard ? `<div class="fig-tipo">⭐ ${tipoCard}</div>` : ''}
@@ -776,7 +809,7 @@
           }
         });
 
-        if (Object.keys(faltantesObj).length > 0) {
+        if (Object.keys(faltantesObj).length > 1 || (Object.keys(faltantesObj).length === 1)) {
           texto += `\n❌ *Faltantes*\n`;
           for (let cat in faltantesObj) {
             texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
