@@ -131,6 +131,7 @@
         <option value="todos">👁️ Mostrar Todas</option>
         <option value="faltam">❌ Mostrar Apenas o que Faltam</option>
         <option value="possui">✅ Mostrar Apenas o que Possui</option>
+        <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
       <!-- Botão Compartilhar WhatsApp com Dropdown -->
@@ -226,7 +227,7 @@
       "Limited Edition"
     ];
 
-    // Dicionário de normalização para unificar variações comuns de escrita
+    // Dicionário de normalização tratado para aceitar variações e nomes sem emojis (como "Golden Baller")
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia",
       "algeria": "Argélia",
@@ -314,18 +315,25 @@
       "suecia": "Suécia",
       "suécia": "Suécia",
       "turquia": "Turquia",
+      "golden baller": "Golden Ballers",
       "golden ballers": "Golden Ballers",
       "golden ballers ⭐": "Golden Ballers",
+      "top keeper": "Top Keepers",
       "top keepers": "Top Keepers",
       "top keepers 🧤": "Top Keepers",
+      "defensive rock": "Defensive Rocks",
       "defensive rocks": "Defensive Rocks",
       "defensive rocks 🛡️": "Defensive Rocks",
+      "modfield maestro": "Modfield Maestros",
       "modfield maestros": "Modfield Maestros",
       "modfield maestros 🎯": "Modfield Maestros",
+      "goal machine": "Goal Machines",
       "goal machines": "Goal Machines",
       "goal machines ⚽": "Goal Machines",
+      "master rookie": "Master Rookies",
       "master rookies": "Master Rookies",
       "master rookies 🌟": "Master Rookies",
+      "official emblem & mascot": "Official Emblems & Mascots",
       "official emblems & mascots": "Official Emblems & Mascots",
       "official emblems & mascots 🏆": "Official Emblems & Mascots",
       "eternos 22": "Eternos 22",
@@ -334,7 +342,7 @@
       "contenders - team crests": "Contenders - Team Crests"
     };
 
-    // Mapeamento de bandeiras
+    // Mapeamento de bandeiras e ícones visuais para o cabeçalho das seções
     const bandeirasImagens = {
       "Argélia": "https://flagcdn.com/w40/dz.png",
       "Argentina": "https://flagcdn.com/w40/ar.png",
@@ -384,7 +392,14 @@
       "Polônia": "https://flagcdn.com/w40/pl.png",
       "Suécia": "https://flagcdn.com/w40/se.png",
       "Turquia": "https://flagcdn.com/w40/tr.png",
-      "Eternos 22": "https://flagcdn.com/w40/ar.png"
+      "Eternos 22": "https://flagcdn.com/w40/ar.png",
+      "Golden Ballers": "⭐",
+      "Top Keepers": "🧤",
+      "Defensive Rocks": "🛡️",
+      "Modfield Maestros": "🎯",
+      "Goal Machines": "⚽",
+      "Master Rookies": "🌟",
+      "Official Emblems & Mascots": "🏆"
     };
 
     function obterCategoriaPadrao(f) {
@@ -450,7 +465,7 @@
       if (!albumAtualId) {
         document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0, 0);
-        popularSelectFiltroTipos(); // Corrigido para chamar a função correta
+        popularSelectFiltroTipos();
         return;
       }
 
@@ -542,9 +557,11 @@
       let filtradas = figurinhasDoAlbum.filter(f => {
         const qtd = mapaCadernetaUsuario[f.id] || 0;
         const possui = qtd > 0;
+        const ehRepetida = qtd > 1;
         
         if (filtroStatus === 'possui' && !possui) return false;
         if (filtroStatus === 'faltam' && possui) return false;
+        if (filtroStatus === 'repetidas' && !ehRepetida) return false;
         
         if (filtroTipo !== 'todos') {
           let catFig = obterCategoriaPadrao(f);
@@ -579,8 +596,13 @@
 
       chavesOrdenadas.forEach(cat => {
         let iconeHtml = '';
-        if (bandeirasImagens[cat]) {
-          iconeHtml = `<img src="${bandeirasImagens[cat]}" class="bandeira-icone" alt="Bandeira de ${cat}"> `;
+        const refIcone = bandeirasImagens[cat];
+        if (refIcone) {
+          if (refIcone.startsWith('http')) {
+            iconeHtml = `<img src="${refIcone}" class="bandeira-icone" alt="Ícone de ${cat}"> `;
+          } else {
+            iconeHtml = `${refIcone} `;
+          }
         }
         
         htmlFinal += `
