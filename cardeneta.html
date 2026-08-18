@@ -21,10 +21,10 @@
     /* Painel de Estatísticas */
     .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .stats-info h2 { font-size: 1.5rem; color: var(--gold); margin-bottom: 5px; }
-    .stats-numbers { display: flex; gap: 15px; flex-wrap: wrap; }
-    .stat-box { background: rgba(15, 23, 42, 0.6); padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); text-align: center; min-width: 100px; }
-    .stat-box span { display: block; font-size: 0.75rem; color: #94a3b8; }
-    .stat-box strong { font-size: 1.1rem; color: #f8fafc; }
+    .stats-numbers { display: flex; gap: 12px; flex-wrap: wrap; }
+    .stat-box { background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); text-align: center; min-width: 90px; }
+    .stat-box span { display: block; font-size: 0.7rem; color: #94a3b8; }
+    .stat-box strong { font-size: 1.05rem; color: #f8fafc; }
 
     /* Controles e Filtros */
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
@@ -41,13 +41,15 @@
     .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.15); color: var(--gold); }
     .share-dropdown.active .share-menu-content { display: block; }
 
-    /* Grid da Cardeneta */
+    /* Seções e Agrupamentos Estilo Cardeneta Física */
+    .secao-grupo { margin-bottom: 30px; }
+    .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+
     .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     
     .fig-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .fig-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
-    /* Estado: Figurinha que JÁ TEM (Ofuscada / Verde) */
     .fig-card.possui { background: rgba(15, 23, 42, 0.7); border-color: rgba(52, 211, 153, 0.5); }
     .fig-card.possui img { opacity: 0.4; filter: grayscale(20%); }
     .fig-card.possui .fig-footer { background: rgba(52, 211, 153, 0.2); color: #34d399; }
@@ -62,8 +64,8 @@
     .fig-numero { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
     .fig-nome { font-size: 0.8rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .fig-selecao { font-size: 0.7rem; color: #94a3b8; }
+    .fig-tipo { font-size: 0.68rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
     
-    /* Controles de Quantidade (Botões + e -) */
     .fig-actions-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); }
     .qty-btn { background: #334155; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
     .qty-btn:hover { background: var(--gold); color: #0f172a; }
@@ -86,7 +88,7 @@
       </div>
     </div>
 
-    <!-- Painel de Estatísticas -->
+    <!-- Painel de Estatísticas Atualizado -->
     <div class="stats-panel">
       <div class="stats-info">
         <h2>📖 Minha Cardeneta</h2>
@@ -98,12 +100,16 @@
           <strong id="statTotal">0</strong>
         </div>
         <div class="stat-box">
-          <span>Possui + Rep</span>
-          <strong id="statPossui" style="color: #34d399;">0</strong>
+          <span>Tenho</span>
+          <strong id="statTenho" style="color: #34d399;">0</strong>
         </div>
         <div class="stat-box">
           <span>Faltam</span>
           <strong id="statFaltam" style="color: #f8fafc;">0</strong>
+        </div>
+        <div class="stat-box">
+          <span>Repetidas</span>
+          <strong id="statRepetidas" style="color: var(--gold);">0</strong>
         </div>
         <div class="stat-box">
           <span>Progresso</span>
@@ -136,8 +142,8 @@
       </div>
     </div>
 
-    <!-- Grid da Coleção -->
-    <div class="cardeneta-grid" id="cardenetaGrid">
+    <!-- Container da Coleção Agrupada -->
+    <div id="cardenetaContainer">
       <div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>
     </div>
   </div>
@@ -151,7 +157,37 @@
     let albumAtualId = null;
     let nomeAlbumAtual = "";
     let figurinhasDoAlbum = [];
-    let mapaCadernetaUsuario = {}; // Mapeia figurinha_id -> quantidade do usuario
+    let mapaCadernetaUsuario = {}; 
+
+    // Ordem oficial exata pedida para Adrenalyn XL 2026
+    const ordemAdrenalynXL = [
+      "Golden Ballers ⭐",
+      "Argélia", "Argentina", "Austrália", "Áustria e Bélgica", "Brasil", "Canadá", 
+      "Cabo Verde", "Colômbia", "Croácia", "Curação", "Equador", "Egito", "Inglaterra", 
+      "França", "Alemanha", "Gana", "Haiti", "Irã", "Costa do Marfim", "Japão", 
+      "Jordânia", "Coreia do Sul", "México", "Marrocos", "Países Baixos", "Novas Zelândia", 
+      "Noruega", "Panamá", "Paraguai", "Portugal", "Catar", "Arábia Saudita", "Escócia", 
+      "Senegal", "África do Sul", "Espanha", "Suíça", "Tunísia", "Estados Unidos", 
+      "Uruguai", "Uzbequistão", "Contenders - Team Crests", "Dinamarca", "Itália", 
+      "Jamaica", "Polônia", "Suécia", "Turquia", "Top Keepers 🧤", "Defensive Rocks 🛡️", 
+      "Modfield Maestros 🎯", "Goal Machines ⚽", "Master Rookies 🌟", 
+      "Official Emblems & Mascots 🏆", "Eternos 22"
+    ];
+
+    // Bandeiras / Icones para grupos específicos
+    const iconesGrupos = {
+      "Argélia": "🇩🇿", "Argentina": "🇦🇷", "Austrália": "🇦🇺", "Áustria e Bélgica": "🇦🇹🇧🇪", 
+      "Brasil": "🇧🇷", "Canadá": "🇨🇦", "Cabo Verde": "🇨🇻", "Colômbia": "🇨🇴", "Croácia": "🇭🇷", 
+      "Curação": "🇨🇼", "Equador": "🇪🇨", "Egito": "🇪🇬", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "França": "🇫🇷", 
+      "Alemanha": "🇩🇪", "Gana": "🇬🇭", "Haiti": "🇭🇹", "Irã": "🇮🇷", "Costa do Marfim": "🇨🇮", 
+      "Japão": "🇯🇵", "Jordânia": "🇯🇴", "Coreia do Sul": "🇰🇷", "México": "🇲🇽", "Marrocos": "🇲🇦", 
+      "Países Baixos": "🇳🇱", "Novas Zelândia": "🇳🇿", "Noruega": "🇳🇴", "Panamá": "🇵🇦", 
+      "Paraguai": "🇵🇾", "Portugal": "🇵🇹", "Catar": "🇶🇦", "Arábia Saudita": "🇸🇦", "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", 
+      "Senegal": "🇸🇳", "África do Sul": "🇿🇦", "Espanha": "🇪🇸", "Suíça": "🇨🇭", "Tunísia": "🇹🇳", 
+      "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿", "Dinamarca": "🇩🇰", 
+      "Itália": "🇮🇹", "Jamaica": "🇯🇲", "Polônia": "🇵🇱", "Suécia": "🇸🇪", "Turquia": "🇹🇷",
+      "Eternos 22": "🇦🇷"
+    };
 
     async function initCardeneta() {
       const { data: { session } } = await _supabase.auth.getSession();
@@ -180,12 +216,11 @@
       nomeAlbumAtual = selectElement.options[selectElement.selectedIndex]?.text || '';
 
       if (!albumAtualId) {
-        document.getElementById('cardenetaGrid').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
-        atualizarEstatisticas(0, 0);
+        document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
+        atualizarEstatisticas(0, 0, 0);
         return;
       }
 
-      // Carregar figurinhas
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
@@ -198,7 +233,6 @@
       }
       figurinhasDoAlbum = figs || [];
 
-      // Carregar dados da caderneta do usuário logado
       const { data: userColecao } = await _supabase
         .from('usuario_cardeneta')
         .select('figurinha_id, quantidade')
@@ -215,15 +249,33 @@
     }
 
     function renderizarGrid() {
-      const grid = document.getElementById('cardenetaGrid');
+      const container = document.getElementById('cardenetaContainer');
       const filtroStatus = document.getElementById('selectFiltroStatus').value;
 
       if (figurinhasDoAlbum.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Este álbum ainda não possui figurinhas cadastradas.</div>';
-        atualizarEstatisticas(0, 0);
+        container.innerHTML = '<div class="empty-state">Este álbum ainda não possui figurinhas cadastradas.</div>';
+        atualizarEstatisticas(0, 0, 0);
         return;
       }
 
+      // Cálculo de estatísticas gerais
+      let totalAlb = figurinhasDoAlbum.length;
+      let tenhoCount = 0;
+      let repetidasCount = 0;
+
+      figurinhasDoAlbum.forEach(f => {
+        const q = mapaCadernetaUsuario[f.id] || 0;
+        if (q > 0) {
+          tenhoCount++;
+          if (q > 1) {
+            repetidasCount += (q - 1);
+          }
+        }
+      });
+
+      atualizarEstatisticas(totalAlb, tenhoCount, repetidasCount);
+
+      // Filtragem das figurinhas
       let filtradas = figurinhasDoAlbum.filter(f => {
         const qtd = mapaCadernetaUsuario[f.id] || 0;
         const possui = qtd > 0;
@@ -232,53 +284,89 @@
         return true;
       });
 
-      // Calcular total de possuídas (itens únicos que tem pelo menos 1)
-      const totalPossuiUnicas = Object.values(mapaCadernetaUsuario.filter ? Object.values(mapaCadernetaUsuario) : Object.keys(mapaCadernetaUsuario)).filter(id => mapaCadernetaUsuario[id] > 0).length;
-      atualizarEstatisticas(figurinhasDoAlbum.length, totalPossuiUnicas);
-
       if (filtradas.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com este filtro.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com este filtro.</div>';
         return;
       }
 
-      grid.innerHTML = filtradas.map(f => {
-        const qtd = mapaCadernetaUsuario[f.id] || 0;
-        const possui = qtd > 0;
-        const classeCard = possui ? 'fig-card possui' : 'fig-card';
-        const textoStatus = possui ? (qtd > 1 ? `✅ Possui (${qtd})` : '✅ Já tenho') : '❌ Falta';
-        const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
+      // Agrupar figurinhas conforme a regra do Adrenalyn XL (ou agrupamento padrão se não estiver na lista)
+      let gruposMap = {};
+      filtradas.forEach(f => {
+        let categoria = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
+        if (!gruposMap[categoria]) gruposMap[categoria] = [];
+        gruposMap[categoria].push(f);
+      });
 
-        return `
-          <div class="${classeCard}" id="card-${f.id}">
-            <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta">
-              <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
-              <img src="${imgUrl}" alt="${f.nome || 'Figurinha'}">
-            </div>
-            <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
-              <div class="fig-numero"># ${f.numero || '-'}</div>
-              <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
-              ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
-            </div>
-            <div class="fig-actions-row">
-              <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
-              <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
-              <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
-            </div>
-            <div class="fig-footer">${possui ? (qtd > 1 ? `Possui + ${qtd-1} Repetida(s)` : 'Possuo') : 'Falta'}</div>
-          </div>
+      // Ordenar chaves dos grupos de acordo com a ordem oficial do Adrenalyn XL
+      let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
+        let indexA = ordemAdrenalynXL.indexOf(a);
+        let indexB = ordemAdrenalynXL.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
+      let htmlFinal = '';
+
+      chavesOrdenadas.forEach(cat => {
+        let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
+        htmlFinal += `
+          <div class="secao-grupo">
+            <div class="secao-titulo">${cat}${icone}</div>
+            <div class="cardeneta-grid">
         `;
-      }).join('');
+
+        htmlFinal += gruposMap[cat].map(f => {
+          const qtd = mapaCadernetaUsuario[f.id] || 0;
+          const possui = qtd > 0;
+          const classeCard = possui ? 'fig-card possui' : 'fig-card';
+          
+          // Sem "Possuo" fixo se quantidade for 1, aparece "Tenho +1 Repetidas" se for > 1
+          let textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1} Repetida(s)` : '✅ Já tenho') : '❌ Falta';
+          let footerTexto = possui ? (qtd > 1 ? `Tenho +${qtd-1} Repetida(s)` : '') : 'Falta';
+
+          const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+          const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
+          const tipoCard = f.tipo || '';
+
+          // Correção do número para evitar duplicar caracteres ou prefixos extra (#)
+          let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+
+          return `
+            <div class="${classeCard}" id="card-${f.id}">
+              <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta">
+                <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
+                <img src="${imgUrl}" alt="${f.nome || 'Figurinha'}">
+              </div>
+              <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                <div class="fig-numero"># ${numLimpo}</div>
+                <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
+                ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
+                ${tipoCard ? `<div class="fig-tipo">⭐ ${tipoCard}</div>` : ''}
+              </div>
+              <div class="fig-actions-row">
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
+                <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
+              </div>
+              <div class="fig-footer" id="footer-${f.id}">${footerTexto}</div>
+            </div>
+          `;
+        }).join('');
+
+        htmlFinal += `</div></div>`;
+      });
+
+      container.innerHTML = htmlFinal;
     }
 
-    // Clique direto na imagem/card alterna entre 0 e 1 (ou desmarca se já tiver)
     async function clicarMarcar(figurinhaId) {
       const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
       const novaQtd = qtdAtual > 0 ? 0 : 1;
       await salvarQuantidadeBanco(figurinhaId, novaQtd);
     }
 
-    // Ações de botões + e -
     async function alterarQtd(figurinhaId, delta) {
       const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
       let novaQtd = qtdAtual + delta;
@@ -287,7 +375,6 @@
     }
 
     async function salvarQuantidadeBanco(figurinhaId, novaQtd) {
-      // Atualização otimista imediata na memória e na UI (sem refresh)
       if (novaQtd === 0) {
         delete mapaCadernetaUsuario[figurinhaId];
       } else {
@@ -297,7 +384,6 @@
       atualizarCardVisual(figurinhaId);
       recalcularEstatisticasGlobais();
 
-      // Sincronização em background com Supabase
       if (novaQtd === 0) {
         await _supabase
           .from('usuario_cardeneta')
@@ -323,14 +409,14 @@
       const possui = qtd > 0;
       const badge = document.getElementById(`badge-${figurinhaId}`);
       const qtyDisplay = document.getElementById(`qty-${figurinhaId}`);
-      const footer = card.querySelector('.fig-footer');
+      const footer = document.getElementById(`footer-${figurinhaId}`);
 
       if (possui) {
         card.classList.add('possui');
-        badge.innerText = qtd > 1 ? `✅ Possui (${qtd})` : '✅ Já tenho';
+        badge.innerText = qtd > 1 ? `✅ Tenho +${qtd-1} Repetida(s)` : '✅ Já tenho';
         badge.style.background = "#34d399";
         badge.style.color = "#0f172a";
-        footer.innerText = qtd > 1 ? `Possui + ${qtd-1} Repetida(s)` : 'Possuo';
+        footer.innerText = qtd > 1 ? `Tenho +${qtd-1} Repetida(s)` : '';
       } else {
         card.classList.remove('possui');
         badge.innerText = '❌ Falta';
@@ -343,21 +429,33 @@
 
     function recalcularEstatisticasGlobais() {
       const total = figurinhasDoAlbum.length;
-      const possuiUnicas = Object.keys(mapaCadernetaUsuario).filter(id => mapaCadernetaUsuario[id] > 0).length;
-      atualizarEstatisticas(total, possuiUnicas);
+      let tenhoCount = 0;
+      let repetidasCount = 0;
+
+      Object.values(mapaCadernetaUsuario).forEach(q => {
+        if (q > 0) {
+          tenhoCount++;
+          if (q > 1) {
+            repetidasCount += (q - 1);
+          }
+        }
+      });
+
+      atualizarEstatisticas(total, tenhoCount, repetidasCount);
     }
 
-    function atualizarEstatisticas(total, possui) {
-      const faltam = total - possui;
-      const porcentagem = total > 0 ? ((possui / total) * 100).toFixed(1) : 0;
+    function atualizarEstatisticas(total, tenho, repetidas) {
+      const faltam = total - tenho;
+      // O progresso considera apenas as unicas possuídas (Tenho), sem contar as repetidas como avanço de coleção
+      const porcentagem = total > 0 ? ((tenho / total) * 100).toFixed(1) : 0;
 
       document.getElementById('statTotal').innerText = total;
-      document.getElementById('statPossui').innerText = possui;
+      document.getElementById('statTenho').innerText = tenho;
       document.getElementById('statFaltam').innerText = faltam;
+      document.getElementById('statRepetidas').innerText = repetidas;
       document.getElementById('statPorcentagem').innerText = porcentagem + '%';
     }
 
-    // Toggle do menu de compartilhamento
     function toggleShareMenu() {
       const dropdown = document.getElementById('shareDropdown');
       dropdown.classList.toggle('active');
@@ -369,53 +467,54 @@
       }
     }
 
-    // Gerador de mensagem visual baseada no seu exemplo
     function enviarWhatsApp(tipo) {
       if (!albumAtualId) return alert("Selecione um álbum primeiro.");
       document.getElementById('shareDropdown').classList.remove('active');
 
       let texto = `⚽ *${nomeAlbumAtual || 'Minha Coleção'}*\n`;
 
-      // 1. Processar Faltantes por Seleção/Categoria
       if (tipo === 'ambos' || tipo === 'faltantes') {
         const faltantesObj = {};
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd === 0) {
-            const cat = f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
+            const cat = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
             if (!faltantesObj[cat]) faltantesObj[cat] = [];
-            faltantesObj[cat].push(f.numero);
+            let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+            faltantesObj[cat].push(numLimpo);
           }
         });
 
         if (Object.keys(faltantesObj).length > 0) {
           texto += `\n❌ *Faltantes*\n`;
           for (let cat in faltantesObj) {
-            texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
+            let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
+            texto += `• ${cat}${icone}: ${faltantesObj[cat].join(', ')}\n`;
           }
         } else {
           texto += `\n❌ *Faltantes*: Álbum Completo! 🎉\n`;
         }
       }
 
-      // 2. Processar Repetidas por Seleção/Categoria (Qtd > 1)
       if (tipo === 'ambos' || tipo === 'repetidas') {
         const repetidasObj = {};
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd > 1) {
-            const cat = f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
+            const cat = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
             if (!repetidasObj[cat]) repetidasObj[cat] = [];
-            const numRepetidasExtras = qtd - 1;
-            const sufixo = numRepetidasExtras > 1 ? ` (×${qtd})` : '';
-            repetidasObj[cat].push(`${f.numero}${sufixo}`);
+            let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+            let numRepetidasExtras = qtd - 1;
+            let sufixo = numRepetidasExtras > 0 ? ` (×${qtd})` : '';
+            repetidasObj[cat].push(`${numLimpo}${sufixo}`);
           }
         });
 
         if (Object.keys(repetidasObj).length > 0) {
           texto += `\n🔁 *Repetidas*\n`;
           for (let cat in repetidasObj) {
-            texto += `• ${cat}: ${repetidasObj[cat].join(', ')}\n`;
+            let icone = iconesGrupos[cat] ? ` ${iconesGrupos[cat]}` : '';
+            texto += `• ${cat}${icone}: ${repetidasObj[cat].join(', ')}\n`;
           }
         } else if (tipo === 'repetidas') {
           texto += `\n🔁 *Repetidas*: Nenhuma cadastrada.\n`;
