@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <!-- Painel de Estatísticas Atualizado -->
+    <!-- Painel de Estatísticas -->
     <div class="stats-panel">
       <div class="stats-info">
         <h2>📖 Minha Cardeneta</h2>
@@ -160,22 +160,69 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem exata solicitada priorizando o Tipo do card e os países com bandeiras em imagem
+    // Ordem exata solicitada pelo usuário (na exata sequência fornecida)
     const ordemAdrenalynXL = [
       "Golden Ballers ⭐",
-      "Argélia", "Argentina", "Austrália", "Áustria e Bélgica", "Brasil", "Canadá", 
-      "Cabo Verde", "Colômbia", "Croácia", "Curação", "Equador", "Egito", "Inglaterra", 
-      "França", "Alemanha", "Gana", "Haiti", "Irã", "Costa do Marfim", "Japão", 
-      "Jordânia", "Coreia do Sul", "México", "Marrocos", "Países Baixos", "Novas Zelândia", 
-      "Noruega", "Panamá", "Paraguai", "Portugal", "Catar", "Arábia Saudita", "Escócia", 
-      "Senegal", "África do Sul", "Espanha", "Suíça", "Tunísia", "Estados Unidos", 
-      "Uruguai", "Uzbequistão", "Contenders - Team Crests", "Dinamarca", "Itália", 
-      "Jamaica", "Polônia", "Suécia", "Turquia", "Top Keepers 🧤", "Defensive Rocks 🛡️", 
-      "Modfield Maestros 🎯", "Goal Machines ⚽", "Master Rookies 🌟", 
-      "Official Emblems & Mascots 🏆", "Eternos 22", "Momemtum", "Limited Edition"
+      "Argélia", 
+      "Argentina", 
+      "Austrália", 
+      "Áustria e Bélgica", 
+      "Brasil", 
+      "Canadá", 
+      "Cabo Verde", 
+      "Colômbia", 
+      "Croácia", 
+      "Curação", 
+      "Equador", 
+      "Egito", 
+      "Inglaterra", 
+      "França", 
+      "Alemanha", 
+      "Gana", 
+      "Haiti", 
+      "Irã", 
+      "Costa do Marfim", 
+      "Japão", 
+      "Jordânia", 
+      "Coreia do Sul", 
+      "México", 
+      "Marrocos", 
+      "Países Baixos", 
+      "Novas Zelândia", 
+      "Noruega", 
+      "Panamá", 
+      "Paraguai", 
+      "Portugal", 
+      "Catar", 
+      "Arábia Saudita", 
+      "Escócia", 
+      "Senegal", 
+      "África do Sul", 
+      "Espanha", 
+      "Suíça", 
+      "Tunísia", 
+      "Estados Unidos", 
+      "Uruguai", 
+      "Uzbequistão", 
+      "Contenders - Team Crests", 
+      "Dinamarca", 
+      "Itália", 
+      "Jamaica", 
+      "Polônia", 
+      "Suécia", 
+      "Turquia", 
+      "Top Keepers 🧤", 
+      "Defensive Rocks 🛡️", 
+      "Modfield Maestros 🎯", 
+      "Goal Machines ⚽", 
+      "Master Rookies 🌟", 
+      "Official Emblems & Mascots 🏆", 
+      "Eternos 22", 
+      "Momemtum", 
+      "Limited Edition"
     ];
 
-    // Mapeamento de URLs de imagens oficiais para as bandeiras de cada país solicitado
+    // Mapeamento de URLs de imagens para as bandeiras de cada país solicitado
     const bandeirasImagens = {
       "Argélia": "https://flagcdn.com/w40/dz.png",
       "Argentina": "https://flagcdn.com/w40/ar.png",
@@ -325,7 +372,7 @@
         return;
       }
 
-      // Agrupamento estrito priorizando a propriedade 'tipo' se existir na lista de ordem, caso contrário usa seleção/escuderia
+      // Agrupamento estrito checando tanto 'tipo' quanto os campos de seleção/escuderia
       let gruposMap = {};
       filtradas.forEach(f => {
         let categoria = '';
