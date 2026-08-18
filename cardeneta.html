@@ -160,13 +160,14 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem exata solicitada pelo usuário (na exata sequência fornecida)
+    // Ordem exata solicitada
     const ordemAdrenalynXL = [
       "Golden Ballers ⭐",
       "Argélia", 
       "Argentina", 
       "Austrália", 
-      "Áustria e Bélgica", 
+      "Áustria", 
+      "Bélgica", 
       "Brasil", 
       "Canadá", 
       "Cabo Verde", 
@@ -222,12 +223,121 @@
       "Limited Edition"
     ];
 
-    // Mapeamento de URLs de imagens para as bandeiras de cada país solicitado
+    // Dicionário de normalização para unificar variações comuns de escrita (acentos, maiúsculas/minúsculas, inglês/português)
+    const mapaNormalizacaoCategorias = {
+      "argelia": "Argélia",
+      "algeria": "Argélia",
+      "argélia": "Argélia",
+      "spain": "Espanha",
+      "espanha": "Espanha",
+      "germany": "Alemanha",
+      "alemanha": "Alemanha",
+      "france": "França",
+      "frança": "França",
+      "england": "Inglaterra",
+      "inglaterra": "Inglaterra",
+      "italy": "Itália",
+      "itália": "Itália",
+      "netherlands": "Países Baixos",
+      "paises baixos": "Países Baixos",
+      "países baixos": "Países Baixos",
+      "holanda": "Países Baixos",
+      "portugal": "Portugal",
+      "brazil": "Brasil",
+      "brasil": "Brasil",
+      "argentina": "Argentina",
+      "australia": "Austrália",
+      "austrália": "Austrália",
+      "austria": "Áustria",
+      "áustria": "Áustria",
+      "belgica": "Bélgica",
+      "bélgica": "Bélgica",
+      "belgium": "Bélgica",
+      "canada": "Canadá",
+      "canadá": "Canadá",
+      "cabo verde": "Cabo Verde",
+      "colombia": "Colômbia",
+      "colômbia": "Colômbia",
+      "croacia": "Croácia",
+      "croácia": "Croácia",
+      "curacao": "Curação",
+      "curação": "Curação",
+      "equador": "Equador",
+      "egito": "Egito",
+      "egypt": "Egito",
+      "gana": "Gana",
+      "haiti": "Haiti",
+      "ira": "Irã",
+      "irã": "Irã",
+      "costa do marfim": "Costa do Marfim",
+      "japao": "Japão",
+      "japão": "Japão",
+      "japan": "Japão",
+      "jordania": "Jordânia",
+      "jordânia": "Jordânia",
+      "coreia do sul": "Coreia do Sul",
+      "mexico": "México",
+      "méxico": "México",
+      "marrocos": "Marrocos",
+      "novas zelandia": "Novas Zelândia",
+      "novas zelândia": "Novas Zelândia",
+      "noruega": "Noruega",
+      "panama": "Panamá",
+      "panamá": "Panamá",
+      "paraguai": "Paraguai",
+      "catar": "Catar",
+      "qatar": "Catar",
+      "arabia saudita": "Arábia Saudita",
+      "arábia saudita": "Arábia Saudita",
+      "escocia": "Escócia",
+      "escócia": "Escócia",
+      "senegal": "Senegal",
+      "africa do sul": "África do Sul",
+      "áfrica do sul": "África do Sul",
+      "suica": "Suíça",
+      "suíça": "Suíça",
+      "switzerland": "Suíça",
+      "tunisia": "Tunísia",
+      "tunísia": "Tunísia",
+      "estados unidos": "Estados Unidos",
+      "usa": "Estados Unidos",
+      "uruguai": "Uruguai",
+      "uzbequistao": "Uzbequistão",
+      "uzbequistão": "Uzbequistão",
+      "dinamarca": "Dinamarca",
+      "jamaica": "Jamaica",
+      "polonia": "Polônia",
+      "polônia": "Polônia",
+      "suecia": "Suécia",
+      "suécia": "Suécia",
+      "turquia": "Turquia",
+      "golden ballers": "Golden Ballers ⭐",
+      "golden ballers ⭐": "Golden Ballers ⭐",
+      "top keepers": "Top Keepers 🧤",
+      "top keepers 🧤": "Top Keepers 🧤",
+      "defensive rocks": "Defensive Rocks 🛡️",
+      "defensive rocks 🛡️": "Defensive Rocks 🛡️",
+      "modfield maestros": "Modfield Maestros 🎯",
+      "modfield maestros 🎯": "Modfield Maestros 🎯",
+      "goal machines": "Goal Machines ⚽",
+      "goal machines ⚽": "Goal Machines ⚽",
+      "master rookies": "Master Rookies 🌟",
+      "master rookies 🌟": "Master Rookies 🌟",
+      "official emblems & mascots": "Official Emblems & Mascots 🏆",
+      "official emblems & mascots 🏆": "Official Emblems & Mascots 🏆",
+      "eternos 22": "Eternos 22",
+      "momemtum": "Momemtum",
+      "limited edition": "Limited Edition",
+      "contenders - team crests": "Contenders - Team Crests"
+    };
+
+    // Mapeamento de bandeiras
     const bandeirasImagens = {
       "Argélia": "https://flagcdn.com/w40/dz.png",
       "Argentina": "https://flagcdn.com/w40/ar.png",
       "Austrália": "https://flagcdn.com/w40/au.png",
-      "Áustria e Bélgica": "https://flagcdn.com/w40/at.png", 
+      "Áustria": "https://flagcdn.com/w40/at.png",
+      "Bélgica": "https://flagcdn.com/w40/be.png",
       "Brasil": "https://flagcdn.com/w40/br.png",
       "Canadá": "https://flagcdn.com/w40/ca.png",
       "Cabo Verde": "https://flagcdn.com/w40/cv.png",
@@ -273,6 +383,24 @@
       "Turquia": "https://flagcdn.com/w40/tr.png",
       "Eternos 22": "https://flagcdn.com/w40/ar.png"
     };
+
+    function obterCategoriaPadrao(f) {
+      let valorBruto = f.tipo || f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
+      let valorLimpo = String(valorBruto).trim().toLowerCase();
+      
+      if (mapaNormalizacaoCategorias[valorLimpo]) {
+        return mapaNormalizacaoCategorias[valorLimpo];
+      }
+
+      // Tenta busca parcial caso contenha extras
+      for (let chave in mapaNormalizacaoCategorias) {
+        if (valorLimpo.includes(chave)) {
+          return mapaNormalizacaoCategorias[chave];
+        }
+      }
+
+      return valorBruto;
+    }
 
     async function initCardeneta() {
       const { data: { session } } = await _supabase.auth.getSession();
@@ -372,21 +500,9 @@
         return;
       }
 
-      // Agrupamento estrito checando tanto 'tipo' quanto os campos de seleção/escuderia
       let gruposMap = {};
       filtradas.forEach(f => {
-        let categoria = '';
-        if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
-          categoria = f.tipo;
-        } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
-          categoria = f.selecao_escuderia;
-        } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
-          categoria = f.selecao;
-        } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
-          categoria = f.escuderia;
-        } else {
-          categoria = f.tipo || f.selecao_escuderia || 'Geral';
-        }
+        let categoria = obterCategoriaPadrao(f);
 
         if (!gruposMap[categoria]) gruposMap[categoria] = [];
         gruposMap[categoria].push(f);
@@ -573,19 +689,7 @@
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd === 0) {
-            let cat = '';
-            if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
-              cat = f.tipo;
-            } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
-              cat = f.selecao_escuderia;
-            } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
-              cat = f.selecao;
-            } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
-              cat = f.escuderia;
-            } else {
-              cat = f.tipo || f.selecao_escuderia || 'Geral';
-            }
-
+            let cat = obterCategoriaPadrao(f);
             if (!faltantesObj[cat]) faltantesObj[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
             faltantesObj[cat].push(numLimpo);
@@ -607,19 +711,7 @@
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd > 1) {
-            let cat = '';
-            if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
-              cat = f.tipo;
-            } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
-              cat = f.selecao_escuderia;
-            } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
-              cat = f.selecao;
-            } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
-              cat = f.escuderia;
-            } else {
-              cat = f.tipo || f.selecao_escuderia || 'Geral';
-            }
-
+            let cat = obterCategoriaPadrao(f);
             if (!repetidasObj[cat]) repetidasObj[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
             let numRepetidasExtras = qtd - 1;
