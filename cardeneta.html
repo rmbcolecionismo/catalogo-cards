@@ -223,7 +223,7 @@
       "Limited Edition"
     ];
 
-    // Dicionário de normalização para unificar variações comuns de escrita (acentos, maiúsculas/minúsculas, inglês/português)
+    // Dicionário de normalização para unificar variações comuns de escrita (incluindo tratamento para Team logo, Icon, Hero, Fan Favourite)
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia",
       "algeria": "Argélia",
@@ -385,6 +385,25 @@
     };
 
     function obterCategoriaPadrao(f) {
+      // Verifica se o tipo é um daqueles que devem cair obrigatoriamente dentro da seleção (Team logo, Icon, Hero, Fan Favourite)
+      let tipoBruto = String(f.tipo || '').trim().toLowerCase();
+      if (tipoBruto === 'team logo' || tipoBruto === 'icon' || tipoBruto === 'hero' || tipoBruto === 'fan favourite') {
+        let selecaoBruta = f.selecao_escuderia || f.selecao || f.escuderia;
+        if (selecaoBruta) {
+          let selLimpa = String(selecaoBruta).trim().toLowerCase();
+          if (mapaNormalizacaoCategorias[selLimpa]) {
+            return mapaNormalizacaoCategorias[selLimpa];
+          }
+          // Busca parcial para a seleção caso exista no dicionário
+          for (let chave in mapaNormalizacaoCategorias) {
+            if (selLimpa.includes(chave)) {
+              return mapaNormalizacaoCategorias[chave];
+            }
+          }
+          return selecaoBruta;
+        }
+      }
+
       let valorBruto = f.tipo || f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
       let valorLimpo = String(valorBruto).trim().toLowerCase();
       
