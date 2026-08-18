@@ -44,6 +44,7 @@
     /* Seções e Agrupamentos Estilo Cardeneta Física */
     .secao-grupo { margin-bottom: 30px; }
     .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .secao-titulo img.bandeira-icone { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; display: inline-block; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
     .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     
@@ -51,11 +52,11 @@
     .fig-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
     .fig-card.possui { background: rgba(15, 23, 42, 0.7); border-color: rgba(52, 211, 153, 0.5); }
-    .fig-card.possui img { opacity: 0.4; filter: grayscale(20%); }
+    .fig-card.possui img.fig-img { opacity: 0.4; filter: grayscale(20%); }
     .fig-card.possui .fig-footer { background: rgba(52, 211, 153, 0.2); color: #34d399; }
 
     .fig-img-wrap { height: 170px; background: #0f172a; padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .fig-card img { width: 100%; height: 100%; object-fit: contain; }
+    .fig-card img.fig-img { width: 100%; height: 100%; object-fit: contain; }
     
     .fig-badge-status { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.65rem; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
     .fig-card.possui .fig-badge-status { background: #34d399; color: #0f172a; }
@@ -159,7 +160,7 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem oficial exata pedida para Adrenalyn XL 2026 com bandeiras/ícones na frente
+    // Ordem exata solicitada priorizando o Tipo do card e os países com bandeiras em imagem
     const ordemAdrenalynXL = [
       "Golden Ballers ⭐",
       "Argélia", "Argentina", "Austrália", "Áustria e Bélgica", "Brasil", "Canadá", 
@@ -171,22 +172,59 @@
       "Uruguai", "Uzbequistão", "Contenders - Team Crests", "Dinamarca", "Itália", 
       "Jamaica", "Polônia", "Suécia", "Turquia", "Top Keepers 🧤", "Defensive Rocks 🛡️", 
       "Modfield Maestros 🎯", "Goal Machines ⚽", "Master Rookies 🌟", 
-      "Official Emblems & Mascots 🏆", "Eternos 22"
+      "Official Emblems & Mascots 🏆", "Eternos 22", "Momemtum", "Limited Edition"
     ];
 
-    // Bandeiras / Icones para grupos específicos atualizados
-    const iconesGrupos = {
-      "Argélia": "🇩🇿", "Argentina": "🇦🇷", "Austrália": "🇦🇺", "Áustria e Bélgica": "🇦🇹🇧🇪", 
-      "Brasil": "🇧🇷", "Canadá": "🇨🇦", "Cabo Verde": "🇨🇻", "Colômbia": "🇨🇴", "Croácia": "🇭🇷", 
-      "Curação": "🇨🇼", "Equador": "🇪🇨", "Egito": "🇪🇬", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "França": "🇫🇷", 
-      "Alemanha": "🇩🇪", "Gana": "🇬🇭", "Haiti": "🇭🇹", "Irã": "🇮🇷", "Costa do Marfim": "🇨🇮", 
-      "Japão": "🇯🇵", "Jordânia": "🇯🇴", "Coreia do Sul": "🇰🇷", "México": "🇲🇽", "Marrocos": "🇲🇦", 
-      "Países Baixos": "🇳🇱", "Novas Zelândia": "🇳🇿", "Noruega": "🇳🇴", "Panamá": "🇵🇦", 
-      "Paraguai": "🇵🇾", "Portugal": "🇵🇹", "Catar": "🇶🇦", "Arábia Saudita": "🇸🇦", "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", 
-      "Senegal": "🇸🇳", "África do Sul": "🇿🇦", "Espanha": "🇪🇸", "Suíça": "🇨🇭", "Tunísia": "🇹🇳", 
-      "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿", "Dinamarca": "🇩🇰", 
-      "Itália": "🇮🇹", "Jamaica": "🇯🇲", "Polônia": "🇵🇱", "Suécia": "🇸🇪", "Turquia": "🇹🇷",
-      "Eternos 22": "🇦🇷"
+    // Mapeamento de URLs de imagens oficiais para as bandeiras de cada país solicitado
+    const bandeirasImagens = {
+      "Argélia": "https://flagcdn.com/w40/dz.png",
+      "Argentina": "https://flagcdn.com/w40/ar.png",
+      "Austrália": "https://flagcdn.com/w40/au.png",
+      "Áustria e Bélgica": "https://flagcdn.com/w40/at.png", 
+      "Brasil": "https://flagcdn.com/w40/br.png",
+      "Canadá": "https://flagcdn.com/w40/ca.png",
+      "Cabo Verde": "https://flagcdn.com/w40/cv.png",
+      "Colômbia": "https://flagcdn.com/w40/co.png",
+      "Croácia": "https://flagcdn.com/w40/hr.png",
+      "Curação": "https://flagcdn.com/w40/cw.png",
+      "Equador": "https://flagcdn.com/w40/ec.png",
+      "Egito": "https://flagcdn.com/w40/eg.png",
+      "Inglaterra": "https://flagcdn.com/w40/gb-eng.png",
+      "França": "https://flagcdn.com/w40/fr.png",
+      "Alemanha": "https://flagcdn.com/w40/de.png",
+      "Gana": "https://flagcdn.com/w40/gh.png",
+      "Haiti": "https://flagcdn.com/w40/ht.png",
+      "Irã": "https://flagcdn.com/w40/ir.png",
+      "Costa do Marfim": "https://flagcdn.com/w40/ci.png",
+      "Japão": "https://flagcdn.com/w40/jp.png",
+      "Jordânia": "https://flagcdn.com/w40/jo.png",
+      "Coreia do Sul": "https://flagcdn.com/w40/kr.png",
+      "México": "https://flagcdn.com/w40/mx.png",
+      "Marrocos": "https://flagcdn.com/w40/ma.png",
+      "Países Baixos": "https://flagcdn.com/w40/nl.png",
+      "Novas Zelândia": "https://flagcdn.com/w40/nz.png",
+      "Noruega": "https://flagcdn.com/w40/no.png",
+      "Panamá": "https://flagcdn.com/w40/pa.png",
+      "Paraguai": "https://flagcdn.com/w40/py.png",
+      "Portugal": "https://flagcdn.com/w40/pt.png",
+      "Catar": "https://flagcdn.com/w40/qa.png",
+      "Arábia Saudita": "https://flagcdn.com/w40/sa.png",
+      "Escócia": "https://flagcdn.com/w40/gb-sct.png",
+      "Senegal": "https://flagcdn.com/w40/sn.png",
+      "África do Sul": "https://flagcdn.com/w40/za.png",
+      "Espanha": "https://flagcdn.com/w40/es.png",
+      "Suíça": "https://flagcdn.com/w40/ch.png",
+      "Tunísia": "https://flagcdn.com/w40/tn.png",
+      "Estados Unidos": "https://flagcdn.com/w40/us.png",
+      "Uruguai": "https://flagcdn.com/w40/uy.png",
+      "Uzbequistão": "https://flagcdn.com/w40/uz.png",
+      "Dinamarca": "https://flagcdn.com/w40/dk.png",
+      "Itália": "https://flagcdn.com/w40/it.png",
+      "Jamaica": "https://flagcdn.com/w40/jm.png",
+      "Polônia": "https://flagcdn.com/w40/pl.png",
+      "Suécia": "https://flagcdn.com/w40/se.png",
+      "Turquia": "https://flagcdn.com/w40/tr.png",
+      "Eternos 22": "https://flagcdn.com/w40/ar.png"
     };
 
     async function initCardeneta() {
@@ -258,7 +296,6 @@
         return;
       }
 
-      // Cálculo de estatísticas gerais
       let totalAlb = figurinhasDoAlbum.length;
       let tenhoCount = 0;
       let repetidasCount = 0;
@@ -275,7 +312,6 @@
 
       atualizarEstatisticas(totalAlb, tenhoCount, repetidasCount);
 
-      // Filtragem das figurinhas
       let filtradas = figurinhasDoAlbum.filter(f => {
         const qtd = mapaCadernetaUsuario[f.id] || 0;
         const possui = qtd > 0;
@@ -289,15 +325,26 @@
         return;
       }
 
-      // Agrupar figurinhas conforme a regra do Adrenalyn XL
+      // Agrupamento estrito priorizando a propriedade 'tipo' se existir na lista de ordem, caso contrário usa seleção/escuderia
       let gruposMap = {};
       filtradas.forEach(f => {
-        let categoria = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
+        let categoria = '';
+        if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
+          categoria = f.tipo;
+        } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
+          categoria = f.selecao_escuderia;
+        } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
+          categoria = f.selecao;
+        } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
+          categoria = f.escuderia;
+        } else {
+          categoria = f.tipo || f.selecao_escuderia || 'Geral';
+        }
+
         if (!gruposMap[categoria]) gruposMap[categoria] = [];
         gruposMap[categoria].push(f);
       });
 
-      // Ordenar chaves dos grupos de acordo com a ordem oficial do Adrenalyn XL
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
         let indexA = ordemAdrenalynXL.indexOf(a);
         let indexB = ordemAdrenalynXL.indexOf(b);
@@ -310,10 +357,14 @@
       let htmlFinal = '';
 
       chavesOrdenadas.forEach(cat => {
-        let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
+        let iconeHtml = '';
+        if (bandeirasImagens[cat]) {
+          iconeHtml = `<img src="${bandeirasImagens[cat]}" class="bandeira-icone" alt="Bandeira de ${cat}"> `;
+        }
+        
         htmlFinal += `
           <div class="secao-grupo">
-            <div class="secao-titulo">${icone}${cat}</div>
+            <div class="secao-titulo">${iconeHtml}${cat}</div>
             <div class="cardeneta-grid">
         `;
 
@@ -335,7 +386,7 @@
             <div class="${classeCard}" id="card-${f.id}">
               <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta">
                 <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
-                <img src="${imgUrl}" alt="${f.nome || 'Figurinha'}">
+                <img src="${imgUrl}" class="fig-img" alt="${f.nome || 'Figurinha'}">
               </div>
               <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
                 <div class="fig-numero"># ${numLimpo}</div>
@@ -475,7 +526,19 @@
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd === 0) {
-            const cat = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
+            let cat = '';
+            if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
+              cat = f.tipo;
+            } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
+              cat = f.selecao_escuderia;
+            } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
+              cat = f.selecao;
+            } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
+              cat = f.escuderia;
+            } else {
+              cat = f.tipo || f.selecao_escuderia || 'Geral';
+            }
+
             if (!faltantesObj[cat]) faltantesObj[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
             faltantesObj[cat].push(numLimpo);
@@ -485,8 +548,7 @@
         if (Object.keys(faltantesObj).length > 0) {
           texto += `\n❌ *Faltantes*\n`;
           for (let cat in faltantesObj) {
-            let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
-            texto += `• ${icone}${cat}: ${faltantesObj[cat].join(', ')}\n`;
+            texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
           }
         } else {
           texto += `\n❌ *Faltantes*: Álbum Completo! 🎉\n`;
@@ -498,7 +560,19 @@
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd > 1) {
-            const cat = f.selecao_escuderia || f.selecao || f.escuderia || f.tipo || 'Geral';
+            let cat = '';
+            if (f.tipo && ordemAdrenalynXL.includes(f.tipo)) {
+              cat = f.tipo;
+            } else if (f.selecao_escuderia && ordemAdrenalynXL.includes(f.selecao_escuderia)) {
+              cat = f.selecao_escuderia;
+            } else if (f.selecao && ordemAdrenalynXL.includes(f.selecao)) {
+              cat = f.selecao;
+            } else if (f.escuderia && ordemAdrenalynXL.includes(f.escuderia)) {
+              cat = f.escuderia;
+            } else {
+              cat = f.tipo || f.selecao_escuderia || 'Geral';
+            }
+
             if (!repetidasObj[cat]) repetidasObj[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
             let numRepetidasExtras = qtd - 1;
@@ -510,8 +584,7 @@
         if (Object.keys(repetidasObj).length > 0) {
           texto += `\n🔁 *Repetidas*\n`;
           for (let cat in repetidasObj) {
-            let icone = iconesGrupos[cat] ? `${iconesGrupos[cat]} ` : '';
-            texto += `• ${icone}${cat}: ${repetidasObj[cat].join(', ')}\n`;
+            texto += `• ${cat}: ${repetidasObj[cat].join(', ')}\n`;
           }
         } else if (tipo === 'repetidas') {
           texto += `\n🔁 *Repetidas*: Nenhuma cadastrada.\n`;
