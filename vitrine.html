@@ -29,13 +29,14 @@
     .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
     .card-title { font-size: 0.9rem; font-weight: 600; }
     .card-subtitle { font-size: 0.75rem; color: #94a3b8; }
-    .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    
+    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .input-row { display: flex; gap: 0.5rem; width: 100%; }
     .input-wrapper { flex: 1; text-align: left; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); }
-    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); display: block; margin-bottom: 2px; }
+    .input-wrapper input, .input-wrapper select { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; }
     .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
     
-    /* Novo estilo de paginação */
     .pagination-nav { text-align: center; margin: 2rem 0; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
     .btn-page { background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; }
     .btn-page.active { background: var(--gold); color: #0f172a; font-weight: 800; }
@@ -82,7 +83,6 @@
       <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando...</div>
     </div>
 
-    <!-- Container da nova paginação numérica -->
     <div class="pagination-nav" id="paginationNav"></div>
   </div>
 
@@ -142,7 +142,6 @@
       nav.appendChild(btnNext);
     }
 
-    // Funções mantidas do seu código original
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) { window.location.href = "login.html"; return null; }
@@ -154,8 +153,17 @@
         if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
         if (perfil.is_admin || perfil.funcao === 'admin' || perfil.funcao === 'master') document.getElementById('adminLinks').style.display = 'inline';
       }
-      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque').eq('user_id', authUserId);
-      if (vitrineSalva) vitrineSalva.forEach(item => meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque });
+      // Busca também a coluna 'tipo' salva na vitrine
+      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque, tipo').eq('user_id', authUserId);
+      if (vitrineSalva) {
+        vitrineSalva.forEach(item => {
+          meusPrecosQtd[item.figurinha_id] = { 
+            preco: item.preco, 
+            estoque: item.estoque, 
+            tipo: item.tipo || 'venda' 
+          };
+        });
+      }
       return session;
     }
 
@@ -163,25 +171,75 @@
       const grid = document.getElementById('vitrineGrid');
       if (!lista.length) { grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 2rem; color: #94a3b8;">Nenhuma figurinha encontrada.</div>`; return; }
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0 };
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, tipo: 'venda' };
+        const estiloPreco = salvo.tipo === 'troca' ? 'display: none;' : 'display: block;';
+
         return `<div class="card">
             <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}">
             <div class="card-title">${f.numero} - ${f.nome}</div>
             <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
+            
             <div class="card-inputs">
-              <div class="input-wrapper"><label>Preço (€)</label><input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01"></div>
-              <div class="input-wrapper"><label>Qtd</label><input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0"></div>
+              <!-- Select de Tipo acima -->
+              <div class="input-wrapper">
+                <label>Tipo de Anúncio</label>
+                <select id="tipo-${f.id}" onchange="alternarTipo(${f.id})">
+                  <option value="venda" ${salvo.tipo === 'venda' ? 'selected' : ''}>Venda</option>
+                  <option value="troca" ${salvo.tipo === 'troca' ? 'selected' : ''}>Troca</option>
+                </select>
+              </div>
+
+              <div class="input-row">
+                <!-- Preço (some se for troca) -->
+                <div class="input-wrapper" id="wrapper-preco-${f.id}" style="${estiloPreco}">
+                  <label>Preço (€)</label>
+                  <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01">
+                </div>
+                <!-- Quantidade -->
+                <div class="input-wrapper">
+                  <label>Qtd</label>
+                  <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
+                </div>
+              </div>
             </div>
+
             <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar</button>
           </div>`;
       }).join('');
     }
 
+    // Função para ocultar ou exibir o campo de preço dinamicamente na tela
+    function alternarTipo(fId) {
+      const tipo = document.getElementById(`tipo-${fId}`).value;
+      const wrapperPreco = document.getElementById(`wrapper-preco-${fId}`);
+      if (tipo === 'troca') {
+        wrapperPreco.style.display = 'none';
+      } else {
+        wrapperPreco.style.display = 'block';
+      }
+    }
+
     async function adicionarNaVitrine(fId) {
-      const preco = parseFloat(document.getElementById(`preco-${fId}`).value) || 0;
-      const estoque = parseInt(document.getElementById(`qtd-${fId}`).value) || 0;
-      const { error } = await _supabase.from('vitrine_ofertas').upsert({ user_id: authUserId, figurinha_id: fId, preco, estoque, nome_vendedor: usuarioLogado.nome }, { onConflict: 'user_id, figurinha_id' });
-      alert(error ? "Erro ao salvar" : "Salvo com sucesso!");
+      const tipo = document.getElementById(`tipo-${fId}`).value;
+      // Se for troca, define o preço automaticamente como 0
+      const preco = tipo === 'troca' ? 0 : (parseFloat(document.getElementById(`preco-${fId}`).value) || 0);
+      const estoque = parseInt(document.getElementById(`qtd-${fId}` ).value) || 0;
+
+      const { error } = await _supabase.from('vitrine_ofertas').upsert({ 
+        user_id: authUserId, 
+        figurinha_id: fId, 
+        preco: preco, 
+        estoque: estoque, 
+        tipo: tipo, 
+        nome_vendedor: usuarioLogado.nome 
+      }, { onConflict: 'user_id, figurinha_id' });
+
+      if (error) {
+        alert("Erro ao salvar: " + error.message);
+      } else {
+        meusPrecosQtd[fId] = { preco, estoque, tipo };
+        alert("Salvo com sucesso!");
+      }
     }
 
     function resetEBuscar() { paginaAtual = 0; buscarDados(); }
