@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Marketplace de Figurinhas</title>
+  <title>Marketplace e Trocas de Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -28,7 +28,7 @@
     @keyframes floatBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
     .btn-hero-action:hover { background: #fbbf24; transform: scale(1.05); }
 
-    /* Novo Banner Visual em CSS Puro (Substituindo o Header Antigo) */
+    /* Novo Banner Visual em CSS Puro */
     .css-banner-header { max-width: 1250px; margin: 1.5rem auto 1.5rem; padding: 0 1rem; }
     .css-banner-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #111827 100%); border: 2px solid rgba(245, 158, 11, 0.4); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
     .css-banner-box::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: shineLine 3s linear infinite; }
@@ -45,8 +45,15 @@
     .filter-select, .filter-input { flex: 1; min-width: 200px; padding: 0.8rem; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; font-size: 0.85rem; }
     .container { max-width: 1250px; margin: 0 auto; padding: 0 1rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+    
+    /* Estilos do Card Padrão (Venda) */
     .sticker-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; transition: 0.3s; }
     .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    
+    /* Estilo do Card de Troca (Discreto com tons de Azul) */
+    .sticker-card.card-troca { background: rgba(30, 58, 95, 0.4); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .sticker-card.card-troca:hover { border-color: #60a5fa; }
+
     .sticker-img-wrap { height: 200px; background: #0f172a; padding: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
     .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
@@ -56,6 +63,12 @@
     .sticker-title { font-size: 0.9rem; font-weight: 700; color: #f8fafc; margin: 2px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
     .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+    
+    /* Badges de Tipo */
+    .badge-tipo { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 4px; width: fit-content; }
+    .badge-venda { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-troca { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+
     .btn-vendedor { background: var(--gold); color: #0f172a; border: none; padding: 0.6rem; border-radius: 8px; width: 100%; font-weight: 700; cursor: pointer; margin-top: auto; text-align: center; text-decoration: none; display: block; font-size: 0.8rem; }
     .btn-vendedor:hover { background: #fbbf24; }
     footer { text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
@@ -83,7 +96,7 @@
     </div>
   </div>
 
-  <!-- Novo Banner Visual em CSS Puro Substituindo o Header Antigo -->
+  <!-- Banner Visual Principal -->
   <div class="css-banner-header">
     <div class="css-banner-box">
       <div class="css-banner-badges">
@@ -91,18 +104,24 @@
         <span class="css-badge">⭐ Figurinhas & Cards</span>
         <span class="css-badge">🛡️ Vendedores Verificados</span>
       </div>
-      <h1>🛍️ Marketplace de Figurinhas</h1>
-      <p>Encontre figurinhas disponíveis e visite o perfil dos vendedores</p>
+      <h1>🛍️ Marketplace e Trocas de Figurinhas</h1>
+      <p>Encontre figurinhas disponíveis para compra ou troca e visite o perfil dos vendedores</p>
     </div>
   </div>
 
   <div class="container">
     <div class="controls-wrapper">
-      <select id="filterAlbum" class="filter-select" onchange="filtrar()"><option value="">📂 Todos os Álbuns</option></select>
+      <div class="filters-row">
+        <select id="filterAlbum" class="filter-select" onchange="filtrar()"><option value="">📂 Todos os Álbuns</option></select>
+        <select id="filterTipoVitrine" class="filter-select" onchange="filtrar()">
+          <option value="todos">📦 Ver Todos (Vendas e Trocas)</option>
+          <option value="venda">💶 Somente Vendas</option>
+          <option value="troca">🔄 Somente Trocas</option>
+        </select>
+      </div>
       <div class="filters-row">
         <input type="text" id="search" placeholder="🔍 Buscar por nome ou código..." class="filter-input" oninput="filtrar()">
         <select id="filterColecao" class="filter-select" onchange="filtrar()"><option value="">⚽ Todas as Seleções / Escuderias</option></select>
-        <select id="filterTipo" class="filter-select" onchange="filtrar()"><option value="">🏷️ Todos os Tipos</option></select>
       </div>
     </div>
     <div class="grid" id="catalog"><p style="text-align: center; grid-column: 1/-1; color: #94a3b8; padding: 2rem;">Carregando vitrine...</p></div>
@@ -133,6 +152,7 @@
 
         allData = (ofertas || []).map(o => {
           const f = figurinhasMap[o.figurinha_id || o.id_figurinha] || {};
+          const tipoItem = (o.tipo && o.tipo.trim() !== '') ? o.tipo : (f.tipo || 'venda');
           return {
             vendedorId: o.user_id,
             vendedorNome: o.nome_vendedor || 'Vendedor',
@@ -142,7 +162,7 @@
             selecao_escuderia: f.selecao_escuderia || f.selecao || f.escuderia || 'N/A',
             albumId: f.album_id || '',
             album: f.albumNome,
-            tipo: f.tipo || 'N/A',
+            tipo: tipoItem.toLowerCase(),
             preco: o.preco || 0,
             quantidade: o.estoque || 0
           };
@@ -151,12 +171,10 @@
         // Preencher selects de filtros dinamicamente
         const albunsUnicos = {};
         const selecoesUnicas = new Set();
-        const tiposUnicos = new Set();
 
         allData.forEach(item => {
           if (item.albumId && item.album && item.album !== 'N/A') albunsUnicos[item.albumId] = item.album;
           if (item.selecao_escuderia && item.selecao_escuderia !== 'N/A') selecoesUnicas.add(item.selecao_escuderia);
-          if (item.tipo && item.tipo !== 'N/A') tiposUnicos.add(item.tipo);
         });
 
         const selectAlbum = document.getElementById('filterAlbum');
@@ -167,10 +185,6 @@
         selectColecao.innerHTML = '<option value="">⚽ Todas as Seleções / Escuderias</option>' + 
           [...selecoesUnicas].sort().map(s => `<option value="${s}">${s}</option>`).join('');
 
-        const selectTipo = document.getElementById('filterTipo');
-        selectTipo.innerHTML = '<option value="">🏷️ Todos os Tipos</option>' + 
-          [...tiposUnicos].sort().map(t => `<option value="${t}">${t}</option>`).join('');
-
         renderizar(allData);
       } catch (err) { console.error(err); }
     }
@@ -179,7 +193,7 @@
       const termoBusca = document.getElementById('search').value.toLowerCase().trim().replace(/^#/, '');
       const albumFiltro = document.getElementById('filterAlbum').value;
       const colecaoFiltro = document.getElementById('filterColecao').value;
-      const tipoFiltro = document.getElementById('filterTipo').value;
+      const tipoVitrineFiltro = document.getElementById('filterTipoVitrine').value;
 
       const filtrados = allData.filter(item => {
         const numLimpo = String(item.numero).toLowerCase().replace(/^#/, '');
@@ -188,13 +202,24 @@
         const buscaMatch = !termoBusca || nomeMatch || numeroMatch;
 
         const albumMatch = !albumFiltro || String(item.albumId) === String(albumFiltro);
-        const colecaoMatch = !colecaoFiltro || item.selecao_escuderia === colecaoFiltro;
-        const tipoMatch = !tipoFiltro || item.tipo === tipoFiltro;
+        const colecaoMatch = !colecaoFilltro_check(colecaoFiltro, item.selecao_escuderia); // helper ou direto abaixo
+        
+        const matchColecao = !colecaoFiltro || item.selecao_escuderia === colecaoFiltro;
+        
+        // Filtro de Venda ou Troca
+        let matchTipo = true;
+        if (tipoVitrineFiltro !== 'todos') {
+          matchTipo = item.tipo === tipoVitrineFiltro;
+        }
 
-        return buscaMatch && albumMatch && colecaoMatch && tipoMatch;
+        return buscaMatch && albumMatch && matchColecao && matchTipo;
       });
 
       renderizar(filtrados);
+    }
+
+    function colecaoFiltro_check(filtro, valor) {
+      return !filtro || valor === filtro;
     }
 
     function renderizar(lista) {
@@ -204,22 +229,33 @@
         return;
       }
 
-      catalog.innerHTML = lista.map(f => `
-        <div class="sticker-card">
-          <div class="sticker-img-wrap"><img src="${f.imagem}" alt="${f.nome}"></div>
-          <div class="sticker-info">
-            <div class="vendedor-label">👤 ${f.vendedorNome}</div>
-            <div class="card-row">Álbum: <span>${f.album}</span></div>
-            <div class="card-row">Número: <span>${f.numero}</span></div>
-            <div class="sticker-title">${f.nome}</div>
-            <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
-            <div class="card-row">Tipo: <span>${f.tipo}</span></div>
-            <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${f.quantidade}</div>
-            <div class="sticker-price">€ ${Number(f.preco).toFixed(2).replace('.', ',')}</div>
-            <a href="perfil.html?id=${f.vendedorId}" class="btn-vendedor">Ver Vendedor ➔</a>
+      catalog.innerHTML = lista.map(f => {
+        const isTroca = f.tipo === 'troca';
+        const classeCard = isTroca ? 'sticker-card card-troca' : 'sticker-card';
+        const badgeHtml = isTroca 
+          ? `<span class="badge-tipo badge-troca">🔄 Troca</span>` 
+          : `<span class="badge-tipo badge-venda">💶 Venda</span>`;
+        
+        // Se for troca, esconde o preço
+        const precoHtml = isTroca ? '' : `<div class="sticker-price">€ ${Number(f.preco).toFixed(2).replace('.', ',')}</div>`;
+
+        return `
+          <div class="${classeCard}">
+            <div class="sticker-img-wrap"><img src="${f.imagem}" alt="${f.nome}"></div>
+            <div class="sticker-info">
+              <div class="vendedor-label">👤 ${f.vendedorNome}</div>
+              <div class="card-row">Álbum: <span>${f.album}</span></div>
+              <div class="card-row">Número: <span>${f.numero}</span></div>
+              <div class="sticker-title">${f.nome}</div>
+              <div class="card-row">Seleção: <span>${f.selecao_escuderia}</span></div>
+              ${badgeHtml}
+              <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${f.quantidade}</div>
+              ${precoHtml}
+              <a href="perfil.html?id=${f.vendedorId}" class="btn-vendedor">Ver Vendedor ➔</a>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
     init();
   </script>
