@@ -23,8 +23,7 @@
     .controls-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
     input, select { width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
-    input:focus, select:focus { border-color: var(--gold); }
-
+    
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
     .card { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem; }
     .card img { width: 90px; height: 115px; object-fit: contain; background: #0f172a; border-radius: 6px; }
@@ -33,12 +32,14 @@
     .card-inputs { width: 100%; display: flex; gap: 0.5rem; margin-top: 0.5rem; }
     .input-wrapper { flex: 1; text-align: left; }
     .input-wrapper label { font-size: 0.65rem; color: var(--gold); }
-    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; outline: none; }
+    .input-wrapper input { width: 100%; padding: 0.4rem; font-size: 0.8rem; text-align: center; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; }
     .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 0.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
     
-    .pagination-container { text-align: center; margin: 2rem 0; display: flex; justify-content: center; gap: 10px; align-items: center; }
-    .btn-nav { background: var(--gold); color: #0f172a; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 700; }
-    .btn-nav:disabled { background: #475569; cursor: not-allowed; }
+    /* Novo estilo de paginação */
+    .pagination-nav { text-align: center; margin: 2rem 0; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+    .btn-page { background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; }
+    .btn-page.active { background: var(--gold); color: #0f172a; font-weight: 800; }
+    .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -78,14 +79,11 @@
     </div>
 
     <div class="cards-grid" id="vitrineGrid">
-      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando figurinhas...</div>
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">Carregando...</div>
     </div>
 
-    <div class="pagination-container" id="paginationContainer">
-      <button class="btn-nav" id="btnPrev" onclick="mudarPagina(-1)" disabled>Anterior</button>
-      <span id="pageIndicator" style="font-weight: 600;">Página 1</span>
-      <button class="btn-nav" id="btnNext" onclick="mudarPagina(1)">Próxima</button>
-    </div>
+    <!-- Container da nova paginação numérica -->
+    <div class="pagination-nav" id="paginationNav"></div>
   </div>
 
   <script>
@@ -97,55 +95,69 @@
     let usuarioLogado = null, authUserId = null, paginaAtual = 0;
     let mapaAlbuns = {}, meusPrecosQtd = {};
 
-    async function verificarAcesso() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) { window.location.href = "login.html"; return null; }
-      authUserId = session.user.id;
-      const { data: perfil } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
-      if (!perfil) { window.location.href = "login.html"; return null; }
-      usuarioLogado = perfil;
-      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
-      if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
-      if (perfil.is_admin || perfil.funcao === 'admin' || perfil.funcao === 'master') document.getElementById('adminLinks').style.display = 'inline';
-      
-      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque').eq('user_id', authUserId);
-      if (vitrineSalva) vitrineSalva.forEach(item => meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque });
-      return session;
-    }
-
-    function aplicarFiltroQuery(query, termo, albumId) {
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      if (termo !== "") {
-        const termoLimpo = termo.replace('#', '');
-        query = (!isNaN(termoLimpo) && termoLimpo !== "") ? query.or(`numero.eq.${termoLimpo},numero.ilike.%${termoLimpo}%,nome.ilike.%${termo}%`) : query.ilike('nome', `%${termo}%`);
-      }
-      return query;
-    }
-
     async function buscarDados() {
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim();
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       
       let query = _supabase.from('figurinhas').select('*', { count: 'exact' }).order('numero', { ascending: true });
-      query = aplicarFiltroQuery(query, termo, albumId);
+      if (albumId !== 'todos') query = query.eq('album_id', albumId);
+      if (termo !== "") {
+        const t = termo.replace('#', '');
+        query = (!isNaN(t) && t !== "") ? query.or(`numero.eq.${t},nome.ilike.%${termo}%`) : query.ilike('nome', `%${termo}%`);
+      }
 
-      const { data, error } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
+      const { data, count, error } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
       if (error) return;
 
       renderizarCards(data || []);
-      document.getElementById('pageIndicator').innerText = `Página ${paginaAtual + 1}`;
-      document.getElementById('btnPrev').disabled = (paginaAtual === 0);
-      document.getElementById('btnNext').disabled = (!data || data.length < ITENS_POR_PAGINA);
+      renderizarPaginacao(count);
     }
 
-    function resetEBuscar() { paginaAtual = 0; buscarDados(); }
-    function mudarPagina(direcao) { paginaAtual += direcao; buscarDados(); }
+    function renderizarPaginacao(totalItems) {
+      const totalPaginas = Math.ceil(totalItems / ITENS_POR_PAGINA);
+      const nav = document.getElementById('paginationNav');
+      nav.innerHTML = '';
 
-    document.getElementById('search').addEventListener('input', () => {
-      clearTimeout(window.timeoutBusca);
-      window.timeoutBusca = setTimeout(resetEBuscar, 300);
-    });
+      const btnPrev = document.createElement('button');
+      btnPrev.innerText = 'Anterior';
+      btnPrev.className = 'btn-page';
+      btnPrev.disabled = paginaAtual === 0;
+      btnPrev.onclick = () => { paginaAtual--; buscarDados(); window.scrollTo(0, 0); };
+      nav.appendChild(btnPrev);
+
+      for (let i = 0; i < totalPaginas; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i + 1;
+        btn.className = `btn-page ${i === paginaAtual ? 'active' : ''}`;
+        btn.onclick = () => { paginaAtual = i; buscarDados(); window.scrollTo(0, 0); };
+        nav.appendChild(btn);
+      }
+
+      const btnNext = document.createElement('button');
+      btnNext.innerText = 'Próximo';
+      btnNext.className = 'btn-page';
+      btnNext.disabled = paginaAtual >= totalPaginas - 1;
+      btnNext.onclick = () => { paginaAtual++; buscarDados(); window.scrollTo(0, 0); };
+      nav.appendChild(btnNext);
+    }
+
+    // Funções mantidas do seu código original
+    async function verificarAcesso() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) { window.location.href = "login.html"; return null; }
+      authUserId = session.user.id;
+      const { data: perfil } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
+      if (perfil) {
+        usuarioLogado = perfil;
+        document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
+        if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
+        if (perfil.is_admin || perfil.funcao === 'admin' || perfil.funcao === 'master') document.getElementById('adminLinks').style.display = 'inline';
+      }
+      const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque').eq('user_id', authUserId);
+      if (vitrineSalva) vitrineSalva.forEach(item => meusPrecosQtd[item.figurinha_id] = { preco: item.preco, estoque: item.estoque });
+      return session;
+    }
 
     function renderizarCards(lista) {
       const grid = document.getElementById('vitrineGrid');
@@ -172,6 +184,9 @@
       alert(error ? "Erro ao salvar" : "Salvo com sucesso!");
     }
 
+    function resetEBuscar() { paginaAtual = 0; buscarDados(); }
+    document.getElementById('search').addEventListener('input', () => { clearTimeout(window.t); window.t = setTimeout(resetEBuscar, 500); });
+    
     async function init() {
       if (!(await verificarAcesso())) return;
       const { data: albuns } = await _supabase.from('albuns').select('*');
