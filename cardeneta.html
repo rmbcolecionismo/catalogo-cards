@@ -164,7 +164,7 @@
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
 
-    // Ordem exata e prioritária para Adrenalyn XL
+    // Ordem exata e prioritária para Adrenalyn XL / Turbo Attax
     const ordemAdrenalynXL = [
       "Golden Ballers",
       "Argélia", 
@@ -227,178 +227,73 @@
       "Limited Edition"
     ];
 
-    // Dicionário de normalização tratado para categorias gerais / Adrenalyn
     const mapaNormalizacaoCategorias = {
-      "argelia": "Argélia",
-      "algeria": "Argélia",
-      "argélia": "Argélia",
-      "spain": "Espanha",
-      "espanha": "Espanha",
-      "germany": "Alemanha",
-      "alemanha": "Alemanha",
-      "france": "França",
-      "frança": "França",
-      "england": "Inglaterra",
-      "inglaterra": "Inglaterra",
-      "italy": "Itália",
-      "itália": "Itália",
-      "netherlands": "Países Baixos",
-      "paises baixos": "Países Baixos",
-      "países baixos": "Países Baixos",
-      "holanda": "Países Baixos",
-      "portugal": "Portugal",
-      "brazil": "Brasil",
-      "brasil": "Brasil",
-      "argentina": "Argentina",
-      "australia": "Austrália",
-      "austrália": "Austrália",
-      "austria": "Áustria",
-      "áustria": "Áustria",
-      "belgica": "Bélgica",
-      "bélgica": "Bélgica",
-      "belgium": "Bélgica",
-      "canada": "Canadá",
-      "canadá": "Canadá",
-      "cabo verde": "Cabo Verde",
-      "colombia": "Colômbia",
-      "colômbia": "Colômbia",
-      "croacia": "Croácia",
-      "croácia": "Croácia",
-      "curacao": "Curação",
-      "curação": "Curação",
-      "equador": "Equador",
-      "egito": "Egito",
-      "egypt": "Egito",
-      "gana": "Gana",
-      "haiti": "Haiti",
-      "ira": "Irã",
-      "irã": "Irã",
-      "costa do marfim": "Costa do Marfim",
-      "japao": "Japão",
-      "japão": "Japão",
-      "japan": "Japão",
-      "jordania": "Jordânia",
-      "jordânia": "Jordânia",
-      "coreia do sul": "Coreia do Sul",
-      "mexico": "México",
-      "méxico": "México",
-      "marrocos": "Marrocos",
-      "novas zelandia": "Novas Zelândia",
-      "novas zelândia": "Novas Zelândia",
-      "noruega": "Noruega",
-      "panama": "Panamá",
-      "panamá": "Panamá",
-      "paraguai": "Paraguai",
-      "catar": "Catar",
-      "qatar": "Catar",
-      "arabia saudita": "Arábia Saudita",
-      "arábia saudita": "Arábia Saudita",
-      "escocia": "Escócia",
-      "escócia": "Escócia",
-      "senegal": "Senegal",
-      "africa do sul": "África do Sul",
-      "áfrica do sul": "África do Sul",
-      "suica": "Suíça",
-      "suíça": "Suíça",
-      "switzerland": "Suíça",
-      "tunisia": "Tunísia",
-      "tunísia": "Tunísia",
-      "estados unidos": "Estados Unidos",
-      "usa": "Estados Unidos",
-      "uruguai": "Uruguai",
-      "uzbequistao": "Uzbequistão",
-      "uzbequistão": "Uzbequistão",
-      "dinamarca": "Dinamarca",
-      "jamaica": "Jamaica",
-      "polonia": "Polônia",
-      "polônia": "Polônia",
-      "suecia": "Suécia",
-      "suécia": "Suécia",
-      "turquia": "Turquia",
-      "golden baller": "Golden Ballers",
-      "golden ballers": "Golden Ballers",
-      "golden ballers ⭐": "Golden Ballers",
-      "top keeper": "Top Keepers",
-      "top keepers": "Top Keepers",
-      "top keepers 🧤": "Top Keepers",
-      "defensive rock": "Defensive Rocks",
-      "defensive rocks": "Defensive Rocks",
-      "defensive rocks 🛡️": "Defensive Rocks",
-      "modfield maestro": "Modfield Maestros",
-      "modfield maestros": "Modfield Maestros",
-      "modfield maestros 🎯": "Modfield Maestros",
-      "goal machine": "Goal Machines",
-      "goal machines": "Goal Machines",
-      "goal machines ⚽": "Goal Machines",
-      "master rookie": "Master Rookies",
-      "master rookies": "Master Rookies",
-      "master rookies 🌟": "Master Rookies",
-      "official emblem & mascot": "Official Emblems & Mascots",
-      "official emblems & mascots": "Official Emblems & Mascots",
-      "official emblems & mascots 🏆": "Official Emblems & Mascots",
-      "eternos 22": "Eternos 22",
-      "momemtum": "Momemtum",
-      "limited edition": "Limited Edition",
-      "contenders - team crests": "Contenders - Team Crests"
+      "argelia": "Argélia", "algeria": "Argélia", "argélia": "Argélia",
+      "spain": "Espanha", "espanha": "Espanha",
+      "germany": "Alemanha", "alemanha": "Alemanha",
+      "france": "França", "frança": "França",
+      "england": "Inglaterra", "inglaterra": "Inglaterra",
+      "italy": "Itália", "itália": "Itália",
+      "netherlands": "Países Baixos", "paises baixos": "Países Baixos", "países baixos": "Países Baixos", "holanda": "Países Baixos",
+      "portugal": "Portugal", "brazil": "Brasil", "brasil": "Brasil",
+      "argentina": "Argentina", "australia": "Austrália", "austrália": "Austrália",
+      "austria": "Áustria", "áustria": "Áustria", "belgica": "Bélgica", "bélgica": "Bélgica", "belgium": "Bélgica",
+      "canada": "Canadá", "canadá": "Canadá", "cabo verde": "Cabo Verde",
+      "colombia": "Colômbia", "colômbia": "Colômbia", "croacia": "Croácia", "croácia": "Croácia",
+      "curacao": "Curação", "curação": "Curação", "equador": "Equador",
+      "egito": "Egito", "egypt": "Egito", "gana": "Gana", "haiti": "Haiti",
+      "ira": "Irã", "irã": "Irã", "costa do marfim": "Costa do Marfim",
+      "japao": "Japão", "japão": "Japão", "japan": "Japão",
+      "jordania": "Jordânia", "jordânia": "Jordânia", "coreia do sul": "Coreia do Sul",
+      "mexico": "México", "méxico": "México", "marrocos": "Marrocos",
+      "novas zelandia": "Novas Zelândia", "novas zelândia": "Novas Zelândia",
+      "noruega": "Noruega", "panama": "Panamá", "panamá": "Panamá",
+      "paraguai": "Paraguai", "catar": "Catar", "qatar": "Catar",
+      "arabia saudita": "Arábia Saudita", "arábia saudita": "Arábia Saudita",
+      "escocia": "Escócia", "escócia": "Escócia", "senegal": "Senegal",
+      "africa do sul": "África do Sul", "áfrica do sul": "África do Sul",
+      "suica": "Suíça", "suíça": "Suíça", "switzerland": "Suíça",
+      "tunisia": "Tunísia", "tunísia": "Tunísia", "estados unidos": "Estados Unidos", "usa": "Estados Unidos",
+      "uruguai": "Uruguai", "uzbequistao": "Uzbequistão", "uzbequistão": "Uzbequistão",
+      "dinamarca": "Dinamarca", "jamaica": "Jamaica", "polonia": "Polônia", "polônia": "Polônia",
+      "suecia": "Suécia", "suécia": "Suécia", "turquia": "Turquia",
+      "golden baller": "Golden Ballers", "golden ballers": "Golden Ballers",
+      "top keeper": "Top Keepers", "top keepers": "Top Keepers",
+      "defensive rock": "Defensive Rocks", "defensive rocks": "Defensive Rocks",
+      "modfield maestro": "Modfield Maestros", "modfield maestros": "Modfield Maestros",
+      "goal machine": "Goal Machines", "goal machines": "Goal Machines",
+      "master rookie": "Master Rookies", "master rookies": "Master Rookies",
+      "official emblem & mascot": "Official Emblems & Mascots", "official emblems & mascots": "Official Emblems & Mascots",
+      "eternos 22": "Eternos 22", "momemtum": "Momemtum", "limited edition": "Limited Edition", "contenders - team crests": "Contenders - Team Crests"
     };
 
-    // Mapeamento de bandeiras e ícones visuais para o cabeçalho das seções
     const bandeirasImagens = {
-      "Argélia": "https://flagcdn.com/w40/dz.png",
-      "Argentina": "https://flagcdn.com/w40/ar.png",
-      "Austrália": "https://flagcdn.com/w40/au.png",
-      "Áustria": "https://flagcdn.com/w40/at.png",
-      "Bélgica": "https://flagcdn.com/w40/be.png",
-      "Brasil": "https://flagcdn.com/w40/br.png",
-      "Canadá": "https://flagcdn.com/w40/ca.png",
-      "Cabo Verde": "https://flagcdn.com/w40/cv.png",
-      "Colômbia": "https://flagcdn.com/w40/co.png",
-      "Croácia": "https://flagcdn.com/w40/hr.png",
-      "Curação": "https://flagcdn.com/w40/cw.png",
-      "Equador": "https://flagcdn.com/w40/ec.png",
-      "Egito": "https://flagcdn.com/w40/eg.png",
-      "Inglaterra": "https://flagcdn.com/w40/gb-eng.png",
-      "França": "https://flagcdn.com/w40/fr.png",
-      "Alemanha": "https://flagcdn.com/w40/de.png",
-      "Gana": "https://flagcdn.com/w40/gh.png",
-      "Haiti": "https://flagcdn.com/w40/ht.png",
-      "Irã": "https://flagcdn.com/w40/ir.png",
-      "Costa do Marfim": "https://flagcdn.com/w40/ci.png",
-      "Japão": "https://flagcdn.com/w40/jp.png",
-      "Jordânia": "https://flagcdn.com/w40/jo.png",
-      "Coreia do Sul": "https://flagcdn.com/w40/kr.png",
-      "México": "https://flagcdn.com/w40/mx.png",
-      "Marrocos": "https://flagcdn.com/w40/ma.png",
-      "Países Baixos": "https://flagcdn.com/w40/nl.png",
-      "Novas Zelândia": "https://flagcdn.com/w40/nz.png",
-      "Noruega": "https://flagcdn.com/w40/no.png",
-      "Panamá": "https://flagcdn.com/w40/pa.png",
-      "Paraguai": "https://flagcdn.com/w40/py.png",
-      "Portugal": "https://flagcdn.com/w40/pt.png",
-      "Catar": "https://flagcdn.com/w40/qa.png",
-      "Arábia Saudita": "https://flagcdn.com/w40/sa.png",
-      "Escócia": "https://flagcdn.com/w40/gb-sct.png",
-      "Senegal": "https://flagcdn.com/w40/sn.png",
-      "África do Sul": "https://flagcdn.com/w40/za.png",
-      "Espanha": "https://flagcdn.com/w40/es.png",
-      "Suíça": "https://flagcdn.com/w40/ch.png",
-      "Tunísia": "https://flagcdn.com/w40/tn.png",
-      "Estados Unidos": "https://flagcdn.com/w40/us.png",
-      "Uruguai": "https://flagcdn.com/w40/uy.png",
-      "Uzbequistão": "https://flagcdn.com/w40/uz.png",
-      "Dinamarca": "https://flagcdn.com/w40/dk.png",
-      "Itália": "https://flagcdn.com/w40/it.png",
-      "Jamaica": "https://flagcdn.com/w40/jm.png",
-      "Polônia": "https://flagcdn.com/w40/pl.png",
-      "Suécia": "https://flagcdn.com/w40/se.png",
-      "Turquia": "https://flagcdn.com/w40/tr.png",
-      "Eternos 22": "https://flagcdn.com/w40/ar.png",
-      "Golden Ballers": "⭐",
-      "Top Keepers": "🧤",
-      "Defensive Rocks": "🛡️",
-      "Modfield Maestros": "🎯",
-      "Goal Machines": "⚽",
-      "Master Rookies": "🌟",
+      "Argélia": "https://flagcdn.com/w40/dz.png", "Argentina": "https://flagcdn.com/w40/ar.png",
+      "Austrália": "https://flagcdn.com/w40/au.png", "Áustria": "https://flagcdn.com/w40/at.png",
+      "Bélgica": "https://flagcdn.com/w40/be.png", "Brasil": "https://flagcdn.com/w40/br.png",
+      "Canadá": "https://flagcdn.com/w40/ca.png", "Cabo Verde": "https://flagcdn.com/w40/cv.png",
+      "Colômbia": "https://flagcdn.com/w40/co.png", "Croácia": "https://flagcdn.com/w40/hr.png",
+      "Curação": "https://flagcdn.com/w40/cw.png", "Equador": "https://flagcdn.com/w40/ec.png",
+      "Egito": "https://flagcdn.com/w40/eg.png", "Inglaterra": "https://flagcdn.com/w40/gb-eng.png",
+      "França": "https://flagcdn.com/w40/fr.png", "Alemanha": "https://flagcdn.com/w40/de.png",
+      "Gana": "https://flagcdn.com/w40/gh.png", "Haiti": "https://flagcdn.com/w40/ht.png",
+      "Irã": "https://flagcdn.com/w40/ir.png", "Costa do Marfim": "https://flagcdn.com/w40/ci.png",
+      "Japão": "https://flagcdn.com/w40/jp.png", "Jordânia": "https://flagcdn.com/w40/jo.png",
+      "Coreia do Sul": "https://flagcdn.com/w40/kr.png", "México": "https://flagcdn.com/w40/mx.png",
+      "Marrocos": "https://flagcdn.com/w40/ma.png", "Países Baixos": "https://flagcdn.com/w40/nl.png",
+      "Novas Zelândia": "https://flagcdn.com/w40/nz.png", "Noruega": "https://flagcdn.com/w40/no.png",
+      "Panamá": "https://flagcdn.com/w40/pa.png", "Paraguai": "https://flagcdn.com/w40/py.png",
+      "Portugal": "https://flagcdn.com/w40/pt.png", "Catar": "https://flagcdn.com/w40/qa.png",
+      "Arábia Saudita": "https://flagcdn.com/w40/sa.png", "Escócia": "https://flagcdn.com/w40/gb-sct.png",
+      "Senegal": "https://flagcdn.com/w40/sn.png", "África do Sul": "https://flagcdn.com/w40/za.png",
+      "Espanha": "https://flagcdn.com/w40/es.png", "Suíça": "https://flagcdn.com/w40/ch.png",
+      "Tunísia": "https://flagcdn.com/w40/tn.png", "Estados Unidos": "https://flagcdn.com/w40/us.png",
+      "Uruguai": "https://flagcdn.com/w40/uy.png", "Uzbequistão": "https://flagcdn.com/w40/uz.png",
+      "Dinamarca": "https://flagcdn.com/w40/dk.png", "Itália": "https://flagcdn.com/w40/it.png",
+      "Jamaica": "https://flagcdn.com/w40/jm.png", "Polônia": "https://flagcdn.com/w40/pl.png",
+      "Suécia": "https://flagcdn.com/w40/se.png", "Turquia": "https://flagcdn.com/w40/tr.png",
+      "Golden Ballers": "⭐", "Top Keepers": "🧤", "Defensive Rocks": "🛡️",
+      "Modfield Maestros": "🎯", "Goal Machines": "⚽", "Master Rookies": "🌟",
       "Official Emblems & Mascots": "🏆"
     };
 
@@ -408,13 +303,9 @@
         let selecaoBruta = f.selecao_escuderia || f.selecao || f.escuderia;
         if (selecaoBruta) {
           let selLimpa = String(selecaoBruta).trim().toLowerCase();
-          if (mapaNormalizacaoCategorias[selLimpa]) {
-            return mapaNormalizacaoCategorias[selLimpa];
-          }
+          if (mapaNormalizacaoCategorias[selLimpa]) return mapaNormalizacaoCategorias[selLimpa];
           for (let chave in mapaNormalizacaoCategorias) {
-            if (selLimpa.includes(chave)) {
-              return mapaNormalizacaoCategorias[chave];
-            }
+            if (selLimpa.includes(chave)) return mapaNormalizacaoCategorias[chave];
           }
           return selecaoBruta;
         }
@@ -423,16 +314,10 @@
       let valorBruto = f.tipo || f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
       let valorLimpo = String(valorBruto).trim().toLowerCase();
       
-      if (mapaNormalizacaoCategorias[valorLimpo]) {
-        return mapaNormalizacaoCategorias[valorLimpo];
-      }
-
+      if (mapaNormalizacaoCategorias[valorLimpo]) return mapaNormalizacaoCategorias[valorLimpo];
       for (let chave in mapaNormalizacaoCategorias) {
-        if (valorLimpo.includes(chave)) {
-          return mapaNormalizacaoCategorias[chave];
-        }
+        if (valorLimpo.includes(chave)) return mapaNormalizacaoCategorias[chave];
       }
-
       return valorBruto;
     }
 
@@ -457,28 +342,23 @@
         albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
 
-    // Função de ordenação customizada para o F1 Turbo Attax 2026 e outros álbuns
+    // ORDENAÇÃO CORRIGIDA: Garante ordem estritamente crescente numérica e alfanumérica dentro de cada grupo
     function ordenarFigurinhasAlbum(a, b) {
       let numA = String(a.numero || '').trim();
       let numB = String(b.numero || '').trim();
 
-      // Remove o '#' inicial para comparação numérica/alfanumérica limpa
       let limpoA = numA.startsWith('#') ? numA.substring(1) : numA;
       let limpoB = numB.startsWith('#') ? numB.substring(1) : numB;
 
       let isNumA = /^\d+$/.test(limpoA);
       let isNumB = /^\d+$/.test(limpoB);
 
-      // Se ambos forem estritamente numéricos (ex: #001, #120), ordena matematicamente
       if (isNumA && isNumB) {
         return parseInt(limpoA, 10) - parseInt(limpoB, 10);
       }
-      // Se apenas o A for numérico, ele vem antes de códigos alfanuméricos
       if (isNumA && !isNumB) return -1;
-      // Se apenas o B for numérico, o B vem antes
       if (!isNumA && isNumB) return 1;
 
-      // Se ambos forem alfanuméricos (ex: #RR-01, #RR-WEB), ordenação padrão de texto
       return limpoA.localeCompare(limpoB);
     }
 
@@ -494,7 +374,6 @@
         return;
       }
 
-      // Busca as figurinhas do álbum
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
@@ -507,7 +386,7 @@
       
       figurinhasDoAlbum = figs || [];
       
-      // Aplica a ordenação inteligente (suporta numéricas e alfanuméricas tipo F1 Turbo Attax de #001 até #RR-WEB)
+      // ORDENAÇÃO APLICADA AQUI DIRETAMENTE AO CARREGAR O ÁLBUM
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
       const { data: userColecao } = await _supabase
@@ -548,7 +427,7 @@
         return a.localeCompare(b);
       });
 
-      let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+      let html = '<option value="todos">📂 Toutes as Categorias / Tipos</option>';
       categoriasOrdenadas.forEach(cat => {
         html += `<option value="${cat}">${cat}</option>`;
       });
@@ -575,9 +454,7 @@
         const q = mapaCadernetaUsuario[f.id] || 0;
         if (q > 0) {
           tenhoCount++;
-          if (q > 1) {
-            repetidasCount += (q - 1);
-          }
+          if (q > 1) repetidasCount += (q - 1);
         }
       });
 
@@ -596,7 +473,6 @@
           let catFig = obterCategoriaPadrao(f);
           if (catFig !== filtroTipo) return false;
         }
-
         return true;
       });
 
@@ -652,11 +528,8 @@
           const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
           const tipoCard = f.tipo || '';
 
-          // Exibe o número exatamente como está gravado ou limpo de '#' duplicados
           let numFormatado = String(f.numero || '').trim();
-          if (!numFormatado.startsWith('#')) {
-            numFormatado = '#' + numFormatado;
-          }
+          if (!numFormatado.startsWith('#')) numFormatado = '#' + numFormatado;
 
           return `
             <div class="${classeCard}" id="card-${f.id}">
@@ -760,9 +633,7 @@
       Object.values(mapaCadernetaUsuario).forEach(q => {
         if (q > 0) {
           tenhoCount++;
-          if (q > 1) {
-            repetidasCount += (q - 1);
-          }
+          if (q > 1) repetidasCount += (q - 1);
         }
       });
 
@@ -795,7 +666,7 @@
       if (!albumAtualId) return alert("Selecione um álbum primeiro.");
       document.getElementById('shareDropdown').classList.remove('active');
 
-      let texto = `⚽ *${nomeAlbumAtual || 'Minha Coleção'}*\n`;
+      let texto = `🏁 *${nomeAlbumAtual || 'Minha Coleção'}*\n`;
 
       if (tipo === 'ambos' || tipo === 'faltantes') {
         const faltantesObj = {};
@@ -809,7 +680,7 @@
           }
         });
 
-        if (Object.keys(faltantesObj).length > 1 || (Object.keys(faltantesObj).length === 1)) {
+        if (Object.keys(faltantesObj).length > 0) {
           texto += `\n❌ *Faltantes*\n`;
           for (let cat in faltantesObj) {
             texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
