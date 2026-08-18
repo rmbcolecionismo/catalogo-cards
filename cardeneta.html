@@ -385,7 +385,7 @@
       "Suécia": "https://flagcdn.com/w40/se.png",
       "Turquia": "https://flagcdn.com/w40/tr.png",
       "Eternos 22": "https://flagcdn.com/w40/ar.png"
-    ];
+    };
 
     function obterCategoriaPadrao(f) {
       let tipoBruto = String(f.tipo || '').trim().toLowerCase();
@@ -450,7 +450,7 @@
       if (!albumAtualId) {
         document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0, 0);
-        atualizarSelectFiltroTipos([]);
+        popularSelectFiltroTipos(); // Corrigido para chamar a função correta
         return;
       }
 
@@ -485,7 +485,11 @@
     function popularSelectFiltroTipos() {
       const selectTipo = document.getElementById('selectFiltroTipo');
       
-      // Descobrir quais categorias existem de fato neste álbum e ordená-las com base na lista oficial (ordemAdrenalynXL)
+      if (!albumAtualId || figurinhasDoAlbum.length === 0) {
+        selectTipo.innerHTML = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+        return;
+      }
+
       let categoriasEncontradas = new Set();
       figurinhasDoAlbum.forEach(f => {
         categoriasEncontradas.add(obterCategoriaPadrao(f));
