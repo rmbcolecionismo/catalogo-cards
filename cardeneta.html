@@ -297,6 +297,25 @@
       "Official Emblems & Mascots": "🏆"
     };
 
+    const emojisIconesWhatsapp = {
+      "Golden Ballers": "⭐", "Argélia": "🇩🇿", "Argentina": "🇦🇷",
+      "Austrália": "🇦🇺", "Áustria": "🇦🇹", "Bélgica": "🇧🇪", "Brasil": "🇧🇷",
+      "Canadá": "🇨🇦", "Cabo Verde": "🇨🇻", "Colômbia": "🇨🇴", "Croácia": "🇭🇷",
+      "Curação": "🇨🇼", "Equador": "🇪🇨", "Egito": "🇪🇬", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      "França": "🇫🇷", "Alemanha": "🇩🇪", "Gana": "🇬🇭", "Haiti": "🇭🇹",
+      "Irã": "🇮🇷", "Costa do Marfim": "🇨🇮", "Japão": "🇯🇵", "Jordânia": "🇯🇴",
+      "Coreia do Sul": "🇰🇷", "México": "🇲🇽", "Marrocos": "🇲🇦", "Países Baixos": "🇳🇱",
+      "Novas Zelândia": "🇳🇿", "Noruega": "🇳🇴", "Panamá": "🇵🇦", "Paraguai": "🇵🇾",
+      "Portugal": "🇵🇹", "Catar": "🇶🇦", "Arábia Saudita": "🇸🇦", "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+      "Senegal": "🇸🇳", "África do Sul": "🇿🇦", "Espanha": "🇪🇸", "Suíça": "🇨🇭",
+      "Tunísia": "🇹🇳", "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿",
+      "Contenders - Team Crests": "🛡️", "Dinamarca": "🇩🇰", "Itália": "🇮🇹",
+      "Jamaica": "🇯🇲", "Polônia": "🇵🇱", "Suécia": "🇸🇪", "Turquia": "🇹🇷",
+      "Top Keepers": "🧤", "Defensive Rocks": "🪨", "Modfield Maestros": "🎯",
+      "Goal Machines": "⚽", "Master Rookies": "🌟", "Official Emblems & Mascots": "🏆",
+      "Eternos 22": "✨", "Momemtum": "🔥", "Limited Edition": "💎"
+    };
+
     function obterCategoriaPadrao(f) {
       let tipoBruto = String(f.tipo || '').trim().toLowerCase();
       if (tipoBruto === 'team logo' || tipoBruto === 'icon' || tipoBruto === 'hero' || tipoBruto === 'fan favourite') {
@@ -666,55 +685,82 @@
       if (!albumAtualId) return alert("Selecione um álbum primeiro.");
       document.getElementById('shareDropdown').classList.remove('active');
 
-      let texto = `🏁 *${nomeAlbumAtual || 'Minha Coleção'}*\n`;
+      let texto = `*Marketplace e Trocas de Figurinhas*\n\n🏁 *${nomeAlbumAtual || 'Minha Coleção'}*`;
 
       if (tipo === 'ambos' || tipo === 'faltantes') {
-        const faltantesObj = {};
+        const faltantesPorCategoria = {};
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd === 0) {
             let cat = obterCategoriaPadrao(f);
-            if (!faltantesObj[cat]) faltantesObj[cat] = [];
+            if (!faltantesPorCategoria[cat]) faltantesPorCategoria[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
-            faltantesObj[cat].push(numLimpo);
+            faltantesPorCategoria[cat].push(numLimpo);
           }
         });
 
-        if (Object.keys(faltantesObj).length > 0) {
-          texto += `\n❌ *Faltantes*\n`;
-          for (let cat in faltantesObj) {
-            texto += `• ${cat}: ${faltantesObj[cat].join(', ')}\n`;
+        texto += `\n\n*Faltantes*`;
+        
+        let temFaltanteReal = false;
+        ordemAdrenalynXL.forEach(cat => {
+          if (faltantesPorCategoria[cat] && faltantesPorCategoria[cat].length > 0) {
+            temFaltanteReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '📌';
+            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
           }
-        } else {
-          texto += `\n❌ *Faltantes*: Álbum Completo! 🎉\n`;
+        });
+
+        // Caso haja alguma categoria extra que não esteja na lista pré-definida
+        for (let cat in faltantesPorCategoria) {
+          if (!ordemAdrenalynXL.includes(cat)) {
+            temFaltanteReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '📌';
+            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
+          }
+        }
+
+        if (!temFaltanteReal) {
+          texto += `\nÁlbum Completo! 🎉`;
         }
       }
 
       if (tipo === 'ambos' || tipo === 'repetidas') {
-        const repetidasObj = {};
+        const repetidasPorCategoria = {};
         figurinhasDoAlbum.forEach(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           if (qtd > 1) {
             let cat = obterCategoriaPadrao(f);
-            if (!repetidasObj[cat]) repetidasObj[cat] = [];
+            if (!repetidasPorCategoria[cat]) repetidasPorCategoria[cat] = [];
             let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
-            let numRepetidasExtras = qtd - 1;
-            let sufixo = numRepetidasExtras > 0 ? ` (×${qtd})` : '';
-            repetidasObj[cat].push(`${numLimpo}${sufixo}`);
+            let extras = qtd - 1;
+            let itemStr = extras > 1 ? `${numLimpo} (${extras})` : numLimpo;
+            repetidasPorCategoria[cat].push(itemStr);
           }
         });
 
-        if (Object.keys(repetidasObj).length > 0) {
-          texto += `\n🔁 *Repetidas*\n`;
-          for (let cat in repetidasObj) {
-            texto += `• ${cat}: ${repetidasObj[cat].join(', ')}\n`;
+        texto += `\n\n*Repetidas*`;
+
+        let temRepetidaReal = false;
+        ordemAdrenalynXL.forEach(cat => {
+          if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 0) {
+            temRepetidaReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '🔁';
+            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
           }
-        } else if (tipo === 'repetidas') {
-          texto += `\n🔁 *Repetidas*: Nenhuma cadastrada.\n`;
+        });
+
+        for (let cat in repetidasPorCategoria) {
+          if (!ordemAdrenalynXL.includes(cat)) {
+            temRepetidaReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '🔁';
+            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+          }
+        }
+
+        if (!temRepetidaReal) {
+          texto += `\nNenhuma cadastrada.`;
         }
       }
-
-      texto += `\nAlguém tem interesse em troca ou venda?`;
 
       const urlWpp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
       window.open(urlWpp, '_blank');
