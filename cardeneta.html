@@ -44,13 +44,13 @@
 
     .cardeneta-grid { 
       display: grid; 
-      grid-template-columns: repeat(3, 1fr); /* Força exatamente 3 colunas em qualquer tela */
+      grid-template-columns: repeat(3, 1fr); 
       gap: 10px; 
     }
 
     @media (min-width: 768px) {
       .cardeneta-grid { 
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Mantém o comportamento adaptativo flexível em computadores/tablets maiores */
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
       }
     }
     
@@ -152,20 +152,26 @@
     let ehDonoDaCardeneta = true; 
     let idAlvoVisualizacao = null; 
     let ordemCategoriasDinamica = [];
-    let mapaIconesCategorias = {}; // Mapeia nome da categoria/ordem para o ícone cadastrado no admin[cite: 9]
+    let mapaIconesCategorias = {}; 
 
     function obterCategoriaPadrao(f) {
       const tipoStr = String(f.tipo || '').trim();
       const selecaoStr = String(f.selecao_escuderia || f.selecao || f.escuderia || '').trim();
 
-      if (ordemCategoriasDinamica.includes(tipoStr)) {
-        return tipoStr;
-      }
-      if (ordemCategoriasDinamica.includes(selecaoStr)) {
-        return selecaoStr;
+      // Procura correspondência exata ou case-insensitive nas categorias configuradas no admin
+      const encontradaOrdem = ordemCategoriasDinamica.find(cat => 
+        cat.toLowerCase() === tipoStr.toLowerCase() || cat.toLowerCase() === selecaoStr.toLowerCase()
+      );
+
+      if (encontradaOrdem) {
+        return encontradaOrdem;
       }
 
-      return tipoStr && tipoStr !== 'Geral' ? tipoStr : (selecaoStr || 'Geral');
+      if (tipoStr && tipoStr.toLowerCase() !== 'geral') {
+        return tipoStr;
+      }
+      
+      return selecaoStr || tipoStr || 'Geral';
     }
 
     async function initCardeneta() {
@@ -247,7 +253,7 @@
         return;
       }
 
-      // 1. BUSCA OBRIGATÓRIA DA ORDEM E DOS ÍCONES NA TABELA DO ADMIN (albuns_categorias_ordens)[cite: 9]
+      // 1. BUSCA UNIVERSAL DA ORDEM E ÍCONES NA TABELA DO ADMIN PARA QUALQUER ÁLBUM
       try {
         const { data: ordemData, error: ordemError } = await _supabase
           .from('album_categorias_ordem')
@@ -266,7 +272,6 @@
             }
           });
         } else {
-          console.warn("Aviso: Não foi possível carregar a ordem personalizada de categorias.", ordemError);
           ordemCategoriasDinamica = [];
           mapaIconesCategorias = {};
         }
@@ -410,7 +415,7 @@
 
       chavesOrdenadas.forEach(cat => {
         let iconeHtml = '';
-        const refIcone = mapaIconesCategorias[cat]; // Busca o ícone vindo dinamicamente da tabela do admin[cite: 9]
+        const refIcone = mapaIconesCategorias[cat]; 
         if (refIcone) {
           if (refIcone.startsWith('http') || refIcone.startsWith('data:image')) {
             iconeHtml = `<img src="${refIcone}" class="bandeira-icone" alt="Ícone de ${cat}"> `;
