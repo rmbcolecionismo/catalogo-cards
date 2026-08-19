@@ -85,7 +85,7 @@
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
-        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold);">Carregando usuário...</span>
+        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold);">Carregando usuário...[cite: 6]</span>
       </div>
     </div>
 
@@ -156,7 +156,9 @@
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const _supabase = supabase.Client(SUPABASE_URL, SUPABASE_KEY); // Ajuste caso necessário, mantido o objeto original
+    
+    // CORREÇÃO: Utilizando createClient corretamente para o SDK v2 do Supabase
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioAtual = null;
     let albumAtualId = null;
@@ -166,7 +168,6 @@
     let ehDonoDaCardeneta = true; 
     let idAlvoVisualizacao = null; 
 
-    // Ordem dinâmica carregada do banco de dados para o álbum atual
     let ordemCategoriasDinamica = [];
 
     const mapaNormalizacaoCategorias = {
@@ -290,6 +291,8 @@
       if (session) {
         usuarioAtual = session.user;
         document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
+      } else {
+        document.getElementById('userEmail').innerText = `👤 Visitante`;
       }
 
       if (donoIdUrl) {
@@ -304,9 +307,8 @@
           idAlvoVisualizacao = session.user.id;
           ehDonoDaCardeneta = true;
         } else {
-          alert("Você precisa fazer login para acessar sua caderneta.");
-          window.location.href = "login.html";
-          return;
+          // Caso não haja sessão e nenhum ID na URL, permite acesso como visualização livre ou redireciona se preferir
+          ehDonoDaCardeneta = false;
         }
       }
 
@@ -326,7 +328,7 @@
 
       const select = document.getElementById('selectAlbum');
       select.innerHTML = '<option value="">Selecione um Álbum...</option>' + 
-        albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+        (albuns || []).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
 
     function ordenarFigurinhasAlbum(a, b) {
@@ -361,7 +363,6 @@
         return;
       }
 
-      // Buscar a ordem das categorias direto da nova tabela do Supabase
       const { data: ordemData, error: ordemError } = await _supabase
         .from('album_categorias_ordem')
         .select('nome_categoria')
@@ -387,16 +388,20 @@
       figurinhasDoAlbum = figs || [];
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
-      const { data: userColecao } = await _supabase
-        .from('usuario_cardeneta')
-        .select('figurinha_id, quantidade')
-        .eq('user_id', idAlvoVisualizacao);
+      if (idAlvoVisualizacao) {
+        const { data: userColecao } = await _supabase
+          .from('usuario_cardeneta')
+          .select('figurinha_id, quantidade')
+          .eq('user_id', idAlvoVisualizacao);
 
-      mapaCadernetaUsuario = {};
-      if (userColecao) {
-        userColecao.forEach(item => {
-          mapaCadernetaUsuario[item.figurinha_id] = item.quantidade;
-        });
+        mapaCadernetaUsuario = {};
+        if (userColecao) {
+          userColecao.forEach(item => {
+            mapaCadernetaUsuario[item.figurinha_id] = item.quantidade;
+          });
+        }
+      } else {
+        mapaCadernetaUsuario = {};
       }
 
       popularSelectFiltroTipos();
