@@ -269,23 +269,26 @@
         return;
       }
 
-      // Tenta buscar a ordem das categorias de forma segura (caso a tabela não exista, ignora o erro)
+      // 1. BUSCA OBRIGATÓRIA DA ORDEM NA TABELA DE CATEGORIAS DO ÁLBUM
       try {
         const { data: ordemData, error: ordemError } = await _supabase
           .from('album_categorias_ordem')
-          .select('nome_categoria')
+          .select('nome_categoria, posicao')
           .eq('album_id', albumAtualId)
           .order('posicao', { ascending: true });
 
         if (!ordemError && ordemData) {
-          ordemCategoriasDinamica = ordemData.map(item => item.nome_categoria);
+          ordemCategoriasDinamica = ordemData.map(item => String(item.nome_categoria).trim());
         } else {
+          console.warn("Aviso: Não foi possível carregar a ordem personalizada de categorias.", ordemError);
           ordemCategoriasDinamica = [];
         }
       } catch (e) {
+        console.error("Erro ao buscar ordenação de categorias:", e);
         ordemCategoriasDinamica = [];
       }
 
+      // 2. BUSCA AS FIGURINHAS DO ÁLBUM
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
@@ -300,6 +303,7 @@
       figurinhasDoAlbum = figs || [];
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
+      // 3. BUSCA A COLEÇÃO DO USUÁRIO
       if (idAlvoVisualizacao) {
         const { data: userColecao } = await _supabase
           .from('usuario_cardeneta')
@@ -333,9 +337,11 @@
         categoriasEncontradas.add(obterCategoriaPadrao(f));
       });
 
+      // Ordena com base estrita na sequência vinda da tabela de ordem
       let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
+        
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
@@ -406,6 +412,7 @@
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
+        
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
@@ -657,12 +664,10 @@
         });
 
         for (let cat in repetidasPorCategoria) {
-          if (!ordemCategoriasDinas?.includes(cat)) { // corrigido para prevenção de erro se necessário
-            if (!ordemCategoriasDinamica.includes(cat)) {
-              temRepetidaReal = true;
-              let emoji = emojisIconesWhatsapp[cat] || '🔁';
-              texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
-            }
+          if (!ordemCategoriasDinamica.includes(cat)) {
+            temRepetidaReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '🔁';
+            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
           }
         }
 
