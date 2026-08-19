@@ -37,7 +37,7 @@
     /* Menu de Compartilhamento WhatsApp (Dropdown) */
     .share-dropdown { position: relative; display: inline-block; }
     .share-menu-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
-    .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+    .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.15); color: var(--gold); }
     .share-dropdown.active .share-menu-content { display: block; }
 
@@ -292,6 +292,7 @@
         return;
       }
 
+      // Busca a ordem exata cadastrada em album_categorias_ordem para este álbum
       const { data: ordemData, error: ordemError } = await _supabase
         .from('album_categorias_ordem')
         .select('nome_categoria')
@@ -350,6 +351,7 @@
         categoriasEncontradas.add(obterCategoriaPadrao(f));
       });
 
+      // Ordena com base na tabela album_categorias_ordem
       let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
@@ -420,6 +422,7 @@
         gruposMap[categoria].push(f);
       });
 
+      // Ordena os grupos seguindo rigorosamente a ordem cadastrada no banco
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
@@ -514,7 +517,7 @@
     }
 
     async function salvarQuantidadeBanco(figurinhaId, novaQtd) {
-      if (!ehDonoDaCardeneta || !usuarioAtual) return;
+      if (!ehDonoDaCardeneta) return;
 
       if (novaQtd === 0) {
         delete mapaCadernetaUsuario[figurinhaId];
