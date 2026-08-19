@@ -17,10 +17,13 @@
     .vitrine-content { flex: 1; }
 
     /* Filtros da Vitrine */
-    .vitrine-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    .vitrine-filters { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
     .filter-field:focus { border-color: var(--gold); }
     
+    /* Alerta abaixo do filtro */
+    .marketplace-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 10px 15px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 20px; text-align: center; font-weight: 500; }
+
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
     .sticker-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #f8fafc; display: flex; flex-direction: column; transition: 0.3s; }
@@ -109,7 +112,7 @@
       <!-- Chamada de destaque para Cardeneta -->
       <div class="cardeneta-cta">
         <p>✨ Quer organizar sua coleção?</p>
-        <a href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
+        <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
           <button style="background: white; color: #0f172a; border: none; font-weight: 800;">Ver Cardeneta do Colega</button>
         </a>
       </div>
@@ -144,6 +147,11 @@
         <option value="troca">🔄 Somente Trocas</option>
       </select>
       <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
+    </div>
+
+    <!-- Alerta sobre responsabilidade dos itens negociados -->
+    <div class="marketplace-alert">
+      ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.
     </div>
 
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
@@ -266,6 +274,12 @@
       const linkWpp = document.getElementById('linkWhatsApp');
       linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
       linkWpp.style.display = 'block';
+    }
+
+    // Inserir o ID do usuário alvo no link da cardeneta do colega
+    const identificadorCardeneta = perfil.user_id || perfil.id;
+    if (identificadorCardeneta) {
+      document.getElementById('linkCardenetaColega').href = `cardeneta.html?id=${identificadorCardeneta}`;
     }
     
     document.getElementById('editNome').value = perfil.nome || '';
