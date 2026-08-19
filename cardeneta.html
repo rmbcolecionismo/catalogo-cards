@@ -156,78 +156,18 @@
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const _supabase = supabase.Client(SUPABASE_URL, SUPABASE_KEY); // Ajuste caso necessário, mantido o objeto original
 
     let usuarioAtual = null;
     let albumAtualId = null;
     let nomeAlbumAtual = "";
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
-    let ehDonoDaCardeneta = true; // Controla se pode editar ou não
-    let idAlvoVisualizacao = null; // ID de quem está sendo visitado via ?id=
+    let ehDonoDaCardeneta = true; 
+    let idAlvoVisualizacao = null; 
 
-    // Ordem exata e prioritária para Adrenalyn XL / Turbo Attax
-    const ordemAdrenalynXL = [
-      "Golden Ballers",
-      "Argélia", 
-      "Argentina", 
-      "Austrália", 
-      "Áustria", 
-      "Bélgica", 
-      "Brasil", 
-      "Canadá", 
-      "Cabo Verde", 
-      "Colômbia", 
-      "Croácia", 
-      "Curação", 
-      "Equador", 
-      "Egito", 
-      "Inglaterra", 
-      "França", 
-      "Alemanha", 
-      "Gana", 
-      "Haiti", 
-      "Irã", 
-      "Costa do Marfim", 
-      "Japão", 
-      "Jordânia", 
-      "Coreia do Sul", 
-      "México", 
-      "Marrocos", 
-      "Países Baixos", 
-      "Novas Zelândia", 
-      "Noruega", 
-      "Panamá", 
-      "Paraguai", 
-      "Portugal", 
-      "Catar", 
-      "Arábia Saudita", 
-      "Escócia", 
-      "Senegal", 
-      "África do Sul", 
-      "Espanha", 
-      "Suíça", 
-      "Tunísia", 
-      "Estados Unidos", 
-      "Uruguai", 
-      "Uzbequistão", 
-      "Contenders - Team Crests", 
-      "Dinamarca", 
-      "Itália", 
-      "Jamaica", 
-      "Polônia", 
-      "Suécia", 
-      "Turquia", 
-      "Top Keepers", 
-      "Defensive Rocks", 
-      "Modfield Maestros", 
-      "Goal Machines", 
-      "Master Rookies", 
-      "Official Emblems & Mascots", 
-      "Eternos 22", 
-      "Momemtum", 
-      "Limited Edition"
-    ];
+    // Ordem dinâmica carregada do banco de dados para o álbum atual
+    let ordemCategoriasDinamica = [];
 
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia", "algeria": "Argélia", "argélia": "Argélia",
@@ -352,7 +292,6 @@
         document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
       }
 
-      // Trilha de verificação de acesso (Dono vs Visitante)
       if (donoIdUrl) {
         idAlvoVisualizacao = donoIdUrl;
         if (usuarioAtual && donoIdUrl === usuarioAtual.id) {
@@ -371,7 +310,6 @@
         }
       }
 
-      // Ajustes visuais de permissão
       if (!ehDonoDaCardeneta) {
         document.getElementById('tituloCardenetaPagina').innerText = "📖 Cardeneta do Colecionador";
         document.getElementById('subtituloCardenetaPagina').innerText = "Modo de visualização (Apenas leitura).";
@@ -391,7 +329,6 @@
         albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
 
-    // ORDENAÇÃO CORRIGIDA: Garante ordem estritamente crescente numérica e alfanumérica dentro de cada grupo
     function ordenarFigurinhasAlbum(a, b) {
       let numA = String(a.numero || '').trim();
       let numB = String(b.numero || '').trim();
@@ -417,10 +354,24 @@
       nomeAlbumAtual = selectElement.options[selectElement.selectedIndex]?.text || '';
 
       if (!albumAtualId) {
+        ordemCategoriasDinamica = [];
         document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0, 0);
         popularSelectFiltroTipos();
         return;
+      }
+
+      // Buscar a ordem das categorias direto da nova tabela do Supabase
+      const { data: ordemData, error: ordemError } = await _supabase
+        .from('album_categorias_ordem')
+        .select('nome_categoria')
+        .eq('album_id', albumAtualId)
+        .order('posicao', { ascending: true });
+
+      if (!ordemError && ordemData) {
+        ordemCategoriasDinamica = ordemData.map(item => item.nome_categoria);
+      } else {
+        ordemCategoriasDinamica = [];
       }
 
       const { data: figs, error } = await _supabase
@@ -434,8 +385,6 @@
       }
       
       figurinhasDoAlbum = figs || [];
-      
-      // ORDENAÇÃO APLICADA AQUI DIRETAMENTE AO CARREGAR O ÁLBUM
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
       const { data: userColecao } = await _supabase
@@ -468,8 +417,8 @@
       });
 
       let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
-        let indexA = ordemAdrenalynXL.indexOf(a);
-        let indexB = ordemAdrenalynXL.indexOf(b);
+        let indexA = ordemCategoriasDinamica.indexOf(a);
+        let indexB = ordemCategoriasDinamica.indexOf(b);
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
@@ -538,8 +487,8 @@
       });
 
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
-        let indexA = ordemAdrenalynXL.indexOf(a);
-        let indexB = ordemAdrenalynXL.indexOf(b);
+        let indexA = ordemCategoriasDinamica.indexOf(a);
+        let indexB = ordemCategoriasDinamica.indexOf(b);
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
@@ -580,7 +529,6 @@
           let numFormatado = String(f.numero || '').trim();
           if (!numFormatado.startsWith('#')) numFormatado = '#' + numFormatado;
 
-          // Aplicação da trava de segurança (Se for visitante, remove clique de edição e botões de quantidade)
           const clickAcao = ehDonoDaCardeneta ? `onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta"` : '';
           const botoesAcao = ehDonoDaCardeneta ? `
               <div class="fig-actions-row">
@@ -745,7 +693,7 @@
         texto += `\n\n*Faltantes*`;
         
         let temFaltanteReal = false;
-        ordemAdrenalynXL.forEach(cat => {
+        ordemCategoriasDinamica.forEach(cat => {
           if (faltantesPorCategoria[cat] && faltantesPorCategoria[cat].length > 0) {
             temFaltanteReal = true;
             let emoji = emojisIconesWhatsapp[cat] || '📌';
@@ -754,7 +702,7 @@
         });
 
         for (let cat in faltantesPorCategoria) {
-          if (!ordemAdrenalynXL.includes(cat)) {
+          if (!ordemCategoriasDinamica.includes(cat)) {
             temFaltanteReal = true;
             let emoji = emojisIconesWhatsapp[cat] || '📌';
             texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
@@ -783,7 +731,7 @@
         texto += `\n\n*Repetidas*`;
 
         let temRepetidaReal = false;
-        ordemAdrenalynXL.forEach(cat => {
+        ordemCategoriasDinamica.forEach(cat => {
           if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 0) {
             temRepetidaReal = true;
             let emoji = emojisIconesWhatsapp[cat] || '🔁';
@@ -792,7 +740,7 @@
         });
 
         for (let cat in repetidasPorCategoria) {
-          if (!ordemAdrenalynXL.includes(cat)) {
+          if (!ordemCategoriasDinamica.includes(cat)) {
             temRepetidaReal = true;
             let emoji = emojisIconesWhatsapp[cat] || '🔁';
             texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
@@ -812,4 +760,3 @@
   </script>
 </body>
 </html>
-
