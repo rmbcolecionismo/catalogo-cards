@@ -68,7 +68,6 @@
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
 
-    /* Estilo para a miniatura da foto na tabela de ajudas */
     .miniatura-foto {
       width: 45px;
       height: 45px;
@@ -111,6 +110,7 @@
     
     <div class="admin-tabs">
       <button class="tab-btn active" onclick="mudarAba('albuns', event)">📂 Álbuns</button>
+      <button class="tab-btn" onclick="mudarAba('ordens', event)">📑 Álbuns Ordens</button>
       <button class="tab-btn" onclick="mudarAba('tipos', event)">🏷️ Tipos</button>
       <button class="tab-btn" onclick="mudarAba('figurinhas', event)">🃏 Figurinhas</button>
       <button class="tab-btn" onclick="mudarAba('vendedores', event)">👥 Vendedores</button>
@@ -137,6 +137,53 @@
           <table class="lista-tabela">
             <thead><tr><th>Nome do Álbum</th><th style="width: 130px;">Ações</th></tr></thead>
             <tbody id="tabelaAlbuns"><tr><td colspan="2" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: ÁLBUNS ORDENS -->
+    <div id="aba-ordens" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardOrdem">📑 Cadastro de Ordem de Categoria por Álbum</h2>
+        <input type="hidden" id="editOrdemId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Selecione o Álbum</label>
+            <select id="selectAlbumOrdem"><option value="">Selecione o álbum...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Posição (Ordem Numérica)</label>
+            <input type="number" id="inputPosicaoOrdem" placeholder="Ex: 1, 2, 3...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nome da Categoria / Seleção</label>
+          <input type="text" id="inputNomeCategoriaOrdem" placeholder="Ex: Brasil, Golden Ballers, Espanha...">
+        </div>
+        <button class="btn-submit" id="btnSalvarOrdem" onclick="salvarAlbumOrdem()">Salvar Ordem</button>
+        <button class="btn-acao" id="btnCancelarOrdem" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoOrdem()">Cancelar</button>
+        <div id="msgOrdem" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Ordens Cadastradas por Álbum</h2>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Filtrar visualização por Álbum:</label>
+          <select id="selectFiltroOrdemAlbum" onchange="carregarAlbunsOrdens()">
+            <option value="">Todos os álbuns</option>
+          </select>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead>
+              <tr>
+                <th>Álbum</th>
+                <th style="width: 90px; text-align: center;">Posição</th>
+                <th>Categoria / Seleção</th>
+                <th style="width: 130px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAlbunsOrdens"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -323,6 +370,7 @@
       }
 
       carregarAlbuns();
+      carregarAlbunsOrdens();
       carregarTipos();
       carregarVendedores();
       carregarContatos();
@@ -346,13 +394,23 @@
     async function carregarAlbuns() {
       const tbody = document.getElementById('tabelaAlbuns');
       const selectFig = document.getElementById('selectAlbumFigurinha');
+      const selectOrdem = document.getElementById('selectAlbumOrdem');
+      const selectFiltroOrdem = document.getElementById('selectFiltroOrdemAlbum');
       if (!tbody) return;
 
       const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
       if (error) return;
 
-      if (data && selectFig) {
-        selectFig.innerHTML = `<option value="">Selecione o álbum...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      if (data) {
+        const optionsHtml = `<option value="">Selecione o álbum...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+        if (selectFig) selectFig.innerHTML = optionsHtml;
+        if (selectOrdem) selectOrdem.innerHTML = optionsHtml;
+
+        if (selectFiltroOrdem) {
+          const filtroAtual = selectFiltroOrdem.value;
+          selectFiltroOrdem.innerHTML = `<option value="">Todos os álbuns</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+          selectFiltroOrdem.value = filtroAtual;
+        }
       }
       
       if (data && tbody) {
@@ -386,6 +444,7 @@
         document.getElementById('inputNomeAlbum').value = '';
         cancelarEdicaoAlbum();
         carregarAlbuns();
+        carregarAlbunsOrdens();
       }
     }
 
@@ -409,6 +468,133 @@
       if (!confirm("Deseja realmente excluir este álbum?")) return;
       await _supabase.from('albuns').delete().eq('id', id);
       carregarAlbuns();
+      carregarAlbunsOrdens();
+    }
+
+    // --- FUNÇÕES DA ABA ÁLBUNS ORDENS ---
+    async function carregarAlbunsOrdens() {
+      const tbody = document.getElementById('tabelaAlbunsOrdens');
+      const filtroAlbumId = document.getElementById('selectFiltroOrdemAlbum')?.value;
+      if (!tbody) return;
+
+      let query = _supabase
+        .from('album_categorias_ordem')
+        .select(`
+          id,
+          album_id,
+          posicao,
+          nome_categoria,
+          albuns (
+            nome
+          )
+        `)
+        .order('posicao', { ascending: true });
+
+      if (filtroAlbumId) {
+        query = query.eq('album_id', filtroAlbumId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #fca5a5;">Erro ao carregar ordens: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhuma ordem cadastrada.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => {
+        const nomeAlbum = item.albuns?.nome || 'Álbum Desconhecido';
+        return `
+          <tr>
+            <td>${nomeAlbum}</td>
+            <td style="text-align: center; font-weight: bold; color: var(--gold);">${item.posicao}</td>
+            <td>${item.nome_categoria}</td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" onclick="prepararEdicaoOrdem('${item.id}', '${item.album_id}', ${item.posicao}, '${item.nome_categoria.replace(/'/g, "\\'")}')">Editar</button>
+                <button class="btn-excluir" onclick="excluirAlbumOrdem('${item.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function salvarAlbumOrdem() {
+      const id = document.getElementById('editOrdemId').value;
+      const album_id = document.getElementById('selectAlbumOrdem').value;
+      const posicao = parseInt(document.getElementById('inputPosicaoOrdem').value, 10);
+      const nome_categoria = document.getElementById('inputNomeCategoriaOrdem').value.trim();
+      const msgDiv = document.getElementById('msgOrdem');
+
+      msgDiv.style.display = "block";
+      msgDiv.className = "msg-feedback";
+
+      if (!album_id || isNaN(posicao) || !nome_categoria) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = "Preencha todos os campos corretamente (Álbum, Posição e Nome da Categoria).";
+        return;
+      }
+
+      let error;
+      if (id) {
+        ({ error } = await _supabase
+          .from('album_categorias_ordem')
+          .update({ album_id, posicao, nome_categoria })
+          .eq('id', id));
+      } else {
+        ({ error } = await _supabase
+          .from('album_categorias_ordem')
+          .insert([{ album_id, posicao, nome_categoria }]));
+      }
+
+      if (error) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = "Erro ao salvar ordem: " + error.message;
+        return;
+      }
+
+      msgDiv.className = "msg-feedback msg-success";
+      msgDiv.innerText = "Ordem salva com sucesso!";
+      
+      cancelarEdicaoOrdem();
+      carregarAlbunsOrdens();
+      setTimeout(() => { msgDiv.style.display = "none"; }, 3000);
+    }
+
+    function prepararEdicaoOrdem(id, album_id, posicao, nome_categoria) {
+      document.getElementById('editOrdemId').value = id;
+      document.getElementById('selectAlbumOrdem').value = album_id;
+      document.getElementById('inputPosicaoOrdem').value = posicao;
+      document.getElementById('inputNomeCategoriaOrdem').value = nome_categoria;
+      
+      document.getElementById('tituloCardOrdem').innerText = "📑 Editar Ordem de Categoria";
+      document.getElementById('btnSalvarOrdem').innerText = "Atualizar Ordem";
+      document.getElementById('btnCancelarOrdem').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoOrdem() {
+      document.getElementById('editOrdemId').value = '';
+      document.getElementById('selectAlbumOrdem').value = '';
+      document.getElementById('inputPosicaoOrdem').value = '';
+      document.getElementById('inputNomeCategoriaOrdem').value = '';
+      
+      document.getElementById('tituloCardOrdem').innerText = "📑 Cadastro de Ordem de Categoria por Álbum";
+      document.getElementById('btnSalvarOrdem').innerText = "Salvar Ordem";
+      document.getElementById('btnCancelarOrdem').style.display = "none";
+    }
+
+    async function excluirAlbumOrdem(id) {
+      if (!confirm("Deseja realmente excluir esta ordem de categoria?")) return;
+      const { error } = await _supabase.from('album_categorias_ordem').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+        return;
+      }
+      carregarAlbunsOrdens();
     }
 
     async function carregarTipos() {
@@ -472,7 +658,6 @@
       carregarTipos();
     }
 
-    // --- FUNÇÃO DE CADASTRO DE FIGURINHA ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
       const tipo_id = document.getElementById('selectTipoFigurinha').value;
@@ -663,7 +848,6 @@
       carregarContatos();
     }
 
-    // --- CARREGAR AJUDAS ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
@@ -721,10 +905,8 @@
       if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
 
       try {
-        // Tenta remover a imagem do Storage, se houver
         if (fotoUrl && fotoUrl.trim() !== '') {
           try {
-            // Extrai o caminho do arquivo de forma mais segura buscando pelo nome do bucket
             let caminhoArquivo = '';
             if (fotoUrl.includes('/object/public/colaboracoes/')) {
               caminhoArquivo = fotoUrl.split('/object/public/colaboracoes/')[1];
@@ -748,7 +930,6 @@
           }
         }
 
-        // Exclui o registro da tabela colaboracoes independentemente do arquivo do storage
         const { error: deleteError } = await _supabase
           .from('colaboracoes')
           .delete()
@@ -758,7 +939,6 @@
           throw new Error("Erro ao excluir registro do banco: " + deleteError.message);
         }
 
-        // Recarrega a lista de ajudas na tela
         carregarAjudas();
       } catch (err) {
         alert("Erro ao excluir ajuda: " + err.message);
