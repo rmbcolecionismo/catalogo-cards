@@ -18,6 +18,7 @@
     
     .container { max-width: 1250px; margin: 0 auto; }
     
+    /* Painel de Estatísticas */
     .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .stats-info h2 { font-size: 1.5rem; color: var(--gold); margin-bottom: 5px; }
     .stats-numbers { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -25,6 +26,7 @@
     .stat-box span { display: block; font-size: 0.7rem; color: #94a3b8; }
     .stat-box strong { font-size: 1.05rem; color: #f8fafc; }
 
+    /* Controles e Filtros */
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
@@ -32,12 +34,14 @@
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-gold:hover { background: #fbbf24; }
 
+    /* Menu de Compartilhamento WhatsApp (Dropdown) */
     .share-dropdown { position: relative; display: inline-block; }
     .share-menu-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
     .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.15); color: var(--gold); }
     .share-dropdown.active .share-menu-content { display: block; }
 
+    /* Seções e Agrupamentos Estilo Cardeneta Física */
     .secao-grupo { margin-bottom: 30px; }
     .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
     .secao-titulo img.bandeira-icone { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; display: inline-block; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
@@ -81,7 +85,7 @@
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
-        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold);"></span>
+        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold);">Carregando usuário...</span>
       </div>
     </div>
 
@@ -130,6 +134,7 @@
         <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
+      <!-- Botão Compartilhar WhatsApp com Dropdown (Ocultado se for visitante) -->
       <div class="share-dropdown" id="shareDropdownContainer">
         <button class="btn-gold" onclick="toggleShareMenu()">
           📤 Compartilhar WhatsApp ▾
@@ -142,6 +147,7 @@
       </div>
     </div>
 
+    <!-- Container da Coleção Agrupada -->
     <div id="cardenetaContainer">
       <div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>
     </div>
@@ -157,10 +163,71 @@
     let nomeAlbumAtual = "";
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
-    let ehDonoDaCardeneta = true; 
-    let idAlvoVisualizacao = null; 
+    let ehDonoDaCardeneta = true; // Controla se pode editar ou não
+    let idAlvoVisualizacao = null; // ID de quem está sendo visitado via ?id=
 
-    const ordemAdrenalynXL = ["Golden Ballers", "Argélia", "Argentina", "Austrália", "Áustria", "Bélgica", "Brasil", "Canadá", "Cabo Verde", "Colômbia", "Croácia", "Curação", "Equador", "Egito", "Inglaterra", "França", "Alemanha", "Gana", "Haiti", "Irã", "Costa do Marfim", "Japão", "Jordânia", "Coreia do Sul", "México", "Marrocos", "Países Baixos", "Novas Zelândia", "Noruega", "Panamá", "Paraguai", "Portugal", "Catar", "Arábia Saudita", "Escócia", "Senegal", "África do Sul", "Espanha", "Suíça", "Tunísia", "Estados Unidos", "Uruguai", "Uzbequistão", "Contenders - Team Crests", "Dinamarca", "Itália", "Jamaica", "Polônia", "Suécia", "Turquia", "Top Keepers", "Defensive Rocks", "Modfield Maestros", "Goal Machines", "Master Rookies", "Official Emblems & Mascots", "Eternos 22", "Momemtum", "Limited Edition"];
+    // Ordem exata e prioritária para Adrenalyn XL / Turbo Attax
+    const ordemAdrenalynXL = [
+      "Golden Ballers",
+      "Argélia", 
+      "Argentina", 
+      "Austrália", 
+      "Áustria", 
+      "Bélgica", 
+      "Brasil", 
+      "Canadá", 
+      "Cabo Verde", 
+      "Colômbia", 
+      "Croácia", 
+      "Curação", 
+      "Equador", 
+      "Egito", 
+      "Inglaterra", 
+      "França", 
+      "Alemanha", 
+      "Gana", 
+      "Haiti", 
+      "Irã", 
+      "Costa do Marfim", 
+      "Japão", 
+      "Jordânia", 
+      "Coreia do Sul", 
+      "México", 
+      "Marrocos", 
+      "Países Baixos", 
+      "Novas Zelândia", 
+      "Noruega", 
+      "Panamá", 
+      "Paraguai", 
+      "Portugal", 
+      "Catar", 
+      "Arábia Saudita", 
+      "Escócia", 
+      "Senegal", 
+      "África do Sul", 
+      "Espanha", 
+      "Suíça", 
+      "Tunísia", 
+      "Estados Unidos", 
+      "Uruguai", 
+      "Uzbequistão", 
+      "Contenders - Team Crests", 
+      "Dinamarca", 
+      "Itália", 
+      "Jamaica", 
+      "Polônia", 
+      "Suécia", 
+      "Turquia", 
+      "Top Keepers", 
+      "Defensive Rocks", 
+      "Modfield Maestros", 
+      "Goal Machines", 
+      "Master Rookies", 
+      "Official Emblems & Mascots", 
+      "Eternos 22", 
+      "Momemtum", 
+      "Limited Edition"
+    ];
 
     const mapaNormalizacaoCategorias = {
       "argelia": "Argélia", "algeria": "Argélia", "argélia": "Argélia",
@@ -264,8 +331,10 @@
           return selecaoBruta;
         }
       }
+
       let valorBruto = f.tipo || f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
       let valorLimpo = String(valorBruto).trim().toLowerCase();
+      
       if (mapaNormalizacaoCategorias[valorLimpo]) return mapaNormalizacaoCategorias[valorLimpo];
       for (let chave in mapaNormalizacaoCategorias) {
         if (valorLimpo.includes(chave)) return mapaNormalizacaoCategorias[chave];
@@ -281,13 +350,16 @@
       if (session) {
         usuarioAtual = session.user;
         document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
-      } else {
-        document.getElementById('userEmail').innerText = ""; 
       }
 
+      // Trilha de verificação de acesso (Dono vs Visitante)
       if (donoIdUrl) {
         idAlvoVisualizacao = donoIdUrl;
-        ehDonoDaCardeneta = (usuarioAtual && donoIdUrl === usuarioAtual.id);
+        if (usuarioAtual && donoIdUrl === usuarioAtual.id) {
+          ehDonoDaCardeneta = true;
+        } else {
+          ehDonoDaCardeneta = false;
+        }
       } else {
         if (session) {
           idAlvoVisualizacao = session.user.id;
@@ -299,30 +371,43 @@
         }
       }
 
+      // Ajustes visuais de permissão
       if (!ehDonoDaCardeneta) {
         document.getElementById('tituloCardenetaPagina').innerText = "📖 Cardeneta do Colecionador";
         document.getElementById('subtituloCardenetaPagina').innerText = "Modo de visualização (Apenas leitura).";
         document.getElementById('shareDropdownContainer').style.display = 'none';
+      } else {
+        document.getElementById('shareDropdownContainer').style.display = 'inline-block';
       }
 
       const { data: albuns, error } = await _supabase.from('albuns').select('id, nome');
-      if (error) return;
+      if (error) {
+        alert("Erro ao carregar álbuns: " + error.message);
+        return;
+      }
 
       const select = document.getElementById('selectAlbum');
       select.innerHTML = '<option value="">Selecione um Álbum...</option>' + 
         albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
     }
 
+    // ORDENAÇÃO CORRIGIDA: Garante ordem estritamente crescente numérica e alfanumérica dentro de cada grupo
     function ordenarFigurinhasAlbum(a, b) {
       let numA = String(a.numero || '').trim();
       let numB = String(b.numero || '').trim();
+
       let limpoA = numA.startsWith('#') ? numA.substring(1) : numA;
       let limpoB = numB.startsWith('#') ? numB.substring(1) : numB;
+
       let isNumA = /^\d+$/.test(limpoA);
       let isNumB = /^\d+$/.test(limpoB);
-      if (isNumA && isNumB) return parseInt(limpoA, 10) - parseInt(limpoB, 10);
+
+      if (isNumA && isNumB) {
+        return parseInt(limpoA, 10) - parseInt(limpoB, 10);
+      }
       if (isNumA && !isNumB) return -1;
       if (!isNumA && isNumB) return 1;
+
       return limpoA.localeCompare(limpoB);
     }
 
@@ -334,11 +419,23 @@
       if (!albumAtualId) {
         document.getElementById('cardenetaContainer').innerHTML = '<div class="empty-state">Selecione um álbum acima para visualizar sua caderneta.</div>';
         atualizarEstatisticas(0, 0, 0);
+        popularSelectFiltroTipos();
         return;
       }
 
-      const { data: figs } = await _supabase.from('figurinhas').select('*').eq('album_id', albumAtualId);
+      const { data: figs, error } = await _supabase
+        .from('figurinhas')
+        .select('*')
+        .eq('album_id', albumAtualId);
+
+      if (error) {
+        alert("Erro ao buscar figurinhas do álbum.");
+        return;
+      }
+      
       figurinhasDoAlbum = figs || [];
+      
+      // ORDENAÇÃO APLICADA AQUI DIRETAMENTE AO CARREGAR O ÁLBUM
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
       const { data: userColecao } = await _supabase
@@ -359,18 +456,44 @@
 
     function popularSelectFiltroTipos() {
       const selectTipo = document.getElementById('selectFiltroTipo');
-      if (!albumAtualId) return;
+      
+      if (!albumAtualId || figurinhasDoAlbum.length === 0) {
+        selectTipo.innerHTML = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+        return;
+      }
+
       let categoriasEncontradas = new Set();
-      figurinhasDoAlbum.forEach(f => categoriasEncontradas.add(obterCategoriaPadrao(f)));
+      figurinhasDoAlbum.forEach(f => {
+        categoriasEncontradas.add(obterCategoriaPadrao(f));
+      });
+
+      let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
+        let indexA = ordemAdrenalynXL.indexOf(a);
+        let indexB = ordemAdrenalynXL.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
       let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
-      Array.from(categoriasEncontradas).sort().forEach(cat => html += `<option value="${cat}">${cat}</option>`);
+      categoriasOrdenadas.forEach(cat => {
+        html += `<option value="${cat}">${cat}</option>`;
+      });
       selectTipo.innerHTML = html;
+      selectTipo.value = 'todos';
     }
 
     function renderizarGrid() {
       const container = document.getElementById('cardenetaContainer');
       const filtroStatus = document.getElementById('selectFiltroStatus').value;
       const filtroTipo = document.getElementById('selectFiltroTipo').value;
+
+      if (figurinhasDoAlbum.length === 0) {
+        container.innerHTML = '<div class="empty-state">Este álbum ainda não possui figurinhas cadastradas.</div>';
+        atualizarEstatisticas(0, 0, 0);
+        return;
+      }
 
       let totalAlb = figurinhasDoAlbum.length;
       let tenhoCount = 0;
@@ -390,93 +513,303 @@
         const qtd = mapaCadernetaUsuario[f.id] || 0;
         const possui = qtd > 0;
         const ehRepetida = qtd > 1;
+        
         if (filtroStatus === 'possui' && !possui) return false;
         if (filtroStatus === 'faltam' && possui) return false;
         if (filtroStatus === 'repetidas' && !ehRepetida) return false;
-        if (filtroTipo !== 'todos' && obterCategoriaPadrao(f) !== filtroTipo) return false;
+        
+        if (filtroTipo !== 'todos') {
+          let catFig = obterCategoriaPadrao(f);
+          if (catFig !== filtroTipo) return false;
+        }
         return true;
       });
 
       if (filtradas.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada com estes filtros.</div>';
         return;
       }
 
       let gruposMap = {};
       filtradas.forEach(f => {
-        let cat = obterCategoriaPadrao(f);
-        if (!gruposMap[cat]) gruposMap[cat] = [];
-        gruposMap[cat].push(f);
+        let categoria = obterCategoriaPadrao(f);
+        if (!gruposMap[categoria]) gruposMap[categoria] = [];
+        gruposMap[categoria].push(f);
+      });
+
+      let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
+        let indexA = ordemAdrenalynXL.indexOf(a);
+        let indexB = ordemAdrenalynXL.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
       });
 
       let htmlFinal = '';
-      Object.keys(gruposMap).sort().forEach(cat => {
-        htmlFinal += `<div class="secao-grupo"><div class="secao-titulo">${cat}</div><div class="cardeneta-grid">`;
+
+      chavesOrdenadas.forEach(cat => {
+        let iconeHtml = '';
+        const refIcone = bandeirasImagens[cat];
+        if (refIcone) {
+          if (refIcone.startsWith('http')) {
+            iconeHtml = `<img src="${refIcone}" class="bandeira-icone" alt="Ícone de ${cat}"> `;
+          } else {
+            iconeHtml = `${refIcone} `;
+          }
+        }
+        
+        htmlFinal += `
+          <div class="secao-grupo">
+            <div class="secao-titulo">${iconeHtml}${cat}</div>
+            <div class="cardeneta-grid">
+        `;
+
         htmlFinal += gruposMap[cat].map(f => {
           const qtd = mapaCadernetaUsuario[f.id] || 0;
           const possui = qtd > 0;
-          const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-          const clickAcao = ehDonoDaCardeneta ? `onclick="clicarMarcar('${f.id}')"` : '';
+          const classeCard = possui ? 'fig-card possui' : 'fig-card';
           
+          let textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1} Repetida(s)` : '✅ Já tenho') : '❌ Falta';
+          let footerTexto = possui ? (qtd > 1 ? `Tenho +${qtd-1} Repetida(s)` : '') : 'Falta';
+
+          const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+          const selecao = f.selecao_escuderia || f.selecao || f.escuderia || '';
+          const tipoCard = f.tipo || '';
+
+          let numFormatado = String(f.numero || '').trim();
+          if (!numFormatado.startsWith('#')) numFormatado = '#' + numFormatado;
+
+          // Aplicação da trava de segurança (Se for visitante, remove clique de edição e botões de quantidade)
+          const clickAcao = ehDonoDaCardeneta ? `onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta"` : '';
           const botoesAcao = ehDonoDaCardeneta ? `
               <div class="fig-actions-row">
-                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)">-</button>
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
                 <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
-                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)">+</button>
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
               </div>` : `
               <div class="fig-actions-row" style="justify-content: center;">
                 <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
               </div>`;
 
           return `
-            <div class="fig-card ${possui ? 'possui' : ''}" id="card-${f.id}">
-              <div class="fig-img-wrap" ${clickAcao}><img src="${imgUrl}" class="fig-img"></div>
-              <div class="fig-content"><div class="fig-numero">#${f.numero}</div><div class="fig-nome">${f.nome}</div></div>
+            <div class="${classeCard}" id="card-${f.id}">
+              <div class="fig-img-wrap" ${clickAcao}>
+                <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
+                <img src="${imgUrl}" class="fig-img" alt="${f.nome || 'Figurinha'}">
+              </div>
+              <div class="fig-content" ${clickAcao}>
+                <div class="fig-numero">${numFormatado}</div>
+                <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
+                ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
+                ${tipoCard ? `<div class="fig-tipo">⭐ ${tipoCard}</div>` : ''}
+              </div>
               ${botoesAcao}
+              <div class="fig-footer" id="footer-${f.id}">${footerTexto}</div>
             </div>
           `;
         }).join('');
+
         htmlFinal += `</div></div>`;
       });
+
       container.innerHTML = htmlFinal;
+    }
+
+    async function clicarMarcar(figurinhaId) {
+      if (!ehDonoDaCardeneta) return;
+      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
+      const novaQtd = qtdAtual > 0 ? 0 : 1;
+      await salvarQuantidadeBanco(figurinhaId, novaQtd);
+    }
+
+    async function alterarQtd(figurinhaId, delta) {
+      if (!ehDonoDaCardeneta) return;
+      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
+      let novaQtd = qtdAtual + delta;
+      if (novaQtd < 0) novaQtd = 0;
+      await salvarQuantidadeBanco(figurinhaId, novaQtd);
     }
 
     async function salvarQuantidadeBanco(figurinhaId, novaQtd) {
       if (!ehDonoDaCardeneta) return;
-      if (novaQtd === 0) delete mapaCadernetaUsuario[figurinhaId];
-      else mapaCadernetaUsuario[figurinhaId] = novaQtd;
-      
+
       if (novaQtd === 0) {
-        await _supabase.from('usuario_cardeneta').delete().eq('user_id', usuarioAtual.id).eq('figurinha_id', figurinhaId);
+        delete mapaCadernetaUsuario[figurinhaId];
       } else {
-        await _supabase.from('usuario_cardeneta').upsert([{ user_id: usuarioAtual.id, figurinha_id: figurinhaId, quantidade: novaQtd }], { onConflict: 'user_id, figurinha_id' });
+        mapaCadernetaUsuario[figurinhaId] = novaQtd;
       }
-      renderizarGrid();
+
+      atualizarCardVisual(figurinhaId);
+      recalcularEstatisticasGlobais();
+
+      if (novaQtd === 0) {
+        await _supabase
+          .from('usuario_cardeneta')
+          .delete()
+          .eq('user_id', usuarioAtual.id)
+          .eq('figurinha_id', figurinhaId);
+      } else {
+        await _supabase
+          .from('usuario_cardeneta')
+          .upsert([{ 
+            user_id: usuarioAtual.id, 
+            figurinha_id: figurinhaId, 
+            quantidade: novaQtd 
+          }], { onConflict: 'user_id, figurinha_id' });
+      }
     }
 
-    function alterarQtd(id, delta) {
-      let nova = (mapaCadernetaUsuario[id] || 0) + delta;
-      salvarQuantidadeBanco(id, Math.max(0, nova));
+    function atualizarCardVisual(figurinhaId) {
+      const card = document.getElementById(`card-${figurinhaId}`);
+      if (!card) return;
+
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      const possui = qtd > 0;
+      const badge = document.getElementById(`badge-${figurinhaId}`);
+      const qtyDisplay = document.getElementById(`qty-${figurinhaId}`);
+      const footer = document.getElementById(`footer-${figurinhaId}`);
+
+      if (possui) {
+        card.classList.add('possui');
+        badge.innerText = qtd > 1 ? `✅ Tenho +${qtd-1} Repetida(s)` : '✅ Já tenho';
+        badge.style.background = "#34d399";
+        badge.style.color = "#0f172a";
+        footer.innerText = qtd > 1 ? `Tenho +${qtd-1} Repetida(s)` : '';
+      } else {
+        card.classList.remove('possui');
+        badge.innerText = '❌ Falta';
+        badge.style.background = "rgba(0,0,0,0.7)";
+        badge.style.color = "white";
+        footer.innerText = 'Falta';
+      }
+      qtyDisplay.innerText = `Qtd: ${qtd}`;
     }
 
-    function clicarMarcar(id) {
-      let nova = (mapaCadernetaUsuario[id] || 0) > 0 ? 0 : 1;
-      salvarQuantidadeBanco(id, nova);
+    function recalcularEstatisticasGlobais() {
+      const total = figurinhasDoAlbum.length;
+      let tenhoCount = 0;
+      let repetidasCount = 0;
+
+      Object.values(mapaCadernetaUsuario).forEach(q => {
+        if (q > 0) {
+          tenhoCount++;
+          if (q > 1) repetidasCount += (q - 1);
+        }
+      });
+
+      atualizarEstatisticas(total, tenhoCount, repetidasCount);
     }
 
     function atualizarEstatisticas(total, tenho, repetidas) {
       const faltam = total - tenho;
-      const pct = total > 0 ? ((tenho / total) * 100).toFixed(1) : 0;
+      const porcentagem = total > 0 ? ((tenho / total) * 100).toFixed(1) : 0;
+
       document.getElementById('statTotal').innerText = total;
       document.getElementById('statTenho').innerText = tenho;
       document.getElementById('statFaltam').innerText = faltam;
       document.getElementById('statRepetidas').innerText = repetidas;
-      document.getElementById('statPorcentagem').innerText = pct + '%';
+      document.getElementById('statPorcentagem').innerText = porcentagem + '%';
     }
 
-    function toggleShareMenu() { document.getElementById('shareDropdownContainer').classList.toggle('active'); }
-    
+    function toggleShareMenu() {
+      const dropdown = document.getElementById('shareDropdownContainer');
+      dropdown.classList.toggle('active');
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.btn-gold') && !event.target.closest('.share-dropdown')) {
+        const drop = document.getElementById('shareDropdownContainer');
+        if (drop) drop.classList.remove('active');
+      }
+    }
+
+    function enviarWhatsApp(tipo) {
+      if (!albumAtualId) return alert("Selecione um álbum primeiro.");
+      document.getElementById('shareDropdownContainer').classList.remove('active');
+
+      let texto = `*Marketplace e Trocas de Figurinhas*\n\n🏁 *${nomeAlbumAtual || 'Minha Coleção'}*`;
+
+      if (tipo === 'ambos' || tipo === 'faltantes') {
+        const faltantesPorCategoria = {};
+        figurinhasDoAlbum.forEach(f => {
+          const qtd = mapaCadernetaUsuario[f.id] || 0;
+          if (qtd === 0) {
+            let cat = obterCategoriaPadrao(f);
+            if (!faltantesPorCategoria[cat]) faltantesPorCategoria[cat] = [];
+            let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+            faltantesPorCategoria[cat].push(numLimpo);
+          }
+        });
+
+        texto += `\n\n*Faltantes*`;
+        
+        let temFaltanteReal = false;
+        ordemAdrenalynXL.forEach(cat => {
+          if (faltantesPorCategoria[cat] && faltantesPorCategoria[cat].length > 0) {
+            temFaltanteReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '📌';
+            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
+          }
+        });
+
+        for (let cat in faltantesPorCategoria) {
+          if (!ordemAdrenalynXL.includes(cat)) {
+            temFaltanteReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '📌';
+            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
+          }
+        }
+
+        if (!temFaltanteReal) {
+          texto += `\nÁlbum Completo! 🎉`;
+        }
+      }
+
+      if (tipo === 'ambos' || tipo === 'repetidas') {
+        const repetidasPorCategoria = {};
+        figurinhasDoAlbum.forEach(f => {
+          const qtd = mapaCadernetaUsuario[f.id] || 0;
+          if (qtd > 1) {
+            let cat = obterCategoriaPadrao(f);
+            if (!repetidasPorCategoria[cat]) repetidasPorCategoria[cat] = [];
+            let numLimpo = String(f.numero || '').replace(/#/g, '').trim();
+            let extras = qtd - 1;
+            let itemStr = extras > 1 ? `${numLimpo} (${extras})` : numLimpo;
+            repetidasPorCategoria[cat].push(itemStr);
+          }
+        });
+
+        texto += `\n\n*Repetidas*`;
+
+        let temRepetidaReal = false;
+        ordemAdrenalynXL.forEach(cat => {
+          if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 0) {
+            temRepetidaReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '🔁';
+            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+          }
+        });
+
+        for (let cat in repetidasPorCategoria) {
+          if (!ordemAdrenalynXL.includes(cat)) {
+            temRepetidaReal = true;
+            let emoji = emojisIconesWhatsapp[cat] || '🔁';
+            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+          }
+        }
+
+        if (!temRepetidaReal) {
+          texto += `\nNenhuma cadastrada.`;
+        }
+      }
+
+      const urlWpp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(urlWpp, '_blank');
+    }
+
     initCardeneta();
   </script>
 </body>
 </html>
+
