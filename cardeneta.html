@@ -134,7 +134,7 @@
         <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
-      <!-- Botão Compartilhar WhatsApp com Dropdown (Ocultado se for visitante) -->
+      <!-- Botão Compartilhar WhatsApp com Dropdown -->
       <div class="share-dropdown" id="shareDropdownContainer">
         <button class="btn-gold" onclick="toggleShareMenu()">
           📤 Compartilhar WhatsApp ▾
@@ -157,7 +157,6 @@
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     
-    // CORREÇÃO: Utilizando createClient corretamente para o SDK v2 do Supabase
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioAtual = null;
@@ -169,46 +168,6 @@
     let idAlvoVisualizacao = null; 
 
     let ordemCategoriasDinamica = [];
-
-    const mapaNormalizacaoCategorias = {
-      "argelia": "Argélia", "algeria": "Argélia", "argélia": "Argélia",
-      "spain": "Espanha", "espanha": "Espanha",
-      "germany": "Alemanha", "alemanha": "Alemanha",
-      "france": "França", "frança": "França",
-      "england": "Inglaterra", "inglaterra": "Inglaterra",
-      "italy": "Itália", "itália": "Itália",
-      "netherlands": "Países Baixos", "paises baixos": "Países Baixos", "países baixos": "Países Baixos", "holanda": "Países Baixos",
-      "portugal": "Portugal", "brazil": "Brasil", "brasil": "Brasil",
-      "argentina": "Argentina", "australia": "Austrália", "austrália": "Austrália",
-      "austria": "Áustria", "áustria": "Áustria", "belgica": "Bélgica", "bélgica": "Bélgica", "belgium": "Bélgica",
-      "canada": "Canadá", "canadá": "Canadá", "cabo verde": "Cabo Verde",
-      "colombia": "Colômbia", "colômbia": "Colômbia", "croacia": "Croácia", "croácia": "Croácia",
-      "curacao": "Curação", "curação": "Curação", "equador": "Equador",
-      "egito": "Egito", "egypt": "Egito", "gana": "Gana", "haiti": "Haiti",
-      "ira": "Irã", "irã": "Irã", "costa do marfim": "Costa do Marfim",
-      "japao": "Japão", "japão": "Japão", "japan": "Japão",
-      "jordania": "Jordânia", "jordânia": "Jordânia", "coreia do sul": "Coreia do Sul",
-      "mexico": "México", "méxico": "México", "marrocos": "Marrocos",
-      "novas zelandia": "Novas Zelândia", "novas zelândia": "Novas Zelândia",
-      "noruega": "Noruega", "panama": "Panamá", "panamá": "Panamá",
-      "paraguai": "Paraguai", "catar": "Catar", "qatar": "Catar",
-      "arabia saudita": "Arábia Saudita", "arábia saudita": "Arábia Saudita",
-      "escocia": "Escócia", "escócia": "Escócia", "senegal": "Senegal",
-      "africa do sul": "África do Sul", "áfrica do sul": "África do Sul",
-      "suica": "Suíça", "suíça": "Suíça", "switzerland": "Suíça",
-      "tunisia": "Tunísia", "tunísia": "Tunísia", "estados unidos": "Estados Unidos", "usa": "Estados Unidos",
-      "uruguai": "Uruguai", "uzbequistao": "Uzbequistão", "uzbequistão": "Uzbequistão",
-      "dinamarca": "Dinamarca", "jamaica": "Jamaica", "polonia": "Polônia", "polônia": "Polônia",
-      "suecia": "Suécia", "suécia": "Suécia", "turquia": "Turquia",
-      "golden baller": "Golden Ballers", "golden ballers": "Golden Ballers",
-      "top keeper": "Top Keepers", "top keepers": "Top Keepers",
-      "defensive rock": "Defensive Rocks", "defensive rocks": "Defensive Rocks",
-      "modfield maestro": "Modfield Maestros", "modfield maestros": "Modfield Maestros",
-      "goal machine": "Goal Machines", "goal machines": "Goal Machines",
-      "master rookie": "Master Rookies", "master rookies": "Master Rookies",
-      "official emblem & mascot": "Official Emblems & Mascots", "official emblems & mascots": "Official Emblems & Mascots",
-      "eternos 22": "Eternos 22", "momemtum": "Momemtum", "limited edition": "Limited Edition", "contenders - team crests": "Contenders - Team Crests"
-    };
 
     const bandeirasImagens = {
       "Argélia": "https://flagcdn.com/w40/dz.png", "Argentina": "https://flagcdn.com/w40/ar.png",
@@ -251,36 +210,12 @@
       "Novas Zelândia": "🇳🇿", "Noruega": "🇳🇴", "Panamá": "🇵🇦", "Paraguai": "🇵🇾",
       "Portugal": "🇵🇹", "Catar": "🇶🇦", "Arábia Saudita": "🇸🇦", "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
       "Senegal": "🇸🇳", "África do Sul": "🇿🇦", "Espanha": "🇪🇸", "Suíça": "🇨🇭",
-      "Tunísia": "🇹🇳", "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿",
-      "Contenders - Team Crests": "🛡️", "Dinamarca": "🇩🇰", "Itália": "🇮🇹",
-      "Jamaica": "🇯🇲", "Polônia": "🇵🇱", "Suécia": "🇸🇪", "Turquia": "🇹🇷",
-      "Top Keepers": "🧤", "Defensive Rocks": "🪨", "Modfield Maestros": "🎯",
-      "Goal Machines": "⚽", "Master Rookies": "🌟", "Official Emblems & Mascots": "🏆",
-      "Eternos 22": "✨", "Momemtum": "🔥", "Limited Edition": "💎"
+      "Tunísia": "🇹🇳", "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿"
     };
 
+    // ALTERAÇÃO: Utiliza estritamente o campo 'tipo' cadastrado na tabela figurinhas
     function obterCategoriaPadrao(f) {
-      let tipoBruto = String(f.tipo || '').trim().toLowerCase();
-      if (tipoBruto === 'team logo' || tipoBruto === 'icon' || tipoBruto === 'hero' || tipoBruto === 'fan favourite') {
-        let selecaoBruta = f.selecao_escuderia || f.selecao || f.escuderia;
-        if (selecaoBruta) {
-          let selLimpa = String(selecaoBruta).trim().toLowerCase();
-          if (mapaNormalizacaoCategorias[selLimpa]) return mapaNormalizacaoCategorias[selLimpa];
-          for (let chave in mapaNormalizacaoCategorias) {
-            if (selLimpa.includes(chave)) return mapaNormalizacaoCategorias[chave];
-          }
-          return selecaoBruta;
-        }
-      }
-
-      let valorBruto = f.tipo || f.selecao_escuderia || f.selecao || f.escuderia || 'Geral';
-      let valorLimpo = String(valorBruto).trim().toLowerCase();
-      
-      if (mapaNormalizacaoCategorias[valorLimpo]) return mapaNormalizacaoCategorias[valorLimpo];
-      for (let chave in mapaNormalizacaoCategorias) {
-        if (valorLimpo.includes(chave)) return mapaNormalizacaoCategorias[chave];
-      }
-      return valorBruto;
+      return String(f.tipo || 'Geral').trim();
     }
 
     async function initCardeneta() {
@@ -290,24 +225,19 @@
 
       if (session) {
         usuarioAtual = session.user;
-        document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
+        document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;[cite: 6]
       } else {
         document.getElementById('userEmail').innerText = `👤 Visitante`;
       }
 
       if (donoIdUrl) {
         idAlvoVisualizacao = donoIdUrl;
-        if (usuarioAtual && donoIdUrl === usuarioAtual.id) {
-          ehDonoDaCardeneta = true;
-        } else {
-          ehDonoDaCardeneta = false;
-        }
+        ehDonoDaCardeneta = (usuarioAtual && donoIdUrl === usuarioAtual.id);
       } else {
         if (session) {
           idAlvoVisualizacao = session.user.id;
           ehDonoDaCardeneta = true;
         } else {
-          // Caso não haja sessão e nenhum ID na URL, permite acesso como visualização livre ou redireciona se preferir
           ehDonoDaCardeneta = false;
         }
       }
@@ -322,7 +252,7 @@
 
       const { data: albuns, error } = await _supabase.from('albuns').select('id, nome');
       if (error) {
-        alert("Erro ao carregar álbuns: " + error.message);
+        alert("Erro ao carregar álbuns: " + error.message);[cite: 6]
         return;
       }
 
@@ -363,6 +293,7 @@
         return;
       }
 
+      // Busca a ordem exata cadastrada em albuns_categorias_ordem para este álbum
       const { data: ordemData, error: ordemError } = await _supabase
         .from('album_categorias_ordem')
         .select('nome_categoria')
@@ -421,6 +352,7 @@
         categoriasEncontradas.add(obterCategoriaPadrao(f));
       });
 
+      // Ordena com base na tabela album_categorias_ordem
       let categoriasOrdenadas = Array.from(categoriasEncontradas).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
@@ -491,6 +423,7 @@
         gruposMap[categoria].push(f);
       });
 
+      // Ordena os grupos seguindo rigorosamente a ordem cadastrada no banco
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
@@ -745,10 +678,8 @@
         });
 
         for (let cat in repetidasPorCategoria) {
-          if (!ordemCategoriasDinamica.includes(cat)) {
-            temRepetidaReal = true;
-            let emoji = emojisIconesWhatsapp[cat] || '🔁';
-            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+          if (!ordemCategoriasDinas?.includes(cat)) {
+            // ...
           }
         }
 
