@@ -40,7 +40,6 @@
 
     .secao-grupo { margin-bottom: 30px; }
     .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-    .secao-titulo img.bandeira-icone { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; display: inline-block; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
     .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     
@@ -142,50 +141,6 @@
     let ehDonoDaCardeneta = true; 
     let idAlvoVisualizacao = null; 
     let ordemCategoriasDinamica = [];
-
-    const bandeirasImagens = {
-      "Argélia": "https://flagcdn.com/w40/dz.png", "Argentina": "https://flagcdn.com/w40/ar.png",
-      "Austrália": "https://flagcdn.com/w40/au.png", "Áustria": "https://flagcdn.com/w40/at.png",
-      "Bélgica": "https://flagcdn.com/w40/be.png", "Brasil": "https://flagcdn.com/w40/br.png",
-      "Canadá": "https://flagcdn.com/w40/ca.png", "Cabo Verde": "https://flagcdn.com/w40/cv.png",
-      "Colômbia": "https://flagcdn.com/w40/co.png", "Croácia": "https://flagcdn.com/w40/hr.png",
-      "Curação": "https://flagcdn.com/w40/cw.png", "Equador": "https://flagcdn.com/w40/ec.png",
-      "Egito": "https://flagcdn.com/w40/eg.png", "Inglaterra": "https://flagcdn.com/w40/gb-eng.png",
-      "França": "https://flagcdn.com/w40/fr.png", "Alemanha": "https://flagcdn.com/w40/de.png",
-      "Gana": "https://flagcdn.com/w40/gh.png", "Haiti": "https://flagcdn.com/w40/ht.png",
-      "Irã": "https://flagcdn.com/w40/ir.png", "Costa do Marfim": "https://flagcdn.com/w40/ci.png",
-      "Japão": "https://flagcdn.com/w40/jp.png", "Jordânia": "https://flagcdn.com/w40/jo.png",
-      "Coreia do Sul": "https://flagcdn.com/w40/kr.png", "México": "https://flagcdn.com/w40/mx.png",
-      "Marrocos": "https://flagcdn.com/w40/ma.png", "Países Baixos": "https://flagcdn.com/w40/nl.png",
-      "Novas Zelândia": "https://flagcdn.com/w40/nz.png", "Noruega": "https://flagcdn.com/w40/no.png",
-      "Panamá": "https://flagcdn.com/w40/pa.png", "Paraguai": "https://flagcdn.com/w40/py.png",
-      "Portugal": "https://flagcdn.com/w40/pt.png", "Catar": "https://flagcdn.com/w40/qa.png",
-      "Arábia Saudita": "https://flagcdn.com/w40/sa.png", "Escócia": "https://flagcdn.com/w40/gb-sct.png",
-      "Senegal": "https://flagcdn.com/w40/sn.png", "África do Sul": "https://flagcdn.com/w40/za.png",
-      "Espanha": "https://flagcdn.com/w40/es.png", "Suíça": "https://flagcdn.com/w40/ch.png",
-      "Tunísia": "https://flagcdn.com/w40/tn.png", "Estados Unidos": "https://flagcdn.com/w40/us.png",
-      "Uruguai": "https://flagcdn.com/w40/uy.png", "Uzbequistão": "https://flagcdn.com/w40/uz.png",
-      "Dinamarca": "https://flagcdn.com/w40/dk.png", "Itália": "https://flagcdn.com/w40/it.png",
-      "Jamaica": "https://flagcdn.com/w40/jm.png", "Polônia": "https://flagcdn.com/w40/pl.png",
-      "Suécia": "https://flagcdn.com/w40/se.png", "Turquia": "https://flagcdn.com/w40/tr.png",
-      "Golden Ballers": "⭐", "Top Keepers": "🧤", "Defensive Rocks": "🛡️",
-      "Modfield Maestros": "🎯", "Goal Machines": "⚽", "Master Rookies": "🌟",
-      "Official Emblems & Mascots": "🏆"
-    };
-
-    const emojisIconesWhatsapp = {
-      "Golden Ballers": "⭐", "Argélia": "🇩🇿", "Argentina": "🇦🇷",
-      "Austrália": "🇦🇺", "Áustria": "🇦🇹", "Bélgica": "🇧🇪", "Brasil": "🇧🇷",
-      "Canadá": "🇨🇦", "Cabo Verde": "🇨🇻", "Colômbia": "🇨🇴", "Croácia": "🇭🇷",
-      "Curação": "🇨🇼", "Equador": "🇪🇨", "Egito": "🇪🇬", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-      "França": "🇫🇷", "Alemanha": "🇩🇪", "Gana": "🇬🇭", "Haiti": "🇭🇹",
-      "Irã": "🇮🇷", "Costa do Marfim": "🇨🇮", "Japão": "🇯🇵", "Jordânia": "🇯🇴",
-      "Coreia do Sul": "🇰🇷", "México": "🇲🇽", "Marrocos": "🇲🇦", "Países Baixos": "🇳🇱",
-      "Novas Zelândia": "🇳🇿", "Noruega": "🇳🇴", "Panamá": "🇵🇦", "Paraguai": "🇵🇾",
-      "Portugal": "🇵🇹", "Catar": "🇶🇦", "Arábia Saudita": "🇸🇦", "Escócia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-      "Senegal": "🇸🇳", "África do Sul": "🇿🇦", "Espanha": "🇪🇸", "Suíça": "🇨🇭",
-      "Tunísia": "🇹🇳", "Estados Unidos": "🇺🇸", "Uruguai": "🇺🇾", "Uzbequistão": "🇺🇿"
-    };
 
     function obterCategoriaPadrao(f) {
       return String(f.tipo || 'Geral').trim();
@@ -422,19 +377,9 @@
       let htmlFinal = '';
 
       chavesOrdenadas.forEach(cat => {
-        let iconeHtml = '';
-        const refIcone = bandeirasImagens[cat];
-        if (refIcone) {
-          if (refIcone.startsWith('http')) {
-            iconeHtml = `<img src="${refIcone}" class="bandeira-icone" alt="Ícone de ${cat}"> `;
-          } else {
-            iconeHtml = `${refIcone} `;
-          }
-        }
-        
         htmlFinal += `
           <div class="secao-grupo">
-            <div class="secao-titulo">${iconeHtml}${cat}</div>
+            <div class="secao-titulo">${cat}</div>
             <div class="cardeneta-grid">
         `;
 
@@ -620,16 +565,14 @@
         ordemCategoriasDinamica.forEach(cat => {
           if (faltantesPorCategoria[cat] && faltantesPorCategoria[cat].length > 0) {
             temFaltanteReal = true;
-            let emoji = emojisIconesWhatsapp[cat] || '📌';
-            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
+            texto += `\n📌 ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
           }
         });
 
         for (let cat in faltantesPorCategoria) {
           if (!ordemCategoriasDinamica.includes(cat)) {
             temFaltanteReal = true;
-            let emoji = emojisIconesWhatsapp[cat] || '📌';
-            texto += `\n${emoji} ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
+            texto += `\n📌 ${cat}: ${faltantesPorCategoria[cat].join(', ')}`;
           }
         }
 
@@ -658,16 +601,14 @@
         ordemCategoriasDinamica.forEach(cat => {
           if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 0) {
             temRepetidaReal = true;
-            let emoji = emojisIconesWhatsapp[cat] || '🔁';
-            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+            texto += `\n🔁 ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
           }
         });
 
         for (let cat in repetidasPorCategoria) {
           if (!ordemCategoriasDinamica.includes(cat)) {
             temRepetidaReal = true;
-            let emoji = emojisIconesWhatsapp[cat] || '🔁';
-            texto += `\n${emoji} ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
+            texto += `\n🔁 ${cat}: ${repetidasPorCategoria[cat].join(', ')}`;
           }
         }
 
