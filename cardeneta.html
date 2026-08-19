@@ -92,8 +92,8 @@
     <!-- Painel de Estatísticas -->
     <div class="stats-panel">
       <div class="stats-info">
-        <h2>📖 Minha Cardeneta</h2>
-        <p style="font-size: 0.85rem; color: #94a3b8;">Clique na imagem para marcar/desmarcar ou use os botões para controlar repetidas.</p>
+        <h2 id="tituloCardenetaPagina">📖 Minha Cardeneta</h2>
+        <p id="subtituloCardenetaPagina" style="font-size: 0.85rem; color: #94a3b8;">Clique na imagem para marcar/desmarcar ou use os botões para controlar repetidas.</p>
       </div>
       <div class="stats-numbers">
         <div class="stat-box">
@@ -134,8 +134,8 @@
         <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
-      <!-- Botão Compartilhar WhatsApp com Dropdown -->
-      <div class="share-dropdown" id="shareDropdown">
+      <!-- Botão Compartilhar WhatsApp com Dropdown (Ocultado se for visitante) -->
+      <div class="share-dropdown" id="shareDropdownContainer">
         <button class="btn-gold" onclick="toggleShareMenu()">
           📤 Compartilhar WhatsApp ▾
         </button>
@@ -163,6 +163,8 @@
     let nomeAlbumAtual = "";
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {}; 
+    let ehDonoDaCardeneta = true; // Controla se pode editar ou não
+    let idAlvoVisualizacao = null; // ID de quem está sendo visitado via ?id=
 
     // Ordem exata e prioritária para Adrenalyn XL / Turbo Attax
     const ordemAdrenalynXL = [
@@ -342,13 +344,41 @@
 
     async function initCardeneta() {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        alert("Você precisa fazer login para acessar sua caderneta.");
-        window.location.href = "login.html";
-        return;
+      const urlParams = new URLSearchParams(window.location.search);
+      const donoIdUrl = urlParams.get('id');
+
+      if (session) {
+        usuarioAtual = session.user;
+        document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
       }
-      usuarioAtual = session.user;
-      document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
+
+      // Trilha de verificação de acesso (Dono vs Visitante)
+      if (donoIdUrl) {
+        idAlvoVisualizacao = donoIdUrl;
+        if (usuarioAtual && donoIdUrl === usuarioAtual.id) {
+          ehDonoDaCardeneta = true;
+        } else {
+          ehDonoDaCardeneta = false;
+        }
+      } else {
+        if (session) {
+          idAlvoVisualizacao = session.user.id;
+          ehDonoDaCardeneta = true;
+        } else {
+          alert("Você precisa fazer login para acessar sua caderneta.");
+          window.location.href = "login.html";
+          return;
+        }
+      }
+
+      // Ajustes visuais de permissão
+      if (!ehDonoDaCardeneta) {
+        document.getElementById('tituloCardenetaPagina').innerText = "📖 Cardeneta do Colecionador";
+        document.getElementById('subtituloCardenetaPagina').innerText = "Modo de visualização (Apenas leitura).";
+        document.getElementById('shareDropdownContainer').style.display = 'none';
+      } else {
+        document.getElementById('shareDropdownContainer').style.display = 'inline-block';
+      }
 
       const { data: albuns, error } = await _supabase.from('albuns').select('id, nome');
       if (error) {
@@ -411,7 +441,7 @@
       const { data: userColecao } = await _supabase
         .from('usuario_cardeneta')
         .select('figurinha_id, quantidade')
-        .eq('user_id', usuarioAtual.id);
+        .eq('user_id', idAlvoVisualizacao);
 
       mapaCadernetaUsuario = {};
       if (userColecao) {
@@ -446,7 +476,7 @@
         return a.localeCompare(b);
       });
 
-      let html = '<option value="todos">📂 Toutes as Categorias / Tipos</option>';
+      let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
       categoriasOrdenadas.forEach(cat => {
         html += `<option value="${cat}">${cat}</option>`;
       });
@@ -550,23 +580,31 @@
           let numFormatado = String(f.numero || '').trim();
           if (!numFormatado.startsWith('#')) numFormatado = '#' + numFormatado;
 
+          // Aplicação da trava de segurança (Se for visitante, remove clique de edição e botões de quantidade)
+          const clickAcao = ehDonoDaCardeneta ? `onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta"` : '';
+          const botoesAcao = ehDonoDaCardeneta ? `
+              <div class="fig-actions-row">
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
+                <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
+              </div>` : `
+              <div class="fig-actions-row" style="justify-content: center;">
+                <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+              </div>`;
+
           return `
             <div class="${classeCard}" id="card-${f.id}">
-              <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;" title="Clique para alternar entre Possuir/Falta">
+              <div class="fig-img-wrap" ${clickAcao}>
                 <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
                 <img src="${imgUrl}" class="fig-img" alt="${f.nome || 'Figurinha'}">
               </div>
-              <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+              <div class="fig-content" ${clickAcao}>
                 <div class="fig-numero">${numFormatado}</div>
                 <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Sem Nome'}</div>
                 ${selecao ? `<div class="fig-selecao">${selecao}</div>` : ''}
                 ${tipoCard ? `<div class="fig-tipo">⭐ ${tipoCard}</div>` : ''}
               </div>
-              <div class="fig-actions-row">
-                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', -1)" title="Diminuir">-</button>
-                <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
-                <button class="qty-btn" onclick="event.stopPropagation(); alterarQtd('${f.id}', 1)" title="Aumentar">+</button>
-              </div>
+              ${botoesAcao}
               <div class="fig-footer" id="footer-${f.id}">${footerTexto}</div>
             </div>
           `;
@@ -579,12 +617,14 @@
     }
 
     async function clicarMarcar(figurinhaId) {
+      if (!ehDonoDaCardeneta) return;
       const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
       const novaQtd = qtdAtual > 0 ? 0 : 1;
       await salvarQuantidadeBanco(figurinhaId, novaQtd);
     }
 
     async function alterarQtd(figurinhaId, delta) {
+      if (!ehDonoDaCardeneta) return;
       const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
       let novaQtd = qtdAtual + delta;
       if (novaQtd < 0) novaQtd = 0;
@@ -592,6 +632,8 @@
     }
 
     async function salvarQuantidadeBanco(figurinhaId, novaQtd) {
+      if (!ehDonoDaCardeneta) return;
+
       if (novaQtd === 0) {
         delete mapaCadernetaUsuario[figurinhaId];
       } else {
@@ -671,19 +713,20 @@
     }
 
     function toggleShareMenu() {
-      const dropdown = document.getElementById('shareDropdown');
+      const dropdown = document.getElementById('shareDropdownContainer');
       dropdown.classList.toggle('active');
     }
 
     window.onclick = function(event) {
       if (!event.target.matches('.btn-gold') && !event.target.closest('.share-dropdown')) {
-        document.getElementById('shareDropdown').classList.remove('active');
+        const drop = document.getElementById('shareDropdownContainer');
+        if (drop) drop.classList.remove('active');
       }
     }
 
     function enviarWhatsApp(tipo) {
       if (!albumAtualId) return alert("Selecione um álbum primeiro.");
-      document.getElementById('shareDropdown').classList.remove('active');
+      document.getElementById('shareDropdownContainer').classList.remove('active');
 
       let texto = `*Marketplace e Trocas de Figurinhas*\n\n🏁 *${nomeAlbumAtual || 'Minha Coleção'}*`;
 
@@ -710,7 +753,6 @@
           }
         });
 
-        // Caso haja alguma categoria extra que não esteja na lista pré-definida
         for (let cat in faltantesPorCategoria) {
           if (!ordemAdrenalynXL.includes(cat)) {
             temFaltanteReal = true;
