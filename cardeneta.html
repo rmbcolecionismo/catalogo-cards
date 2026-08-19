@@ -42,7 +42,17 @@
     .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
     .secao-titulo img.bandeira-icone { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; display: inline-block; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-    .cardeneta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .cardeneta-grid { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); /* Força exatamente 3 colunas em qualquer tela */
+      gap: 10px; 
+    }
+
+    @media (min-width: 768px) {
+      .cardeneta-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Mantém o comportamento adaptativo flexível em computadores/tablets maiores */
+      }
+    }
     
     .fig-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .fig-card:hover { transform: translateY(-3px); border-color: var(--gold); }
