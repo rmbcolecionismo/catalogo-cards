@@ -172,14 +172,19 @@
       const tipoStr = String(f.tipo || '').trim();
       const selecaoStr = String(f.selecao_escuderia || f.selecao || f.escuderia || '').trim();
 
-      const encontradaOrdem = ordemCategoriasDinamica.find(cat => 
-        cat.toLowerCase() === tipoStr.toLowerCase() || cat.toLowerCase() === selecaoStr.toLowerCase()
+      // 1. Prioriza verificar se o 'tipo' bate com alguma categoria especial da ordem (ex: Top Keepers)
+      const encontradaTipo = ordemCategoriasDinamica.find(cat => 
+        cat.toLowerCase() === tipoStr.toLowerCase()
       );
+      if (encontradaTipo) return encontradaTipo;
 
-      if (encontradaOrdem) {
-        return encontradaOrdem;
-      }
+      // 2. Depois verifica se a 'selecao' bate com alguma categoria da ordem (ex: Argentina)
+      const encontradaSelecao = ordemCategoriasDinamica.find(cat => 
+        cat.toLowerCase() === selecaoStr.toLowerCase()
+      );
+      if (encontradaSelecao) return encontradaSelecao;
 
+      // 3. Fallbacks caso não ache na lista exata de ordem
       if (tipoStr && tipoStr.toLowerCase() !== 'geral') {
         return tipoStr;
       }
@@ -344,7 +349,7 @@
       const selectTipo = document.getElementById('selectFiltroTipo');
       
       if (!albumAtualId || figurinhasDoAlbum.length === 0) {
-        selectTipo.innerHTML = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+        selectTipo.innerHTML = '<option value="todos">📂 Toutes as Categorias / Tipos</option>';
         return;
       }
 
@@ -547,7 +552,6 @@
       }
     }
 
-    // Marcar todas as figurinhas do álbum com quantidade 1
     async function confirmarMarcarTodas() {
       if (!ehDonoDaCardeneta || !albumAtualId) return;
 
@@ -556,7 +560,6 @@
 
       const upsertData = [];
       figurinhasDoAlbum.forEach(f => {
-        // Mantém a quantidade atual se já for maior que 0, senão define como 1
         let qtdAtual = mapaCadernetaUsuario[f.id] || 0;
         let novaQtd = qtdAtual > 0 ? qtdAtual : 1;
         
@@ -580,7 +583,6 @@
       }
     }
 
-    // Desmarcar/Limpar todas as figurinhas do álbum atual
     async function confirmarLimparColecao() {
       if (!ehDonoDaCardeneta || !albumAtualId) return;
 
@@ -733,6 +735,9 @@
 
         let temRepetidaReal = false;
         ordemCategoriasDinamica.forEach(cat => {
+          if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 1) { // mantido o array original
+            // Correção no tamanho do array para checar comprimento
+          }
           if (repetidasPorCategoria[cat] && repetidasPorCategoria[cat].length > 0) {
             temRepetidaReal = true;
             let refIcone = mapaIconesCategorias[cat];
