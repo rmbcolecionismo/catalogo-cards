@@ -32,6 +32,9 @@
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-gold:hover { background: #fbbf24; }
 
+    .btn-danger-outline { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-danger-outline:hover { background: rgba(248, 113, 113, 0.15); border-color: #f87171; }
+
     .share-dropdown { position: relative; display: inline-block; }
     .share-menu-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
     .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -123,6 +126,11 @@
         <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
+      <!-- Botão Adicionado: Desmarcar/Limpar Coleção -->
+      <button id="btnLimparColecao" class="btn-danger-outline" onclick="confirmarLimparColecao()" style="display: none;" title="Zerar todas as marcações deste álbum">
+        🔄 Limpar Coleção
+      </button>
+
       <div class="share-dropdown" id="shareDropdownContainer">
         <button class="btn-gold" onclick="toggleShareMenu()">📤 Compartilhar WhatsApp ▾</button>
         <div class="share-menu-content">
@@ -203,6 +211,7 @@
           document.getElementById('tituloCardenetaPagina').innerText = "📖 Cardeneta do Colecionador";
           document.getElementById('subtituloCardenetaPagina').innerText = "Modo de visualização (Apenas leitura).";
           document.getElementById('shareDropdownContainer').style.display = 'none';
+          document.getElementById('btnLimparColecao').style.display = 'none';
         }
 
         const { data: albuns, error } = await _supabase.from('albuns').select('id, nome');
@@ -243,6 +252,13 @@
       const selectElement = document.getElementById('selectAlbum');
       albumAtualId = selectElement.value;
       nomeAlbumAtual = selectElement.options[selectElement.selectedIndex]?.text || '';
+
+      const btnLimpar = document.getElementById('btnLimparColecao');
+      if (albumAtualId && ehDonoDaCardeneta) {
+        btnLimpar.style.display = 'inline-flex';
+      } else {
+        btnLimpar.style.display = 'none';
+      }
 
       if (!albumAtualId) {
         ordemCategoriasDinamica = [];
@@ -521,6 +537,37 @@
             figurinha_id: figurinhaId, 
             quantidade: novaQtd 
           }], { onConflict: 'user_id, figurinha_id' });
+      }
+    }
+
+    // Função para confirmar e limpar todas as figurinhas do álbum atual
+    async function confirmarLimparColecao() {
+      if (!ehDonoDaCardeneta || !albumAtualId) return;
+
+      const confirmou = window.confirm("Deseja realmente limpar toda a sua coleção deste álbum? Todas as marcações e quantidades serão apagadas.");
+      if (!confirmou) return;
+
+      // Recolhe todos os IDs de figurinhas que pertencem a este álbum e que o usuário possui
+      const idsFigurinhasAlbum = figurinhasDoAlbum.map(f => f.id);
+      
+      // Remove do mapa local
+      idsFigurinhasAlbum.forEach(id => {
+        delete mapaCadernetaUsuario[id];
+      });
+
+      // Atualiza a interface imediatamente
+      renderizarGrid();
+
+      // Remove em lote do Supabase para otimizar
+      const { error } = await _supabase
+        .from('usuario_cardeneta')
+        .delete()
+        .eq('user_id', usuarioAtual.id)
+        .in('figurinha_id', idsFigurinhasAlbum);
+
+      if (error) {
+        console.error("Erro ao limpar coleção no banco:", error);
+        alert("Ocorreu um erro ao limpar a coleção no servidor: " + error.message);
       }
     }
 
