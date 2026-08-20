@@ -32,6 +32,9 @@
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-gold:hover { background: #fbbf24; }
 
+    .btn-success-outline { background: transparent; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-success-outline:hover { background: rgba(52, 211, 153, 0.15); border-color: #34d399; }
+
     .btn-danger-outline { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-danger-outline:hover { background: rgba(248, 113, 113, 0.15); border-color: #f87171; }
 
@@ -126,9 +129,12 @@
         <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
       </select>
       
-      <!-- Botão Adicionado: Desmarcar/Limpar Coleção -->
+      <!-- Botões de Ação em Massa -->
+      <button id="btnMarcarTodas" class="btn-success-outline" onclick="confirmarMarcarTodas()" style="display: none;" title="Marcar todas as figurinhas deste álbum como 'Tenho (Qtd 1)'">
+        ✅ Marcar Todas
+      </button>
       <button id="btnLimparColecao" class="btn-danger-outline" onclick="confirmarLimparColecao()" style="display: none;" title="Zerar todas as marcações deste álbum">
-        🔄 Limpar Coleção
+        🔄 Desmarcar Todas
       </button>
 
       <div class="share-dropdown" id="shareDropdownContainer">
@@ -166,7 +172,6 @@
       const tipoStr = String(f.tipo || '').trim();
       const selecaoStr = String(f.selecao_escuderia || f.selecao || f.escuderia || '').trim();
 
-      // Procura correspondência exata ou case-insensitive nas categorias configuradas no admin
       const encontradaOrdem = ordemCategoriasDinamica.find(cat => 
         cat.toLowerCase() === tipoStr.toLowerCase() || cat.toLowerCase() === selecaoStr.toLowerCase()
       );
@@ -211,6 +216,7 @@
           document.getElementById('tituloCardenetaPagina').innerText = "📖 Cardeneta do Colecionador";
           document.getElementById('subtituloCardenetaPagina').innerText = "Modo de visualização (Apenas leitura).";
           document.getElementById('shareDropdownContainer').style.display = 'none';
+          document.getElementById('btnMarcarTodas').style.display = 'none';
           document.getElementById('btnLimparColecao').style.display = 'none';
         }
 
@@ -253,10 +259,14 @@
       albumAtualId = selectElement.value;
       nomeAlbumAtual = selectElement.options[selectElement.selectedIndex]?.text || '';
 
+      const btnMarcar = document.getElementById('btnMarcarTodas');
       const btnLimpar = document.getElementById('btnLimparColecao');
+
       if (albumAtualId && ehDonoDaCardeneta) {
+        btnMarcar.style.display = 'inline-flex';
         btnLimpar.style.display = 'inline-flex';
       } else {
+        btnMarcar.style.display = 'none';
         btnLimpar.style.display = 'none';
       }
 
@@ -269,7 +279,6 @@
         return;
       }
 
-      // 1. BUSCA UNIVERSAL DA ORDEM E ÍCONES NA TABELA DO ADMIN PARA QUALQUER ÁLBUM
       try {
         const { data: ordemData, error: ordemError } = await _supabase
           .from('album_categorias_ordem')
@@ -297,7 +306,6 @@
         mapaIconesCategorias = {};
       }
 
-      // 2. BUSCA AS FIGURINHAS DO ÁLBUM
       const { data: figs, error } = await _supabase
         .from('figurinhas')
         .select('*')
@@ -312,7 +320,6 @@
       figurinhasDoAlbum = figs || [];
       figurinhasDoAlbum.sort(ordenarFigurinhasAlbum);
 
-      // 3. BUSCA A COLEÇÃO DO USUÁRIO
       if (idAlvoVisualizacao) {
         const { data: userColecao } = await _supabase
           .from('usuario_cardeneta')
@@ -540,25 +547,54 @@
       }
     }
 
-    // Função para confirmar e limpar todas as figurinhas do álbum atual
+    // Marcar todas as figurinhas do álbum com quantidade 1
+    async function confirmarMarcarTodas() {
+      if (!ehDonoDaCardeneta || !albumAtualId) return;
+
+      const confirmou = window.confirm("Deseja realmente marcar todas as figurinhas deste álbum como 'Já tenho'? (Quantidade 1)");
+      if (!confirmou) return;
+
+      const upsertData = [];
+      figurinhasDoAlbum.forEach(f => {
+        // Mantém a quantidade atual se já for maior que 0, senão define como 1
+        let qtdAtual = mapaCadernetaUsuario[f.id] || 0;
+        let novaQtd = qtdAtual > 0 ? qtdAtual : 1;
+        
+        mapaCadernetaUsuario[f.id] = novaQtd;
+        upsertData.push({
+          user_id: usuarioAtual.id,
+          figurinha_id: f.id,
+          quantidade: novaQtd
+        });
+      });
+
+      renderizarGrid();
+
+      const { error } = await _supabase
+        .from('usuario_cardeneta')
+        .upsert(upsertData, { onConflict: 'user_id, figurinha_id' });
+
+      if (error) {
+        console.error("Erro ao marcar todas no banco:", error);
+        alert("Ocorreu um erro ao atualizar no servidor: " + error.message);
+      }
+    }
+
+    // Desmarcar/Limpar todas as figurinhas do álbum atual
     async function confirmarLimparColecao() {
       if (!ehDonoDaCardeneta || !albumAtualId) return;
 
-      const confirmou = window.confirm("Deseja realmente limpar toda a sua coleção deste álbum? Todas as marcações e quantidades serão apagadas.");
+      const confirmou = window.confirm("Deseja realmente desmarcar todas as figurinhas deste álbum? Todas as quantidades serão apagadas.");
       if (!confirmou) return;
 
-      // Recolhe todos os IDs de figurinhas que pertencem a este álbum e que o usuário possui
       const idsFigurinhasAlbum = figurinhasDoAlbum.map(f => f.id);
       
-      // Remove do mapa local
       idsFigurinhasAlbum.forEach(id => {
         delete mapaCadernetaUsuario[id];
       });
 
-      // Atualiza a interface imediatamente
       renderizarGrid();
 
-      // Remove em lote do Supabase para otimizar
       const { error } = await _supabase
         .from('usuario_cardeneta')
         .delete()
