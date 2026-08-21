@@ -378,9 +378,14 @@
     function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
 
     async function fazerLoginGoogle() {
-      const { error } = await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
-      if (error) alert("Erro ao autenticar com Google: " + error.message);
-    }
+  const { error } = await _supabase.auth.signInWithOAuth({ 
+    provider: 'google', 
+    options: { 
+      redirectTo: window.location.origin + window.location.pathname 
+    } 
+  });
+  if (error) alert("Erro ao autenticar com Google: " + error.message);
+}
 
     async function fazerLoginEmail() {
       const email = document.getElementById('authEmail').value;
