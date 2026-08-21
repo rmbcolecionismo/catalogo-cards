@@ -196,12 +196,13 @@
     </div>
   </div>
 
-  <script>
+  <script[cite: 4]>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioAtual = null;
+    let dadosPerfilUsuario = null;
     let minhasCadernetas = [];
     let cadernetaAtiva = null; 
     let figurinhasDoAlbum = [];
@@ -218,7 +219,15 @@
       }
       usuarioAtual = session.user;
       
-      // Saudação amigável e limpa padronizada com o sistema
+      // Busca dados complementares do usuário (incluindo o plano) na tabela vendedores_autorizados
+      const { data: perfil } = await _supabase
+        .from('vendedores_autorizados')
+        .select('*')
+        .eq('email', usuarioAtual.email)
+        .maybeSingle();
+        
+      dadosPerfilUsuario = perfil || { plano: 'gratis' };
+      
       const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
       const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
       document.getElementById('userEmail').innerHTML = `👋 Olá, <strong>${nomeFormatado}</strong>`;
@@ -289,6 +298,25 @@
       
       if (!albumBaseId) return alert("Selecione um álbum.");
 
+      // VERIFICAÇÃO DE PLANO E LIMITES DE CADERNETAS
+      const planoUsuario = dadosPerfilUsuario.plano || 'gratis';
+      
+      const { data: config } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_cadernetas')
+        .eq('plano', planoUsuario)
+        .single();
+
+      const limiteCadernetas = config ? config.limite_cadernetas : 2;
+
+      // Se o limite não for ilimitado (-1)
+      if (limiteCadernetas !== -1) {
+        if (minhasCadernetas.length >= limiteCadernetas) {
+          alert(`Você atingiu o limite de ${limiteCadernetas} cadernetas gratuitas do seu plano ${planoUsuario.toUpperCase()}! Faça upgrade para o plano Premium ou Vitalício para criar cadernetas ilimitadas.`);
+          return;
+        }
+      }
+
       const { error } = await _supabase.from('usuario_albuns').insert([{
         user_id: usuarioAtual.id,
         album_base_id: albumBaseId,
@@ -313,7 +341,6 @@
 
       const usuarioAlbumId = cadernetaAtiva.id;
       
-      // Apaga registros da caderneta do usuário se houver necessidade ou apaga direto o álbum do usuário
       const { error } = await _supabase
         .from('usuario_albuns')
         .delete()
