@@ -16,6 +16,10 @@
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
+    /* Estilo do perfil no topo alinhado com as outras páginas */
+    .user-profile-header { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: #0f172a; }
+    
     .container { max-width: 1250px; margin: 0 auto; }
     
     #viewMeusAlbuns { display: block; }
@@ -109,7 +113,10 @@
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
-        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold); font-weight: 600;">Carregando...</span>
+        <!-- Saudação com Foto de Perfil Atualizada -->
+        <div id="userInfoHeader" class="user-profile-header">
+          <span style="font-size: 0.85rem; color: var(--gold);">Carregando...</span>
+        </div>
       </div>
     </div>
 
@@ -192,7 +199,7 @@
     </div>
   </div>
 
-  <script>
+  <script[cite: 4]>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -223,9 +230,15 @@
         
       dadosPerfilUsuario = perfil || { funcao: 'vendedor' };
       
+      // Monta o cabeçalho com a foto do perfil e nome do usuário
       const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
       const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
-      document.getElementById('userEmail').innerHTML = `👋 Olá, <strong>${nomeFormatado}</strong>`;
+      const avatarUrl = usuarioAtual.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+      
+      document.getElementById('userInfoHeader').innerHTML = `
+        <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+        <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeFormatado}</strong></span>
+      `;
       
       await carregarMinhasCadernetas();
     }
@@ -233,7 +246,6 @@
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
       
-      // Consulta otimizada e segura para evitar quebra caso algum relacionamento falhe
       const { data, error } = await _supabase
         .from('usuario_albuns')
         .select(`
@@ -296,9 +308,9 @@
 
       const funcaoUsuario = dadosPerfilUsuario.funcao || 'vendedor';
       
-      // Validação de limite baseada na permissão/plano (Admin, Master e Vitalício/Premium criam ilimitado, gratuitos limitam a 2 por exemplo)
+      // TRAVA DE LIMITE REAL: Se for vendedor/gratuito e já tiver 2 ou mais cadernetas, bloqueia o cadastro
       if (funcaoUsuario === 'vendedor' && minhasCadernetas.length >= 2) {
-        alert("Você atingiu o limite de cadernetas do seu plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
+        alert("Você atingiu o limite de 2 cadernetas do plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
         return;
       }
 
