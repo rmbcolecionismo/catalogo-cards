@@ -429,18 +429,24 @@
   }
 
   async function excluirAvaliacao(id) {
-    if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
-    const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
-    if (error) {
-      alert("Erro ao excluir: " + error.message);
-    } else {
-      const cardElement = document.getElementById(`review-card-${id}`);
-      if (cardElement) {
-        cardElement.remove();
-      }
-      carregarAvaliacoes(perfilAlvoUuid);
+  if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
+  
+  const { error, count } = await _supabase
+    .from('avaliacoes_vendedores')
+    .delete({ count: 'exact' })
+    .eq('id', id);
+
+  if (error) {
+    alert("Erro ao excluir: " + error.message);
+  } else {
+    // Remove o elemento da tela imediatamente após confirmar o sucesso no banco
+    const cardElement = document.getElementById(`review-card-${id}`);
+    if (cardElement) {
+      cardElement.remove();
     }
+    carregarAvaliacoes(perfilAlvoUuid);
   }
+}
 
   function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
   function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
