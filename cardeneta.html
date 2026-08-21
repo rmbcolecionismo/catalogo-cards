@@ -63,7 +63,6 @@
 
     .secao-grupo { margin-bottom: 30px; }
     .secao-titulo { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-    .secao-titulo img.bandeira-icone { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; display: inline-block; vertical-align: middle; }
 
     .cardeneta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     @media (min-width: 768px) { .cardeneta-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
@@ -82,8 +81,6 @@
     .fig-content { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .fig-numero { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
     .fig-nome { font-size: 0.8rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .fig-selecao { font-size: 0.7rem; color: #94a3b8; }
-    .fig-tipo { font-size: 0.68rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
     
     .fig-actions-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); }
     .qty-btn { background: #334155; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
@@ -184,7 +181,7 @@
       <label>Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):</label>
       <input type="text" id="inputApelidoCardeneta" placeholder="Opcional">
       <div class="modal-actions">
-        <button class="btn-danger-outline" onclick="fecharModalCriar()">Cancelar</button>
+        <button class="btn-danger-outline" onclick="fecharModalCriار()">Cancelar</button>
         <button class="btn-gold" onclick="salvarNovaCaderneta()">Criar Caderneta</button>
       </div>
     </div>
@@ -197,7 +194,7 @@
 
     let usuarioAtual = null;
     let minhasCadernetas = [];
-    let cadernetaAtiva = null; // Objeto da caderneta selecionada
+    let cadernetaAtiva = null; 
     let figurinhasDoAlbum = [];
     let mapaCadernetaUsuario = {};
     let ordemCategoriasDinamica = [];
@@ -218,14 +215,14 @@
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
       
-      // Busca as cadernetas especificando o relacionamento por foreign key
+      // Busca o id, nome e agora também a coluna imagem da tabela albuns
       const { data, error } = await _supabase
         .from('usuario_albuns')
         .select(`
           id, 
           apelido_personalizado, 
           album_base_id,
-          albuns:album_base_id ( id, nome, capa )
+          albuns:album_base_id ( id, nome, imagem )
         `)
         .eq('user_id', usuarioAtual.id);
 
@@ -245,7 +242,9 @@
       grid.innerHTML = minhasCadernetas.map(c => {
         const albumBase = Array.isArray(c.albuns) ? c.albuns[0] : (c.albuns || {});
         const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${c.apelido_personalizado}` : (albumBase.nome || 'Álbum');
-        const capaUrl = albumBase.capa || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        
+        // Puxa a imagem cadastrada na tabela albuns, ou usa uma padrão se estiver vazia
+        const capaUrl = albumBase.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         return `
           <div class="album-criado-card" onclick="abrirCaderneta('${c.id}')">
