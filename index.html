@@ -205,11 +205,21 @@
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        const { data: perfil } = await _supabase
+        // Verifica se o usuário já existe na tabela usuarios_cadastrados
+        let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
           .select('nome')
           .eq('email', usuario.email)
           .maybeSingle();
+
+        // Se não existir (comum em logins via Google de primeira viagem), cadastra automaticamente
+        if (!perfil) {
+          const nomeSugerido = usuario.user_metadata?.full_name || usuario.user_metadata?.name || usuario.email.split('@')[0];
+          await _supabase.from('usuarios_cadastrados').insert([
+            { id: usuario.id, email: usuario.email, nome: nomeSugerido }
+          ]);
+          perfil = { nome: nomeSugerido };
+        }
 
         const nomeUsuario = perfil?.nome || usuario.email.split('@')[0];
         const avatarUrl = usuario.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
