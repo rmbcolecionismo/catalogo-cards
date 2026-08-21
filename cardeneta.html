@@ -18,7 +18,6 @@
     
     .container { max-width: 1250px; margin: 0 auto; }
     
-    /* Seção de Listagem das Cadernetas do Usuário */
     #viewMeusAlbuns { display: block; }
     #viewDetalheAlbum { display: none; }
 
@@ -36,11 +35,9 @@
     .album-criado-titulo { font-size: 1rem; font-weight: 700; color: #f8fafc; }
     .album-criado-sub { font-size: 0.75rem; color: var(--gold); font-weight: 600; }
 
-    /* Botão Voltar Destacado para Mobile/Desktop */
     .btn-voltar { background: rgba(255, 255, 255, 0.08); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
     .btn-voltar:hover { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); color: var(--gold); }
 
-    /* Modais / Telas de Detalhes */
     .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .stats-info h2 { font-size: 1.4rem; color: var(--gold); margin-bottom: 5px; }
     .stats-numbers { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -95,7 +92,6 @@
     .fig-footer { padding: 6px; text-align: center; font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.05); color: #94a3b8; }
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
-    /* Modal Criar Cardeneta */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .modal-box h3 { color: var(--gold); margin-bottom: 15px; font-size: 1.2rem; }
@@ -117,7 +113,7 @@
       </div>
     </div>
 
-    <!-- TELA 1: LISTAGEM DAS CADERNETAS CRIADAS PELO USUÁRIO -->
+    <!-- TELA 1 -->
     <div id="viewMeusAlbuns">
       <div class="header-painel">
         <h2>📖 Minhas Cadernetas</h2>
@@ -128,7 +124,7 @@
       </div>
     </div>
 
-    <!-- TELA 2: DETALHES / MARCAÇÃO DAS FIGURINHAS DA CADERNETA SELECIONADA -->
+    <!-- TELA 2 -->
     <div id="viewDetalheAlbum">
       <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0;">
         <div class="nav-links">
@@ -181,7 +177,7 @@
     </div>
   </div>
 
-  <!-- MODAL PARA ADICIONAR CADERNETA -->
+  <!-- MODAL -->
   <div id="modalCriarCardeneta" class="modal-overlay">
     <div class="modal-box">
       <h3>Adicionar Nova Caderneta</h3>
@@ -196,7 +192,7 @@
     </div>
   </div>
 
-  <script[cite: 4]>
+  <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -211,22 +207,21 @@
     let mapaIconesCategorias = {};
 
     async function init() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
+      const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+      if (sessionError || !session) {
         alert("Faça login para gerenciar sua caderneta.");
         window.location.href = "index.html";
         return;
       }
       usuarioAtual = session.user;
       
-      // Busca dados complementares do usuário (incluindo o plano) na tabela vendedores_autorizados
       const { data: perfil } = await _supabase
         .from('vendedores_autorizados')
         .select('*')
         .eq('email', usuarioAtual.email)
         .maybeSingle();
         
-      dadosPerfilUsuario = perfil || { plano: 'gratis' };
+      dadosPerfilUsuario = perfil || { funcao: 'vendedor' };
       
       const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
       const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
@@ -238,13 +233,14 @@
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
       
+      // Consulta otimizada e segura para evitar quebra caso algum relacionamento falhe
       const { data, error } = await _supabase
         .from('usuario_albuns')
         .select(`
           id, 
           apelido_personalizado, 
           album_base_id,
-          albuns:album_base_id ( id, nome, imagem )
+          albuns ( id, nome, imagem )
         `)
         .eq('user_id', usuarioAtual.id);
 
@@ -269,7 +265,7 @@
         return `
           <div class="album-criado-card" onclick="abrirCaderneta('${c.id}')">
             <div class="album-criado-capa">
-              <img src="${capaUrl}" alt="Capa do Álbum">
+              <img src="${capaUrl}" alt="Capa do Álbum" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             </div>
             <div class="album-criado-info">
               <div class="album-criado-titulo">${nomeExibicao}</div>
@@ -298,23 +294,12 @@
       
       if (!albumBaseId) return alert("Selecione um álbum.");
 
-      // VERIFICAÇÃO DE PLANO E LIMITES DE CADERNETAS
-      const planoUsuario = dadosPerfilUsuario.plano || 'gratis';
+      const funcaoUsuario = dadosPerfilUsuario.funcao || 'vendedor';
       
-      const { data: config } = await _supabase
-        .from('configuracoes_planos')
-        .select('limite_cadernetas')
-        .eq('plano', planoUsuario)
-        .single();
-
-      const limiteCadernetas = config ? config.limite_cadernetas : 2;
-
-      // Se o limite não for ilimitado (-1)
-      if (limiteCadernetas !== -1) {
-        if (minhasCadernetas.length >= limiteCadernetas) {
-          alert(`Você atingiu o limite de ${limiteCadernetas} cadernetas gratuitas do seu plano ${planoUsuario.toUpperCase()}! Faça upgrade para o plano Premium ou Vitalício para criar cadernetas ilimitadas.`);
-          return;
-        }
+      // Validação de limite baseada na permissão/plano (Admin, Master e Vitalício/Premium criam ilimitado, gratuitos limitam a 2 por exemplo)
+      if (funcaoUsuario === 'vendedor' && minhasCadernetas.length >= 2) {
+        alert("Você atingiu o limite de cadernetas do seu plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
+        return;
       }
 
       const { error } = await _supabase.from('usuario_albuns').insert([{
@@ -332,19 +317,15 @@
       await carregarMinhasCadernetas();
     }
 
-    // Função para excluir o álbum do usuário caso tenha criado errado/duplicado
     async function excluirAlbumAtual() {
       if (!cadernetaAtiva) return;
       
-      const confirmacao = confirm("Tem certeza que deseja excluir este álbum e todas as marcações associadas a ele?");
-      if (!confirmacao) return;
+      if (!confirm("Tem certeza que deseja excluir este álbum e todas as marcações associadas a ele?")) return;
 
-      const usuarioAlbumId = cadernetaAtiva.id;
-      
       const { error } = await _supabase
         .from('usuario_albuns')
         .delete()
-        .eq('id', usuarioAlbumId)
+        .eq('id', cadernetaAtiva.id)
         .eq('user_id', usuarioAtual.id);
 
       if (error) {
@@ -368,7 +349,7 @@
       document.getElementById('viewMeusAlbuns').style.display = 'none';
       document.getElementById('viewDetalheAlbum').style.display = 'block';
 
-      await carregarDadosAlbumBase(albumBase.id);
+      await carregarDadosAlbumBase(albumBase.id || cadernetaAtiva.album_base_id);
     }
 
     function voltarParaLista() {
@@ -493,7 +474,7 @@
                 <div class="${classeCard}" id="card-${f.id}">
                   <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
                     <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
-                    <img src="${imgUrl}" class="fig-img">
+                    <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
                   </div>
                   <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
                     <div class="fig-numero">#${f.numero || ''}</div>
