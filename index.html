@@ -145,7 +145,7 @@
 
   <!-- Rodapé RMB -->
   <footer>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong>[cite: 2]</p>
   </footer>
 
   <!-- Modal de Autenticação Completo (Google + E-mail/Senha) -->
@@ -212,12 +212,16 @@
           .eq('email', usuario.email)
           .maybeSingle();
 
-        // Se não existir (comum em logins via Google de primeira viagem), cadastra automaticamente
+        // Se não existir, cadastra automaticamente no banco com tratamento de erro
         if (!perfil) {
           const nomeSugerido = usuario.user_metadata?.full_name || usuario.user_metadata?.name || usuario.email.split('@')[0];
-          await _supabase.from('usuarios_cadastrados').insert([
+          const { error: insertError } = await _supabase.from('usuarios_cadastrados').insert([
             { id: usuario.id, email: usuario.email, nome: nomeSugerido }
           ]);
+          
+          if (insertError) {
+            console.error("Erro ao inserir usuário na tabela:", insertError.message);
+          }
           perfil = { nome: nomeSugerido };
         }
 
@@ -378,14 +382,14 @@
     function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
 
     async function fazerLoginGoogle() {
-  const { error } = await _supabase.auth.signInWithOAuth({ 
-    provider: 'google', 
-    options: { 
-      redirectTo: window.location.origin + window.location.pathname 
-    } 
-  });
-  if (error) alert("Erro ao autenticar com Google: " + error.message);
-}
+      const { error } = await _supabase.auth.signInWithOAuth({ 
+        provider: 'google', 
+        options: { 
+          redirectTo: window.location.origin + window.location.pathname 
+        } 
+      });
+      if (error) alert("Erro ao autenticar com Google: " + error.message);
+    }
 
     async function fazerLoginEmail() {
       const email = document.getElementById('authEmail').value;
