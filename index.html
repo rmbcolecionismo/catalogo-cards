@@ -208,21 +208,27 @@
         // Verifica se o usuário já existe na tabela usuarios_cadastrados
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
-          .select('nome')
+          .select('nome, funcao, plano')
           .eq('email', usuario.email)
           .maybeSingle();
 
-        // Se não existir, cadastra automaticamente no banco com tratamento de erro
+        // Se não existir, cadastra automaticamente no banco como colecionador e plano grátis
         if (!perfil) {
           const nomeSugerido = usuario.user_metadata?.full_name || usuario.user_metadata?.name || usuario.email.split('@')[0];
           const { error: insertError } = await _supabase.from('usuarios_cadastrados').insert([
-            { id: usuario.id, email: usuario.email, nome: nomeSugerido }
+            { 
+              id: usuario.id, 
+              email: usuario.email, 
+              nome: nomeSugerido, 
+              funcao: 'colecionador', 
+              plano: 'gratis' 
+            }
           ]);
           
           if (insertError) {
             console.error("Erro ao inserir usuário na tabela:", insertError.message);
           }
-          perfil = { nome: nomeSugerido };
+          perfil = { nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
         }
 
         const nomeUsuario = perfil?.nome || usuario.email.split('@')[0];
