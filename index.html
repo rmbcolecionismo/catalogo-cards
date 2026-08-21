@@ -258,21 +258,27 @@
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
 
-      // 2. Carregar Marketplace (tabela vitrine_ofertas) com o relacionamento pelo campo id
-      const { data: dataMarket } = await _supabase
+      // 2. Carregar Marketplace (tabela vitrine_ofertas) referenciando a tabela singular 'figurinha' por 'figurinha_id'
+      const { data: dataMarket, error: errorMarket } = await _supabase
         .from('vitrine_ofertas')
-        .select(`id, preco, user_id, qualidade, figurinhas:id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+        .select(`id, preco, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
         .order('id', { ascending: false });
       
+      if (errorMarket) {
+        console.error("Erro ao carregar marketplace:", errorMarket.message);
+      }
       itensMarketplaceGlobal = dataMarket || [];
 
       // 3. Carregar Mercado de Trocas (tabela usuario_cardeneta filtrando repetidas qtd > 1)
-      const { data: dataTrocas } = await _supabase
+      const { data: dataTrocas, error: errorTrocas } = await _supabase
         .from('usuario_cardeneta')
         .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
         .gt('quantidade', 1)
         .order('id', { ascending: false });
 
+      if (errorTrocas) {
+        console.error("Erro ao carregar trocas:", errorTrocas.message);
+      }
       itensTrocasGlobal = dataTrocas || [];
 
       popularFiltroAlbuns();
@@ -284,7 +290,7 @@
       let albunsSet = new Map();
       
       [...itensMarketplaceGlobal, ...itensTrocasGlobal].forEach(item => {
-        const fig = item.figurinhas;
+        const fig = item.figurinhas || item.figurinha;
         if (fig && fig.albuns) {
           albunsSet.set(fig.albuns.id, fig.albuns.nome);
         }
@@ -326,7 +332,7 @@
       }
 
       grid.innerHTML = itens.map(item => {
-        const fig = item.figurinhas || {};
+        const fig = item.figurinha || {};
         const albumNome = fig.albuns?.nome || 'Álbum';
         const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         const precoFormatado = Number(item.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'EUR' });
@@ -403,7 +409,7 @@
 
       if (abaAtual === 'market') {
         let filtrados = itensMarketplaceGlobal.filter(item => {
-          const fig = item.figurinhas || {};
+          const fig = item.figurinha || {};
           const matchNome = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
           const matchAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
           return matchNome && matchAlbum;
