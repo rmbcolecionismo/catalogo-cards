@@ -218,15 +218,20 @@
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
       
-      // Busca as cadernetas criadas pelo usuário fazendo JOIN com o álbum base para pegar nome e capa
+      // Busca as cadernetas especificando o relacionamento por foreign key
       const { data, error } = await _supabase
         .from('usuario_albuns')
-        .select(`id, apelido_personalizado, albuns ( id, nome, capa )`)
+        .select(`
+          id, 
+          apelido_personalizado, 
+          album_base_id,
+          albuns:album_base_id ( id, nome, capa )
+        `)
         .eq('user_id', usuarioAtual.id);
 
       if (error) {
         console.error("Erro ao carregar cadernetas:", error);
-        grid.innerHTML = '<div class="empty-state">Erro ao carregar cadernetas.</div>';
+        grid.innerHTML = `<div class="empty-state" style="color: #f87171;">Erro ao carregar cadernetas: ${error.message}</div>`;
         return;
       }
 
@@ -238,8 +243,8 @@
       }
 
       grid.innerHTML = minhasCadernetas.map(c => {
-        const albumBase = c.albuns || {};
-        const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome} - ${c.apelido_personalizado}` : albumBase.nome;
+        const albumBase = Array.isArray(c.albuns) ? c.albuns[0] : (c.albuns || {});
+        const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${c.apelido_personalizado}` : (albumBase.nome || 'Álbum');
         const capaUrl = albumBase.capa || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         return `
@@ -293,8 +298,8 @@
       cadernetaAtiva = minhasCadernetas.find(c => c.id === usuarioAlbumId);
       if (!cadernetaAtiva) return;
 
-      const albumBase = cadernetaAtiva.albuns || {};
-      const nomeExibicao = cadernetaAtiva.apelido_personalizado ? `${albumBase.nome} - ${cadernetaAtiva.apelido_personalizado}` : albumBase.nome;
+      const albumBase = Array.isArray(cadernetaAtiva.albuns) ? cadernetaAtiva.albuns[0] : (cadernetaAtiva.albuns || {});
+      const nomeExibicao = cadernetaAtiva.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${cadernetaAtiva.apelido_personalizado}` : (albumBase.nome || 'Álbum');
       
       document.getElementById('tituloCardenetaPagina').innerText = `📖 ${nomeExibicao}`;
       document.getElementById('viewMeusAlbuns').style.display = 'none';
@@ -332,7 +337,6 @@
         figurinhasDoAlbum = figs || [];
         figurinhasDoAlbum.sort((a, b) => String(a.numero || '').localeCompare(String(b.numero || ''), undefined, {numeric: true}));
 
-        // Como o usuário mantém a tabela de quantidades genérica por figurinha, mapeamos direto
         const idsFig = figurinhasDoAlbum.map(f => f.id);
         mapaCadernetaUsuario = {};
         if (idsFig.length > 0) {
