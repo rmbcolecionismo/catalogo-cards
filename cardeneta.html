@@ -28,8 +28,11 @@
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
     .album-criado-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     .album-criado-card:hover { transform: translateY(-4px); border-color: var(--gold); }
-    .album-criado-capa { height: 160px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .album-criado-capa img { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* CORREÇÃO DA IMAGEM DO ÁLBUM: alterado para contain para não cortar */
+    .album-criado-capa { height: 160px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px; }
+    .album-criado-capa img { width: 100%; height: 100%; object-fit: contain; }
+    
     .album-criado-info { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .album-criado-titulo { font-size: 1rem; font-weight: 700; color: #f8fafc; }
     .album-criado-sub { font-size: 0.75rem; color: var(--gold); font-weight: 600; }
@@ -181,7 +184,8 @@
       <label>Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):</label>
       <input type="text" id="inputApelidoCardeneta" placeholder="Opcional">
       <div class="modal-actions">
-        <button class="btn-danger-outline" onclick="fecharModalCriار()">Cancelar</button>
+        <!-- CORREÇÃO DO BOTÃO CANCELAR: chamada correta da função fecharModalCriar -->
+        <button class="btn-danger-outline" onclick="fecharModalCriar()">Cancelar</button>
         <button class="btn-gold" onclick="salvarNovaCaderneta()">Criar Caderneta</button>
       </div>
     </div>
@@ -215,7 +219,6 @@
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
       
-      // Busca o id, nome e agora também a coluna imagem da tabela albuns
       const { data, error } = await _supabase
         .from('usuario_albuns')
         .select(`
@@ -243,7 +246,6 @@
         const albumBase = Array.isArray(c.albuns) ? c.albuns[0] : (c.albuns || {});
         const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${c.apelido_personalizado}` : (albumBase.nome || 'Álbum');
         
-        // Puxa a imagem cadastrada na tabela albuns, ou usa uma padrão se estiver vazia
         const capaUrl = albumBase.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         return `
