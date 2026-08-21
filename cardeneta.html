@@ -16,7 +16,6 @@
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
-    /* Estilo do perfil no topo alinhado com as outras páginas */
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: #0f172a; }
     
@@ -113,7 +112,6 @@
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
-        <!-- Saudação com Foto de Perfil Atualizada -->
         <div id="userInfoHeader" class="user-profile-header">
           <span style="font-size: 0.85rem; color: var(--gold);">Carregando...</span>
         </div>
@@ -199,7 +197,7 @@
     </div>
   </div>
 
-  <script[cite: 4]>
+  <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -222,15 +220,15 @@
       }
       usuarioAtual = session.user;
       
+      // Consulta atualizada para a nova tabela 'usuarios_cadastrados'
       const { data: perfil } = await _supabase
-        .from('vendedores_autorizados')
+        .from('usuarios_cadastrados')
         .select('*')
         .eq('email', usuarioAtual.email)
         .maybeSingle();
         
-      dadosPerfilUsuario = perfil || { funcao: 'vendedor' };
+      dadosPerfilUsuario = perfil || { funcao: 'gratis' };
       
-      // Monta o cabeçalho com a foto do perfil e nome do usuário
       const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
       const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
       const avatarUrl = usuarioAtual.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
@@ -306,10 +304,10 @@
       
       if (!albumBaseId) return alert("Selecione um álbum.");
 
-      const funcaoUsuario = dadosPerfilUsuario.funcao || 'vendedor';
+      const funcaoUsuario = dadosPerfilUsuario.funcao || 'gratis';
       
-      // TRAVA DE LIMITE REAL: Se for vendedor/gratuito e já tiver 2 ou mais cadernetas, bloqueia o cadastro
-      if (funcaoUsuario === 'vendedor' && minhasCadernetas.length >= 2) {
+      // Bloqueio rigoroso para planos gratuitos (limite de 2 cadernetas)
+      if (funcaoUsuario === 'gratis' && minhasCadernetas.length >= 2) {
         alert("Você atingiu o limite de 2 cadernetas do plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
         return;
       }
