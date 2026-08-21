@@ -11,7 +11,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; }
     
-    /* Novo Menu de Topo */
     .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1350px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
     .nav-links { display: flex; align-items: center; gap: 15px; }
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
@@ -21,7 +20,6 @@
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
 
-    /* Filtros da Vitrine */
     .vitrine-filters { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
     .filter-field:focus { border-color: var(--gold); }
@@ -74,7 +72,6 @@
 </head>
 <body>
 
-<!-- Menu de Topo -->
 <div class="top-nav">
   <div class="nav-links">
     <a href="index.html">🏠 Início</a>
@@ -122,7 +119,6 @@
       <div class="cardeneta-cta">
         <p>✨ Quer organizar sua coleção?</p>
         <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
-          <!-- Texto Alterado -->
           <button style="background: white; color: #0f172a; border: none; font-weight: 800;">Acessar Minha Cardeneta Agora</button>
         </a>
       </div>
@@ -130,7 +126,6 @@
       <a href="index.html" style="text-decoration:none;"><button style="background:#334155; color:white">🏠 Home</button></a>
       
       <div id="loggedMenu" style="display:none;">
-        <a href="cardeneta.html" style="text-decoration:none;"><button style="background: #475569; color: white;">📒 Minhas Cardenetas</button></a>
         <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
         <div id="adminLinks" style="display:none;">
           <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
@@ -170,7 +165,6 @@
   </div>
 </div>
 
-<!-- Modais e scripts permanecem idênticos ao seu original -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
@@ -215,17 +209,6 @@
   const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-  // -- LÓGICA DE ACESSO PROTEGIDO --
-  async function verificarAcessoProtegido() {
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) return window.location.href = "login.html";
-    const { data: user } = await _supabase.from('usuarios_cadastrados').select('id').eq('email', session.user.email).maybeSingle();
-    if (!user) { alert("Acesso restrito a usuários cadastrados."); window.location.href = "index.html"; }
-  }
-  // Chamada de verificação
-  verificarAcessoProtegido();
-  // ---------------------------------
 
   let usuarioLogado = null;
   let authUserId = null;
@@ -245,7 +228,7 @@
 
     if (session) {
       authUserId = session.user.id;
-      const { data: perfilLogado } = await _supabase.from('vendedores_autorizados').select('*').eq('email', session.user.email).maybeSingle();
+      const { data: perfilLogado } = await _supabase.from('usuarios_cadastrados').select('*').eq('email', session.user.email).maybeSingle();
       if (perfilLogado) {
         usuarioLogado = perfilLogado;
         isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
@@ -256,20 +239,13 @@
     }
 
     if (idParam) {
-      const { data } = await _supabase.from('vendedores_autorizados').select('*').eq('user_id', idParam).maybeSingle();
+      const { data } = await _supabase.from('usuarios_cadastrados').select('*').eq('id', idParam).maybeSingle();
       perfilAlvo = data;
     } else if (usuarioLogado) {
       perfilAlvo = usuarioLogado;
     }
 
-    if (perfilAlvo && perfilAlvo.user_id) {
-      perfilAlvoUuid = perfilAlvo.user_id;
-      perfilAlvoIdNumerico = perfilAlvo.id;
-      const ehProprio = usuarioLogado && (String(perfilAlvo.user_id) === String(usuarioLogado.user_id) || perfilAlvo.user_id === authUserId);
-      preencherDadosPerfil(perfilAlvo, ehProprio);
-      carregarVitrine(perfilAlvoUuid);
-      carregarAvaliacoes(perfilAlvoUuid);
-    } else if (perfilAlvo && perfilAlvo.id) {
+    if (perfilAlvo && perfilAlvo.id) {
       perfilAlvoUuid = perfilAlvo.id;
       perfilAlvoIdNumerico = perfilAlvo.id;
       const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
@@ -293,7 +269,7 @@
       linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
       linkWpp.style.display = 'block';
     }
-    const identificadorCardeneta = perfil.user_id || perfil.id;
+    const identificadorCardeneta = perfil.id;
     if (identificadorCardeneta) {
       document.getElementById('linkCardenetaColega').href = `cardeneta.html?id=${identificadorCardeneta}`;
     }
@@ -313,7 +289,7 @@
       cidade: document.getElementById('editCidade').value,
       telefone_whats: document.getElementById('editWhatsApp').value
     };
-    const { error } = await _supabase.from('vendedores_autorizados').update(updates).eq('id', usuarioLogado.id);
+    const { error } = await _supabase.from('usuarios_cadastrados').update(updates).eq('id', usuarioLogado.id);
     if (error) alert("Erro ao atualizar: " + error.message);
     else location.reload();
   }
@@ -332,7 +308,7 @@
     const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
     if (error) return alert("Erro no upload: " + error.message);
     const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
-    await _supabase.from('vendedores_autorizados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
+    await _supabase.from('usuarios_cadastrados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
     location.reload();
   }
 
@@ -388,7 +364,7 @@
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
       const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
       const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
-      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
+      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
       const qualid = item.qualidade || '100% (Nova / Perfeita)';
       const tipoItem = (item.tipo && item.tipo.trim() !== '') ? item.tipo : 'venda';
       const isTroca = tipoItem === 'troca';
