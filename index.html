@@ -258,10 +258,10 @@
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
 
-      // 2. Carregar Marketplace (tabela vitrine_ofertas)
+      // 2. Carregar Marketplace (tabela vitrine_ofertas) com o relacionamento pelo campo id
       const { data: dataMarket } = await _supabase
         .from('vitrine_ofertas')
-        .select(`id, preco, user_id, qualidade, figurinha:id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+        .select(`id, preco, user_id, qualidade, figurinhas:id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
         .order('id', { ascending: false });
       
       itensMarketplaceGlobal = dataMarket || [];
