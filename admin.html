@@ -129,9 +129,14 @@
       <div class="card">
         <h2 id="tituloCardAlbum">📂 Cadastro de Álbum</h2>
         <input type="hidden" id="editAlbumId">
+        <input type="hidden" id="editAlbumImagemAtual">
         <div class="form-group">
           <label>Nome do Álbum</label>
           <input type="text" id="inputNomeAlbum" placeholder="Ex: Copa do Mundo 2026">
+        </div>
+        <div class="form-group">
+          <label>Fazer Upload da Imagem / Capa (Opcional - Convertido para WebP)</label>
+          <input type="file" id="inputArquivoAlbum" accept="image/*">
         </div>
         <button class="btn-submit" id="btnSalvarAlbum" onclick="salvarAlbum()">Salvar Álbum</button>
         <button class="btn-acao" id="btnCancelarAlbum" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoAlbum()">Cancelar</button>
@@ -141,8 +146,8 @@
         <h2>📋 Álbuns Cadastrados</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead><tr><th>Nome do Álbum</th><th style="width: 130px;">Ações</th></tr></thead>
-            <tbody id="tabelaAlbuns"><tr><td colspan="2" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+            <thead><tr><th style="width: 60px;">Capa</th><th>Nome do Álbum</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaAlbuns"><tr><td colspan="3" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -255,7 +260,7 @@
           <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
         </div>
         <div class="form-group">
-          <label>Fazer Upload da Imagem (Opcional)</label>
+          <label>Fazer Upload da Imagem (Opcional - Convertido para WebP)</label>
           <input type="file" id="inputArquivoFigurinha" accept="image/*">
         </div>
         <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
@@ -360,6 +365,54 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Função auxiliar para converter arquivo de imagem para WebP no navegador
+    async function converterParaWebP(file, maxWidth = 1200, maxHeight = 1200, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                reject(new Error("Falha ao converter imagem para WebP."));
+                return;
+              }
+              const novoArquivo = new File([blob], file.name.substring(0, file.name.lastIndexOf('.')) || file.name + '.webp', {
+                type: 'image/webp',
+                lastModified: Date.now()
+              });
+              resolve(novoArquivo);
+            }, 'image/webp', quality);
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
     async function verificarSessao() {
       const { data: { session }, error } = await _supabase.auth.getSession();
       
@@ -427,43 +480,98 @@
       }
       
       if (data && tbody) {
-        tbody.innerHTML = data.map(item => `
-          <tr>
-            <td>${item.nome}</td>
-            <td>
-              <div class="acoes-btns">
-                <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${item.nome}')">Editar</button>
-                <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
-              </div>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = data.map(item => {
+          const imagemHtml = item.imagem 
+            ? `<img src="${item.imagem}" alt="Capa" class="miniatura-foto" onclick="window.open('${item.imagem}', '_blank')" title="Clique para ver em tamanho real">` 
+            : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>';
+
+          const nomeSeguro = item.nome.replace(/'/g, "\\'");
+          const imagemSegura = (item.imagem || '').replace(/'/g, "\\'");
+
+          return `
+            <tr>
+              <td>${imagemHtml}</td>
+              <td>${item.nome}</td>
+              <td>
+                <div class="acoes-btns">
+                  <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${nomeSeguro}', '${imagemSegura}')">Editar</button>
+                  <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
     async function salvarAlbum() {
       const id = document.getElementById('editAlbumId').value;
       const nome = document.getElementById('inputNomeAlbum').value.trim();
-      if (!nome) return;
+      const inputFile = document.getElementById('inputArquivoAlbum');
+      const imagemAtual = document.getElementById('editAlbumImagemAtual').value;
+      const msgDiv = document.getElementById('msgAlbum');
 
-      let error;
-      if (id) {
-        ({ error } = await _supabase.from('albuns').update({ nome }).eq('id', id));
-      } else {
-        ({ error } = await _supabase.from('albuns').insert([{ nome }]));
+      msgDiv.style.display = "block";
+      msgDiv.className = "msg-feedback";
+
+      if (!nome) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = "Preencha o nome do álbum.";
+        return;
       }
 
-      if (!error) {
-        document.getElementById('inputNomeAlbum').value = '';
+      msgDiv.className = "msg-feedback msg-success";
+      msgDiv.innerText = "Processando e salvando álbum...";
+
+      let imagemUrl = imagemAtual || null;
+
+      try {
+        if (inputFile.files && inputFile.files.length > 0) {
+          const fileOriginal = inputFile.files[0];
+          const fileWebP = await converterParaWebP(fileOriginal, 1200, 1200, 0.85);
+          const fileName = `album_${Date.now()}.webp`;
+          
+          const { error: uploadError } = await _supabase.storage
+            .from('figurinhas')
+            .upload(fileName, fileWebP);
+
+          if (uploadError) throw new Error("Erro no upload da imagem: " + uploadError.message);
+
+          const { data: publicUrlData } = _supabase.storage
+            .from('figurinhas')
+            .getPublicUrl(fileName);
+
+          imagemUrl = publicUrlData.publicUrl;
+        }
+
+        let error;
+        if (id) {
+          ({ error } = await _supabase.from('albuns').update({ nome, imagem: imagemUrl }).eq('id', id));
+        } else {
+          ({ error } = await _supabase.from('albuns').insert([{ nome, imagem: imagemUrl }]));
+        }
+
+        if (error) throw new Error("Erro ao salvar no banco: " + error.message);
+
+        msgDiv.className = "msg-feedback msg-success";
+        msgDiv.innerText = "Álbum salvo com sucesso!";
+
         cancelarEdicaoAlbum();
         carregarAlbuns();
         carregarAlbunsOrdens();
+
+        setTimeout(() => { msgDiv.style.display = "none"; }, 3000);
+      } catch (err) {
+        msgDiv.className = "msg-feedback msg-error";
+        msgDiv.innerText = err.message;
       }
     }
 
-    function prepararEdicaoAlbum(id, nome) {
+    function prepararEdicaoAlbum(id, nome, imagem) {
       document.getElementById('editAlbumId').value = id;
+      document.getElementById('editAlbumImagemAtual').value = imagem || '';
       document.getElementById('inputNomeAlbum').value = nome;
+      document.getElementById('inputArquivoAlbum').value = '';
       document.getElementById('tituloCardAlbum').innerText = "📂 Editar Álbum";
       document.getElementById('btnSalvarAlbum').innerText = "Atualizar Álbum";
       document.getElementById('btnCancelarAlbum').style.display = "inline-block";
@@ -471,7 +579,9 @@
 
     function cancelarEdicaoAlbum() {
       document.getElementById('editAlbumId').value = '';
+      document.getElementById('editAlbumImagemAtual').value = '';
       document.getElementById('inputNomeAlbum').value = '';
+      document.getElementById('inputArquivoAlbum').value = '';
       document.getElementById('tituloCardAlbum').innerText = "📂 Cadastro de Álbum";
       document.getElementById('btnSalvarAlbum').innerText = "Salvar Álbum";
       document.getElementById('btnCancelarAlbum').style.display = "none";
@@ -701,18 +811,19 @@
       }
 
       msgDiv.className = "msg-feedback msg-success";
-      msgDiv.innerText = "A cadastrar figurinha...";
+      msgDiv.innerText = "Processando e a cadastrar figurinha...";
 
       let imagemUrl = null;
 
       try {
         if (inputFile.files && inputFile.files.length > 0) {
-          const file = inputFile.files[0];
-          const fileName = `fig_${Date.now()}_${file.name}`;
+          const fileOriginal = inputFile.files[0];
+          const fileWebP = await converterParaWebP(fileOriginal, 1200, 1200, 0.82);
+          const fileName = `fig_${Date.now()}.webp`;
           
           const { error: uploadError } = await _supabase.storage
             .from('figurinhas')
-            .upload(fileName, file);
+            .upload(fileName, fileWebP);
 
           if (uploadError) throw new Error("Erro no upload da imagem: " + uploadError.message);
 
