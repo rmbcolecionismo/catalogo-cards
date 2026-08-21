@@ -35,6 +35,11 @@
     .btn-outline { background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
+    /* Card de Colaboração (Ajudar Catálogo) */
+    .collab-card { background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
+    .collab-text p { color: #94a3b8; font-size: 0.85rem; }
+
     /* Abas de Seção (Marketplace vs Trocas) */
     .sections-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
     .tab-btn { background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
@@ -69,7 +74,10 @@
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
     /* Rodapé RMB */
-    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; }
+    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: #cbd5e1; text-decoration: none; font-weight: 600; transition: 0.2s; }
+    .footer-links a:hover { color: var(--gold); }
     footer strong { color: var(--gold); }
 
     /* Modal de Autenticação */
@@ -116,6 +124,15 @@
       </div>
     </div>
 
+    <!-- Card de Convite para Ajudar no Catálogo (ajudar.html) -->
+    <div class="collab-card">
+      <div class="collab-text">
+        <h4>📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
+        <p>Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.</p>
+      </div>
+      <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);">Contribuir com Fotos</a>
+    </div>
+
     <!-- Seletor de Abas (Marketplace vs Trocas) -->
     <div class="sections-tabs">
       <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
@@ -146,8 +163,12 @@
     </div>
   </div>
 
-  <!-- Rodapé RMB -->
+  <!-- Rodapé RMB com Links de Contato e Ajuda -->
   <footer>
+    <div class="footer-links">
+      <a href="ajudar.html">📸 Ajudar o Catálogo</a>
+      <a href="contato.html">✉️ Fale Conosco</a>
+    </div>
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
@@ -205,38 +226,24 @@
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // Verifica se o usuário já existe na tabela usuarios_cadastrados
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
           .select('nome, funcao, plano')
           .eq('email', usuario.email)
           .maybeSingle();
 
-        // Se não existir, cadastra automaticamente no banco como colecionador e plano grátis
         if (!perfil) {
           const nomeSugerido = usuario.user_metadata?.full_name || usuario.user_metadata?.name || usuario.email.split('@')[0];
-          const { error: insertError } = await _supabase.from('usuarios_cadastrados').insert([
-            { 
-              id: usuario.id, 
-              email: usuario.email, 
-              nome: nomeSugerido, 
-              funcao: 'colecionador', 
-              plano: 'gratis' 
-            }
+          await _supabase.from('usuarios_cadastrados').insert([
+            { id: usuario.id, email: usuario.email, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' }
           ]);
-          
-          if (insertError) {
-            console.error("Erro ao inserir usuário na tabela:", insertError.message);
-          }
           perfil = { nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
         }
 
-        // Exibe links básicos para todos os usuários logados (Colecionadores)
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
         document.getElementById('linkPerfil').style.display = 'inline';
 
-        // Exibe links restritos com base na coluna 'funcao' do banco de dados
         const funcaoUsuario = String(perfil?.funcao || '').toLowerCase().trim();
         if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
           document.getElementById('linkAdmin').style.display = 'inline';
@@ -404,9 +411,7 @@
     async function fazerLoginGoogle() {
       const { error } = await _supabase.auth.signInWithOAuth({ 
         provider: 'google', 
-        options: { 
-          redirectTo: window.location.origin + window.location.pathname 
-        } 
+        options: { redirectTo: window.location.origin + window.location.pathname } 
       });
       if (error) alert("Erro ao autenticar com Google: " + error.message);
     }
