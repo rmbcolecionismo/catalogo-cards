@@ -261,7 +261,7 @@
       // 2. Carregar Marketplace (tabela vitrine_ofertas)
       const { data: dataMarket } = await _supabase
         .from('vitrine_ofertas')
-        .select(`id, preco, figurinha_id, id_figurinha, user_id, qualidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+        .select(`id, preco, user_id, qualidade, figurinha:id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
         .order('id', { ascending: false });
       
       itensMarketplaceGlobal = dataMarket || [];
