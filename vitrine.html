@@ -111,7 +111,7 @@
       if (error) return;
 
       renderizarCards(data || []);
-      renderizarPaginacao(count);
+      renderizarPaginacao(count || 0);
     }
 
     function renderizarPaginacao(totalItems) {
@@ -130,8 +130,6 @@
         const btn = document.createElement('button');
         btn.innerText = i + 1;
         btn.className = `btn-page ${i === paginaAtual ? 'active' : ''}`;
-        btnPrev.onclick = () => { paginaAtual = i; buscarDados(); window.scrollTo(0, 0); };
-        // Correção de escopo do botão de página
         btn.onclick = () => { paginaAtual = i; buscarDados(); window.scrollTo(0, 0); };
         nav.appendChild(btn);
       }
@@ -155,7 +153,7 @@
         if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
         if (perfil.is_admin || perfil.funcao === 'admin' || perfil.funcao === 'master') document.getElementById('adminLinks').style.display = 'inline';
       }
-      // Busca também as colunas 'tipo' e 'qualidade' salvas na vitrine
+      
       const { data: vitrineSalva } = await _supabase.from('vitrine_ofertas').select('figurinha_id, preco, estoque, tipo, qualidade').eq('user_id', authUserId);
       if (vitrineSalva) {
         vitrineSalva.forEach(item => {
@@ -183,7 +181,6 @@
             <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
             
             <div class="card-inputs">
-              <!-- Select de Tipo -->
               <div class="input-wrapper">
                 <label>Tipo de Anúncio</label>
                 <select id="tipo-${f.id}" onchange="alternarTipo(${f.id})">
@@ -192,7 +189,6 @@
                 </select>
               </div>
 
-              <!-- Select de Qualidade (inserido abaixo do tipo) -->
               <div class="input-wrapper">
                 <label>Qualidade</label>
                 <select id="qualidade-${f.id}">
@@ -204,12 +200,10 @@
               </div>
 
               <div class="input-row">
-                <!-- Preço (some se for troca) -->
                 <div class="input-wrapper" id="wrapper-preco-${f.id}" style="${estiloPreco}">
                   <label>Preço (€)</label>
                   <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01">
                 </div>
-                <!-- Quantidade -->
                 <div class="input-wrapper">
                   <label>Qtd</label>
                   <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
@@ -222,7 +216,6 @@
       }).join('');
     }
 
-    // Função para ocultar ou exibir o campo de preço dinamicamente na tela
     function alternarTipo(fId) {
       const tipo = document.getElementById(`tipo-${fId}`).value;
       const wrapperPreco = document.getElementById(`wrapper-preco-${fId}`);
@@ -236,9 +229,36 @@
     async function adicionarNaVitrine(fId) {
       const tipo = document.getElementById(`tipo-${fId}`).value;
       const qualidade = document.getElementById(`qualidade-${fId}`).value;
-      // Se for troca, define o preço automaticamente como 0
       const preco = tipo === 'troca' ? 0 : (parseFloat(document.getElementById(`preco-${fId}`).value) || 0);
       const estoque = parseInt(document.getElementById(`qtd-${fId}`).value) || 0;
+
+      // Se o usuário está tentando colocar estoque (novo anúncio)
+      if (estoque > 0 && !meusPrecosQtd[fId]?.estoque) {
+        const planoUsuario = usuarioLogado.plano || 'gratis';
+        
+        // Busca o limite dinâmico na tabela que criamos
+        const { data: config } = await _supabase
+          .from('configuracoes_planos')
+          .select('limite_anuncios')
+          .eq('plano', planoUsuario)
+          .single();
+
+        const limiteMaximo = config ? config.limite_anuncios : 10;
+
+        if (limiteMaximo !== -1) {
+          // Conta quantos anúncios ativos ele tem na vitrine (estoque > 0)
+          const { count } = await _supabase
+            .from('vitrine_ofertas')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', authUserId)
+            .gt('estoque', 0);
+
+          if (count >= limiteMaximo) {
+            alert(`Você atingiu o limite de ${limiteMaximo} anúncios ativos no seu plano ${planoUsuario.toUpperCase()}! Faça upgrade para o Premium ou Vitalício.`);
+            return;
+          }
+        }
+      }
 
       const { error } = await _supabase.from('vitrine_ofertas').upsert({ 
         user_id: authUserId, 
