@@ -220,7 +220,6 @@
       }
       usuarioAtual = session.user;
       
-      // Consulta atualizada para a nova tabela 'usuarios_cadastrados'
       const { data: perfil } = await _supabase
         .from('usuarios_cadastrados')
         .select('*')
@@ -229,13 +228,13 @@
         
       dadosPerfilUsuario = perfil || { funcao: 'gratis' };
       
-      const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
-      const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
+      // Carrega o nome cadastrado na tabela ou faz fallback para o e-mail/colecionador
+      const nomeUsuario = dadosPerfilUsuario.nome || (usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador');
       const avatarUrl = usuarioAtual.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
       
       document.getElementById('userInfoHeader').innerHTML = `
         <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-        <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeFormatado}</strong></span>
+        <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
       await carregarMinhasCadernetas();
@@ -306,7 +305,6 @@
 
       const funcaoUsuario = dadosPerfilUsuario.funcao || 'gratis';
       
-      // Bloqueio rigoroso para planos gratuitos (limite de 2 cadernetas)
       if (funcaoUsuario === 'gratis' && minhasCadernetas.length >= 2) {
         alert("Você atingiu o limite de 2 cadernetas do plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
         return;
