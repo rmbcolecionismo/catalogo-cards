@@ -72,7 +72,7 @@
     footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; }
     footer strong { color: var(--gold); }
 
-    /* Modal de Autenticação Duplo */
+    /* Modal de Autenticação */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
@@ -87,7 +87,10 @@
       <div class="nav-links">
         <a href="index.html">🏠 Início</a>
         <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Minhas Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Minha Vitrine / Vendas</a>
+        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Minha Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Meu Perfil</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
+        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
       </div>
       <div>
         <div id="userInfoHeader" class="user-profile-header">
@@ -148,7 +151,7 @@
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <!-- Modal de Autenticação Completo (Google + E-mail/Senha) -->
+  <!-- Modal de Autenticação -->
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
       <h3>Acesse sua Conta</h3>
@@ -198,9 +201,6 @@
         const banner = document.getElementById('heroBannerVisitante');
         if (banner) banner.style.display = 'none';
 
-        document.getElementById('linkCardeneta').style.display = 'inline';
-        document.getElementById('linkVitrine').style.display = 'inline';
-
         if (window.location.hash && window.location.hash.includes('access_token')) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -229,6 +229,20 @@
             console.error("Erro ao inserir usuário na tabela:", insertError.message);
           }
           perfil = { nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
+        }
+
+        // Exibe links básicos para todos os usuários logados (Colecionadores)
+        document.getElementById('linkCardeneta').style.display = 'inline';
+        document.getElementById('linkVitrine').style.display = 'inline';
+        document.getElementById('linkPerfil').style.display = 'inline';
+
+        // Exibe links restritos com base na coluna 'funcao' do banco de dados
+        const funcaoUsuario = String(perfil?.funcao || '').toLowerCase().trim();
+        if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
+          document.getElementById('linkAdmin').style.display = 'inline';
+        }
+        if (funcaoUsuario === 'master') {
+          document.getElementById('linkEstoque').style.display = 'inline';
         }
 
         const nomeUsuario = perfil?.nome || usuario.email.split('@')[0];
