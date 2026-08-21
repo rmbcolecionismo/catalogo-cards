@@ -31,7 +31,6 @@
     .sticker-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #f8fafc; display: flex; flex-direction: column; transition: 0.3s; }
     .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
-    .sticker-card.card-troca { background: rgba(30, 58, 95, 0.4); border: 1px solid rgba(59, 130, 246, 0.3); }
     .sticker-img-wrap { height: 190px; background: #0f172a; padding: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
     
@@ -43,10 +42,6 @@
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
     .sticker-qtd { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
     .sticker-qualidade { font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 4px; }
-
-    .badge-tipo { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 4px; width: fit-content; }
-    .badge-venda { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-    .badge-troca { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
 
     .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
     .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
@@ -140,16 +135,11 @@
   </div>
 
   <div class="vitrine-content">
-    <h2>🛍️ Vendas e Trocas do Vendedor</h2>
+    <h2>🛍️ Vitrine do Vendedor</h2>
     
     <div class="vitrine-filters">
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="">Filtrar por Álbum (Todos)</option>
-      </select>
-      <select id="filtroTipoVitrine" class="filter-field" onchange="aplicarFiltros()">
-        <option value="todos">📦 Ver Todos (Vendas e Trocas)</option>
-        <option value="venda">💶 Somente Vendas</option>
-        <option value="troca">🔄 Somente Trocas</option>
       </select>
       <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
     </div>
@@ -339,12 +329,9 @@
   function renderizarGridFiltrado() {
     const grid = document.getElementById('vitrineGrid');
     const filtroAlbumVal = document.getElementById('filtroAlbum').value;
-    const filtroTipoVal = document.getElementById('filtroTipoVitrine').value;
     const filtroBuscaVal = document.getElementById('filtroBusca').value.trim().toLowerCase().replace('#', '');
     let filtradas = todasOfertas.filter(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
-      const tipoItem = (item.tipo && item.tipo.trim() !== '') ? item.tipo : 'venda';
-      if (filtroTipoVal !== 'todos') { if (tipoItem !== filtroTipoVal) return false; }
       if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) return false;
       if (filtroBuscaVal) {
         const nomeFig = (f.nome || '').toLowerCase();
@@ -366,20 +353,15 @@
       const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
       const qualid = item.qualidade || '100% (Nova / Perfeita)';
-      const tipoItem = (item.tipo && item.tipo.trim() !== '') ? item.tipo : 'venda';
-      const isTroca = tipoItem === 'troca';
-      const classeCard = isTroca ? 'sticker-card card-troca' : 'sticker-card';
-      const badgeHtml = isTroca ? `<span class="badge-tipo badge-troca">🔄 Troca</span>` : `<span class="badge-tipo badge-venda">💶 Venda</span>`;
-      const precoHtml = isTroca ? '' : `<div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>`;
+      const precoHtml = `<div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>`;
       return `
-        <div class="${classeCard}">
+        <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
           <div class="sticker-info">
             <div class="card-row">Álbum: <span>${nomeAlbum}</span></div>
             <div class="card-row">Número: <span>${f.numero || '-'}</span></div>
             <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
             <div class="card-row">Seleção: <span>${selecaoEscuderia}</span></div>
-            ${badgeHtml}
             <div class="sticker-qualidade">📌 ${qualid}</div>
             <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
             ${precoHtml}
@@ -449,8 +431,15 @@
   async function excluirAvaliacao(id) {
     if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
     const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
-    if (error) alert("Erro ao excluir: " + error.message);
-    else { document.getElementById(`review-card-${id}`).remove(); alert("Comentário removido!"); carregarAvaliacoes(perfilAlvoUuid); }
+    if (error) {
+      alert("Erro ao excluir: " + error.message);
+    } else {
+      const cardElement = document.getElementById(`review-card-${id}`);
+      if (cardElement) {
+        cardElement.remove();
+      }
+      carregarAvaliacoes(perfilAlvoUuid);
+    }
   }
 
   function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
