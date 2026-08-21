@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Marketplace de Figurinhas & Coleções</title>
+  <title>Marketplace & Mercado de Trocas de Figurinhas</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root { --gold: #f59e0b; --bg: #0f172a; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 50px; }
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); width: 100%; }
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
@@ -19,9 +19,9 @@
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: #0f172a; }
     
-    .container { max-width: 1250px; margin: 0 auto; }
+    .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
 
-    /* Banner de Destaque para Visitantes / Criação de Conta */
+    /* Banner de Destaque para Visitantes */
     .hero-banner { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.9) 100%); border: 2px solid var(--gold); border-radius: 16px; padding: 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
     .hero-content { flex: 1; min-width: 280px; }
     .hero-content h1 { font-size: 1.8rem; color: var(--gold); margin-bottom: 8px; font-weight: 800; }
@@ -35,13 +35,18 @@
     .btn-outline { background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
+    /* Abas de Seção (Marketplace vs Trocas) */
+    .sections-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .tab-btn { background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
+    .tab-btn.active { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); }
+
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    /* Grid do Marketplace */
+    /* Grids */
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
     .market-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
@@ -56,12 +61,18 @@
     .market-vendedor { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; }
 
     .market-footer { padding: 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); text-align: center; }
-    .btn-comprar { background: #34d399; color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
-    .btn-comprar:hover { background: #059669; color: white; }
+    .btn-acao { background: #34d399; color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
+    .btn-acao:hover { background: #059669; color: white; }
+    .btn-troca { background: #38bdf8; }
+    .btn-troca:hover { background: #0284c7; }
 
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
-    /* Modal de Cadastro/Login Simples */
+    /* Rodapé RMB */
+    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; }
+    footer strong { color: var(--gold); }
+
+    /* Modal de Autenticação Duplo */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
@@ -74,7 +85,7 @@
     <!-- Navbar Superior -->
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Marketplace</a>
+        <a href="index.html">🏠 Início</a>
         <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Minhas Cadernetas</a>
         <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Minha Vitrine / Vendas</a>
       </div>
@@ -85,15 +96,15 @@
       </div>
     </div>
 
-    <!-- Banner de Destaque para Visitantes (Criar Conta / Controlar Coleção) -->
+    <!-- Banner de Destaque para Visitantes -->
     <div id="heroBannerVisitante" class="hero-banner">
       <div class="hero-content">
-        <h1>Organize sua Coleção & Venda Repetidas!</h1>
-        <p>Crie sua conta gratuita agora mesmo. Tenha o controle total das figurinhas que faltam e as repetidas em sua caderneta digital, e comece a anunciar seus cromos excedentes no marketplace oficial.</p>
+        <h1>Organize sua Coleção & Venda/Troque Figurinhas!</h1>
+        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.</p>
         <div class="hero-features">
-          <span>✅ Caderneta Digital Inteligente</span>
-          <span>✅ Controle de Faltantes e Repetidas</span>
-          <span>✅ Vitrine para Vendas</span>
+          <span>✅ Caderneta Inteligente</span>
+          <span>✅ Vitrine de Vendas</span>
+          <span>✅ Mercado de Trocas</span>
         </div>
       </div>
       <div class="hero-action">
@@ -102,32 +113,70 @@
       </div>
     </div>
 
-    <!-- Barra de Filtros do Marketplace -->
-    <div class="section-title">📦 Vitrine de Figurinhas Disponíveis</div>
+    <!-- Seletor de Abas (Marketplace vs Trocas) -->
+    <div class="sections-tabs">
+      <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
+      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas</button>
+    </div>
+
+    <!-- Filtros -->
     <div class="controls-bar">
-      <input type="text" id="inputBuscaMarket" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarMarketplace()">
-      <select id="selectFiltroAlbumMarket" class="filter-field" onchange="filtrarMarketplace()">
+      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()">
+      <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
         <option value="todos">📖 Todos os Álbuns</option>
       </select>
     </div>
 
-    <!-- Grid do Marketplace -->
-    <div id="marketplaceGrid" class="marketplace-grid">
-      <div class="empty-state">Carregando ofertas do marketplace...</div>
+    <!-- Grids de Conteúdo -->
+    <div id="secaoMarketplace">
+      <div class="section-title">📦 Figurinhas à Venda</div>
+      <div id="marketplaceGrid" class="marketplace-grid">
+        <div class="empty-state">Carregando ofertas do marketplace...</div>
+      </div>
+    </div>
+
+    <div id="secaoTrocas" style="display: none;">
+      <div class="section-title">🔄 Mercado de Trocas (Repetidas)</div>
+      <div id="trocasGrid" class="marketplace-grid">
+        <div class="empty-state">Carregando propostas de troca...</div>
+      </div>
     </div>
   </div>
 
-  <!-- Modal de Autenticação / Convite para Criar Conta -->
+  <!-- Rodapé RMB -->
+  <footer>
+    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+  </footer>
+
+  <!-- Modal de Autenticação Completo (Google + E-mail/Senha) -->
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
-      <h3>Bem-vindo ao Colecionador!</h3>
-      <p>Para controlar sua caderneta de figurinhas, organizar sua coleção e anunciar itens na vitrine, entre ou cadastre-se na plataforma.</p>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <button class="btn-gold" onclick="fazerLoginGoogle()" style="width: 100%; justify-content: center;">
-          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#0f172a" d="M21.35 11.1h-9.17v2.73h5.51c-.24 1.25-1.04 2.31-2.2 3.03v2.51h3.56c2.08-1.92 3.28-4.74 3.28-8.1 0-.69-.06-1.35-.18-2.17z"/><path fill="#0f172a" d="M12.18 21.5c2.75 0 5.06-.91 6.74-2.47l-3.56-2.51c-.91.61-2.07.97-3.18.97-2.45 0-4.52-1.66-5.26-3.9H3.25v2.59c1.74 3.44 5.31 5.72 8.93 5.72z"/><path fill="#0f172a" d="M6.92 13.59c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.12H3.25C2.58 8.45 2.2 9.94 2.2 11.65s.38 3.2 1.05 4.53l3.67-2.59z"/><path fill="#0f172a" d="M12.18 6.4c1.49 0 2.82.51 3.87 1.51l2.9-2.9C17.24 3.4 14.93 2.5 12.18 2.5 8.56 2.5 4.99 4.78 3.25 8.22l3.67 2.59c.74-2.24 2.81-3.9 5.26-3.9z"/></svg>
-          Entrar / Cadastrar com Google
+      <h3>Acesse sua Conta</h3>
+      <p>Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Botão Google -->
+        <button class="btn-outline" onclick="fazerLoginGoogle()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #0f172a; border: none; font-weight: 600; cursor: pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.35 11.1h-9.17v2.73h5.51c-.24 1.25-1.04 2.31-2.2 3.03v2.51h3.56c2.08-1.92 3.28-4.74 3.28-8.1 0-.69-.06-1.35-.18-2.17z"/><path fill="#34A853" d="M12.18 21.5c2.75 0 5.06-.91 6.74-2.47l-3.56-2.51c-.91.61-2.07.97-3.18.97-2.45 0-4.52-1.66-5.26-3.9H3.25v2.59c1.74 3.44 5.31 5.72 8.93 5.72z"/><path fill="#FBBC05" d="M6.92 13.59c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.12H3.25C2.58 8.45 2.2 9.94 2.2 11.65s.38 3.2 1.05 4.53l3.67-2.59z"/><path fill="#EA4335" d="M12.18 6.4c1.49 0 2.82.51 3.87 1.51l2.9-2.9C17.24 3.4 14.93 2.5 12.18 2.5 8.56 2.5 4.99 4.78 3.25 8.22l3.67 2.59c.74-2.24 2.81-3.9 5.26-3.9z"/></svg>
+          Continuar com Google
         </button>
-        <button class="btn-outline" onclick="fecharModalAuth()">Continuar Navegando</button>
+
+        <div style="display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">
+          <hr style="flex: 1; border-color: rgba(255,255,255,0.1);">
+          <span style="padding: 0 10px;">ou com e-mail</span>
+          <hr style="flex: 1; border-color: rgba(255,255,255,0.1);">
+        </div>
+
+        <!-- Campos E-mail e Senha -->
+        <input type="email" id="authEmail" class="filter-field" placeholder="Seu e-mail" style="width: 100%;">
+        <input type="password" id="authSenha" class="filter-field" placeholder="Sua senha" style="width: 100%;">
+        
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-gold" onclick="fazerLoginEmail()" style="flex: 1; justify-content: center;">Entrar</button>
+          <button class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;">Criar Conta</button>
+        </div>
+
+        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: #94a3b8; margin-top: 5px;">Fechar</button>
       </div>
     </div>
   </div>
@@ -138,22 +187,20 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let itensMarketplaceGlobal = [];
+    let itensTrocasGlobal = [];
+    let abaAtual = 'market';
 
     async function initHome() {
       const { data: { session } } = await _supabase.auth.getSession();
       
       if (session && session.user) {
         const usuario = session.user;
-        
-        // Esconde o banner de visitante se o usuário já estiver logado
         const banner = document.getElementById('heroBannerVisitante');
         if (banner) banner.style.display = 'none';
 
-        // Libera os links do menu restritos para logados
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
 
-        // Busca o nome na tabela 'usuarios_cadastrados'
         const { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
           .select('nome')
@@ -170,42 +217,35 @@
         `;
       }
 
-      await carregarMarketplace();
+      await carregarDadosGlobais();
     }
 
-    async function carregarMarketplace() {
-      const grid = document.getElementById('marketplaceGrid');
-      
-      // Busca figurinhas anunciadas na vitrine de vendas
-      const { data, error } = await _supabase
+    async function carregarDadosGlobais() {
+      // Carrega Vendas
+      const { data: dataMarket } = await _supabase
         .from('vitrine_vendas')
-        .select(`
-          id,
-          preco,
-          figurinha_id,
-          user_id,
-          figurinhas ( id, numero, nome, imagem, album_id, albuns ( nome ) )
-        `)
+        .select(`id, preco, figurinha_id, user_id, figurinhas ( id, numero, nome, imagem, album_id, albuns ( nome ) )`)
+        .order('id', { ascending: false });
+      
+      itensMarketplaceGlobal = dataMarket || [];
+
+      // Carrega Trocas (Caso tenha tabela de trocas, ex: 'mercado_trocas' ou similar. Ajuste o nome da tabela se necessário)
+      const { data: dataTrocas } = await _supabase
+        .from('mercado_trocas') 
+        .select(`id, figurinha_id, user_id, figurinhas ( id, numero, nome, imagem, album_id, albuns ( nome ) )`)
         .order('id', { ascending: false });
 
-      if (error) {
-        console.error("Erro ao carregar marketplace:", error);
-        grid.innerHTML = `<div class="empty-state" style="color: #f87171;">Erro ao carregar marketplace: ${error.message}</div>`;
-        return;
-      }
+      itensTrocasGlobal = dataTrocas || [];
 
-      itensMarketplaceGlobal = data || [];
-
-      // Popular select de álbuns no filtro
-      popularFiltroAlbunsMarket(itensMarketplaceGlobal);
-      renderizarGridMarketplace(itensMarketplaceGlobal);
+      popularFiltroAlbuns();
+      renderizarAtivo();
     }
 
-    function popularFiltroAlbunsMarket(itens) {
-      const select = document.getElementById('selectFiltroAlbumMarket');
+    function popularFiltroAlbuns() {
+      const select = document.getElementById('selectFiltroAlbum');
       let albunsSet = new Map();
       
-      itens.forEach(item => {
+      [...itensMarketplaceGlobal, ...itensTrocasGlobal].forEach(item => {
         const fig = item.figurinhas;
         if (fig && fig.albuns) {
           albunsSet.set(fig.albuns.id, fig.albuns.nome);
@@ -219,11 +259,31 @@
       select.innerHTML = html;
     }
 
-    function renderizarGridMarketplace(itens) {
-      const grid = document.getElementById('marketplaceGrid');
+    function mudarAba(aba) {
+      abaAtual = aba;
+      document.getElementById('tabBtnMarket').classList.toggle('active', aba === 'market');
+      document.getElementById('tabBtnTrocas').classList.toggle('active', aba === 'trocas');
 
+      document.getElementById('secaoMarketplace').style.display = aba === 'market' ? 'block' : 'none';
+      document.getElementById('secaoTrocas').style.display = aba === 'trocas' ? 'block' : 'none';
+      
+      document.getElementById('inputBusca').value = '';
+      document.getElementById('selectFiltroAlbum').value = 'todos';
+      renderizarAtivo();
+    }
+
+    function renderizarAtivo() {
+      if (abaAtual === 'market') {
+        renderizarMarketplace(itensMarketplaceGlobal);
+      } else {
+        renderizarTrocas(itensTrocasGlobal);
+      }
+    }
+
+    function renderizarMarketplace(itens) {
+      const grid = document.getElementById('marketplaceGrid');
       if (itens.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha disponível no marketplace no momento. Seja o primeiro a anunciar!</div>';
+        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha disponível para venda no momento.</div>';
         return;
       }
 
@@ -235,51 +295,97 @@
 
         return `
           <div class="market-card">
-            <div class="market-img-wrap">
-              <img src="${imgUrl}" class="market-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-            </div>
+            <div class="market-img-wrap"><img src="${imgUrl}" class="market-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"></div>
             <div class="market-info">
               <div class="market-num">#${fig.numero || ''} • ${albumNome}</div>
               <div class="market-name">${fig.nome || 'Figurinha'}</div>
               <div class="market-preco">${precoFormatado}</div>
-              <div class="market-vendedor">Disponível por Colecionador</div>
+              <div class="market-vendedor">Disponível para Compra</div>
             </div>
             <div class="market-footer">
-              <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Olá! Tenho interesse na figurinha #${fig.numero} (${fig.nome}) anunciada no marketplace por ${precoFormatado}.`)}" target="_blank" class="btn-comprar">💬 Comprar / Negociar</a>
+              <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Olá! Tenho interesse na figurinha #${fig.numero} (${fig.nome}) anunciada por ${precoFormatado}.`)}" target="_blank" class="btn-acao">💬 Comprar / Negociar</a>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    function filtrarMarketplace() {
-      const termo = document.getElementById('inputBuscaMarket').value.toLowerCase();
-      const albumFiltro = document.getElementById('selectFiltroAlbumMarket').value;
+    function renderizarTrocas(itens) {
+      const grid = document.getElementById('trocasGrid');
+      if (itens.length === 0) {
+        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha cadastrada para troca no momento.</div>';
+        return;
+      }
 
-      let filtrados = itensMarketplaceGlobal.filter(item => {
+      grid.innerHTML = itens.map(item => {
         const fig = item.figurinhas || {};
-        const nomeMatch = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
-        const albumMatch = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
-        return nomeMatch && albumMatch;
-      });
+        const albumNome = fig.albuns?.nome || 'Álbum';
+        const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
-      renderizarGridMarketplace(filtrados);
+        return `
+          <div class="market-card">
+            <div class="market-img-wrap"><img src="${imgUrl}" class="market-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"></div>
+            <div class="market-info">
+              <div class="market-num">#${fig.numero || ''} • ${albumNome}</div>
+              <div class="market-name">${fig.nome || 'Figurinha'}</div>
+              <div class="market-preco" style="color: #38bdf8; font-size: 0.85rem;">Disponível para Troca</div>
+              <div class="market-vendedor">Colecionador aberto a propostas</div>
+            </div>
+            <div class="market-footer">
+              <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Olá! Vi sua figurinha repetida #${fig.numero} (${fig.nome}) no mercado de trocas e gostaria de negociar.`)}" target="_blank" class="btn-acao btn-troca">🔄 Propor Troca</a>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function abrirModalAuth() {
-      document.getElementById('modalAuth').style.display = 'flex';
+    function filtrarAtivo() {
+      const termo = document.getElementById('inputBusca').value.toLowerCase();
+      const albumFiltro = document.getElementById('selectFiltroAlbum').value;
+
+      if (abaAtual === 'market') {
+        let filtrados = itensMarketplaceGlobal.filter(item => {
+          const fig = item.figurinhas || {};
+          const matchNome = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
+          const matchAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
+          return matchNome && matchAlbum;
+        });
+        renderizarMarketplace(filtrados);
+      } else {
+        let filtrados = itensTrocasGlobal.filter(item => {
+          const fig = item.figurinhas || {};
+          const matchNome = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
+          const matchAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
+          return matchNome && matchAlbum;
+        });
+        renderizarTrocas(filtrados);
+      }
     }
 
-    function fecharModalAuth() {
-      document.getElementById('modalAuth').style.display = 'none';
-    }
+    function abrirModalAuth() { document.getElementById('modalAuth').style.display = 'flex'; }
+    function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
 
     async function fazerLoginGoogle() {
-      const { error } = await _supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.href }
-      });
+      const { error } = await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
       if (error) alert("Erro ao autenticar com Google: " + error.message);
+    }
+
+    async function fazerLoginEmail() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authSenha').value;
+      if (!email || !password) return alert("Preencha e-mail e senha!");
+      const { error } = await _supabase.auth.signInWithPassword({ email, password });
+      if (error) alert("Erro ao entrar: " + error.message);
+      else window.location.reload();
+    }
+
+    async function cadastrarEmail() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authSenha').value;
+      if (!email || !password) return alert("Preencha e-mail e senha!");
+      const { error } = await _supabase.auth.signUp({ email, password });
+      if (error) alert("Erro ao criar conta: " + error.message);
+      else { alert("Conta criada com sucesso!"); window.location.reload(); }
     }
 
     async function fazerLogout() {
