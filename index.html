@@ -67,6 +67,8 @@
     .btn-acao:hover { background: #059669; color: white; }
     .btn-troca { background: #38bdf8; }
     .btn-troca:hover { background: #0284c7; }
+    .btn-perfil { background: var(--gold); color: #0f172a; }
+    .btn-perfil:hover { background: #fbbf24; color: #0f172a; }
 
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
@@ -337,15 +339,8 @@
         const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         const precoFormatado = Number(item.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'EUR' });
         
-        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador', telefone_whats: '' };
+        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `perfil.html?id=${item.user_id}`;
-        
-        let wppLink = '#';
-        if (dono.telefone_whats) {
-          const numLimpo = dono.telefone_whats.replace(/\D/g, '');
-          const msg = encodeURIComponent(`Olá ${dono.nome}! Tenho interesse na figurinha #${fig.numero} (${fig.nome}) anunciada por ${precoFormatado}.`);
-          wppLink = `https://wa.me/${numLimpo}?text=${msg}`;
-        }
 
         return `
           <div class="market-card">
@@ -357,7 +352,7 @@
               <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
             </div>
             <div class="market-footer">
-              <a href="${wppLink}" target="_blank" class="btn-acao">💬 Comprar / Negociar</a>
+              <a href="${linkPerfilDono}" class="btn-acao btn-perfil">👤 Ver Perfil do Colecionador</a>
             </div>
           </div>
         `;
@@ -376,15 +371,8 @@
         const albumNome = fig.albuns?.nome || 'Álbum';
         const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         
-        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador', telefone_whats: '' };
+        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `cardeneta.html?id=${item.user_id}`;
-
-        let wppLink = '#';
-        if (dono.telefone_whats) {
-          const numLimpo = dono.telefone_whats.replace(/\D/g, '');
-          const msg = encodeURIComponent(`Olá ${dono.nome}! Vi sua figurinha repetida #${fig.numero} (${fig.nome}) no mercado de trocas e gostaria de negociar.`);
-          wppLink = `https://wa.me/${numLimpo}?text=${msg}`;
-        }
 
         return `
           <div class="market-card">
@@ -396,7 +384,7 @@
               <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
             </div>
             <div class="market-footer">
-              <a href="${wppLink}" target="_blank" class="btn-acao btn-troca">🔄 Propor Troca</a>
+              <a href="${linkPerfilDono}" class="btn-acao btn-troca">🔄 Ver Perfil de Troca</a>
             </div>
           </div>
         `;
