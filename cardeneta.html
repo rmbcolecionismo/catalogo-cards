@@ -11,9 +11,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 50px; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; }
-    .nav-links { display: flex; align-items: center; gap: 15px; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
     .container { max-width: 1250px; margin: 0 auto; }
@@ -29,13 +29,16 @@
     .album-criado-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     .album-criado-card:hover { transform: translateY(-4px); border-color: var(--gold); }
     
-    /* CORREÇÃO DA IMAGEM DO ÁLBUM: alterado para contain para não cortar */
     .album-criado-capa { height: 160px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px; }
     .album-criado-capa img { width: 100%; height: 100%; object-fit: contain; }
     
     .album-criado-info { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .album-criado-titulo { font-size: 1rem; font-weight: 700; color: #f8fafc; }
     .album-criado-sub { font-size: 0.75rem; color: var(--gold); font-weight: 600; }
+
+    /* Botão Voltar Destacado para Mobile/Desktop */
+    .btn-voltar { background: rgba(255, 255, 255, 0.08); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
+    .btn-voltar:hover { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); color: var(--gold); }
 
     /* Modais / Telas de Detalhes */
     .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -110,7 +113,7 @@
         <a href="vitrine.html">📦 Minha Vitrine</a>
       </div>
       <div>
-        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold);">Carregando...</span>
+        <span id="userEmail" style="font-size: 0.85rem; color: var(--gold); font-weight: 600;">Carregando...</span>
       </div>
     </div>
 
@@ -127,9 +130,12 @@
 
     <!-- TELA 2: DETALHES / MARCAÇÃO DAS FIGURINHAS DA CADERNETA SELECIONADA -->
     <div id="viewDetalheAlbum">
-      <div class="top-nav" style="margin-bottom: 15px; padding: 0;">
+      <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0;">
         <div class="nav-links">
-          <a onclick="voltarParaLista()">&larr; Voltar para minhas cadernetas</a>
+          <button class="btn-voltar" onclick="voltarParaLista()">&larr; Voltar para minhas cadernetas</button>
+        </div>
+        <div>
+          <button class="btn-danger-outline" onclick="excluirAlbumAtual()" style="font-size: 0.75rem; padding: 6px 12px;">🗑️ Excluir este Álbum</button>
         </div>
       </div>
 
@@ -184,7 +190,6 @@
       <label>Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):</label>
       <input type="text" id="inputApelidoCardeneta" placeholder="Opcional">
       <div class="modal-actions">
-        <!-- CORREÇÃO DO BOTÃO CANCELAR: chamada correta da função fecharModalCriar -->
         <button class="btn-danger-outline" onclick="fecharModalCriar()">Cancelar</button>
         <button class="btn-gold" onclick="salvarNovaCaderneta()">Criar Caderneta</button>
       </div>
@@ -212,7 +217,12 @@
         return;
       }
       usuarioAtual = session.user;
-      document.getElementById('userEmail').innerText = `👤 ${usuarioAtual.email}`;
+      
+      // Saudação amigável e limpa padronizada com o sistema
+      const nomeUsuario = usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador';
+      const nomeFormatado = nomeUsuario.charAt(0).toUpperCase() + nomeUsuario.slice(1);
+      document.getElementById('userEmail').innerHTML = `👋 Olá, <strong>${nomeFormatado}</strong>`;
+      
       await carregarMinhasCadernetas();
     }
 
@@ -245,7 +255,6 @@
       grid.innerHTML = minhasCadernetas.map(c => {
         const albumBase = Array.isArray(c.albuns) ? c.albuns[0] : (c.albuns || {});
         const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${c.apelido_personalizado}` : (albumBase.nome || 'Álbum');
-        
         const capaUrl = albumBase.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         return `
@@ -292,6 +301,32 @@
       }
 
       fecharModalCriar();
+      await carregarMinhasCadernetas();
+    }
+
+    // Função para excluir o álbum do usuário caso tenha criado errado/duplicado
+    async function excluirAlbumAtual() {
+      if (!cadernetaAtiva) return;
+      
+      const confirmacao = confirm("Tem certeza que deseja excluir este álbum e todas as marcações associadas a ele?");
+      if (!confirmacao) return;
+
+      const usuarioAlbumId = cadernetaAtiva.id;
+      
+      // Apaga registros da caderneta do usuário se houver necessidade ou apaga direto o álbum do usuário
+      const { error } = await _supabase
+        .from('usuario_albuns')
+        .delete()
+        .eq('id', usuarioAlbumId)
+        .eq('user_id', usuarioAtual.id);
+
+      if (error) {
+        alert("Erro ao excluir o álbum: " + error.message);
+        return;
+      }
+
+      alert("Álbum excluído com sucesso!");
+      voltarParaLista();
       await carregarMinhasCadernetas();
     }
 
