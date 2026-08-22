@@ -278,7 +278,6 @@
     }
 
     async function carregarDadosGlobais() {
-      // 1. Carregar lista de álbuns gerais do banco
       const { data: albunsData } = await _supabase.from('albuns').select('id, nome');
       if (albunsData) {
         albunsGlobaisMap.clear();
@@ -320,17 +319,25 @@
           }
         });
 
-        // Garante que os IDs sejam números limpos
         const idsFaltantes = todasFigurinhas
           .filter(fig => !minhaCadernetaIds.has(Number(fig.id)))
           .map(fig => Number(fig.id));
 
-        console.log("Meus IDs faltantes normalizados:", idsFaltantes.length);
+        console.log("=== AUDITORIA DO MERCADO DE TROCAS ===");
+        console.log("Total de IDs Faltantes para mim:", idsFaltantes.length);
+
+        // Auditoria segura executada dentro da função async
+        const { data: testeGeral } = await _supabase
+          .from('usuario_cardeneta')
+          .select('id, user_id, figurinha_id, quantidade');
+        
+        console.log("Total de registros na caderneta de TODOS os usuários:", testeGeral?.length);
+        const repetidasGerais = testeGeral?.filter(i => i.quantidade > 1) || [];
+        console.log("Registros com quantidade > 1 no sistema inteiro:", repetidasGerais.length);
 
         matchesTrocasGlobal = [];
 
         if (idsFaltantes.length > 0) {
-          // Buscamos todas as repetidas (quantidade > 1) do sistema de forma segura
           const { data: dataTrocas, error: erroTrocas } = await _supabase
             .from('usuario_cardeneta')
             .select(`
@@ -343,28 +350,18 @@
               )
             `)
             .gt('quantidade', 1)
-            .in('figurinha_id', idsFaltantes); // Tira o neq temporariamente para testes ou foca nos outros
+            .neq('user_id', usuarioLogadoGlobal.id)
+            .in('figurinha_id', idsFaltantes);
 
           if (erroTrocas) {
             console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
           } else if (dataTrocas) {
-            console.log("Repetidas encontradas que batem com os faltantes:", dataTrocas.length);
+            console.log("Matches válidos encontrados após cruzamento:", dataTrocas.length);
 
             let colecionadoresMap = {};
 
             dataTrocas.forEach(item => {
               const donoId = item.user_id;
-              const { data: testeGeral, error: erroGeral } = await _supabase
-  .from('usuario_cardeneta')
-  .select('id, user_id, figurinha_id, quantidade');
-
-console.log("Total de registros na caderneta de TODOS os usuários:", testeGeral?.length);
-console.log("Registros com quantidade > 1:", testeGeral?.filter(i => i.quantidade > 1));
-console.log("Meus IDs faltantes (total):", idsFaltantes.length);
-              
-              // Se quiser ignorar você mesmo nos testes, descomente a linha abaixo:
-              // if (donoId === usuarioLogadoGlobal.id) return;
-
               const fig = item.figurinhas;
 
               if (fig && fig.albuns && fig.albuns.id) {
@@ -399,10 +396,10 @@ console.log("Meus IDs faltantes (total):", idsFaltantes.length);
       popularFiltroAlbuns();
       renderizarAtivo();
     }
+
     function popularFiltroAlbuns() {
       const select = document.getElementById('selectFiltroAlbum');
       let html = '<option value="todos">📖 Todos os Álbuns</option>';
-      
       const albunsOrdenados = Array.from(albunsGlobaisMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
 
       albunsOrdenados.forEach(([id, nome]) => {
@@ -418,7 +415,6 @@ console.log("Meus IDs faltantes (total):", idsFaltantes.length);
 
       document.getElementById('secaoMarketplace').style.display = aba === 'market' ? 'block' : 'none';
       document.getElementById('secaoTrocas').style.display = aba === 'trocas' ? 'block' : 'none';
-      
       document.getElementById('selectFiltroRaio').style.display = aba === 'trocas' ? 'inline-block' : 'none';
       
       document.getElementById('inputBusca').value = '';
@@ -447,7 +443,6 @@ console.log("Meus IDs faltantes (total):", idsFaltantes.length);
         const albumNome = fig.albuns?.nome || 'Álbum';
         const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         const precoFormatado = Number(item.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'EUR' });
-        
         const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `perfil.html?id=${item.user_id}`;
         let numFig = String(fig.numero || '').replace(/^#+/, '');
@@ -473,7 +468,7 @@ console.log("Meus IDs faltantes (total):", idsFaltantes.length);
       const grid = document.getElementById('trocasGrid');
       
       if (!usuarioLogadoGlobal) {
-        grid.innerHTML = '<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca baseadas nas suas figurinhas faltantes e proximidade!</div>';
+        grid.innerHTML = '<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca!</div>';
         return;
       }
 
@@ -545,10 +540,7 @@ console.log("Meus IDs faltantes (total):", idsFaltantes.length);
 
           if (itensFiltrados.length === 0) return null;
 
-          return {
-            ...match,
-            itens: itensFiltrados
-          };
+          return { ...match, itens: itensFiltrados };
         }).filter(Boolean);
 
         renderizarTrocasMatches(filtrados);
