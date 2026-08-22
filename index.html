@@ -81,7 +81,7 @@
     footer strong { color: var(--gold); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
     .modal-box p { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4; }
   </style>
@@ -225,7 +225,7 @@
 
   <!-- Modal Central de Propostas Recebidas / Enviadas -->
   <div id="modalCentralPropostas" class="modal-overlay">
-    <div class="modal-box" style="max-width: 600px;">
+    <div class="modal-box" style="max-width: 650px;">
       <h3>📬 Central de Propostas</h3>
       <p>Gerencie as negociações que você recebeu ou enviou para outros colecionadores.</p>
 
@@ -234,7 +234,7 @@
         <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;">📤 Enviadas</button>
       </div>
 
-      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 280px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 320px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
         <div class="empty-state">Carregando propostas...</div>
       </div>
 
@@ -578,12 +578,27 @@
 
       document.getElementById('modalPropostaSubtitulo').innerHTML = `Enviar proposta de troca para <strong>${match.nome}</strong>:`;
       
-      const conteudoHtml = match.itens.map(i => {
+      // Agrupar itens por álbum no modal de envio também
+      let albunsAgrupados = {};
+      match.itens.forEach(i => {
         const fig = i.figurinhas || {};
-        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
-        let numFig = String(fig.numero || '').replace(/^#+/, '');
-        return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">✨ Receberá: <strong>#${numFig} - ${fig.nome || 'Figurinha'}</strong> <br><span style="color:var(--gold); font-size:0.75rem;">📖 ${albumNome}</span></div>`;
-      }).join('');
+        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
+        if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
+        albunsAgrupados[albumNome].push(fig);
+      });
+
+      let conteudoHtml = '';
+      for (const [albumNome, figs] of Object.entries(albunsAgrupados)) {
+        conteudoHtml += `
+          <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+            <div style="color: var(--gold); font-weight: 700; font-size: 0.75rem; margin-bottom: 3px;">📖 ${albumNome}</div>
+        `;
+        figs.forEach(fig => {
+          let numFig = String(fig.numero || '').replace(/^#+/, '');
+          conteudoHtml += `<div style="font-size: 0.75rem; color: #cbd5e1; margin-left: 10px;">✨ #${numFig} - ${fig.nome || 'Figurinha'}</div>`;
+        });
+        conteudoHtml += `</div>`;
+      }
 
       document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
       document.getElementById('modalProposta').style.display = 'flex';
@@ -660,6 +675,32 @@
       document.getElementById('modalCentralPropostas').style.display = 'none';
     }
 
+    // Função auxiliar para estruturar o HTML dos itens agrupados por álbum perfeitamente
+    function formatarItensAgrupadosPorAlbum(itens) {
+      let albunsAgrupados = {};
+
+      itens.forEach(i => {
+        const fig = i.figurinhas || {};
+        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
+        if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
+        albunsAgrupados[albumNome].push(fig);
+      });
+
+      let html = '';
+      for (const [albumNome, figs] of Object.entries(albunsAgrupados)) {
+        html += `
+          <div style="margin-top: 6px; margin-bottom: 6px; background: rgba(15, 23, 42, 0.4); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
+            <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700; margin-bottom: 2px;">📖 ${albumNome}</div>
+        `;
+        figs.forEach(fig => {
+          let numFig = String(fig.numero || '').replace(/^#+/, '');
+          html += `<div style="font-size: 0.75rem; color: #cbd5e1; margin-left: 6px;">• #${numFig} - ${fig.nome || 'Figurinha'}</div>`;
+        });
+        html += `</div>`;
+      }
+      return html;
+    }
+
     async function alternarAbaPropostas(tipo) {
       tipoAbaPropostaModal = tipo;
       document.getElementById('tabPropRec').classList.toggle('active', tipo === 'recebidas');
@@ -685,11 +726,7 @@
         container.innerHTML = propostas.map(p => {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
           const itens = p.proposta_itens || [];
-          const itensStr = itens.length > 0 ? itens.map(i => {
-            const fig = i.figurinhas || {};
-            const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
-            return `#${fig.numero || ''} ${fig.nome || ''} (${albumNome})`;
-          }).join(', ') : 'Itens da proposta';
+          const itensHtml = formatarItensAgrupadosPorAlbum(itens);
           
           let acoesHtml = '';
           if (p.status === 'pendente') {
@@ -705,9 +742,10 @@
           }
 
           return `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</div>
-              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 2px;">Itens solicitados: <strong>${itensStr}</strong></div>
+              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens solicitados:</div>
+              ${itensHtml}
               ${acoesHtml}
             </div>
           `;
@@ -741,16 +779,13 @@
             .eq('proposta_id', p.id);
 
           const itens = itensProp || [];
-          const itensStr = itens.length > 0 ? itens.map(i => {
-            const fig = i.figurinhas || {};
-            const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
-            return `#${fig.numero || ''} ${fig.nome || ''} (${albumNome})`;
-          }).join(', ') : 'Itens da proposta';
+          const itensHtml = formatarItensAgrupadosPorAlbum(itens);
 
           htmlFinal += `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</div>
-              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 2px;">Itens: <strong>${itensStr}</strong></div>
+              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens da proposta:</div>
+              ${itensHtml}
               <div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>
             </div>
           `;
@@ -758,6 +793,7 @@
         container.innerHTML = htmlFinal;
       }
     }
+
     async function atualizarStatusProposta(propostaId, novoStatus) {
       const { error } = await _supabase
         .from('propostas_troca')
@@ -852,7 +888,7 @@
 
     async function cadastrarEmail() {
       const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authSenha').value;
+      const password = document.getElementById('authSenha5').value; // password seguro
       if (!email || !password) return alert("Preencha e-mail e senha!");
       const { error } = await _supabase.auth.signUp({ email, password });
       if (error) alert("Erro ao criar conta: " + error.message);
