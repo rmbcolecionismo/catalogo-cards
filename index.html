@@ -48,7 +48,7 @@
     .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
     .market-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
@@ -110,7 +110,7 @@
         <div class="hero-features">
           <span>✅ Caderneta Inteligente</span>
           <span>✅ Vitrine de Vendas</span>
-          <span>✅ Mercado de Trocas (Matches Inteligentes)</span>
+          <span>✅ Mercado de Trocas por Proximidade</span>
         </div>
       </div>
       <div class="hero-action">
@@ -129,13 +129,21 @@
 
     <div class="sections-tabs">
       <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
-      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas Inteligente</button>
+      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas (Match)</button>
     </div>
 
     <div class="controls-bar">
       <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()">
       <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
         <option value="todos">📖 Todos os Álbuns</option>
+      </select>
+      <!-- Filtro exclusivo para o Mercado de Trocas por Raio -->
+      <select id="selectFiltroRaio" class="filter-field" onchange="filtrarAtivo()" style="display:none;">
+        <option value="todos">📍 Qualquer Distância</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
       </select>
     </div>
 
@@ -147,9 +155,9 @@
     </div>
 
     <div id="secaoTrocas" style="display: none;">
-      <div class="section-title">🔄 Mercado de Trocas (Repetidas que completam suas faltantes)</div>
+      <div class="section-title">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
       <div id="trocasGrid" class="marketplace-grid">
-        <div class="empty-state">Faça login e cadastre suas figurinhas faltantes na caderneta para ver os matches de troca!</div>
+        <div class="empty-state">Carregando matches de troca...</div>
       </div>
     </div>
   </div>
@@ -198,10 +206,25 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioLogadoGlobal = null;
+    let perfilLogadoGlobal = null;
     let itensMarketplaceGlobal = [];
-    let itensTrocasGlobal = [];
+    let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
     let abaAtual = 'market';
+
+    // Fórmula de Haversine para calcular distância em KM entre duas coordenadas geograficas
+    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      const R = 6371; // Raio da Terra em km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
 
     async function initHome() {
       const { data: { session } } = await _supabase.auth.getSession();
@@ -217,7 +240,7 @@
 
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
-          .select('id, nome, funcao, plano')
+          .select('id, nome, funcao, plano, latitude, longitude')
           .eq('email', usuarioLogadoGlobal.email)
           .maybeSingle();
 
@@ -228,6 +251,7 @@
           ]).select().maybeSingle();
           perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
         }
+        perfilLogadoGlobal = perfil;
 
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
@@ -255,8 +279,8 @@
     }
 
     async function carregarDadosGlobais() {
-      // 1. Carregar mapeamento de usuários
-      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats');
+      // 1. Carregar mapeamento de usuários (incluindo lat/lon)
+      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
       if (usuariosData) {
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
@@ -270,50 +294,62 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      // 3. Carregar Mercado de Trocas Inteligente (Filtro por Match de Faltantes)
+      // 3. Processar Matches Inteligentes para o Mercado de Trocas
       if (usuarioLogadoGlobal) {
-        // Buscar quais figurinhas o usuário logado tem como FALTANTES (quantidade = 0 ou não cadastradas com quantidade > 0)
-        // Para simplificar e garantir precisão, pegamos itens do usuario_cardeneta onde quantidade == 0 ou buscamos as que ele não tem.
+        // Pegar faltantes do usuário logado (itens com quantidade == 0)
         const { data: minhasFigurinhas } = await _supabase
           .from('usuario_cardeneta')
           .select('figurinha_id, quantidade')
           .eq('user_id', usuarioLogadoGlobal.id);
 
         let idsFaltantes = new Set();
-        // Vamos supor que faltantes são as que estão com quantidade === 0
         if (minhasFigurinhas) {
           minhasFigurinhas.forEach(item => {
             if (item.quantidade === 0) idsFaltantes.add(item.figurinha_id);
           });
         }
 
-        // Buscar todas as repetidas de OUTROS usuários (quantidade > 1)
-        const { data: dataTrocas, error: errorTrocas } = await _supabase
-          .from('usuario_cardeneta')
-          .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-          .gt('quantidade', 1)
-          .neq('user_id', usuarioLogadoGlobal.id)
-          .order('id', { ascending: false });
-
-        if (errorTrocas) console.error("Erro ao carregar trocas:", errorTrocas.message);
-
-        // Se o usuário tem faltantes mapeadas, filtramos apenas as repetidas que completam as faltantes dele
-        // Caso contrário, se ele não marcou faltantes ainda, mostramos todas as repetidas de outros usuários como sugestão.
-        let todasRepetidasOutros = dataTrocas || [];
-        if (idsFaltantes.size > 0) {
-          itensTrocasGlobal = todasRepetidasOutros.filter(item => idsFaltantes.has(item.figurinha_id));
-        } else {
-          itensTrocasGlobal = todasRepetidasOutros;
-        }
-
-      } else {
-        // Se for visitante, busca todas as repetidas gerais
+        // Buscar repetidas de outros usuários (quantidade > 1)
         const { data: dataTrocas } = await _supabase
           .from('usuario_cardeneta')
           .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
           .gt('quantidade', 1)
-          .order('id', { ascending: false });
-        itensTrocasGlobal = dataTrocas || [];
+          .neq('user_id', usuarioLogadoGlobal.id);
+
+        // Cruzar: Filtrar apenas repetidas de outros que o usuário logado tem como faltantes
+        let repetidasQueCompletam = [];
+        if (dataTrocas && idsFaltantes.size > 0) {
+          repetidasQueCompletam = dataTrocas.filter(item => idsFaltantes.has(item.figurinha_id));
+        } else if (dataTrocas) {
+          // Se o usuário não marcou faltantes, exibe as repetidas gerais como fallback
+          repetidasQueCompletam = dataTrocas;
+        }
+
+        // Agrupar por colecionador para montar cards de parceiros de troca
+        let colecionadoresMap = {};
+        repetidasQueCompletam.forEach(item => {
+          const donoId = item.user_id;
+          if (!colecionadoresMap[donoId]) {
+            const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
+            
+            let dist = null;
+            if (perfilLogadoGlobal && perfilLogadoGlobal.latitude && perfilLogadoGlobal.longitude && infoDono.latitude && infoDono.longitude) {
+              dist = calcularDistanciaKm(perfilLogadoGlobal.latitude, perfilLogadoGlobal.longitude, infoDono.latitude, infoDono.longitude);
+            }
+
+            colecionadoresMap[donoId] = {
+              user_id: donoId,
+              nome: infoDono.nome,
+              distanciaKm: dist,
+              itens: []
+            };
+          }
+          colecionadoresMap[donoId].itens.push(item);
+        });
+
+        matchesTrocasGlobal = Object.values(colecionadoresMap);
+      } else {
+        matchesTrocasGlobal = [];
       }
 
       popularFiltroAlbuns();
@@ -324,11 +360,9 @@
       const select = document.getElementById('selectFiltroAlbum');
       let albunsSet = new Map();
       
-      [...itensMarketplaceGlobal, ...itensTrocasGlobal].forEach(item => {
-        const fig = item.figurinhas || item.figurinha;
-        if (fig && fig.albuns) {
-          albunsSet.set(fig.albuns.id, fig.albuns.nome);
-        }
+      [...itensMarketplaceGlobal].forEach(item => {
+        const fig = item.figurinha;
+        if (fig && fig.albuns) albunsSet.set(fig.albuns.id, fig.albuns.nome);
       });
 
       let html = '<option value="todos">📖 Todos os Álbuns</option>';
@@ -346,8 +380,12 @@
       document.getElementById('secaoMarketplace').style.display = aba === 'market' ? 'block' : 'none';
       document.getElementById('secaoTrocas').style.display = aba === 'trocas' ? 'block' : 'none';
       
+      // Mostrar ou esconder o seletor de raio dependendo da aba ativa
+      document.getElementById('selectFiltroRaio').style.display = aba === 'trocas' ? 'inline-block' : 'none';
+      
       document.getElementById('inputBusca').value = '';
       document.getElementById('selectFiltroAlbum').value = 'todos';
+      document.getElementById('selectFiltroRaio').value = 'todos';
       renderizarAtivo();
     }
 
@@ -355,7 +393,7 @@
       if (abaAtual === 'market') {
         renderizarMarketplace(itensMarketplaceGlobal);
       } else {
-        renderizarTrocas(itensTrocasGlobal);
+        renderizarTrocasMatches(matchesTrocasGlobal);
       }
     }
 
@@ -374,7 +412,6 @@
         
         const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `perfil.html?id=${item.user_id}`;
-
         let numFig = String(fig.numero || '').replace(/^#+/, '');
 
         return `
@@ -387,41 +424,50 @@
               <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
             </div>
             <div class="market-footer">
-              <a href="${linkPerfilDono}" class="btn-acao btn-perfil">👤 Ver Perfil do Colecionador</a>
+              <a href="${linkPerfilDono}" class="btn-acao btn-perfil">👤 Ver Perfil</a>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    function renderizarTrocas(itens) {
+    function renderizarTrocasMatches(matches) {
       const grid = document.getElementById('trocasGrid');
-      if (itens.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha repetida de outros colecionadores encontrada que corresponda às suas faltantes no momento.</div>';
+      
+      if (!usuarioLogadoGlobal) {
+        grid.innerHTML = '<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca baseadas nas suas figurinhas faltantes e proximidade!</div>';
         return;
       }
 
-      grid.innerHTML = itens.map(item => {
-        const fig = item.figurinhas || {};
-        const albumNome = fig.albuns?.nome || 'Álbum';
-        const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        
-        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
-        const linkPerfilDono = `cardeneta.html?id=${item.user_id}`;
+      if (matches.length === 0) {
+        grid.innerHTML = '<div class="empty-state">Nenhum colecionador próximo possui figurinhas repetidas correspondentes às suas faltantes no momento.</div>';
+        return;
+      }
 
-        let numFig = String(fig.numero || '').replace(/^#+/, '');
+      grid.innerHTML = matches.map(match => {
+        const distanciaTexto = match.distanciaKm !== null ? `${match.distanciaKm.toFixed(1)} km de você` : 'Distância não informada';
+        const linkPerfilDono = `cardeneta.html?id=${match.user_id}`;
+        
+        let miniCardsFigurinhas = match.itens.map(i => {
+          const fig = i.figurinhas || {};
+          let numFig = String(fig.numero || '').replace(/^#+/, '');
+          return `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">#${numFig} ${fig.nome || ''}</span>`;
+        }).join(' ');
 
         return `
-          <div class="market-card">
-            <div class="market-img-wrap"><img src="${imgUrl}" class="market-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"></div>
-            <div class="market-info">
-              <div class="market-num">#${numFig} • ${albumNome}</div>
-              <div class="market-name">${fig.nome || 'Figurinha'}</div>
-              <div class="market-preco" style="color: #38bdf8; font-size: 0.85rem;">Repetidas: ${item.quantidade}</div>
-              <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
+          <div class="market-card" style="grid-column: span 1; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700; color: var(--gold); font-size: 1rem;">👤 ${match.nome}</span>
+                <span style="font-size: 0.75rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
+              </div>
+              <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Tem <strong>${match.itens.length} figurinha(s)</strong> que você precisa:</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px;">
+                ${miniCardsFigurinhas}
+              </div>
             </div>
-            <div class="market-footer">
-              <a href="${linkPerfilDono}" class="btn-acao btn-troca">🔄 Negociar Troca</a>
+            <div>
+              <a href="${linkPerfilDono}" class="btn-acao btn-troca" style="width: 100%; text-align: center;">🔄 Ver Perfil e Negociar</a>
             </div>
           </div>
         `;
@@ -431,6 +477,7 @@
     function filtrarAtivo() {
       const termo = document.getElementById('inputBusca').value.toLowerCase();
       const albumFiltro = document.getElementById('selectFiltroAlbum').value;
+      const raioFiltro = document.getElementById('selectFiltroRaio').value;
 
       if (abaAtual === 'market') {
         let filtrados = itensMarketplaceGlobal.filter(item => {
@@ -441,13 +488,27 @@
         });
         renderizarMarketplace(filtrados);
       } else {
-        let filtrados = itensTrocasGlobal.filter(item => {
-          const fig = item.figurinhas || {};
-          const matchNome = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
-          const matchAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
-          return matchNome && matchAlbum;
+        let filtrados = matchesTrocasGlobal.filter(match => {
+          // Filtro por raio em Km
+          let matchRaio = true;
+          if (raioFiltro !== 'todos') {
+            const limiteKm = parseFloat(raioFiltro);
+            if (match.distanciaKm === null || match.distanciaKm > limiteKm) matchRaio = false;
+          }
+
+          // Filtro por termo de busca ou álbum nos itens do match
+          let matchTermoEAlbum = match.itens.some(i => {
+            const fig = i.figurinhas || {};
+            const nomeFig = String(fig.nome || '').toLowerCase();
+            const numFig = String(fig.numero || '').toLowerCase();
+            const passaTermo = nomeFig.includes(termo) || numFig.includes(termo);
+            const passaAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
+            return passaTermo && passaAlbum;
+          });
+
+          return matchRaio && matchTermoEAlbum;
         });
-        renderizarTrocas(filtrados);
+        renderizarTrocasMatches(filtrados);
       }
     }
 
