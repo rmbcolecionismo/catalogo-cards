@@ -307,6 +307,7 @@
     let tipoAbaPropostaModal = 'recebidas';
     let propostaChatAtualId = null;
     let chatIntervalo = null;
+    let matchesCacheMap = new Map();
 
     function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
@@ -458,6 +459,7 @@
           .map(fig => Number(fig.id));
 
         matchesTrocasGlobal = [];
+        matchesCacheMap.clear();
 
         if (idsFaltantes.length > 0) {
           const { data: dataTrocas, error: erroTrocas } = await _supabase
@@ -480,8 +482,6 @@
 
             dataTrocas.forEach(item => {
               const donoId = item.user_id;
-              const fig = item.figurinhas;
-
               if (!colecionadoresMap[donoId]) {
                 const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
                 
@@ -501,10 +501,12 @@
             });
 
             matchesTrocasGlobal = Object.values(colecionadoresMap);
+            matchesTrocasGlobal.forEach(m => matchesCacheMap.set(m.user_id, m));
           }
         }
       } else {
         matchesTrocasGlobal = [];
+        matchesCacheMap.clear();
       }
 
       popularFiltroAlbuns();
@@ -607,14 +609,13 @@
           miniBadges += ` <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
         }
 
-        const matchDataStr = encodeURIComponent(JSON.stringify(match));
         const jaTemProposta = propostasPendentesMap.has(match.user_id);
 
         let botaoAcaoHtml = '';
         if (jaTemProposta) {
           botaoAcaoHtml = `<button class="btn-acao btn-pendente" style="width: 100%; padding: 8px; font-size: 0.75rem;" disabled>⏳ Proposta Pendente</button>`;
         } else {
-          botaoAcaoHtml = `<button onclick="abrirModalPropostaDecode('${matchDataStr}')" class="btn-acao btn-troca" style="width: 100%; padding: 8px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
+          botaoAcaoHtml = `<button onclick="abrirModalPropostaPorUserId('${match.user_id}')" class="btn-acao btn-troca" style="width: 100%; padding: 8px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
         }
 
         return `
@@ -642,8 +643,10 @@
       }).join('');
     }
 
-    function abrirModalPropostaDecode(matchDataStr) {
-      const match = JSON.parse(decodeURIComponent(matchDataStr));
+    function abrirModalPropostaPorUserId(userId) {
+      const match = matchesCacheMap.get(userId);
+      if (!match) return;
+
       destinatarioAtualId = match.user_id;
       itensPropostaAtual = JSON.parse(JSON.stringify(match.itens));
 
@@ -967,7 +970,6 @@
 
         if (propInfo && itensProp) {
           for (const item of itensProp) {
-            // Atualizar caderneta de ambos os lados (adiciona para quem recebeu/pediu e remove repetida de quem doou)
             const { data: cadDest } = await _supabase
               .from('usuario_cardeneta')
               .select('id, quantidade')
@@ -998,7 +1000,6 @@
           }
         }
 
-        // Otimização: limpar mensagens antigas e itens da proposta aceita para otimizar espaço no banco
         await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
         await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
       }
@@ -1055,9 +1056,10 @@
 
         let acoesMsg = '';
         if (meuEnvio) {
+          const mensagemEscapada = encodeURIComponent(m.mensagem);
           acoesMsg = `
             <div style="display: flex; gap: 6px; font-size: 0.6rem; margin-top: 3px; justify-content: flex-end; opacity: 0.8;">
-              <span onclick="editarMensagemChat('${m.id}', \`${escape(m.mensagem)}\`)" style="cursor: pointer; text-decoration: underline;">Editar</span>
+              <span onclick="editarMensagemChat('${m.id}', '${mensagemEscapada}')" style="cursor: pointer; text-decoration: underline;">Editar</span>
               <span onclick="apagarMensagemChat('${m.id}')" style="cursor: pointer; text-decoration: underline;">Apagar</span>
             </div>
           `;
@@ -1102,8 +1104,9 @@
       else await carregarMensagensChat();
     }
 
-    async function editarMensagemChat(msgId, textoAntigo) {
-      const novoTexto = prompt("Edite sua mensagem:", unescape(textoAntigo));
+    async function editarMensagemChat(msgId, textoCodificado) {
+      const textoAntigo = decodeURIComponent(textoCodificado);
+      const novoTexto = prompt("Edite sua mensagem:", textoAntigo);
       if (novoTexto === null || !novoTexto.trim()) return;
 
       const { error } = await _supabase.from('proposta_mensagens').update({ mensagem: novoTexto.trim() }).eq('id', msgId);
