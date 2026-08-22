@@ -330,7 +330,7 @@ console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
 
         if (idsFaltantes.length > 0) {
           // 3. Consulta direta no banco apenas para as repetidas que batem com os faltantes
-          const { data: dataTrocas, error: erroTrocas } = await _supabase
+         const { data: dataTrocas, error: erroTrocas } = await _supabase
             .from('usuario_cardeneta')
             .select(`
               id, 
@@ -342,11 +342,10 @@ console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
               )
             `)
             .gt('quantidade', 1)
-            .neq('user_id', usuarioLogadoGlobal.id)
-            .in('figurinha_id', idsFaltantes);
-// ADICIONE ESTES CONSOLE.LOGS AQUI:
-          console.log("Erro do Supabase (se houver):", erroTrocas);
-          console.log("Dados brutos retornados de trocas:", dataTrocas);
+            .limit(5); // Traz apenas 5 para testar
+
+          console.log("TESTE DE REPETIDAS BRUTAS:", dataTrocas);
+          console.log("ERRO DO TESTE:", erroTrocas);
           if (erroTrocas) {
             console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
           } else if (dataTrocas) {
