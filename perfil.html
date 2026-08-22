@@ -259,11 +259,8 @@
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     
-    let infoLocal = perfil.cidade || 'Cidade não informada';
-    if (perfil.codigo_postal) {
-      infoLocal += ` (CEP/Postal: ${perfil.codigo_postal})`;
-    }
-    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${infoLocal}</strong></p>`;
+    // Exibe apenas a cidade publicamente, mantendo o código postal oculto
+    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
 
     if (perfil.telefone_whats) {
       const linkWpp = document.getElementById('linkWhatsApp');
@@ -284,7 +281,7 @@
     }
   }
 
-  // Função para converter Código Postal em Latitude/Longitude usando Nominatim (OpenStreetMap)
+  // Função interna para calcular coordenadas via OpenStreetMap a partir do Código Postal
   async function buscarCoordenadasPorCep(codigoPostal) {
     try {
       const resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&format=json&limit=1`);
