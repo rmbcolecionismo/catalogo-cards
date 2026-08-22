@@ -673,7 +673,7 @@
       if (tipo === 'recebidas') {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, created_at, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
+          .select(`id, status, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
           .eq('destinatario_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -716,7 +716,7 @@
       } else {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, created_at, destinatario_id`)
+          .select(`id, status, destinatario_id`)
           .eq('remetente_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -758,7 +758,6 @@
         container.innerHTML = htmlFinal;
       }
     }
-
     async function atualizarStatusProposta(propostaId, novoStatus) {
       const { error } = await _supabase
         .from('propostas_troca')
