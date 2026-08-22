@@ -105,12 +105,12 @@
 
     <div id="heroBannerVisitante" class="hero-banner">
       <div class="hero-content">
-        <h1>Organize sua Coleção & Venda/Troque Figurinhas![cite: 4]</h1>
-        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.[cite: 4]</p>
+        <h1>Organize sua Coleção & Venda/Troque Figurinhas!</h1>
+        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.</p>
         <div class="hero-features">
-          <span>✅ Caderneta Inteligente[cite: 4]</span>
-          <span>✅ Vitrine de Vendas[cite: 4]</span>
-          <span>✅ Mercado de Trocas[cite: 4]</span>
+          <span>✅ Caderneta Inteligente</span>
+          <span>✅ Vitrine de Vendas</span>
+          <span>✅ Mercado de Trocas</span>
         </div>
       </div>
       <div class="hero-action">
@@ -128,8 +128,8 @@
     </div>
 
     <div class="sections-tabs">
-      <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)[cite: 4]</button>
-      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas[cite: 4]</button>
+      <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
+      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas</button>
     </div>
 
     <div class="controls-bar">
@@ -147,7 +147,7 @@
     </div>
 
     <div id="secaoTrocas" style="display: none;">
-      <div class="section-title">🔄 Mercado de Trocas (Repetidas)[cite: 4]</div>
+      <div class="section-title">🔄 Mercado de Trocas (Repetidas)</div>
       <div id="trocasGrid" class="marketplace-grid">
         <div class="empty-state">Carregando propostas de troca...</div>
       </div>
@@ -165,7 +165,7 @@
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
       <h3>Acesse sua Conta</h3>
-      <p>Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.[cite: 4]</p>
+      <p>Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
       
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <button class="btn-outline" onclick="fazerLoginGoogle()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #0f172a; border: none; font-weight: 600; cursor: pointer;">
@@ -271,7 +271,7 @@
       }
       itensMarketplaceGlobal = dataMarket || [];
 
-      // 3. Carregar Mercado de Trocas (tabela usuario_cardeneta filtrando repetidas qtd > 1)[cite: 4]
+      // 3. Carregar Mercado de Trocas (tabela usuario_cardeneta filtrando repetidas qtd > 1)
       const { data: dataTrocas, error: errorTrocas } = await _supabase
         .from('usuario_cardeneta')
         .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
@@ -342,7 +342,6 @@
         const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `perfil.html?id=${item.user_id}`;
 
-        // Limpeza do número para remover eventuais duplicações antes de aplicar o prefixo # único
         let numFig = String(fig.numero || '').replace(/^#+/, '');
 
         return `
@@ -377,7 +376,6 @@
         const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `cardeneta.html?id=${item.user_id}`;
 
-        // Limpeza do número para remover eventuais duplicações antes de aplicar o prefixo # único
         let numFig = String(fig.numero || '').replace(/^#+/, '');
 
         return `
