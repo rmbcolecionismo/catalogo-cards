@@ -277,7 +277,7 @@
   }
 
   // Função customizada para garantir formato estruturado Cidade - País
-  async function buscarDadosPorCodigoPostal(codigoPostal) {
+ async function buscarDadosPorCodigoPostal(codigoPostal) {
     try {
       const limpo = codigoPostal.replace(/\D/g, '');
       
@@ -296,15 +296,14 @@
         }
       }
 
-      // 2. Busca para Portugal / Europa usando parâmetros estruturados e texto livre de apoio
-      let resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&country=Portugal&format=json&limit=1`, {
+      // 2. Busca para Portugal / Europa
+      let resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&country=Portugal&format=json&addressdetails=1&limit=1`, {
         headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
       });
       let dados = await resposta.json();
 
-      // Se não encontrar estruturado, tenta busca livre por texto (ex: "2410-250 Portugal")
       if (!dados || dados.length === 0) {
-        resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(codigoPostal + ' Portugal')}&format=json&limit=1`, {
+        resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(codigoPostal + ' Portugal')}&format=json&addressdetails=1&limit=1`, {
           headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
         });
         dados = await resposta.json();
@@ -313,15 +312,14 @@
       if (dados && dados.length > 0) {
         const endereco = dados[0].address || {};
         
-        // Tenta extrair a cidade, vila, município ou concelho
-        let localidade = endereco.city || endereco.town || endereco.village || endereco.municipality || endereco.county;
+        // Em Portugal, priorizamos o concelho (county) ou cidade principal (city/town) para evitar ruas isoladas
+        let localidade = endereco.city || endereco.town || endereco.municipality || endereco.county;
         
-        // Se ainda assim o objeto address não trouxer a cidade nomeada, extraímos do nome exibido (display_name)
+        // Ajuste específico caso venha detalhado de forma genérica
         if (!localidade || localidade.toLowerCase() === codigoPostal.toLowerCase()) {
           const partes = dados[0].display_name.split(',');
-          if (partes.length > 1) {
-            localidade = partes[0].trim(); // Pega a primeira parte descritiva (geralmente a freguesia/localidade)
-          }
+          // Procura nas partes do endereço uma que se adeque ou pega uma referência limpa
+          localidade = partes.length > 2 ? partes[partes.length - 3].trim() : partes[0].trim();
         }
 
         const pais = endereco.country || 'Portugal';
