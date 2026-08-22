@@ -110,7 +110,7 @@
         <div class="hero-features">
           <span>✅ Caderneta Inteligente</span>
           <span>✅ Vitrine de Vendas</span>
-          <span>✅ Mercado de Trocas</span>
+          <span>✅ Mercado de Trocas (Matches Inteligentes)</span>
         </div>
       </div>
       <div class="hero-action">
@@ -129,7 +129,7 @@
 
     <div class="sections-tabs">
       <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
-      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas</button>
+      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas Inteligente</button>
     </div>
 
     <div class="controls-bar">
@@ -147,9 +147,9 @@
     </div>
 
     <div id="secaoTrocas" style="display: none;">
-      <div class="section-title">🔄 Mercado de Trocas (Repetidas)</div>
+      <div class="section-title">🔄 Mercado de Trocas (Repetidas que completam suas faltantes)</div>
       <div id="trocasGrid" class="marketplace-grid">
-        <div class="empty-state">Carregando propostas de troca...</div>
+        <div class="empty-state">Faça login e cadastre suas figurinhas faltantes na caderneta para ver os matches de troca!</div>
       </div>
     </div>
   </div>
@@ -197,6 +197,7 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let usuarioLogadoGlobal = null;
     let itensMarketplaceGlobal = [];
     let itensTrocasGlobal = [];
     let usuariosMapGlobal = {};
@@ -206,7 +207,7 @@
       const { data: { session } } = await _supabase.auth.getSession();
       
       if (session && session.user) {
-        const usuario = session.user;
+        usuarioLogadoGlobal = session.user;
         const banner = document.getElementById('heroBannerVisitante');
         if (banner) banner.style.display = 'none';
 
@@ -217,15 +218,15 @@
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
           .select('id, nome, funcao, plano')
-          .eq('email', usuario.email)
+          .eq('email', usuarioLogadoGlobal.email)
           .maybeSingle();
 
         if (!perfil) {
-          const nomeSugerido = usuario.user_metadata?.full_name || usuario.user_metadata?.name || usuario.email.split('@')[0];
+          const nomeSugerido = usuarioLogadoGlobal.user_metadata?.full_name || usuarioLogadoGlobal.user_metadata?.name || usuarioLogadoGlobal.email.split('@')[0];
           const { data: novoPerfil } = await _supabase.from('usuarios_cadastrados').insert([
-            { id: usuario.id, email: usuario.email, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' }
+            { id: usuarioLogadoGlobal.id, email: usuarioLogadoGlobal.email, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' }
           ]).select().maybeSingle();
-          perfil = novoPerfil || { id: usuario.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
+          perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
         }
 
         document.getElementById('linkCardeneta').style.display = 'inline';
@@ -240,8 +241,8 @@
           document.getElementById('linkEstoque').style.display = 'inline';
         }
 
-        const nomeUsuario = perfil?.nome || usuario.email.split('@')[0];
-        const avatarUrl = usuario.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+        const nomeUsuario = perfil?.nome || usuarioLogadoGlobal.email.split('@')[0];
+        const avatarUrl = usuarioLogadoGlobal.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
@@ -254,34 +255,66 @@
     }
 
     async function carregarDadosGlobais() {
-      // 1. Carregar mapeamento de usuários para exibir o nome do dono
+      // 1. Carregar mapeamento de usuários
       const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats');
       if (usuariosData) {
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
 
-      // 2. Carregar Marketplace (tabela vitrine_ofertas) referenciando a tabela singular 'figurinha' por 'figurinha_id'
+      // 2. Carregar Marketplace
       const { data: dataMarket, error: errorMarket } = await _supabase
         .from('vitrine_ofertas')
         .select(`id, preco, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
         .order('id', { ascending: false });
       
-      if (errorMarket) {
-        console.error("Erro ao carregar marketplace:", errorMarket.message);
-      }
+      if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      // 3. Carregar Mercado de Trocas (tabela usuario_cardeneta filtrando repetidas qtd > 1)
-      const { data: dataTrocas, error: errorTrocas } = await _supabase
-        .from('usuario_cardeneta')
-        .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-        .gt('quantidade', 1)
-        .order('id', { ascending: false });
+      // 3. Carregar Mercado de Trocas Inteligente (Filtro por Match de Faltantes)
+      if (usuarioLogadoGlobal) {
+        // Buscar quais figurinhas o usuário logado tem como FALTANTES (quantidade = 0 ou não cadastradas com quantidade > 0)
+        // Para simplificar e garantir precisão, pegamos itens do usuario_cardeneta onde quantidade == 0 ou buscamos as que ele não tem.
+        const { data: minhasFigurinhas } = await _supabase
+          .from('usuario_cardeneta')
+          .select('figurinha_id, quantidade')
+          .eq('user_id', usuarioLogadoGlobal.id);
 
-      if (errorTrocas) {
-        console.error("Erro ao carregar trocas:", errorTrocas.message);
+        let idsFaltantes = new Set();
+        // Vamos supor que faltantes são as que estão com quantidade === 0
+        if (minhasFigurinhas) {
+          minhasFigurinhas.forEach(item => {
+            if (item.quantidade === 0) idsFaltantes.add(item.figurinha_id);
+          });
+        }
+
+        // Buscar todas as repetidas de OUTROS usuários (quantidade > 1)
+        const { data: dataTrocas, error: errorTrocas } = await _supabase
+          .from('usuario_cardeneta')
+          .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+          .gt('quantidade', 1)
+          .neq('user_id', usuarioLogadoGlobal.id)
+          .order('id', { ascending: false });
+
+        if (errorTrocas) console.error("Erro ao carregar trocas:", errorTrocas.message);
+
+        // Se o usuário tem faltantes mapeadas, filtramos apenas as repetidas que completam as faltantes dele
+        // Caso contrário, se ele não marcou faltantes ainda, mostramos todas as repetidas de outros usuários como sugestão.
+        let todasRepetidasOutros = dataTrocas || [];
+        if (idsFaltantes.size > 0) {
+          itensTrocasGlobal = todasRepetidasOutros.filter(item => idsFaltantes.has(item.figurinha_id));
+        } else {
+          itensTrocasGlobal = todasRepetidasOutros;
+        }
+
+      } else {
+        // Se for visitante, busca todas as repetidas gerais
+        const { data: dataTrocas } = await _supabase
+          .from('usuario_cardeneta')
+          .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+          .gt('quantidade', 1)
+          .order('id', { ascending: false });
+        itensTrocasGlobal = dataTrocas || [];
       }
-      itensTrocasGlobal = dataTrocas || [];
 
       popularFiltroAlbuns();
       renderizarAtivo();
@@ -364,7 +397,7 @@
     function renderizarTrocas(itens) {
       const grid = document.getElementById('trocasGrid');
       if (itens.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha repetida cadastrada para troca no momento.</div>';
+        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha repetida de outros colecionadores encontrada que corresponda às suas faltantes no momento.</div>';
         return;
       }
 
@@ -388,7 +421,7 @@
               <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
             </div>
             <div class="market-footer">
-              <a href="${linkPerfilDono}" class="btn-acao btn-troca">🔄 Ver Perfil de Troca</a>
+              <a href="${linkPerfilDono}" class="btn-acao btn-troca">🔄 Negociar Troca</a>
             </div>
           </div>
         `;
