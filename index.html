@@ -209,6 +209,7 @@
     let itensMarketplaceGlobal = [];
     let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
+    let albunsGlobaisMap = new Map(); // Armazena todos os álbuns cadastrados
     let abaAtual = 'market';
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
@@ -277,6 +278,13 @@
     }
 
     async function carregarDadosGlobais() {
+      // 1. Carregar lista de álbuns gerais do banco para garantir que o filtro traga todos
+      const { data: albunsData } = await _supabase.from('albuns').select('id, nome');
+      if (albunsData) {
+        albunsGlobaisMap.clear();
+        albunsData.forEach(a => albunsGlobaisMap.set(a.id, a.nome));
+      }
+
       const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
       if (usuariosData) {
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
@@ -290,10 +298,26 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
+      // Popula o mapa de álbuns também com os dados vindos das ofertas caso algum não estivesse listado na tabela albuns
+      itensMarketplaceGlobal.forEach(item => {
+        const fig = item.figurinha;
+        if (fig && fig.albuns && fig.albuns.id) {
+          albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
+        }
+      });
+
       if (usuarioLogadoGlobal) {
         const { data: todasFigurinhasGlobais } = await _supabase
           .from('figurinhas')
           .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+
+        if (todasFigurinhasGlobais) {
+          todasFigurinhasGlobais.forEach(fig => {
+            if (fig.albuns && fig.albuns.id) {
+              albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
+            }
+          });
+        }
 
         const { data: minhaCaderneta } = await _supabase
           .from('usuario_cardeneta')
@@ -331,6 +355,14 @@
           repetidasQueCompletam = dataTrocas;
         }
 
+        // Mapeia álbuns presentes nas trocas
+        repetidasQueCompletam.forEach(item => {
+          const fig = item.figurinhas;
+          if (fig && fig.albuns && fig.albuns.id) {
+            albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
+          }
+        });
+
         let colecionadoresMap = {};
         repetidasQueCompletam.forEach(item => {
           const donoId = item.user_id;
@@ -363,15 +395,12 @@
 
     function popularFiltroAlbuns() {
       const select = document.getElementById('selectFiltroAlbum');
-      let albunsSet = new Map();
-      
-      [...itensMarketplaceGlobal].forEach(item => {
-        const fig = item.figurinha;
-        if (fig && fig.albuns) albunsSet.set(fig.albuns.id, fig.albuns.nome);
-      });
-
       let html = '<option value="todos">📖 Todos os Álbuns</option>';
-      albunsSet.forEach((nome, id) => {
+      
+      // Ordena os álbuns alfabeticamente para melhor visualização
+      const albunsOrdenados = Array.from(albunsGlobaisMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+
+      albunsOrdenados.forEach(([id, nome]) => {
         html += `<option value="${id}">${nome}</option>`;
       });
       select.innerHTML = html;
@@ -492,14 +521,16 @@
         });
         renderizarMarketplace(filtrados);
       } else {
-        let filtrados = matchesTrocasGlobal.filter(match => {
+        let filtrados = matchesTrocasGlobal.map(match => {
           let matchRaio = true;
           if (raioFiltro !== 'todos') {
             const limiteKm = parseFloat(raioFiltro);
             if (match.distanciaKm === null || match.distanciaKm > limiteKm) matchRaio = false;
           }
+          if (!matchRaio) return null;
 
-          let matchTermoEAlbum = match.itens.some(i => {
+          // Filtra apenas os itens do colecionador que passam no termo e no álbum selecionado
+          let itensFiltrados = match.itens.filter(i => {
             const fig = i.figurinhas || {};
             const nomeFig = String(fig.nome || '').toLowerCase();
             const numFig = String(fig.numero || '').toLowerCase();
@@ -508,8 +539,15 @@
             return passaTermo && passaAlbum;
           });
 
-          return matchRaio && matchTermoEAlbum;
-        });
+          if (itensFiltrados.length === 0) return null;
+
+          // Retorna um novo objeto de match contendo apenas os itens correspondentes ao filtro
+          return {
+            ...match,
+            itens: itensFiltrados
+          };
+        }).filter(Boolean);
+
         renderizarTrocasMatches(filtrados);
       }
     }
