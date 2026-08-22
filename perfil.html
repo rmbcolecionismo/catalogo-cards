@@ -95,8 +95,6 @@
       <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
       <input type="text" id="editNome" class="edit-field">
       
-      <!-- Campo Cidade removido da interface visual conforme solicitado -->
-
       <label style="font-size: 0.75rem; color: var(--gold);">📍 Código Postal / CEP:</label>
       <input type="text" id="editCodigoPostal" class="edit-field" placeholder="Ex: 2400-123 ou 01001-000">
 
@@ -258,7 +256,6 @@
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     
-    // Exibe apenas a cidade publicamente obtida pelo CEP/Código Postal
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Localidade não informada'}</strong></p>`;
 
     if (perfil.telefone_whats) {
@@ -279,30 +276,34 @@
     }
   }
 
-  // Função para buscar dados de localização (Cidade/Município/Localidade e Coordenadas) baseada no Código Postal/CEP
+  // Função robusta para extrair cidade/município e coordenadas via código postal
   async function buscarDadosPorCodigoPostal(codigoPostal) {
     try {
       const limpo = codigoPostal.replace(/\D/g, '');
-      let url = '';
       
-      // Se tiver 8 dígitos, assumimos CEP do Brasil (ViaCEP)
+      // Se tiver 8 dígitos, tenta buscar como CEP do Brasil (ViaCEP)
       if (limpo.length === 8) {
-        const respostaCep = await httpsFetch(`https://viacep.com.br/ws/${limpo}/json/`);
-        const dadosCep = await respostaCep.json();
-        if (!dadosCep.erro) {
-          const municipio = dadosCep.localidade;
-          // Busca coordenadas aproximadas pelo nome do município para manter lat/lon atualizados
-          const coords = await buscarCoordenadasPorEndereco(municipio);
-          return {
-            cidade: municipio,
-            lat: coords ? coords.lat : null,
-            lon: coords ? coords.lon : null
-          };
+        try {
+          const respostaCep = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+          const dadosCep = await respostaCep.json();
+          if (!dadosCep.erro && dadosCep.localidade) {
+            const municipio = dadosCep.localidade;
+            const coords = await buscarCoordenadasPorEndereco(municipio);
+            return {
+              cidade: municipio,
+              lat: coords ? coords.lat : null,
+              lon: coords ? coords.lon : null
+            };
+          }
+        } catch (e) {
+          console.warn("Falha no ViaCEP, tentando geocodificação geral...");
         }
       }
 
-      // Caso contrário, busca na Europa / Portugal via Nominatim (OpenStreetMap)
-      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&format=json&limit=1`);
+      // Busca geral para Europa / Portugal / Internacional (Nominatim)
+      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&format=json&limit=1`, {
+        headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
+      });
       const dados = await resposta.json();
       
       if (dados && dados.length > 0) {
@@ -318,10 +319,6 @@
       console.error("Erro ao buscar dados pelo código postal:", err);
     }
     return null;
-  }
-
-  async function httpsFetch(url) {
-    return fetch(url);
   }
 
   async function buscarCoordenadasPorEndereco(termo) {
@@ -343,12 +340,15 @@
     let latitude = usuarioLogado.latitude;
     let longitude = usuarioLogado.longitude;
 
-    if (codigoPostal && codigoPostal !== usuarioLogado.codigo_postal) {
+    if (codigoPostal) {
       const infoLocal = await buscarDadosPorCodigoPostal(codigoPostal);
-      if (infoLocal) {
-        if (infoLocal.cidade) cidadeAutomatica = infoLocal.cidade;
+      if (infoLocal && infoLocal.cidade) {
+        cidadeAutomatica = infoLocal.cidade;
         if (infoLocal.lat) latitude = infoLocal.lat;
         if (infoLocal.lon) longitude = infoLocal.lon;
+      } else {
+        alert("Não foi possível identificar automaticamente a cidade para este código postal/CEP. Verifique o valor digitado.");
+        return;
       }
     }
 
@@ -362,8 +362,12 @@
     };
 
     const { error } = await _supabase.from('usuarios_cadastrados').update(updates).eq('id', usuarioLogado.id);
-    if (error) alert("Erro ao atualizar: " + error.message);
-    else location.reload();
+    if (error) {
+      alert("Erro ao atualizar: " + error.message);
+    } else {
+      alert("Perfil atualizado com sucesso!");
+      location.reload();
+    }
   }
 
   function toggleEdit() {
