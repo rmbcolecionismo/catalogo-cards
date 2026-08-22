@@ -354,6 +354,13 @@
 
             dataTrocas.forEach(item => {
               const donoId = item.user_id;
+              const { data: testeGeral, error: erroGeral } = await _supabase
+  .from('usuario_cardeneta')
+  .select('id, user_id, figurinha_id, quantidade');
+
+console.log("Total de registros na caderneta de TODOS os usuários:", testeGeral?.length);
+console.log("Registros com quantidade > 1:", testeGeral?.filter(i => i.quantidade > 1));
+console.log("Meus IDs faltantes (total):", idsFaltantes.length);
               
               // Se quiser ignorar você mesmo nos testes, descomente a linha abaixo:
               // if (donoId === usuarioLogadoGlobal.id) return;
