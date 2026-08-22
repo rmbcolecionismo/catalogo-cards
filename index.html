@@ -221,9 +221,9 @@
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
       <h3>🔄 Enviar Proposta de Troca</h3>
-      <p id="modalPropostaSubtitulo">Confirme os itens desejados para iniciar a negociação.</p>
+      <p id="modalPropostaSubtitulo">Ajuste os itens da proposta antes de enviar:</p>
       
-      <div id="modalPropostaConteudo" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 180px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="modalPropostaConteudo" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
       </div>
 
       <div style="display: flex; gap: 8px;">
@@ -619,33 +619,62 @@
     function abrirModalPropostaDecode(matchDataStr) {
       const match = JSON.parse(decodeURIComponent(matchDataStr));
       destinatarioAtualId = match.user_id;
-      itensPropostaAtual = match.itens;
+      // Clona os itens para permitir edição local antes do envio definitivo
+      itensPropostaAtual = JSON.parse(JSON.stringify(match.itens));
 
-      document.getElementById('modalPropostaSubtitulo').innerHTML = `Enviar proposta de troca para <strong>${match.nome}</strong>:`;
-      
+      document.getElementById('modalPropostaSubtitulo').innerHTML = `Ajuste os itens da proposta para <strong>${match.nome}</strong> antes de enviar:`;
+      renderizarConteudoModalProposta();
+      document.getElementById('modalProposta').style.display = 'flex';
+    }
+
+    function renderizarConteudoModalProposta() {
       let albunsAgrupados = {};
-      match.itens.forEach(i => {
+      
+      itensPropostaAtual.forEach((i, indexOriginal) => {
         const fig = i.figurinhas || {};
         const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
         if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
-        albunsAgrupados[albumNome].push(fig);
+        albunsAgrupados[albumNome].push({ ...i, indexOriginal });
       });
 
       let conteudoHtml = '';
-      for (const [albumNome, figs] of Object.entries(albunsAgrupados)) {
+      for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
+        const quantidadeTotalAlbum = listaItens.length;
+        
         conteudoHtml += `
-          <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
-            <div style="color: var(--gold); font-weight: 700; font-size: 0.75rem; margin-bottom: 3px;">📖 ${albumNome}</div>
+          <div style="margin-top: 6px; margin-bottom: 8px; background: rgba(15, 23, 42, 0.4); padding: 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
+              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${quantidadeTotalAlbum} item(ns)</span>
+            </div>
         `;
-        figs.forEach(fig => {
+        
+        listaItens.forEach(item => {
+          const fig = item.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
-          conteudoHtml += `<div style="font-size: 0.75rem; color: #cbd5e1; margin-left: 10px;">✨ #${numFig} - ${fig.nome || 'Figurinha'}</div>`;
+          conteudoHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-left: 6px; margin-top: 3px;">
+              <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
+              <button onclick="removerItemModalEnvio(${item.indexOriginal})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Retirar da proposta">🗑️ Retirar</button>
+            </div>
+          `;
         });
         conteudoHtml += `</div>`;
       }
 
+      if (itensPropostaAtual.length === 0) {
+        conteudoHtml = '<div class="empty-state" style="padding: 20px;">Nenhum item restante na proposta.</div>';
+        document.getElementById('btnConfirmarProposta').style.display = 'none';
+      } else {
+        document.getElementById('btnConfirmarProposta').style.display = 'inline-flex';
+      }
+
       document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
-      document.getElementById('modalProposta').style.display = 'flex';
+    }
+
+    function removerItemModalEnvio(indexOriginal) {
+      itensPropostaAtual.splice(indexOriginal, 1);
+      renderizarConteudoModalProposta();
     }
 
     function fecharModalProposta() {
