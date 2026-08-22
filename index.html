@@ -72,6 +72,30 @@
     .btn-perfil:hover { background: #fbbf24; color: #0f172a; }
     .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
+    /* Estilo do Botão Animado de Propostas */
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+    .btn-propostas-animado {
+      position: relative;
+      border-color: #38bdf8;
+      color: #38bdf8;
+      animation: pulseGlow 2s infinite;
+    }
+    .badge-contador {
+      background: #ef4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 6px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
     footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
@@ -135,7 +159,9 @@
         <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas (Match)</button>
       </div>
       <div>
-        <button class="btn-outline" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem; border-color: #38bdf8; color: #38bdf8;">📬 Minhas Propostas</button>
+        <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;">
+          📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+        </button>
       </div>
     </div>
 
@@ -234,7 +260,7 @@
         <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;">📤 Enviadas</button>
       </div>
 
-      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 320px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 380px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
         <div class="empty-state">Carregando propostas...</div>
       </div>
 
@@ -320,6 +346,21 @@
           <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
           <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 5px;">Sair</button>
         `;
+
+        // Buscar quantidade de propostas pendentes recebidas para atualizar a badge animada
+        const { count: qtdPendentes } = await _supabase
+          .from('propostas_troca')
+          .select('*', { count: 'exact', head: true })
+          .eq('destinatario_id', usuarioLogadoGlobal.id)
+          .eq('status', 'pendente');
+
+        const badge = document.getElementById('badgePropostasPendentes');
+        if (qtdPendentes && qtdPendentes > 0) {
+          badge.innerText = qtdPendentes;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
       }
 
       await carregarDadosGlobais();
@@ -578,7 +619,6 @@
 
       document.getElementById('modalPropostaSubtitulo').innerHTML = `Enviar proposta de troca para <strong>${match.nome}</strong>:`;
       
-      // Agrupar itens por álbum no modal de envio também
       let albunsAgrupados = {};
       match.itens.forEach(i => {
         const fig = i.figurinhas || {};
@@ -673,32 +713,136 @@
 
     function fecharModalPropostasRecebidas() {
       document.getElementById('modalCentralPropostas').style.display = 'none';
+      initHome(); // Atualizar notificações ao fechar
     }
 
-    // Função auxiliar para estruturar o HTML dos itens agrupados por álbum perfeitamente
-    function formatarItensAgrupadosPorAlbum(itens) {
+    // Função auxiliar para estruturar itens agrupados com caixas de seleção interativas para remoção individual
+    function formatarItensComSelecao(itens, propostaId) {
       let albunsAgrupados = {};
 
       itens.forEach(i => {
         const fig = i.figurinhas || {};
         const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
         if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
-        albunsAgrupados[albumNome].push(fig);
+        albunsAgrupados[albumNome].push(i);
       });
 
       let html = '';
-      for (const [albumNome, figs] of Object.entries(albunsAgrupados)) {
+      for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
         html += `
           <div style="margin-top: 6px; margin-bottom: 6px; background: rgba(15, 23, 42, 0.4); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
             <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700; margin-bottom: 2px;">📖 ${albumNome}</div>
         `;
-        figs.forEach(fig => {
+        listaItens.forEach(item => {
+          const fig = item.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
-          html += `<div style="font-size: 0.75rem; color: #cbd5e1; margin-left: 6px;">• #${numFig} - ${fig.nome || 'Figurinha'}</div>`;
+          html += `
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-left: 6px; margin-top: 2px;">
+              <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
+              <button onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item já conseguido">🗑️ Retirar</button>
+            </div>
+          `;
         });
         html += `</div>`;
       }
       return html;
+    }
+
+    async function removerItemProposta(itemPropostaId, propostaId) {
+      if (!confirm("Deseja remover esta figurinha da proposta por já ter conseguido?")) return;
+
+      const { error } = await _supabase
+        .from('proposta_itens')
+        .delete()
+        .eq('id', itemPropostaId);
+
+      if (error) {
+        alert("Erro ao remover item: " + error.message);
+      } else {
+        // Verificar se restaram itens na proposta
+        const { data: restantes } = await _supabase
+          .from('proposta_itens')
+          .select('id')
+          .eq('proposta_id', propostaId);
+
+        if (!restantes || restantes.length === 0) {
+          await _supabase.from('propostas_troca').delete().eq('id', propostaId);
+          alert("Como todos os itens foram removidos, a proposta foi cancelada automaticamente.");
+        } else {
+          alert("Item removido com sucesso da proposta!");
+        }
+        alternarAbaPropostas(tipoAbaPropostaModal);
+      }
+    }
+
+    async function cancelarPropostaEnviada(propostaId) {
+      if (!confirm("Tem certeza que deseja cancelar esta proposta enviada?")) return;
+
+      // Deletar os itens vinculados primeiro por causa de chave estrangeira, ou deletar proposta direto caso tenha cascade
+      await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
+      const { error } = await _supabase.from('propostas_troca').delete().eq('id', propostaId);
+
+      if (error) {
+        alert("Erro ao cancelar proposta: " + error.message);
+      } else {
+        alert("Proposta cancelada e removida com sucesso!");
+        alternarAbaPropostas('enviadas');
+      }
+    }
+
+    async function carregarMensagensChat(propostaId, containerChatId) {
+      const chatBox = document.getElementById(containerChatId);
+      if (!chatBox) return;
+
+      const { data: msgs, error } = await _supabase
+        .from('proposta_mensagens')
+        .select('*')
+        .eq('proposta_id', propostaId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        chatBox.innerHTML = '<div style="font-size:0.7rem; color:#ef4444;">Erro ao carregar chat.</div>';
+        return;
+      }
+
+      if (!msgs || msgs.length === 0) {
+        chatBox.innerHTML = '<div style="font-size:0.7rem; color:#64748b; text-align:center; padding: 4px;">Nenhuma mensagem enviada ainda. Inicie a conversa abaixo!</div>';
+        return;
+      }
+
+      chatBox.innerHTML = msgs.map(m => {
+        const meuMsg = m.remetente_id === usuarioLogadoGlobal.id;
+        const alinhamento = meuMsg ? 'text-align: right;' : 'text-align: left;';
+        const corFundo = meuMsg ? 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3);' : 'background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);';
+        
+        return `
+          <div style="${alinhamento} margin-bottom: 4px;">
+            <div style="display: inline-block; max-width: 85%; padding: 6px 10px; border-radius: 8px; border: 1px solid; ${corFundo} text-align: left; font-size: 0.75rem;">
+              <div style="color: #cbd5e1;">${m.mensagem}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function enviarMensagemChat(propostaId) {
+      const inputId = `inputChat_${propostaId}`;
+      const input = document.getElementById(inputId);
+      if (!input || !input.value.trim()) return;
+
+      const texto = input.value.trim();
+      input.value = '';
+
+      const { error } = await _supabase.from('proposta_mensagens').insert([
+        { proposta_id: propostaId, remetente_id: usuarioLogadoGlobal.id, mensagem: texto }
+      ]);
+
+      if (error) {
+        alert("Erro ao enviar mensagem: " + error.message);
+      } else {
+        carregarMensagensChat(propostaId, `chatMsgs_${propostaId}`);
+      }
     }
 
     async function alternarAbaPropostas(tipo) {
@@ -714,7 +858,7 @@
       if (tipo === 'recebidas') {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
+          .select(`id, status, remetente_id, proposta_itens ( id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
           .eq('destinatario_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -726,14 +870,13 @@
         container.innerHTML = propostas.map(p => {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
           const itens = p.proposta_itens || [];
-          const itensHtml = formatarItensAgrupadosPorAlbum(itens);
+          const itensHtml = formatarItensComSelecao(itens, p.id);
           
           let acoesHtml = '';
           if (p.status === 'pendente') {
             acoesHtml = `
               <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
                 <button class="btn-acao btn-troca" onclick="atualizarStatusProposta(${p.id}, 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
-                <button class="btn-acao" onclick="fazerContraproposta(${p.id}, '${remetente.nome}')" style="padding: 4px 8px; flex: 1; background: #f59e0b; color: #0f172a;">💬 Contraproposta</button>
                 <button class="btn-outline" onclick="atualizarStatusProposta(${p.id}, 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
               </div>
             `;
@@ -742,14 +885,27 @@
           }
 
           return `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</div>
               <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens solicitados:</div>
               ${itensHtml}
               ${acoesHtml}
+
+              <!-- Bloco de Chat -->
+              <div style="margin-top: 8px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 0.7rem; color: var(--gold); font-weight: 700; margin-bottom: 4px;">💬 Chat da Tratativa:</div>
+                <div id="chatMsgs_${p.id}" style="max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding-right: 4px;"></div>
+                <div style="display: flex; gap: 4px;">
+                  <input type="text" id="inputChat_${p.id}" class="filter-field" placeholder="Escreva uma mensagem..." style="padding: 4px 8px; font-size: 0.75rem;" onkeypress="if(event.key==='Enter') enviarMensagemChat(${p.id})">
+                  <button class="btn-acao" onclick="enviarMensagemChat(${p.id})" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Enviar</button>
+                </div>
+              </div>
             </div>
           `;
         }).join('');
+
+        // Carregar mensagens de cada chat renderizado
+        propostas.forEach(p => carregarMensagensChat(p.id, `chatMsgs_${p.id}`));
 
       } else {
         const { data: propostas, error } = await _supabase
@@ -775,22 +931,43 @@
           
           const { data: itensProp } = await _supabase
             .from('proposta_itens')
-            .select(`figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
+            .select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
             .eq('proposta_id', p.id);
 
           const itens = itensProp || [];
-          const itensHtml = formatarItensAgrupadosPorAlbum(itens);
+          const itensHtml = formatarItensComSelecao(itens, p.id);
+
+          let botoesEnvioHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
+          if (p.status === 'pendente') {
+            botoesEnvioHtml += `
+              <div style="margin-top: 6px;">
+                <button class="btn-outline" onclick="cancelarPropostaEnviada(${p.id})" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio da Proposta</button>
+              </div>
+            `;
+          }
 
           htmlFinal += `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</div>
               <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens da proposta:</div>
               ${itensHtml}
-              <div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>
+              ${botoesEnvioHtml}
+
+              <!-- Bloco de Chat -->
+              <div style="margin-top: 8px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
+                <div style="font-size: 0.7rem; color: var(--gold); font-weight: 700; margin-bottom: 4px;">💬 Chat da Tratativa:</div>
+                <div id="chatMsgs_${p.id}" style="max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding-right: 4px;"></div>
+                <div style="display: flex; gap: 4px;">
+                  <input type="text" id="inputChat_${p.id}" class="filter-field" placeholder="Escreva uma mensagem..." style="padding: 4px 8px; font-size: 0.75rem;" onkeypress="if(event.key==='Enter') enviarMensagemChat(${p.id})">
+                  <button class="btn-acao" onclick="enviarMensagemChat(${p.id})" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Enviar</button>
+                </div>
+              </div>
             </div>
           `;
         }
         container.innerHTML = htmlFinal;
+
+        propostas.forEach(p => carregarMensagensChat(p.id, `chatMsgs_${p.id}`));
       }
     }
 
@@ -806,23 +983,6 @@
         alert(`Proposta ${novoStatus} com sucesso!`);
         alternarAbaPropostas(tipoAbaPropostaModal);
         carregarDadosGlobais();
-      }
-    }
-
-    async function fazerContraproposta(propostaId, nomeRemetente) {
-      const novaMensagem = prompt(`Enviar contraproposta ou mensagem de negociação para ${nomeRemetente}:`, "Podemos incluir mais uma figurinha na troca?");
-      if (!novaMensagem) return;
-
-      const { error } = await _supabase
-        .from('propostas_troca')
-        .update({ status: 'contraproposta' })
-        .eq('id', propostaId);
-
-      if (error) {
-        alert("Erro ao enviar contraproposta: " + error.message);
-      } else {
-        alert("💬 Contraproposta registrada! O colecionador será avisado.");
-        alternarAbaPropostas(tipoAbaPropostaModal);
       }
     }
 
@@ -888,7 +1048,7 @@
 
     async function cadastrarEmail() {
       const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authSenha5').value; // password seguro
+      const password = document.getElementById('authSenha').value;
       if (!email || !password) return alert("Preencha e-mail e senha!");
       const { error } = await _supabase.auth.signUp({ email, password });
       if (error) alert("Erro ao criar conta: " + error.message);
