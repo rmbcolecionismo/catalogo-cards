@@ -684,10 +684,12 @@
 
         container.innerHTML = propostas.map(p => {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
-          const itensStr = (p.proposta_itens || []).map(i => {
-            const albumNome = i.figurinhas?.albuns?.nome || albunsGlobaisMap.get(i.figurinhas?.album_id) || 'Álbum';
-            return `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''} (${albumNome})`;
-          }).join(', ');
+          const itens = p.proposta_itens || [];
+          const itensStr = itens.length > 0 ? itens.map(i => {
+            const fig = i.figurinhas || {};
+            const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
+            return `#${fig.numero || ''} ${fig.nome || ''} (${albumNome})`;
+          }).join(', ') : 'Itens da proposta';
           
           let acoesHtml = '';
           if (p.status === 'pendente') {
@@ -718,17 +720,25 @@
           .eq('remetente_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
-        if (error || !propostas || propostas.length === 0) {
+        if (error) {
+          console.error("Erro ao buscar enviadas:", error.message);
+          container.innerHTML = '<div class="empty-state">Erro ao carregar propostas enviadas.</div>';
+          return;
+        }
+
+        if (!propostas || propostas.length === 0) {
           container.innerHTML = '<div class="empty-state">Você ainda não enviou nenhuma proposta.</div>';
           return;
         }
 
         container.innerHTML = propostas.map(p => {
           const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
-          const itensStr = (p.proposta_itens || []).map(i => {
-            const albumNome = i.figurinhas?.albuns?.nome || albunsGlobaisMap.get(i.figurinhas?.album_id) || 'Álbum';
-            return `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''} (${albumNome})`;
-          }).join(', ');
+          const itens = p.proposta_itens || [];
+          const itensStr = itens.length > 0 ? itens.map(i => {
+            const fig = i.figurinhas || {};
+            const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
+            return `#${fig.numero || ''} ${fig.nome || ''} (${albumNome})`;
+          }).join(', ') : 'Itens da proposta';
 
           return `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
