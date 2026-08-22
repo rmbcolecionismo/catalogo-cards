@@ -353,7 +353,6 @@
       });
 
       if (usuarioLogadoGlobal) {
-        // Carrega propostas ativas enviadas por mim para travar botões duplicados
         const { data: propostasEnviadasAtivas } = await _supabase
           .from('propostas_troca')
           .select('destinatario_id')
@@ -582,8 +581,9 @@
       
       const conteudoHtml = match.itens.map(i => {
         const fig = i.figurinhas || {};
+        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
         let numFig = String(fig.numero || '').replace(/^#+/, '');
-        return `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">✨ Você receberá: <strong>#${numFig} - ${fig.nome || 'Figurinha'}</strong></div>`;
+        return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">✨ Receberá: <strong>#${numFig} - ${fig.nome || 'Figurinha'}</strong> <br><span style="color:var(--gold); font-size:0.75rem;">📖 ${albumNome}</span></div>`;
       }).join('');
 
       document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
@@ -674,7 +674,7 @@
       if (tipo === 'recebidas') {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, created_at, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome ) )`)
+          .select(`id, status, created_at, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
           .eq('destinatario_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -685,14 +685,18 @@
 
         container.innerHTML = propostas.map(p => {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
-          const itensStr = (p.proposta_itens || []).map(i => `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''}`).join(', ');
+          const itensStr = (p.proposta_itens || []).map(i => {
+            const albumNome = i.figurinhas?.albuns?.nome || albunsGlobaisMap.get(i.figurinhas?.album_id) || 'Álbum';
+            return `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''} (${albumNome})`;
+          }).join(', ');
           
           let acoesHtml = '';
           if (p.status === 'pendente') {
             acoesHtml = `
-              <div style="display: flex; gap: 6px; margin-top: 8px;">
-                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta(${p.id}, 'aceita')" style="padding: 4px 8px;">Aceitar</button>
-                <button class="btn-outline" onclick="atualizarStatusProposta(${p.id}, 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;">Recusar</button>
+              <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta(${p.id}, 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
+                <button class="btn-acao" onclick="fazerContraProposta(${p.id}, '${remetente.nome}')" style="padding: 4px 8px; flex: 1; background: #f59e0b; color: #0f172a;">💬 Contraproposta</button>
+                <button class="btn-outline" onclick="atualizarStatusProposta(${p.id}, 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
               </div>
             `;
           } else {
@@ -702,7 +706,7 @@
           return `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</div>
-              <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Figurinhas solicitadas: <strong>${itensStr}</strong></div>
+              <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Itens solicitados: <strong>${itensStr}</strong></div>
               ${acoesHtml}
             </div>
           `;
@@ -711,7 +715,7 @@
       } else {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, created_at, destinatario_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome ) )`)
+          .select(`id, status, created_at, destinatario_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
           .eq('remetente_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -722,7 +726,10 @@
 
         container.innerHTML = propostas.map(p => {
           const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
-          const itensStr = (p.proposta_itens || []).map(i => `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''}`).join(', ');
+          const itensStr = (p.proposta_itens || []).map(i => {
+            const albumNome = i.figurinhas?.albuns?.nome || albunsGlobaisMap.get(i.figurinhas?.album_id) || 'Álbum';
+            return `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''} (${albumNome})`;
+          }).join(', ');
 
           return `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
@@ -747,6 +754,23 @@
         alert(`Proposta ${novoStatus} com sucesso!`);
         alternarAbaPropostas(tipoAbaPropostaModal);
         carregarDadosGlobais();
+      }
+    }
+
+    async function fazerContraproposta(propostaId, nomeRemetente) {
+      const novaMensagem = prompt(`Enviar contraproposta ou mensagem de negociação para ${nomeRemetente}:`, "Podemos incluir mais uma figurinha na troca?");
+      if (!novaMensagem) return;
+
+      const { error } = await _supabase
+        .from('propostas_troca')
+        .update({ status: 'contraproposta' })
+        .eq('id', propostaId);
+
+      if (error) {
+        alert("Erro ao enviar contraproposta: " + error.message);
+      } else {
+        alert("💬 Contraproposta registrada! O colecionador será avisado.");
+        alternarAbaPropostas(tipoAbaPropostaModal);
       }
     }
 
