@@ -325,7 +325,7 @@
         const idsFaltantes = todasFigurinhas
           .filter(fig => !minhaCadernetaIds.has(fig.id))
           .map(fig => fig.id);
-
+console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
         matchesTrocasGlobal = [];
 
         if (idsFaltantes.length > 0) {
