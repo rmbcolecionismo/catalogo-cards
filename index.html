@@ -38,7 +38,8 @@
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
     .collab-text p { color: #94a3b8; font-size: 0.85rem; }
 
-    .sections-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .sections-tabs { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; flex-wrap: wrap; }
+    .tab-group { display: flex; gap: 10px; }
     .tab-btn { background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
     .tab-btn.active { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); }
 
@@ -69,6 +70,7 @@
     .btn-troca:hover { background: #0284c7; }
     .btn-perfil { background: var(--gold); color: #0f172a; }
     .btn-perfil:hover { background: #fbbf24; color: #0f172a; }
+    .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
@@ -79,7 +81,7 @@
     footer strong { color: var(--gold); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
     .modal-box p { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4; }
   </style>
@@ -128,8 +130,13 @@
     </div>
 
     <div class="sections-tabs">
-      <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
-      <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas (Match)</button>
+      <div class="tab-group">
+        <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
+        <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas (Match)</button>
+      </div>
+      <div>
+        <button class="btn-outline" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem; border-color: #38bdf8; color: #38bdf8;">📬 Minhas Propostas</button>
+      </div>
     </div>
 
     <div class="controls-bar">
@@ -203,17 +210,35 @@
   <!-- Modal de Envio de Proposta de Troca -->
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
-      <h3>🔄 Proposta de Troca</h3>
-      <p id="modalPropostaSubtitulo">Envie uma proposta para negociar com o colecionador.</p>
+      <h3>🔄 Enviar Proposta de Troca</h3>
+      <p id="modalPropostaSubtitulo">Confirme os itens desejados para iniciar a negociação.</p>
       
       <div id="modalPropostaConteudo" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 180px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
-        <!-- Conteúdo dinâmico das figurinhas do match -->
       </div>
 
       <div style="display: flex; gap: 8px;">
         <button class="btn-gold" id="btnConfirmarProposta" style="flex: 1; justify-content: center;" onclick="enviarPropostaTroca()">🚀 Enviar Proposta</button>
         <button class="btn-outline" onclick="fecharModalProposta()" style="flex: 1; justify-content: center;">Cancelar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Central de Propostas Recebidas / Enviadas -->
+  <div id="modalCentralPropostas" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <h3>📬 Central de Propostas</h3>
+      <p>Gerencie as negociações que você recebeu ou enviou para outros colecionadores.</p>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button class="tab-btn active" id="tabPropRec" onclick="alternarAbaPropostas('recebidas')" style="flex: 1; font-size: 0.85rem;">📥 Recebidas</button>
+        <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;">📤 Enviadas</button>
+      </div>
+
+      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 280px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+        <div class="empty-state">Carregando propostas...</div>
+      </div>
+
+      <button class="btn-outline" onclick="fecharModalPropostasRecebidas()" style="width: 100%;">Fechar</button>
     </div>
   </div>
 
@@ -228,9 +253,11 @@
     let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
     let albunsGlobaisMap = new Map();
+    let propostasPendentesMap = new Set();
     let abaAtual = 'market';
     let destinatarioAtualId = null;
     let itensPropostaAtual = [];
+    let tipoAbaPropostaModal = 'recebidas';
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -275,6 +302,7 @@
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
         document.getElementById('linkPerfil').style.display = 'inline';
+        document.getElementById('btnMinhasPropostas').style.display = 'inline-block';
 
         const funcaoUsuario = String(perfil?.funcao || '').toLowerCase().trim();
         if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
@@ -325,6 +353,18 @@
       });
 
       if (usuarioLogadoGlobal) {
+        // Carrega propostas ativas enviadas por mim para travar botões duplicados
+        const { data: propostasEnviadasAtivas } = await _supabase
+          .from('propostas_troca')
+          .select('destinatario_id')
+          .eq('remetente_id', usuarioLogadoGlobal.id)
+          .eq('status', 'pendente');
+
+        propostasPendentesMap.clear();
+        if (propostasEnviadasAtivas) {
+          propostasEnviadasAtivas.forEach(p => propostasPendentesMap.add(p.destinatario_id));
+        }
+
         const [resFigurinhas, resMinhaCaderneta] = await Promise.all([
           _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )'),
           _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id)
@@ -361,9 +401,7 @@
             .neq('user_id', usuarioLogadoGlobal.id)
             .in('figurinha_id', idsFaltantes);
 
-          if (erroTrocas) {
-            console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
-          } else if (dataTrocas) {
+          if (!erroTrocas && dataTrocas) {
             let colecionadoresMap = {};
 
             dataTrocas.forEach(item => {
@@ -499,8 +537,15 @@
           miniBadges += ` <span style="color: #94a3b8; font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
         }
 
-        // Serializa itens para passar para a modal com segurança
         const matchDataStr = encodeURIComponent(JSON.stringify(match));
+        const jaTemProposta = propostasPendentesMap.has(match.user_id);
+
+        let botaoAcaoHtml = '';
+        if (jaTemProposta) {
+          botaoAcaoHtml = `<button class="btn-acao btn-pendente" style="flex: 1; padding: 7px; font-size: 0.75rem;" disabled>⏳ Proposta Pendente</button>`;
+        } else {
+          botaoAcaoHtml = `<button onclick="abrirModalPropostaDecode('${matchDataStr}')" class="btn-acao btn-troca" style="flex: 1; padding: 7px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
+        }
 
         return `
           <div class="market-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
@@ -520,7 +565,7 @@
             </div>
 
             <div style="display: flex; gap: 6px; margin-top: 4px;">
-              <button onclick="abrirModalPropostaDecode('${matchDataStr}')" class="btn-acao btn-troca" style="flex: 1; padding: 7px; font-size: 0.75rem;">💬 Proposta</button>
+              ${botaoAcaoHtml}
               <a href="cardeneta.html?id=${match.user_id}" class="btn-acao btn-perfil" style="padding: 7px 10px; font-size: 0.75rem;" title="Ver Caderneta Completa">📖</a>
             </div>
           </div>
@@ -557,7 +602,6 @@
       const limiteMaximo = limites[planoUsuario] || 3;
       const hoje = new Date().toISOString().split('T')[0];
 
-      // Verifica limite diário
       let { data: controle } = await _supabase
         .from('historico_propostas_diarias')
         .select('*')
@@ -573,7 +617,6 @@
         return;
       }
 
-      // Cria a proposta principal
       const { data: novaProposta, error: erroProp } = await _supabase
         .from('propostas_troca')
         .insert([{ remetente_id: usuarioLogadoGlobal.id, destinatario_id: destinatarioAtualId, status: 'pendente' }])
@@ -585,7 +628,6 @@
         return;
       }
 
-      // Insere os itens da proposta
       const itensInsert = itensPropostaAtual.map(i => ({
         proposta_id: novaProposta.id,
         figurinha_id: i.figurinha_id,
@@ -594,7 +636,6 @@
 
       await _supabase.from('proposta_itens').insert(itensInsert);
 
-      // Atualiza o contador diário
       if (controle) {
         await _supabase
           .from('historico_propostas_diarias')
@@ -606,8 +647,107 @@
           .insert([{ user_id: usuarioLogadoGlobal.id, data: hoje, propostas_enviadas: 1 }]);
       }
 
-      alert("🎉 Proposta enviada com sucesso! Acompanhe a negociação.");
+      alert("🎉 Proposta enviada com sucesso! Acompanhe na central de propostas.");
       fecharModalProposta();
+      initHome();
+    }
+
+    async function abrirModalPropostasRecebidas() {
+      document.getElementById('modalCentralPropostas').style.display = 'flex';
+      alternarAbaPropostas('recebidas');
+    }
+
+    function fecharModalPropostasRecebidas() {
+      document.getElementById('modalCentralPropostas').style.display = 'none';
+    }
+
+    async function alternarAbaPropostas(tipo) {
+      tipoAbaPropostaModal = tipo;
+      document.getElementById('tabPropRec').classList.toggle('active', tipo === 'recebidas');
+      document.getElementById('tabPropEnv').classList.toggle('active', tipo === 'enviadas');
+
+      const container = document.getElementById('listaPropostasContainer');
+      container.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+      if (!usuarioLogadoGlobal) return;
+
+      if (tipo === 'recebidas') {
+        const { data: propostas, error } = await _supabase
+          .from('propostas_troca')
+          .select(`id, status, created_at, remetente_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome ) )`)
+          .eq('destinatario_id', usuarioLogadoGlobal.id)
+          .order('id', { ascending: false });
+
+        if (error || !propostas || propostas.length === 0) {
+          container.innerHTML = '<div class="empty-state">Nenhuma proposta recebida no momento.</div>';
+          return;
+        }
+
+        container.innerHTML = propostas.map(p => {
+          const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
+          const itensStr = (p.proposta_itens || []).map(i => `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''}`).join(', ');
+          
+          let acoesHtml = '';
+          if (p.status === 'pendente') {
+            acoesHtml = `
+              <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta(${p.id}, 'aceita')" style="padding: 4px 8px;">Aceitar</button>
+                <button class="btn-outline" onclick="atualizarStatusProposta(${p.id}, 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;">Recusar</button>
+              </div>
+            `;
+          } else {
+            acoesHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
+          }
+
+          return `
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</div>
+              <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Figurinhas solicitadas: <strong>${itensStr}</strong></div>
+              ${acoesHtml}
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        const { data: propostas, error } = await _supabase
+          .from('propostas_troca')
+          .select(`id, status, created_at, destinatario_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome ) )`)
+          .eq('remetente_id', usuarioLogadoGlobal.id)
+          .order('id', { ascending: false });
+
+        if (error || !propostas || propostas.length === 0) {
+          container.innerHTML = '<div class="empty-state">Você ainda não enviou nenhuma proposta.</div>';
+          return;
+        }
+
+        container.innerHTML = propostas.map(p => {
+          const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
+          const itensStr = (p.proposta_itens || []).map(i => `#${i.figurinhas?.numero || ''} ${i.figurinhas?.nome || ''}`).join(', ');
+
+          return `
+            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</div>
+              <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Itens: <strong>${itensStr}</strong></div>
+              <div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function atualizarStatusProposta(propostaId, novoStatus) {
+      const { error } = await _supabase
+        .from('propostas_troca')
+        .update({ status: novoStatus })
+        .eq('id', propostaId);
+
+      if (error) {
+        alert("Erro ao atualizar proposta: " + error.message);
+      } else {
+        alert(`Proposta ${novoStatus} com sucesso!`);
+        alternarAbaPropostas(tipoAbaPropostaModal);
+        carregarDadosGlobais();
+      }
     }
 
     function filtrarAtivo() {
