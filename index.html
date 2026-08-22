@@ -296,36 +296,48 @@
 
       // 3. Processar Matches Inteligentes para o Mercado de Trocas
       if (usuarioLogadoGlobal) {
-        // Pegar faltantes do usuário logado (itens com quantidade == 0)
-        const { data: minhasFigurinhas } = await _supabase
+        // A. Buscar TODAS as figurinhas cadastradas no sistema global (universo total)
+        const { data: todasFigurinhasGlobais } = await _supabase
+          .from('figurinhas')
+          .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+
+        // B. Buscar o que o usuário logado JÁ TEM cadastrado na caderneta dele
+        const { data: minhaCaderneta } = await _supabase
           .from('usuario_cardeneta')
-          .select('figurinha_id, quantidade')
+          .select('figurinha_id')
           .eq('user_id', usuarioLogadoGlobal.id);
 
+        let idsQueTenho = new Set();
+        if (minhaCaderneta) {
+          minhaCaderneta.forEach(item => idsQueTenho.add(item.figurinha_id));
+        }
+
+        // C. Descobrir as Faltantes (tudo que existe globalmente menos o que ele tem gravado)
         let idsFaltantes = new Set();
-        if (minhasFigurinhas) {
-          minhasFigurinhas.forEach(item => {
-            if (item.quantidade === 0) idsFaltantes.add(item.figurinha_id);
+        if (todasFigurinhasGlobais) {
+          todasFigurinhasGlobais.forEach(fig => {
+            if (!idsQueTenho.has(fig.id)) {
+              idsFaltantes.add(fig.id);
+            }
           });
         }
 
-        // Buscar repetidas de outros usuários (quantidade > 1)
+        // D. Buscar repetidas de outros usuários (quantidade > 1)
         const { data: dataTrocas } = await _supabase
           .from('usuario_cardeneta')
           .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
           .gt('quantidade', 1)
           .neq('user_id', usuarioLogadoGlobal.id);
 
-        // Cruzar: Filtrar apenas repetidas de outros que o usuário logado tem como faltantes
+        // E. Cruzar: Filtrar apenas repetidas de outros cujos IDs estão na lista de Faltantes
         let repetidasQueCompletam = [];
         if (dataTrocas && idsFaltantes.size > 0) {
           repetidasQueCompletam = dataTrocas.filter(item => idsFaltantes.has(item.figurinha_id));
         } else if (dataTrocas) {
-          // Se o usuário não marcou faltantes, exibe as repetidas gerais como fallback
           repetidasQueCompletam = dataTrocas;
         }
 
-        // Agrupar por colecionador para montar cards de parceiros de troca
+        // F. Agrupar por colecionador para montar os cards de match
         let colecionadoresMap = {};
         repetidasQueCompletam.forEach(item => {
           const donoId = item.user_id;
