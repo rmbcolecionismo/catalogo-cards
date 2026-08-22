@@ -95,9 +95,8 @@
       <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
       <input type="text" id="editNome" class="edit-field">
       
-      <label style="font-size: 0.75rem; color: var(--gold);">Cidade:</label>
-      <input type="text" id="editCidade" class="edit-field">
-      
+      <!-- Campo Cidade removido da interface visual conforme solicitado -->
+
       <label style="font-size: 0.75rem; color: var(--gold);">📍 Código Postal / CEP:</label>
       <input type="text" id="editCodigoPostal" class="edit-field" placeholder="Ex: 2400-123 ou 01001-000">
 
@@ -259,8 +258,8 @@
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     
-    // Exibe apenas a cidade publicamente, mantendo o código postal oculto
-    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Cidade não informada'}</strong></p>`;
+    // Exibe apenas a cidade publicamente obtida pelo CEP/Código Postal
+    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Localidade não informada'}</strong></p>`;
 
     if (perfil.telefone_whats) {
       const linkWpp = document.getElementById('linkWhatsApp');
@@ -272,7 +271,6 @@
       document.getElementById('linkCardenetaColega').href = `cardeneta.html?id=${identificadorCardeneta}`;
     }
     document.getElementById('editNome').value = perfil.nome || '';
-    document.getElementById('editCidade').value = perfil.cidade || '';
     document.getElementById('editCodigoPostal').value = perfil.codigo_postal || '';
     document.getElementById('editWhatsApp').value = perfil.telefone_whats || '';
     if (ehProprio || isAdminOrMaster) {
@@ -281,21 +279,59 @@
     }
   }
 
-  // Função interna para calcular coordenadas via OpenStreetMap a partir do Código Postal
-  async function buscarCoordenadasPorCep(codigoPostal) {
+  // Função para buscar dados de localização (Cidade/Município/Localidade e Coordenadas) baseada no Código Postal/CEP
+  async function buscarDadosPorCodigoPostal(codigoPostal) {
     try {
+      const limpo = codigoPostal.replace(/\D/g, '');
+      let url = '';
+      
+      // Se tiver 8 dígitos, assumimos CEP do Brasil (ViaCEP)
+      if (limpo.length === 8) {
+        const respostaCep = await httpsFetch(`https://viacep.com.br/ws/${limpo}/json/`);
+        const dadosCep = await respostaCep.json();
+        if (!dadosCep.erro) {
+          const municipio = dadosCep.localidade;
+          // Busca coordenadas aproximadas pelo nome do município para manter lat/lon atualizados
+          const coords = await buscarCoordenadasPorEndereco(municipio);
+          return {
+            cidade: municipio,
+            lat: coords ? coords.lat : null,
+            lon: coords ? coords.lon : null
+          };
+        }
+      }
+
+      // Caso contrário, busca na Europa / Portugal via Nominatim (OpenStreetMap)
       const resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&format=json&limit=1`);
       const dados = await resposta.json();
       
       if (dados && dados.length > 0) {
+        const endereco = dados[0].address || {};
+        const localidade = endereco.city || endereco.town || endereco.village || endereco.municipality || dados[0].display_name.split(',')[0];
         return {
+          cidade: localidade,
           lat: parseFloat(dados[0].lat),
           lon: parseFloat(dados[0].lon)
         };
       }
     } catch (err) {
-      console.error("Erro ao buscar coordenadas:", err);
+      console.error("Erro ao buscar dados pelo código postal:", err);
     }
+    return null;
+  }
+
+  async function httpsFetch(url) {
+    return fetch(url);
+  }
+
+  async function buscarCoordenadasPorEndereco(termo) {
+    try {
+      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(termo)}&format=json&limit=1`);
+      const dados = await resposta.json();
+      if (dados && dados.length > 0) {
+        return { lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
+      }
+    } catch(e) {}
     return null;
   }
 
@@ -303,20 +339,22 @@
     if (!usuarioLogado) return alert("Você precisa estar logado.");
     
     const codigoPostal = document.getElementById('editCodigoPostal').value.trim();
+    let cidadeAutomatica = usuarioLogado.cidade || '';
     let latitude = usuarioLogado.latitude;
     let longitude = usuarioLogado.longitude;
 
     if (codigoPostal && codigoPostal !== usuarioLogado.codigo_postal) {
-      const coords = await buscarCoordenadasPorCep(codigoPostal);
-      if (coords) {
-        latitude = coords.lat;
-        longitude = coords.lon;
+      const infoLocal = await buscarDadosPorCodigoPostal(codigoPostal);
+      if (infoLocal) {
+        if (infoLocal.cidade) cidadeAutomatica = infoLocal.cidade;
+        if (infoLocal.lat) latitude = infoLocal.lat;
+        if (infoLocal.lon) longitude = infoLocal.lon;
       }
     }
 
     const updates = {
       nome: document.getElementById('editNome').value,
-      cidade: document.getElementById('editCidade').value,
+      cidade: cidadeAutomatica,
       codigo_postal: codigoPostal,
       latitude: latitude,
       longitude: longitude,
