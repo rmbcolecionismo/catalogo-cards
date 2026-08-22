@@ -72,29 +72,13 @@
     .btn-perfil:hover { background: #fbbf24; color: #0f172a; }
     .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
-    /* Estilo do Botão Animado de Propostas */
     @keyframes pulseGlow {
       0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
       70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
       100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
     }
-    .btn-propostas-animado {
-      position: relative;
-      border-color: #38bdf8;
-      color: #38bdf8;
-      animation: pulseGlow 2s infinite;
-    }
-    .badge-contador {
-      background: #ef4444;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 800;
-      padding: 1px 6px;
-      border-radius: 10px;
-      margin-left: 6px;
-      display: inline-block;
-      vertical-align: middle;
-    }
+    .btn-propostas-animado { position: relative; border-color: #38bdf8; color: #38bdf8; animation: pulseGlow 2s infinite; }
+    .badge-contador { background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 10px; margin-left: 6px; display: inline-block; vertical-align: middle; }
 
     .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
 
@@ -249,11 +233,11 @@
     </div>
   </div>
 
-  <!-- Modal Central de Propostas Recebidas / Enviadas -->
+  <!-- Modal Central de Propostas com Chat Integrado -->
   <div id="modalCentralPropostas" class="modal-overlay">
-    <div class="modal-box" style="max-width: 650px;">
-      <h3>📬 Central de Propostas</h3>
-      <p>Gerencie as negociações que você recebeu ou enviou para outros colecionadores.</p>
+    <div class="modal-box" style="max-width: 680px;">
+      <h3>📬 Central de Propostas & Chat</h3>
+      <p>Gerencie negociações e converse com outros colecionadores.</p>
 
       <div style="display: flex; gap: 10px; margin-bottom: 15px;">
         <button class="tab-btn active" id="tabPropRec" onclick="alternarAbaPropostas('recebidas')" style="flex: 1; font-size: 0.85rem;">📥 Recebidas</button>
@@ -265,6 +249,25 @@
       </div>
 
       <button class="btn-outline" onclick="fecharModalPropostasRecebidas()" style="width: 100%;">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Chat Interno Detalhado -->
+  <div id="modalChatInterno" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px; display: flex; flex-direction: column; height: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 10px;">
+        <h3 id="chatTitulo" style="margin: 0; font-size: 1.1rem;">💬 Chat da Negociação</h3>
+        <button onclick="fecharModalChat()" class="btn-outline" style="padding: 2px 8px; font-size: 0.75rem;">✕ Fechar</button>
+      </div>
+
+      <div id="chatMensagensContainer" style="flex: 1; background: #0f172a; border-radius: 8px; padding: 10px; overflow-y: auto; text-align: left; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+        <div class="empty-state">Carregando mensagens...</div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="inputMensagemChat" class="filter-field" placeholder="Digite sua mensagem..." onkeypress="if(event.key === 'Enter') enviarMensagemChat()" style="margin: 0;">
+        <button class="btn-gold" onclick="enviarMensagemChat()" style="padding: 8px 16px;">Enviar</button>
+      </div>
     </div>
   </div>
 
@@ -284,6 +287,8 @@
     let destinatarioAtualId = null;
     let itensPropostaAtual = [];
     let tipoAbaPropostaModal = 'recebidas';
+    let propostaChatAtualId = null;
+    let chatIntervalo = null;
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -347,7 +352,6 @@
           <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 5px;">Sair</button>
         `;
 
-        // Buscar quantidade de propostas pendentes recebidas para atualizar a badge animada
         const { count: qtdPendentes } = await _supabase
           .from('propostas_troca')
           .select('*', { count: 'exact', head: true })
@@ -713,10 +717,9 @@
 
     function fecharModalPropostasRecebidas() {
       document.getElementById('modalCentralPropostas').style.display = 'none';
-      initHome(); // Atualizar notificações ao fechar
+      initHome();
     }
 
-    // Função auxiliar para estruturar itens agrupados com caixas de seleção interativas para remoção individual
     function formatarItensComSelecao(itens, propostaId) {
       let albunsAgrupados = {};
 
@@ -759,7 +762,6 @@
       if (error) {
         alert("Erro ao remover item: " + error.message);
       } else {
-        // Verificar se restaram itens na proposta
         const { data: restantes } = await _supabase
           .from('proposta_itens')
           .select('id')
@@ -778,8 +780,8 @@
     async function cancelarPropostaEnviada(propostaId) {
       if (!confirm("Tem certeza que deseja cancelar esta proposta enviada?")) return;
 
-      // Deletar os itens vinculados primeiro por causa de chave estrangeira, ou deletar proposta direto caso tenha cascade
       await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
+      await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
       const { error } = await _supabase.from('propostas_troca').delete().eq('id', propostaId);
 
       if (error) {
@@ -787,61 +789,6 @@
       } else {
         alert("Proposta cancelada e removida com sucesso!");
         alternarAbaPropostas('enviadas');
-      }
-    }
-
-    async function carregarMensagensChat(propostaId, containerChatId) {
-      const chatBox = document.getElementById(containerChatId);
-      if (!chatBox) return;
-
-      const { data: msgs, error } = await _supabase
-        .from('proposta_mensagens')
-        .select('*')
-        .eq('proposta_id', propostaId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        chatBox.innerHTML = '<div style="font-size:0.7rem; color:#ef4444;">Erro ao carregar chat.</div>';
-        return;
-      }
-
-      if (!msgs || msgs.length === 0) {
-        chatBox.innerHTML = '<div style="font-size:0.7rem; color:#64748b; text-align:center; padding: 4px;">Nenhuma mensagem enviada ainda. Inicie a conversa abaixo!</div>';
-        return;
-      }
-
-      chatBox.innerHTML = msgs.map(m => {
-        const meuMsg = m.remetente_id === usuarioLogadoGlobal.id;
-        const alinhamento = meuMsg ? 'text-align: right;' : 'text-align: left;';
-        const corFundo = meuMsg ? 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3);' : 'background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);';
-        
-        return `
-          <div style="${alinhamento} margin-bottom: 4px;">
-            <div style="display: inline-block; max-width: 85%; padding: 6px 10px; border-radius: 8px; border: 1px solid; ${corFundo} text-align: left; font-size: 0.75rem;">
-              <div style="color: #cbd5e1;">${m.mensagem}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function enviarMensagemChat(propostaId) {
-      const inputId = `inputChat_${propostaId}`;
-      const input = document.getElementById(inputId);
-      if (!input || !input.value.trim()) return;
-
-      const texto = input.value.trim();
-      input.value = '';
-
-      const { error } = await _supabase.from('proposta_mensagens').insert([
-        { proposta_id: propostaId, remetente_id: usuarioLogadoGlobal.id, mensagem: texto }
-      ]);
-
-      if (error) {
-        alert("Erro ao enviar mensagem: " + error.message);
-      } else {
-        carregarMensagensChat(propostaId, `chatMsgs_${propostaId}`);
       }
     }
 
@@ -876,8 +823,8 @@
           if (p.status === 'pendente') {
             acoesHtml = `
               <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
-                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta(${p.id}, 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
-                <button class="btn-outline" onclick="atualizarStatusProposta(${p.id}, 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
+                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
+                <button class="btn-outline" onclick="atualizarStatusProposta('${p.id}', 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
               </div>
             `;
           } else {
@@ -886,26 +833,16 @@
 
           return `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
-              <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
+                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${remetente.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
+              </div>
               <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens solicitados:</div>
               ${itensHtml}
               ${acoesHtml}
-
-              <!-- Bloco de Chat -->
-              <div style="margin-top: 8px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
-                <div style="font-size: 0.7rem; color: var(--gold); font-weight: 700; margin-bottom: 4px;">💬 Chat da Tratativa:</div>
-                <div id="chatMsgs_${p.id}" style="max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding-right: 4px;"></div>
-                <div style="display: flex; gap: 4px;">
-                  <input type="text" id="inputChat_${p.id}" class="filter-field" placeholder="Escreva uma mensagem..." style="padding: 4px 8px; font-size: 0.75rem;" onkeypress="if(event.key==='Enter') enviarMensagemChat(${p.id})">
-                  <button class="btn-acao" onclick="enviarMensagemChat(${p.id})" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Enviar</button>
-                </div>
-              </div>
             </div>
           `;
         }).join('');
-
-        // Carregar mensagens de cada chat renderizado
-        propostas.forEach(p => carregarMensagensChat(p.id, `chatMsgs_${p.id}`));
 
       } else {
         const { data: propostas, error } = await _supabase
@@ -915,7 +852,6 @@
           .order('id', { ascending: false });
 
         if (error) {
-          console.error("Erro ao buscar enviadas:", error.message);
           container.innerHTML = '<div class="empty-state">Erro ao carregar propostas enviadas: ' + error.message + '</div>';
           return;
         }
@@ -941,33 +877,24 @@
           if (p.status === 'pendente') {
             botoesEnvioHtml += `
               <div style="margin-top: 6px;">
-                <button class="btn-outline" onclick="cancelarPropostaEnviada(${p.id})" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio da Proposta</button>
+                <button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio da Proposta</button>
               </div>
             `;
           }
 
           htmlFinal += `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
-              <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</span>
+                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${destinatario.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
+              </div>
               <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens da proposta:</div>
               ${itensHtml}
               ${botoesEnvioHtml}
-
-              <!-- Bloco de Chat -->
-              <div style="margin-top: 8px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
-                <div style="font-size: 0.7rem; color: var(--gold); font-weight: 700; margin-bottom: 4px;">💬 Chat da Tratativa:</div>
-                <div id="chatMsgs_${p.id}" style="max-height: 100px; overflow-y: auto; margin-bottom: 6px; padding-right: 4px;"></div>
-                <div style="display: flex; gap: 4px;">
-                  <input type="text" id="inputChat_${p.id}" class="filter-field" placeholder="Escreva uma mensagem..." style="padding: 4px 8px; font-size: 0.75rem;" onkeypress="if(event.key==='Enter') enviarMensagemChat(${p.id})">
-                  <button class="btn-acao" onclick="enviarMensagemChat(${p.id})" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Enviar</button>
-                </div>
-              </div>
             </div>
           `;
         }
         container.innerHTML = htmlFinal;
-
-        propostas.forEach(p => carregarMensagensChat(p.id, `chatMsgs_${p.id}`));
       }
     }
 
@@ -983,6 +910,73 @@
         alert(`Proposta ${novoStatus} com sucesso!`);
         alternarAbaPropostas(tipoAbaPropostaModal);
         carregarDadosGlobais();
+      }
+    }
+
+    async function abrirChatInterno(propostaId, nomeOutroUsuario) {
+      propostaChatAtualId = propostaId;
+      document.getElementById('chatTitulo').innerText = `💬 Chat com ${nomeOutroUsuario}`;
+      document.getElementById('modalChatInterno').style.display = 'flex';
+      await carregarMensagensChat();
+
+      if (chatIntervalo) clearInterval(chatIntervalo);
+      chatIntervalo = setInterval(carregarMensagensChat, 4000);
+    }
+
+    function fecharModalChat() {
+      document.getElementById('modalChatInterno').style.display = 'none';
+      if (chatIntervalo) clearInterval(chatIntervalo);
+      propostaChatAtualId = null;
+    }
+
+    async function carregarMensagensChat() {
+      if (!propostaChatAtualId) return;
+
+      const { data: mensagens, error } = await _supabase
+        .from('proposta_mensagens')
+        .select('*')
+        .eq('proposta_id', propostaChatAtualId)
+        .order('created_at', { ascending: true });
+
+      const container = document.getElementById('chatMensagensContainer');
+      if (error || !mensagens || mensagens.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma mensagem enviada ainda. Comece a conversa!</div>';
+        return;
+      }
+
+      container.innerHTML = mensagens.map(m => {
+        const meuEnvio = m.remetente_id === usuarioLogadoGlobal.id;
+        const alinhamento = meuEnvio ? 'align-self: flex-end; background: #38bdf8; color: #0f172a;' : 'align-self: flex-start; background: #334155; color: #f8fafc;';
+        const hora = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; word-break: break-word;">
+            <div>${m.mensagem}</div>
+            <div style="font-size: 0.6rem; opacity: 0.7; text-align: right; margin-top: 2px;">${hora}</div>
+          </div>
+        `;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function enviarMensagemChat() {
+      const input = document.getElementById('inputMensagemChat');
+      const texto = input.value.trim();
+      if (!texto || !propostaChatAtualId || !usuarioLogadoGlobal) return;
+
+      const { error } = await _supabase
+        .from('proposta_mensagens')
+        .insert([{
+          proposta_id: propostaChatAtualId,
+          remetente_id: usuarioLogadoGlobal.id,
+          mensagem: texto
+        }]);
+
+      if (error) {
+        alert("Erro ao enviar mensagem: " + error.message);
+      } else {
+        input.value = '';
+        await carregarMensagensChat();
       }
     }
 
