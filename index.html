@@ -716,13 +716,13 @@
       } else {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, created_at, destinatario_id, proposta_itens ( figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
+          .select(`id, status, created_at, destinatario_id`)
           .eq('remetente_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
         if (error) {
           console.error("Erro ao buscar enviadas:", error.message);
-          container.innerHTML = '<div class="empty-state">Erro ao carregar propostas enviadas.</div>';
+          container.innerHTML = '<div class="empty-state">Erro ao carregar propostas enviadas: ' + error.message + '</div>';
           return;
         }
 
@@ -731,23 +731,31 @@
           return;
         }
 
-        container.innerHTML = propostas.map(p => {
+        let htmlFinal = '';
+        for (const p of propostas) {
           const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
-          const itens = p.proposta_itens || [];
+          
+          const { data: itensProp } = await _supabase
+            .from('proposta_itens')
+            .select(`figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
+            .eq('proposta_id', p.id);
+
+          const itens = itensProp || [];
           const itensStr = itens.length > 0 ? itens.map(i => {
             const fig = i.figurinhas || {};
             const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum';
             return `#${fig.numero || ''} ${fig.nome || ''} (${albumNome})`;
           }).join(', ') : 'Itens da proposta';
 
-          return `
+          htmlFinal += `
             <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
               <div style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</div>
               <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 2px;">Itens: <strong>${itensStr}</strong></div>
               <div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>
             </div>
           `;
-        }).join('');
+        }
+        container.innerHTML = htmlFinal;
       }
     }
 
