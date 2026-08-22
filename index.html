@@ -306,14 +306,13 @@
       });
 
       if (usuarioLogadoGlobal) {
-        // 2. Abordagem Otimizada: busca paralela de figurinhas globais e da caderneta do usuário logado
         const [resFigurinhas, resMinhaCaderneta] = await Promise.all([
           _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )'),
           _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id)
         ]);
 
         const todasFigurinhas = resFigurinhas.data || [];
-        const minhaCadernetaIds = new Set((resMinhaCaderneta.data || []).map(i => i.figurinha_id));
+        const minhaCadernetaIds = new Set((resMinhaCaderneta.data || []).map(i => Number(i.figurinha_id)));
 
         todasFigurinhas.forEach(fig => {
           if (fig.albuns && fig.albuns.id) {
@@ -321,16 +320,18 @@
           }
         });
 
-        // Identifica IDs faltantes
+        // Garante que os IDs sejam números limpos
         const idsFaltantes = todasFigurinhas
-          .filter(fig => !minhaCadernetaIds.has(fig.id))
-          .map(fig => fig.id);
-console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
+          .filter(fig => !minhaCadernetaIds.has(Number(fig.id)))
+          .map(fig => Number(fig.id));
+
+        console.log("Meus IDs faltantes normalizados:", idsFaltantes.length);
+
         matchesTrocasGlobal = [];
 
         if (idsFaltantes.length > 0) {
-          // 3. Consulta direta no banco apenas para as repetidas que batem com os faltantes
-         const { data: dataTrocas, error: erroTrocas } = await _supabase
+          // Buscamos todas as repetidas (quantidade > 1) do sistema de forma segura
+          const { data: dataTrocas, error: erroTrocas } = await _supabase
             .from('usuario_cardeneta')
             .select(`
               id, 
@@ -342,17 +343,21 @@ console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
               )
             `)
             .gt('quantidade', 1)
-            .limit(5); // Traz apenas 5 para testar
+            .in('figurinha_id', idsFaltantes); // Tira o neq temporariamente para testes ou foca nos outros
 
-          console.log("TESTE DE REPETIDAS BRUTAS:", dataTrocas);
-          console.log("ERRO DO TESTE:", erroTrocas);
           if (erroTrocas) {
             console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
           } else if (dataTrocas) {
+            console.log("Repetidas encontradas que batem com os faltantes:", dataTrocas.length);
+
             let colecionadoresMap = {};
 
             dataTrocas.forEach(item => {
               const donoId = item.user_id;
+              
+              // Se quiser ignorar você mesmo nos testes, descomente a linha abaixo:
+              // if (donoId === usuarioLogadoGlobal.id) return;
+
               const fig = item.figurinhas;
 
               if (fig && fig.albuns && fig.albuns.id) {
@@ -387,7 +392,6 @@ console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
       popularFiltroAlbuns();
       renderizarAtivo();
     }
-
     function popularFiltroAlbuns() {
       const select = document.getElementById('selectFiltroAlbum');
       let html = '<option value="todos">📖 Todos os Álbuns</option>';
