@@ -209,7 +209,7 @@
     let itensMarketplaceGlobal = [];
     let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
-    let albunsGlobaisMap = new Map(); // Armazena todos os álbuns cadastrados
+    let albunsGlobaisMap = new Map();
     let abaAtual = 'market';
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
@@ -278,7 +278,7 @@
     }
 
     async function carregarDadosGlobais() {
-      // 1. Carregar lista de álbuns gerais do banco para garantir que o filtro traga todos
+      // 1. Carregar lista de álbuns gerais do banco
       const { data: albunsData } = await _supabase.from('albuns').select('id, nome');
       if (albunsData) {
         albunsGlobaisMap.clear();
@@ -298,7 +298,6 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      // Popula o mapa de álbuns também com os dados vindos das ofertas caso algum não estivesse listado na tabela albuns
       itensMarketplaceGlobal.forEach(item => {
         const fig = item.figurinha;
         if (fig && fig.albuns && fig.albuns.id) {
@@ -307,84 +306,79 @@
       });
 
       if (usuarioLogadoGlobal) {
-        const { data: todasFigurinhasGlobais } = await _supabase
-          .from('figurinhas')
-          .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+        // 2. Abordagem Otimizada: busca paralela de figurinhas globais e da caderneta do usuário logado
+        const [resFigurinhas, resMinhaCaderneta] = await Promise.all([
+          _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )'),
+          _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id)
+        ]);
 
-        if (todasFigurinhasGlobais) {
-          todasFigurinhasGlobais.forEach(fig => {
-            if (fig.albuns && fig.albuns.id) {
-              albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
-            }
-          });
-        }
+        const todasFigurinhas = resFigurinhas.data || [];
+        const minhaCadernetaIds = new Set((resMinhaCaderneta.data || []).map(i => i.figurinha_id));
 
-        const { data: minhaCaderneta } = await _supabase
-          .from('usuario_cardeneta')
-          .select('figurinha_id')
-          .eq('user_id', usuarioLogadoGlobal.id);
-
-        let idsQueTenho = new Set();
-        if (minhaCaderneta) {
-          minhaCaderneta.forEach(item => idsQueTenho.add(item.figurinha_id));
-        }
-
-        let idsFaltantes = new Set();
-        if (todasFigurinhasGlobais) {
-          todasFigurinhasGlobais.forEach(fig => {
-            if (!idsQueTenho.has(fig.id)) {
-              idsFaltantes.add(fig.id);
-            }
-          });
-        }
-
-        const { data: dataTrocas, error: erroTrocas } = await _supabase
-          .from('usuario_cardeneta')
-          .select(`id, figurinha_id, user_id, quantidade, figurinhas:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-          .gt('quantidade', 1)
-          .neq('user_id', usuarioLogadoGlobal.id);
-
-        if (erroTrocas) {
-          console.error("Erro ao buscar trocas:", erroTrocas.message);
-        }
-
-        let repetidasQueCompletam = [];
-        if (dataTrocas && idsFaltantes.size > 0) {
-          repetidasQueCompletam = dataTrocas.filter(item => idsFaltantes.has(item.figurinha_id));
-        } else if (dataTrocas) {
-          repetidasQueCompletam = dataTrocas;
-        }
-
-        // Mapeia álbuns presentes nas trocas
-        repetidasQueCompletam.forEach(item => {
-          const fig = item.figurinhas;
-          if (fig && fig.albuns && fig.albuns.id) {
+        todasFigurinhas.forEach(fig => {
+          if (fig.albuns && fig.albuns.id) {
             albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
           }
         });
 
-        let colecionadoresMap = {};
-        repetidasQueCompletam.forEach(item => {
-          const donoId = item.user_id;
-          if (!colecionadoresMap[donoId]) {
-            const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
-            
-            let dist = null;
-            if (perfilLogadoGlobal && perfilLogadoGlobal.latitude && perfilLogadoGlobal.longitude && infoDono.latitude && infoDono.longitude) {
-              dist = calcularDistanciaKm(perfilLogadoGlobal.latitude, perfilLogadoGlobal.longitude, infoDono.latitude, infoDono.longitude);
-            }
+        // Identifica IDs faltantes
+        const idsFaltantes = todasFigurinhas
+          .filter(fig => !minhaCadernetaIds.has(fig.id))
+          .map(fig => fig.id);
 
-            colecionadoresMap[donoId] = {
-              user_id: donoId,
-              nome: infoDono.nome,
-              distanciaKm: dist,
-              itens: []
-            };
+        matchesTrocasGlobal = [];
+
+        if (idsFaltantes.length > 0) {
+          // 3. Consulta direta no banco apenas para as repetidas que batem com os faltantes
+          const { data: dataTrocas, error: erroTrocas } = await _supabase
+            .from('usuario_cardeneta')
+            .select(`
+              id, 
+              figurinha_id, 
+              user_id, 
+              quantidade, 
+              figurinhas:figurinha_id ( 
+                id, numero, nome, imagem, album_id, albuns ( id, nome ) 
+              )
+            `)
+            .gt('quantidade', 1)
+            .neq('user_id', usuarioLogadoGlobal.id)
+            .in('figurinha_id', idsFaltantes);
+
+          if (erroTrocas) {
+            console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
+          } else if (dataTrocas) {
+            let colecionadoresMap = {};
+
+            dataTrocas.forEach(item => {
+              const donoId = item.user_id;
+              const fig = item.figurinhas;
+
+              if (fig && fig.albuns && fig.albuns.id) {
+                albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
+              }
+
+              if (!colecionadoresMap[donoId]) {
+                const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
+                
+                let dist = null;
+                if (perfilLogadoGlobal && perfilLogadoGlobal.latitude && perfilLogadoGlobal.longitude && infoDono.latitude && infoDono.longitude) {
+                  dist = calcularDistanciaKm(perfilLogadoGlobal.latitude, perfilLogadoGlobal.longitude, infoDono.latitude, infoDono.longitude);
+                }
+
+                colecionadoresMap[donoId] = {
+                  user_id: donoId,
+                  nome: infoDono.nome,
+                  distanciaKm: dist,
+                  itens: []
+                };
+              }
+              colecionadoresMap[donoId].itens.push(item);
+            });
+
+            matchesTrocasGlobal = Object.values(colecionadoresMap);
           }
-          colecionadoresMap[donoId].itens.push(item);
-        });
-
-        matchesTrocasGlobal = Object.values(colecionadoresMap);
+        }
       } else {
         matchesTrocasGlobal = [];
       }
@@ -397,7 +391,6 @@
       const select = document.getElementById('selectFiltroAlbum');
       let html = '<option value="todos">📖 Todos os Álbuns</option>';
       
-      // Ordena os álbuns alfabeticamente para melhor visualização
       const albunsOrdenados = Array.from(albunsGlobaisMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
 
       albunsOrdenados.forEach(([id, nome]) => {
@@ -529,7 +522,6 @@
           }
           if (!matchRaio) return null;
 
-          // Filtra apenas os itens do colecionador que passam no termo e no álbum selecionado
           let itensFiltrados = match.itens.filter(i => {
             const fig = i.figurinhas || {};
             const nomeFig = String(fig.nome || '').toLowerCase();
@@ -541,7 +533,6 @@
 
           if (itensFiltrados.length === 0) return null;
 
-          // Retorna um novo objeto de match contendo apenas os itens correspondentes ao filtro
           return {
             ...match,
             itens: itensFiltrados
