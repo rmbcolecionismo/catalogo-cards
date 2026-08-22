@@ -804,7 +804,7 @@
           html += `
             <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 2px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item da proposta">🗑️ Retirar</button>
+              <button type="button" onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item da proposta">🗑️ Retirar</button>
             </div>
           `;
         });
@@ -813,7 +813,7 @@
       return html;
     }
 
-    async function removerItemProposta(itemPropostaId, propostaId) {
+    window.removerItemProposta = async function(itemPropostaId, propostaId) {
       if (!confirm("Deseja remover esta figurinha da proposta?")) return;
 
       const { error } = await _supabase
@@ -830,14 +830,15 @@
           .eq('proposta_id', propostaId);
 
         if (!restantes || restantes.length === 0) {
+          await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
           await _supabase.from('propostas_troca').delete().eq('id', propostaId);
           alert("Como todos os itens foram removidos, a proposta foi cancelada automaticamente.");
         } else {
           alert("Item removido com sucesso da proposta!");
         }
-        alternarAbaPropostas(tipoAbaPropostaModal);
+        await alternarAbaPropostas(tipoAbaPropostaModal);
       }
-    }
+    };
 
     async function cancelarPropostaEnviada(propostaId) {
       if (!confirm("Tem certeza que deseja cancelar esta proposta enviada?")) return;
@@ -850,7 +851,7 @@
         alert("Erro ao cancelar proposta: " + error.message);
       } else {
         alert("Proposta cancelada e limpa do banco de dados!");
-        alternarAbaPropostas('enviadas');
+        await alternarAbaPropostas('enviadas');
       }
     }
 
@@ -1021,7 +1022,7 @@
         alert("Erro ao atualizar proposta: " + error.message);
       } else {
         alert(`Proposta ${novoStatus} com sucesso! Cadernetas atualizadas de ambos os lados.`);
-        alternarAbaPropostas(tipoAbaPropostaModal);
+        await alternarAbaPropostas(tipoAbaPropostaModal);
         carregarDadosGlobais();
       }
     }
@@ -1105,14 +1106,14 @@
       }
     }
 
-    async function apagarMensagemChat(msgId) {
+    window.apagarMensagemChat = async function(msgId) {
       if (!confirm("Deseja apagar esta mensagem permanentemente?")) return;
       const { error } = await _supabase.from('proposta_mensagens').delete().eq('id', msgId);
       if (error) alert("Erro ao apagar: " + error.message);
       else await carregarMensagensChat();
-    }
+    };
 
-    async function editarMensagemChat(msgId, textoCodificado) {
+    window.editarMensagemChat = async function(msgId, textoCodificado) {
       const textoAntigo = decodeURIComponent(textoCodificado);
       const novoTexto = prompt("Edite sua mensagem:", textoAntigo);
       if (novoTexto === null || !novoTexto.trim()) return;
@@ -1120,7 +1121,7 @@
       const { error } = await _supabase.from('proposta_mensagens').update({ mensagem: novoTexto.trim() }).eq('id', msgId);
       if (error) alert("Erro ao editar: " + error.message);
       else await carregarMensagensChat();
-    }
+    };
 
     function filtrarAtivo() {
       const termo = document.getElementById('inputBusca').value.toLowerCase();
