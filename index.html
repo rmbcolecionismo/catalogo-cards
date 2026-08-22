@@ -804,7 +804,7 @@
           html += `
             <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 2px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item já conseguido">🗑️ Retirar</button>
+              <button onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item da proposta">🗑️ Retirar</button>
             </div>
           `;
         });
@@ -867,7 +867,7 @@
       if (tipo === 'recebidas') {
         const { data: propostas, error } = await _supabase
           .from('propostas_troca')
-          .select(`id, status, remetente_id, proposta_itens ( id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) ) )`)
+          .select(`id, status, remetente_id`)
           .eq('destinatario_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
@@ -876,9 +876,16 @@
           return;
         }
 
-        container.innerHTML = propostas.map(p => {
+        let htmlFinal = '';
+        for (const p of propostas) {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
-          const itens = p.proposta_itens || [];
+          
+          const { data: itensProp } = await _supabase
+            .from('proposta_itens')
+            .select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
+            .eq('proposta_id', p.id);
+
+          const itens = itensProp || [];
           const itensHtml = formatarItensComSelecao(itens, p.id);
           
           let acoesHtml = '';
@@ -893,7 +900,7 @@
             acoesHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
           }
 
-          return `
+          htmlFinal += `
             <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
@@ -904,7 +911,8 @@
               ${acoesHtml}
             </div>
           `;
-        }).join('');
+        }
+        container.innerHTML = htmlFinal;
 
       } else {
         const { data: propostas, error } = await _supabase
