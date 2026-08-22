@@ -344,7 +344,9 @@ console.log("Meus IDs faltantes:", idsFaltantes); // <-- Adicione esta linha
             .gt('quantidade', 1)
             .neq('user_id', usuarioLogadoGlobal.id)
             .in('figurinha_id', idsFaltantes);
-
+// ADICIONE ESTES CONSOLE.LOGS AQUI:
+          console.log("Erro do Supabase (se houver):", erroTrocas);
+          console.log("Dados brutos retornados de trocas:", dataTrocas);
           if (erroTrocas) {
             console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
           } else if (dataTrocas) {
