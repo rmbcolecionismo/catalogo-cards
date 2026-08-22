@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na linha de busca das trocas (dataTrocas), especificando explicitamente a relação figurinhas:figurinha_id para forçar o cruzamento correto com a tabela mestre usando a coluna correta.  Basta substituir todo o conteúdo da sua página por este código abaixo:HTML<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -322,12 +322,16 @@
           });
         }
 
-        // D. Buscar repetidas de outros usuários (quantidade > 1)
-        const { data: dataTrocas } = await _supabase
+        // D. Buscar repetidas de outros usuários (quantidade > 1) com o relacionamento explícito
+        const { data: dataTrocas, error: erroTrocas } = await _supabase
           .from('usuario_cardeneta')
-          .select(`id, figurinha_id, user_id, quantidade, figurinhas ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+          .select(`id, figurinha_id, user_id, quantidade, figurinhas:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
           .gt('quantidade', 1)
           .neq('user_id', usuarioLogadoGlobal.id);
+
+        if (erroTrocas) {
+          console.error("Erro ao buscar trocas:", erroTrocas.message);
+        }
 
         // E. Cruzar: Filtrar apenas repetidas de outros cujos IDs estão na lista de Faltantes
         let repetidasQueCompletam = [];
