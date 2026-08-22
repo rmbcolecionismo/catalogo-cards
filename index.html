@@ -79,7 +79,7 @@
     footer strong { color: var(--gold); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
     .modal-box p { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4; }
   </style>
@@ -105,8 +105,8 @@
 
     <div id="heroBannerVisitante" class="hero-banner">
       <div class="hero-content">
-        <h1>Organize sua Coleção & Venda/Troque Figurinhas!</h1>
-        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.</p>
+        <h1>Organize sua Coleção & Venda/Troque Figurinhas![cite: 1]</h1>
+        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.[cite: 1]</p>
         <div class="hero-features">
           <span>✅ Caderneta Inteligente</span>
           <span>✅ Vitrine de Vendas</span>
@@ -169,6 +169,7 @@
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
+  <!-- Modal de Autenticação -->
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
       <h3>Acesse sua Conta</h3>
@@ -199,6 +200,23 @@
     </div>
   </div>
 
+  <!-- Modal de Envio de Proposta de Troca -->
+  <div id="modalProposta" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <h3>🔄 Proposta de Troca</h3>
+      <p id="modalPropostaSubtitulo">Envie uma proposta para negociar com o colecionador.</p>
+      
+      <div id="modalPropostaConteudo" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 180px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+        <!-- Conteúdo dinâmico das figurinhas do match -->
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-gold" id="btnConfirmarProposta" style="flex: 1; justify-content: center;" onclick="enviarPropostaTroca()">🚀 Enviar Proposta</button>
+        <button class="btn-outline" onclick="fecharModalProposta()" style="flex: 1; justify-content: center;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
@@ -211,6 +229,8 @@
     let usuariosMapGlobal = {};
     let albunsGlobaisMap = new Map();
     let abaAtual = 'market';
+    let destinatarioAtualId = null;
+    let itensPropostaAtual = [];
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -323,18 +343,6 @@
           .filter(fig => !minhaCadernetaIds.has(Number(fig.id)))
           .map(fig => Number(fig.id));
 
-        console.log("=== AUDITORIA DO MERCADO DE TROCAS ===");
-        console.log("Total de IDs Faltantes para mim:", idsFaltantes.length);
-
-        // Auditoria segura executada dentro da função async
-        const { data: testeGeral } = await _supabase
-          .from('usuario_cardeneta')
-          .select('id, user_id, figurinha_id, quantidade');
-        
-        console.log("Total de registros na caderneta de TODOS os usuários:", testeGeral?.length);
-        const repetidasGerais = testeGeral?.filter(i => i.quantidade > 1) || [];
-        console.log("Registros com quantidade > 1 no sistema inteiro:", repetidasGerais.length);
-
         matchesTrocasGlobal = [];
 
         if (idsFaltantes.length > 0) {
@@ -356,8 +364,6 @@
           if (erroTrocas) {
             console.error("Erro ao buscar matches de trocas:", erroTrocas.message);
           } else if (dataTrocas) {
-            console.log("Matches válidos encontrados após cruzamento:", dataTrocas.length);
-
             let colecionadoresMap = {};
 
             dataTrocas.forEach(item => {
@@ -478,33 +484,130 @@
       }
 
       grid.innerHTML = matches.map(match => {
-        const distanciaTexto = match.distanciaKm !== null ? `${match.distanciaKm.toFixed(1)} km de você` : 'Distância não informada';
-        const linkPerfilDono = `cardeneta.html?id=${match.user_id}`;
-        
-        let miniCardsFigurinhas = match.itens.map(i => {
+        const distanciaTexto = match.distanciaKm !== null ? `${match.distanciaKm.toFixed(1)} km` : 'Remoto';
+        const totalItens = match.itens.length;
+        const itensVisiveis = match.itens.slice(0, 3);
+        const restantes = totalItens - itensVisiveis.length;
+
+        let miniBadges = itensVisiveis.map(i => {
           const fig = i.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
-          return `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">#${numFig} ${fig.nome || ''}</span>`;
+          return `<span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">#${numFig}</span>`;
         }).join(' ');
 
+        if (restantes > 0) {
+          miniBadges += ` <span style="color: #94a3b8; font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
+        }
+
+        // Serializa itens para passar para a modal com segurança
+        const matchDataStr = encodeURIComponent(JSON.stringify(match));
+
         return `
-          <div class="market-card" style="grid-column: span 1; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="market-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
             <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-weight: 700; color: var(--gold); font-size: 1rem;">👤 ${match.nome}</span>
-                <span style="font-size: 0.75rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-weight: 700; color: #f8fafc; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">👤 ${match.nome}</span>
+                <span style="font-size: 0.7rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
               </div>
-              <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Tem <strong>${match.itens.length} figurinha(s)</strong> que você precisa:</p>
-              <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px;">
-                ${miniCardsFigurinhas}
+              
+              <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">
+                Possui <strong style="color: var(--gold);">${totalItens}</strong> figurinha(s) que te faltam:
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                ${miniBadges}
               </div>
             </div>
-            <div>
-              <a href="${linkPerfilDono}" class="btn-acao btn-troca" style="width: 100%; text-align: center;">🔄 Ver Perfil e Negociar</a>
+
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button onclick="abrirModalPropostaDecode('${matchDataStr}')" class="btn-acao btn-troca" style="flex: 1; padding: 7px; font-size: 0.75rem;">💬 Proposta</button>
+              <a href="cardeneta.html?id=${match.user_id}" class="btn-acao btn-perfil" style="padding: 7px 10px; font-size: 0.75rem;" title="Ver Caderneta Completa">📖</a>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    function abrirModalPropostaDecode(matchDataStr) {
+      const match = JSON.parse(decodeURIComponent(matchDataStr));
+      destinatarioAtualId = match.user_id;
+      itensPropostaAtual = match.itens;
+
+      document.getElementById('modalPropostaSubtitulo').innerHTML = `Enviar proposta de troca para <strong>${match.nome}</strong>:`;
+      
+      const conteudoHtml = match.itens.map(i => {
+        const fig = i.figurinhas || {};
+        let numFig = String(fig.numero || '').replace(/^#+/, '');
+        return `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">✨ Você receberá: <strong>#${numFig} - ${fig.nome || 'Figurinha'}</strong></div>`;
+      }).join('');
+
+      document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
+      document.getElementById('modalProposta').style.display = 'flex';
+    }
+
+    function fecharModalProposta() {
+      document.getElementById('modalProposta').style.display = 'none';
+    }
+
+    async function enviarPropostaTroca() {
+      if (!usuarioLogadoGlobal || !destinatarioAtualId) return;
+
+      const planoUsuario = String(perfilLogadoGlobal?.plano || 'gratis').toLowerCase().trim();
+      const limites = { 'gratis': 3, 'premium': 30, 'vitalicio': 50 };
+      const limiteMaximo = limites[planoUsuario] || 3;
+      const hoje = new Date().toISOString().split('T')[0];
+
+      // Verifica limite diário
+      let { data: controle } = await _supabase
+        .from('historico_propostas_diarias')
+        .select('*')
+        .eq('user_id', usuarioLogadoGlobal.id)
+        .eq('data', hoje)
+        .maybeSingle();
+
+      let enviadasHoje = controle ? controle.propostas_enviadas : 0;
+
+      if (enviadasHoje >= limiteMaximo) {
+        alert(`⚠️ Você atingiu o limite de ${limiteMaximo} propostas diárias do seu plano (${planoUsuario.toUpperCase()}). Faça upgrade para enviar mais!`);
+        fecharModalProposta();
+        return;
+      }
+
+      // Cria a proposta principal
+      const { data: novaProposta, error: erroProp } = await _supabase
+        .from('propostas_troca')
+        .insert([{ remetente_id: usuarioLogadoGlobal.id, destinatario_id: destinatarioAtualId, status: 'pendente' }])
+        .select()
+        .maybeSingle();
+
+      if (erroProp || !novaProposta) {
+        alert("Erro ao enviar proposta: " + (erroProp?.message || 'Erro desconhecido'));
+        return;
+      }
+
+      // Insere os itens da proposta
+      const itensInsert = itensPropostaAtual.map(i => ({
+        proposta_id: novaProposta.id,
+        figurinha_id: i.figurinha_id,
+        origem_usuario_id: destinatarioAtualId
+      }));
+
+      await _supabase.from('proposta_itens').insert(itensInsert);
+
+      // Atualiza o contador diário
+      if (controle) {
+        await _supabase
+          .from('historico_propostas_diarias')
+          .update({ propostas_enviadas: enviadasHoje + 1 })
+          .eq('id', controle.id);
+      } else {
+        await _supabase
+          .from('historico_propostas_diarias')
+          .insert([{ user_id: usuarioLogadoGlobal.id, data: hoje, propostas_enviadas: 1 }]);
+      }
+
+      alert("🎉 Proposta enviada com sucesso! Acompanhe a negociação.");
+      fecharModalProposta();
     }
 
     function filtrarAtivo() {
