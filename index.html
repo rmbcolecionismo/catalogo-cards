@@ -7,69 +7,86 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --gold: #f59e0b; --bg: #0f172a; }
+    :root { 
+      --gold: #f59e0b; 
+      --bg: #0f172a; 
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255,255,255,0.1);
+      --modal-bg: #1e293b;
+    }
+
+    [data-theme="light"] {
+      --gold: #d97706;
+      --bg: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: rgba(0,0,0,0.1);
+      --modal-bg: #ffffff;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; }
+    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); width: 100%; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
-    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: #0f172a; }
+    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
     
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
 
-    .hero-banner { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.9) 100%); border: 2px solid var(--gold); border-radius: 16px; padding: 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .hero-banner { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, var(--bg-card) 100%); border: 2px solid var(--gold); border-radius: 16px; padding: 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     .hero-content { flex: 1; min-width: 280px; }
     .hero-content h1 { font-size: 1.8rem; color: var(--gold); margin-bottom: 8px; font-weight: 800; }
-    .hero-content p { font-size: 0.9rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 15px; }
+    .hero-content p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; }
     .hero-features { display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.8rem; color: #34d399; font-weight: 600; }
     
     .hero-action { display: flex; flex-direction: column; gap: 10px; min-width: 220px; }
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: 0.2s; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
-    .btn-gold:hover { background: #fbbf24; transform: translateY(-2px); }
+    .btn-gold:hover { opacity: 0.9; transform: translateY(-2px); }
 
-    .btn-outline { background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    .collab-card { background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .collab-card { background: var(--bg-card); border: 1px dashed var(--gold); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
-    .collab-text p { color: #94a3b8; font-size: 0.85rem; }
+    .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
 
-    .sections-tabs { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; flex-wrap: wrap; }
+    .sections-tabs { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
     .tab-group { display: flex; gap: 10px; }
-    .tab-btn { background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
+    .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
     .tab-btn.active { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); }
 
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
-    .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
-    .market-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
     .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
-    .market-img-wrap { height: 160px; background: #0f172a; padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .market-img-wrap { height: 160px; background: var(--bg); padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); }
     .market-img { width: 100%; height: 100%; object-fit: contain; }
     
     .market-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
     .market-num { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
-    .market-name { font-size: 0.85rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .market-name { font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .market-preco { font-size: 0.95rem; font-weight: 800; color: #34d399; margin-top: 4px; }
-    .market-vendedor { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+    .market-vendedor { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
     .market-vendedor a { color: var(--gold); text-decoration: none; font-weight: 600; }
 
-    .market-footer { padding: 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); text-align: center; }
+    .market-footer { padding: 10px; background: var(--bg); border-top: 1px solid var(--border-color); text-align: center; }
     .btn-acao { background: #34d399; color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
-    .btn-acao:hover { background: #059669; color: white; }
-    .btn-troca { background: #38bdf8; }
-    .btn-troca:hover { background: #0284c7; }
+    .btn-acao:hover { opacity: 0.9; }
+    .btn-troca { background: #38bdf8; color: #0f172a; }
     .btn-perfil { background: var(--gold); color: #0f172a; }
-    .btn-perfil:hover { background: #fbbf24; color: #0f172a; }
     .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
     @keyframes pulseGlow {
@@ -80,18 +97,18 @@
     .btn-propostas-animado { position: relative; border-color: #38bdf8; color: #38bdf8; animation: pulseGlow 2s infinite; }
     .badge-contador { background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 10px; margin-left: 6px; display: inline-block; vertical-align: middle; }
 
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
 
-    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: #cbd5e1; text-decoration: none; font-weight: 600; transition: 0.2s; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; }
     .footer-links a:hover { color: var(--gold); }
     footer strong { color: var(--gold); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
-    .modal-box p { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4; }
+    .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -106,7 +123,8 @@
         <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
       </div>
-      <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 6px 10px; font-size: 0.75rem;">☀️ / 🌙 Tema</button>
         <div id="userInfoHeader" class="user-profile-header">
           <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;">Entrar / Criar Conta</button>
         </div>
@@ -198,10 +216,10 @@
           Continuar com Google
         </button>
 
-        <div style="display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">
-          <hr style="flex: 1; border-color: rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 2px 0;">
+          <hr style="flex: 1; border-color: var(--border-color);">
           <span style="padding: 0 10px;">ou com e-mail</span>
-          <hr style="flex: 1; border-color: rgba(255,255,255,0.1);">
+          <hr style="flex: 1; border-color: var(--border-color);">
         </div>
 
         <input type="email" id="authEmail" class="filter-field" placeholder="Seu e-mail" style="width: 100%;">
@@ -212,7 +230,7 @@
           <button class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;">Criar Conta</button>
         </div>
 
-        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: #94a3b8; margin-top: 5px;">Fechar</button>
+        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted); margin-top: 5px;">Fechar</button>
       </div>
     </div>
   </div>
@@ -223,7 +241,7 @@
       <h3>🔄 Enviar Proposta de Troca</h3>
       <p id="modalPropostaSubtitulo">Ajuste os itens da proposta antes de enviar:</p>
       
-      <div id="modalPropostaConteudo" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="modalPropostaConteudo" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);">
       </div>
 
       <div style="display: flex; gap: 8px;">
@@ -244,7 +262,7 @@
         <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;">📤 Enviadas</button>
       </div>
 
-      <div id="listaPropostasContainer" style="text-align: left; background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 380px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="listaPropostasContainer" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 380px; overflow-y: auto; border: 1px solid var(--border-color);">
         <div class="empty-state">Carregando propostas...</div>
       </div>
 
@@ -255,12 +273,12 @@
   <!-- Modal de Chat Interno Detalhado -->
   <div id="modalChatInterno" class="modal-overlay">
     <div class="modal-box" style="max-width: 600px; display: flex; flex-direction: column; height: 500px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
         <h3 id="chatTitulo" style="margin: 0; font-size: 1.1rem;">💬 Chat da Negociação</h3>
         <button onclick="fecharModalChat()" class="btn-outline" style="padding: 2px 8px; font-size: 0.75rem;">✕ Fechar</button>
       </div>
 
-      <div id="chatMensagensContainer" style="flex: 1; background: #0f172a; border-radius: 8px; padding: 10px; overflow-y: auto; text-align: left; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+      <div id="chatMensagensContainer" style="flex: 1; background: var(--bg); border-radius: 8px; padding: 10px; overflow-y: auto; text-align: left; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
         <div class="empty-state">Carregando mensagens...</div>
       </div>
 
@@ -289,6 +307,25 @@
     let tipoAbaPropostaModal = 'recebidas';
     let propostaChatAtualId = null;
     let chatIntervalo = null;
+
+    function alternarTema() {
+      const atual = document.documentElement.getAttribute('data-theme');
+      const novo = atual === 'light' ? 'dark' : 'light';
+      if (novo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('tema_app', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('tema_app', 'dark');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaSalvo = localStorage.getItem('tema_app');
+      if (temaSalvo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    });
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -348,7 +385,7 @@
 
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-          <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
+          <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
           <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 5px;">Sair</button>
         `;
 
@@ -389,13 +426,6 @@
       
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
-
-      itensMarketplaceGlobal.forEach(item => {
-        const fig = item.figurinha;
-        if (fig && fig.albuns && fig.albuns.id) {
-          albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
-        }
-      });
 
       if (usuarioLogadoGlobal) {
         const { data: propostasEnviadasAtivas } = await _supabase
@@ -451,10 +481,6 @@
             dataTrocas.forEach(item => {
               const donoId = item.user_id;
               const fig = item.figurinhas;
-
-              if (fig && fig.albuns && fig.albuns.id) {
-                albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
-              }
 
               if (!colecionadoresMap[donoId]) {
                 const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
@@ -578,7 +604,7 @@
         }).join(' ');
 
         if (restantes > 0) {
-          miniBadges += ` <span style="color: #94a3b8; font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
+          miniBadges += ` <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
         }
 
         const matchDataStr = encodeURIComponent(JSON.stringify(match));
@@ -595,11 +621,11 @@
           <div class="market-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-weight: 700; color: #f8fafc; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">👤 ${match.nome}</span>
+                <span style="font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">👤 ${match.nome}</span>
                 <span style="font-size: 0.7rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
               </div>
               
-              <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">
                 Possui <strong style="color: var(--gold);">${totalItens}</strong> figurinha(s) que te faltam:
               </div>
 
@@ -619,7 +645,6 @@
     function abrirModalPropostaDecode(matchDataStr) {
       const match = JSON.parse(decodeURIComponent(matchDataStr));
       destinatarioAtualId = match.user_id;
-      // Clona os itens para permitir edição local antes do envio definitivo
       itensPropostaAtual = JSON.parse(JSON.stringify(match.itens));
 
       document.getElementById('modalPropostaSubtitulo').innerHTML = `Ajuste os itens da proposta para <strong>${match.nome}</strong> antes de enviar:`;
@@ -642,7 +667,7 @@
         const quantidadeTotalAlbum = listaItens.length;
         
         conteudoHtml += `
-          <div style="margin-top: 6px; margin-bottom: 8px; background: rgba(15, 23, 42, 0.4); padding: 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
+          <div style="margin-top: 6px; margin-bottom: 8px; background: var(--bg); padding: 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
               <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${quantidadeTotalAlbum} item(ns)</span>
@@ -653,7 +678,7 @@
           const fig = item.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
           conteudoHtml += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-left: 6px; margin-top: 3px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 3px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
               <button onclick="removerItemModalEnvio(${item.indexOriginal})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Retirar da proposta">🗑️ Retirar</button>
             </div>
@@ -764,7 +789,7 @@
         const quantidadeTotalAlbum = listaItens.length;
         
         html += `
-          <div style="margin-top: 6px; margin-bottom: 6px; background: rgba(15, 23, 42, 0.4); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
+          <div style="margin-top: 6px; margin-bottom: 6px; background: var(--bg); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
               <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
               <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${quantidadeTotalAlbum} item(ns)</span>
@@ -774,7 +799,7 @@
           const fig = item.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
           html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-left: 6px; margin-top: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 2px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
               <button onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item já conseguido">🗑️ Retirar</button>
             </div>
@@ -786,7 +811,7 @@
     }
 
     async function removerItemProposta(itemPropostaId, propostaId) {
-      if (!confirm("Deseja remover esta figurinha da proposta por já ter conseguido?")) return;
+      if (!confirm("Deseja remover esta figurinha da proposta?")) return;
 
       const { error } = await _supabase
         .from('proposta_itens')
@@ -821,7 +846,7 @@
       if (error) {
         alert("Erro ao cancelar proposta: " + error.message);
       } else {
-        alert("Proposta cancelada e removida com sucesso!");
+        alert("Proposta cancelada e limpa do banco de dados!");
         alternarAbaPropostas('enviadas');
       }
     }
@@ -857,7 +882,7 @@
           if (p.status === 'pendente') {
             acoesHtml = `
               <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
-                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
+                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar & Atualizar</button>
                 <button class="btn-outline" onclick="atualizarStatusProposta('${p.id}', 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
               </div>
             `;
@@ -866,12 +891,12 @@
           }
 
           return `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
+            <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
+                <span style="font-weight: 600; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
                 <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${remetente.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
               </div>
-              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens solicitados:</div>
+              <div style="font-size: 0.80rem; color: var(--text-muted); margin-top: 4px;">Itens solicitados:</div>
               ${itensHtml}
               ${acoesHtml}
             </div>
@@ -885,12 +910,7 @@
           .eq('remetente_id', usuarioLogadoGlobal.id)
           .order('id', { ascending: false });
 
-        if (error) {
-          container.innerHTML = '<div class="empty-state">Erro ao carregar propostas enviadas: ' + error.message + '</div>';
-          return;
-        }
-
-        if (!propostas || propostas.length === 0) {
+        if (error || !propostas || propostas.length === 0) {
           container.innerHTML = '<div class="empty-state">Você ainda não enviou nenhuma proposta.</div>';
           return;
         }
@@ -911,18 +931,18 @@
           if (p.status === 'pendente') {
             botoesEnvioHtml += `
               <div style="margin-top: 6px;">
-                <button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio da Proposta</button>
+                <button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio</button>
               </div>
             `;
           }
 
           htmlFinal += `
-            <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
+            <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; color: #f8fafc; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</span>
+                <span style="font-weight: 600; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</span>
                 <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${destinatario.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
               </div>
-              <div style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Itens da proposta:</div>
+              <div style="font-size: 0.80rem; color: var(--text-muted); margin-top: 4px;">Itens da proposta:</div>
               ${itensHtml}
               ${botoesEnvioHtml}
             </div>
@@ -933,6 +953,56 @@
     }
 
     async function atualizarStatusProposta(propostaId, novoStatus) {
+      if (novoStatus === 'aceita') {
+        const { data: itensProp } = await _supabase
+          .from('proposta_itens')
+          .select('figurinha_id')
+          .eq('proposta_id', propostaId);
+
+        const { data: propInfo } = await _supabase
+          .from('propostas_troca')
+          .select('remetente_id, destinatario_id')
+          .eq('id', propostaId)
+          .single();
+
+        if (propInfo && itensProp) {
+          for (const item of itensProp) {
+            // Atualizar caderneta de ambos os lados (adiciona para quem recebeu/pediu e remove repetida de quem doou)
+            const { data: cadDest } = await _supabase
+              .from('usuario_cardeneta')
+              .select('id, quantidade')
+              .eq('user_id', propInfo.destinatario_id)
+              .eq('figurinha_id', item.figurinha_id)
+              .maybeSingle();
+
+            if (cadDest) {
+              await _supabase.from('usuario_cardeneta').update({ quantidade: (cadDest.quantidade || 1) + 1 }).eq('id', cadDest.id);
+            } else {
+              await _supabase.from('usuario_cardeneta').insert([{ user_id: propInfo.destinatario_id, figurinha_id: item.figurinha_id, quantidade: 1 }]);
+            }
+
+            const { data: cadRem } = await _supabase
+              .from('usuario_cardeneta')
+              .select('id, quantidade')
+              .eq('user_id', propInfo.remetente_id)
+              .eq('figurinha_id', item.figurinha_id)
+              .maybeSingle();
+
+            if (cadRem) {
+              if (cadRem.quantidade > 1) {
+                await _supabase.from('usuario_cardeneta').update({ quantidade: cadRem.quantidade - 1 }).eq('id', cadRem.id);
+              } else {
+                await _supabase.from('usuario_cardeneta').delete().eq('id', cadRem.id);
+              }
+            }
+          }
+        }
+
+        // Otimização: limpar mensagens antigas e itens da proposta aceita para otimizar espaço no banco
+        await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
+        await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
+      }
+
       const { error } = await _supabase
         .from('propostas_troca')
         .update({ status: novoStatus })
@@ -941,7 +1011,7 @@
       if (error) {
         alert("Erro ao atualizar proposta: " + error.message);
       } else {
-        alert(`Proposta ${novoStatus} com sucesso!`);
+        alert(`Proposta ${novoStatus} com sucesso! Cadernetas atualizadas de ambos os lados.`);
         alternarAbaPropostas(tipoAbaPropostaModal);
         carregarDadosGlobais();
       }
@@ -980,13 +1050,24 @@
 
       container.innerHTML = mensagens.map(m => {
         const meuEnvio = m.remetente_id === usuarioLogadoGlobal.id;
-        const alinhamento = meuEnvio ? 'align-self: flex-end; background: #38bdf8; color: #0f172a;' : 'align-self: flex-start; background: #334155; color: #f8fafc;';
+        const alinhamento = meuEnvio ? 'align-self: flex-end; background: #38bdf8; color: #0f172a;' : 'align-self: flex-start; background: var(--bg); color: var(--text-main);';
         const hora = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+        let acoesMsg = '';
+        if (meuEnvio) {
+          acoesMsg = `
+            <div style="display: flex; gap: 6px; font-size: 0.6rem; margin-top: 3px; justify-content: flex-end; opacity: 0.8;">
+              <span onclick="editarMensagemChat('${m.id}', \`${escape(m.mensagem)}\`)" style="cursor: pointer; text-decoration: underline;">Editar</span>
+              <span onclick="apagarMensagemChat('${m.id}')" style="cursor: pointer; text-decoration: underline;">Apagar</span>
+            </div>
+          `;
+        }
+
         return `
-          <div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; word-break: break-word;">
+          <div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; word-break: break-word; border: 1px solid var(--border-color);">
             <div>${m.mensagem}</div>
             <div style="font-size: 0.6rem; opacity: 0.7; text-align: right; margin-top: 2px;">${hora}</div>
+            ${acoesMsg}
           </div>
         `;
       }).join('');
@@ -1012,6 +1093,22 @@
         input.value = '';
         await carregarMensagensChat();
       }
+    }
+
+    async function apagarMensagemChat(msgId) {
+      if (!confirm("Deseja apagar esta mensagem permanentemente?")) return;
+      const { error } = await _supabase.from('proposta_mensagens').delete().eq('id', msgId);
+      if (error) alert("Erro ao apagar: " + error.message);
+      else await carregarMensagensChat();
+    }
+
+    async function editarMensagemChat(msgId, textoAntigo) {
+      const novoTexto = prompt("Edite sua mensagem:", unescape(textoAntigo));
+      if (novoTexto === null || !novoTexto.trim()) return;
+
+      const { error } = await _supabase.from('proposta_mensagens').update({ mensagem: novoTexto.trim() }).eq('id', msgId);
+      if (error) alert("Erro ao editar: " + error.message);
+      else await carregarMensagensChat();
     }
 
     function filtrarAtivo() {
