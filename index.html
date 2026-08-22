@@ -1,4 +1,4 @@
-Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na linha de busca das trocas (dataTrocas), especificando explicitamente a relação figurinhas:figurinha_id para forçar o cruzamento correto com a tabela mestre usando a coluna correta.  Basta substituir todo o conteúdo da sua página por este código abaixo:HTML<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -137,7 +137,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
       <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
         <option value="todos">📖 Todos os Álbuns</option>
       </select>
-      <!-- Filtro exclusivo para o Mercado de Trocas por Raio -->
       <select id="selectFiltroRaio" class="filter-field" onchange="filtrarAtivo()" style="display:none;">
         <option value="todos">📍 Qualquer Distância</option>
         <option value="5">Até 5 km</option>
@@ -212,10 +211,9 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
     let usuariosMapGlobal = {};
     let abaAtual = 'market';
 
-    // Fórmula de Haversine para calcular distância em KM entre duas coordenadas geograficas
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-      const R = 6371; // Raio da Terra em km
+      const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = 
@@ -279,13 +277,11 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
     }
 
     async function carregarDadosGlobais() {
-      // 1. Carregar mapeamento de usuários (incluindo lat/lon)
       const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
       if (usuariosData) {
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
 
-      // 2. Carregar Marketplace
       const { data: dataMarket, error: errorMarket } = await _supabase
         .from('vitrine_ofertas')
         .select(`id, preco, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
@@ -294,14 +290,11 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      // 3. Processar Matches Inteligentes para o Mercado de Trocas
       if (usuarioLogadoGlobal) {
-        // A. Buscar TODAS as figurinhas cadastradas no sistema global (universo total)
         const { data: todasFigurinhasGlobais } = await _supabase
           .from('figurinhas')
           .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
 
-        // B. Buscar o que o usuário logado JÁ TEM cadastrado na caderneta dele
         const { data: minhaCaderneta } = await _supabase
           .from('usuario_cardeneta')
           .select('figurinha_id')
@@ -312,7 +305,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
           minhaCaderneta.forEach(item => idsQueTenho.add(item.figurinha_id));
         }
 
-        // C. Descobrir as Faltantes (tudo que existe globalmente menos o que ele tem gravado)
         let idsFaltantes = new Set();
         if (todasFigurinhasGlobais) {
           todasFigurinhasGlobais.forEach(fig => {
@@ -322,7 +314,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
           });
         }
 
-        // D. Buscar repetidas de outros usuários (quantidade > 1) com o relacionamento explícito
         const { data: dataTrocas, error: erroTrocas } = await _supabase
           .from('usuario_cardeneta')
           .select(`id, figurinha_id, user_id, quantidade, figurinhas:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
@@ -333,7 +324,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
           console.error("Erro ao buscar trocas:", erroTrocas.message);
         }
 
-        // E. Cruzar: Filtrar apenas repetidas de outros cujos IDs estão na lista de Faltantes
         let repetidasQueCompletam = [];
         if (dataTrocas && idsFaltantes.size > 0) {
           repetidasQueCompletam = dataTrocas.filter(item => idsFaltantes.has(item.figurinha_id));
@@ -341,7 +331,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
           repetidasQueCompletam = dataTrocas;
         }
 
-        // F. Agrupar por colecionador para montar os cards de match
         let colecionadoresMap = {};
         repetidasQueCompletam.forEach(item => {
           const donoId = item.user_id;
@@ -396,7 +385,6 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
       document.getElementById('secaoMarketplace').style.display = aba === 'market' ? 'block' : 'none';
       document.getElementById('secaoTrocas').style.display = aba === 'trocas' ? 'block' : 'none';
       
-      // Mostrar ou esconder o seletor de raio dependendo da aba ativa
       document.getElementById('selectFiltroRaio').style.display = aba === 'trocas' ? 'inline-block' : 'none';
       
       document.getElementById('inputBusca').value = '';
@@ -505,14 +493,12 @@ Aqui está o seu arquivo index.html atualizado. Fiz a alteração cirúrgica na 
         renderizarMarketplace(filtrados);
       } else {
         let filtrados = matchesTrocasGlobal.filter(match => {
-          // Filtro por raio em Km
           let matchRaio = true;
           if (raioFiltro !== 'todos') {
             const limiteKm = parseFloat(raioFiltro);
             if (match.distanciaKm === null || match.distanciaKm > limiteKm) matchRaio = false;
           }
 
-          // Filtro por termo de busca ou álbum nos itens do match
           let matchTermoEAlbum = match.itens.some(i => {
             const fig = i.figurinhas || {};
             const nomeFig = String(fig.nome || '').toLowerCase();
