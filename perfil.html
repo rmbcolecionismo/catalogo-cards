@@ -276,47 +276,47 @@
     }
   }
 
-  // Função robusta para extrair cidade/município e coordenadas via código postal
+  // Função customizada para garantir formato estruturado Cidade - País
   async function buscarDadosPorCodigoPostal(codigoPostal) {
     try {
       const limpo = codigoPostal.replace(/\D/g, '');
       
-      // Se tiver 8 dígitos, tenta buscar como CEP do Brasil (ViaCEP)
+      // Validação/Busca Brasil (CEP com 8 dígitos)
       if (limpo.length === 8) {
-        try {
-          const respostaCep = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
-          const dadosCep = await respostaCep.json();
-          if (!dadosCep.erro && dadosCep.localidade) {
-            const municipio = dadosCep.localidade;
-            const coords = await buscarCoordenadasPorEndereco(municipio);
-            return {
-              cidade: municipio,
-              lat: coords ? coords.lat : null,
-              lon: coords ? coords.lon : null
-            };
-          }
-        } catch (e) {
-          console.warn("Falha no ViaCEP, tentando geocodificação geral...");
+        const respostaCep = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+        const dadosCep = await respostaCep.json();
+        if (!dadosCep.erro && dadosCep.localidade) {
+          const municipio = dadosCep.localidade;
+          const coords = await buscarCoordenadasPorEndereco(municipio);
+          return {
+            cidadeFormatada: `${municipio} - Brasil`,
+            lat: coords ? coords.lat : null,
+            lon: coords ? coords.lon : null
+          };
         }
       }
 
-      // Busca geral para Europa / Portugal / Internacional (Nominatim)
+      // Validação/Busca Europa / Portugal (Ex: 2410-250)
       const resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&format=json&limit=1`, {
-        headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
+        headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
       });
       const dados = await resposta.json();
       
       if (dados && dados.length > 0) {
         const endereco = dados[0].address || {};
-        const localidade = endereco.city || endereco.town || endereco.village || endereco.municipality || dados[0].display_name.split(',')[0];
-        return {
-          cidade: localidade,
-          lat: parseFloat(dados[0].lat),
-          lon: parseFloat(dados[0].lon)
-        };
+        const localidade = endereco.city || endereco.town || endereco.village || endereco.municipality || endereco.county;
+        const pais = endereco.country || 'Portugal';
+        
+        if (localidade && localidade.toLowerCase() !== codigoPostal.toLowerCase()) {
+          return {
+            cidadeFormatada: `${localidade} - ${pais}`,
+            lat: parseFloat(dados[0].lat),
+            lon: parseFloat(dados[0].lon)
+          };
+        }
       }
     } catch (err) {
-      console.error("Erro ao buscar dados pelo código postal:", err);
+      console.error("Erro ao buscar dados postais:", err);
     }
     return null;
   }
@@ -336,25 +336,25 @@
     if (!usuarioLogado) return alert("Você precisa estar logado.");
     
     const codigoPostal = document.getElementById('editCodigoPostal').value.trim();
-    let cidadeAutomatica = usuarioLogado.cidade || '';
+    let cidadeFormatada = usuarioLogado.cidade || '';
     let latitude = usuarioLogado.latitude;
     let longitude = usuarioLogado.longitude;
 
     if (codigoPostal) {
       const infoLocal = await buscarDadosPorCodigoPostal(codigoPostal);
-      if (infoLocal && infoLocal.cidade) {
-        cidadeAutomatica = infoLocal.cidade;
+      if (infoLocal && infoLocal.cidadeFormatada) {
+        cidadeFormatada = infoLocal.cidadeFormatada;
         if (infoLocal.lat) latitude = infoLocal.lat;
         if (infoLocal.lon) longitude = infoLocal.lon;
       } else {
-        alert("Não foi possível identificar automaticamente a cidade para este código postal/CEP. Verifique o valor digitado.");
+        alert("Não foi possível encontrar a localidade para este código postal. Certifique-se de usar o formato correto (ex: 2410-250 para Portugal ou 01001-000 para o Brasil).");
         return;
       }
     }
 
     const updates = {
       nome: document.getElementById('editNome').value,
-      cidade: cidadeAutomatica,
+      cidade: cidadeFormatada,
       codigo_postal: codigoPostal,
       latitude: latitude,
       longitude: longitude,
@@ -478,7 +478,7 @@
     const novoEstoque = document.getElementById('modalEstoque').value;
     const novaQualidade = document.getElementById('modalQualidade').value;
     if (!ofertaId) return alert("Erro: ID da oferta vazio!");
-    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId);
+    const { error } = await _supabase.postgrest ? await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId) : await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId);
     if (error) alert("Erro ao atualizar: " + error.message);
     else location.reload();
   }
