@@ -30,11 +30,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; transition: 0.3s; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1350px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    /* TOPO AJUSTADO PARA COMPUTADOR E TELEMÓVEIS */
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1350px; margin: 0 auto 20px; gap: 15px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
+    /* Contentor direito ajustado para manter idioma e tema na mesma linha */
+    .top-actions-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
 
@@ -93,10 +97,10 @@
     .language-selector-flags {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       background: var(--bg);
       border: 1px solid var(--border-color);
-      padding: 3px 6px;
+      padding: 2px 4px;
       border-radius: 8px;
     }
     .flag-option {
@@ -112,6 +116,14 @@
     }
     .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
+
+    /* Ajustes específicos para telemóveis pequenos no topo */
+    @media (max-width: 600px) {
+      .top-nav { padding: 10px; }
+      .nav-links a { font-size: 0.75rem; }
+      .language-selector-flags { gap: 2px; padding: 2px; }
+      .flag-option img { width: 16px !important; height: 12px !important; }
+    }
   </style>
 </head>
 <body>
@@ -126,7 +138,9 @@
     <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
     <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
   </div>
-  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+  
+  <!-- Contentor unificado para o idioma e tema (mantém na mesma linha) -->
+  <div class="top-actions-wrapper">
     <div class="language-selector-flags">
       <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
         <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
@@ -147,7 +161,7 @@
         <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
       </button>
     </div>
-    <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem; margin-top:0;">☀️ / 🌙</button>
+    <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem; margin-top:0; width: auto; white-space: nowrap;">☀️ / 🌙</button>
   </div>
 </div>
 
@@ -191,7 +205,7 @@
       <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()" data-i18n="btn_leave_review">Deixar Avaliação</button>
     </div>
 
-    <!-- Menu lateral simplificado (removidos Início, Gerenciar Vitrine e botões abaixo, pois estão no topo) -->
+    <!-- Menu lateral simplificado -->
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid var(--border-color); padding-top:20px;">
       <div class="cardeneta-cta">
         <p data-i18n="cta_organize">✨ Quer organizar sua coleção?</p>
@@ -599,7 +613,6 @@
       return;
     }
     if (isAdminOrMaster) {
-      document.getElementById('adminLinks').style.display = 'inline-block';
       document.getElementById('linkAdmin').style.display = 'inline-block';
       document.getElementById('linkEstoque').style.display = 'inline-block';
     }
@@ -610,7 +623,6 @@
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Localidade não informada'}</strong></p>`;
 
-    // Verifica se telefone_whats e codigo_postal estão vazios para exibir o alerta
     const alertaWarning = document.getElementById('profileWarningAlert');
     if (!perfil.telefone_whats || !perfil.codigo_postal) {
       alertaWarning.style.display = 'block';
