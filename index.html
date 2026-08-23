@@ -87,6 +87,7 @@
     .btn-acao:hover { opacity: 0.9; }
     .btn-troca { background: #38bdf8; color: #0f172a; }
     .btn-perfil { background: var(--gold); color: #0f172a; }
+    .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
     .language-selector-flags {
       display: flex;
@@ -284,11 +285,15 @@
     </div>
   </div>
 
+  <!-- MODAL DE PROPOSTA DE TROCA OTIMIZADO -->
   <div id="modalProposta" class="modal-overlay">
-    <div class="modal-box" style="max-width: 480px;">
+    <div class="modal-box" style="max-width: 520px;">
       <h3 data-i18n="modal_prop_titulo">🔄 Enviar Proposta de Troca</h3>
-      <p id="modalPropostaSubtitulo">Ajuste os itens da proposta antes de enviar:</p>
-      <div id="modalPropostaConteudo" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);"></div>
+      <p id="modalPropostaSubtitulo">Ajuste os itens da proposta por álbum antes de enviar:</p>
+      
+      <!-- Container dinâmico com figurinhas separadas por álbum e botão para eliminar -->
+      <div id="modalPropostaConteudo" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color);"></div>
+      
       <div style="display: flex; gap: 8px;">
         <button class="btn-gold" id="btnConfirmarProposta" style="flex: 1; justify-content: center;" onclick="enviarPropostaTroca()" data-i18n="btn_enviar_prop">🚀 Enviar Proposta</button>
         <button class="btn-outline" onclick="fecharModalProposta()" style="flex: 1; justify-content: center;" data-i18n="btn_cancelar">Cancelar</button>
@@ -335,17 +340,11 @@
     let usuarioLogadoGlobal = null;
     let perfilLogadoGlobal = null;
     let itensMarketplaceGlobal = [];
-    let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
     let albunsGlobaisMap = new Map();
-    let propostasPendentesMap = new Set();
     let abaAtual = 'market';
     let destinatarioAtualId = null;
-    let itensPropostaAtual = [];
-    let tipoAbaPropostaModal = 'recebidas';
-    let propostaChatAtualId = null;
-    let chatIntervalo = null;
-    let matchesCacheMap = new Map();
+    let itensPropostaAtual = []; // Lista temporária de itens da proposta de troca atual
 
     let idiomaAtual = 'pt-PT';
     let moedaAtual = 'EUR';
@@ -767,6 +766,7 @@
       grid.innerHTML = html;
     }
 
+    // --- MERCADO DE TROCAS OTIMIZADO ---
     async function renderizarTrocas() {
       const grid = document.getElementById('trocasGrid');
       
@@ -778,109 +778,113 @@
       grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
       try {
-        const raioFiltro = document.getElementById('selectFiltroRaio').value;
+        const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
+          _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
+          _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
+        ]);
 
-        // 1. Pega o perfil do usuário logado para saber a localização
-        const { data: meuPerfil } = await _supabase
-          .from('usuarios_cadastrados')
-          .select('latitude, longitude, nome')
-          .eq('id', usuarioLogadoGlobal.id)
-          .single();
-
-        // 2. Busca o que o usuário logado possui na cardeneta
-        const { data: minhaCardeneta } = await _supabase
-          .from('usuario_cardeneta')
-          .select('figurinha_id, quantidade')
-          .eq('user_id', usuarioLogadoGlobal.id);
-
-        const idsPossuidosSet = new Set((minhaCardeneta || []).map(item => item.figurinha_id));
-
-        // 3. Busca TODAS as figurinhas cadastradas no sistema geral com dados do álbum[cite: 4]
-        const { data: todasFigurinhas } = await _supabase
-          .from('figurinhas')
-          .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
-
-        if (!todasFigurinhas || todasFigurinhas.length === 0) {
-          grid.innerHTML = `<div class="empty-state">Não há figurinhas cadastradas no sistema geral.</div>`;
+        if (!repetidasUser || !faltantesUser) {
+          grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
           return;
         }
 
-        // Descobre as FALTANTES do usuário logado (tudo na tabela geral que NÃO está na cardeneta dele)[cite: 4]
-        const minhasFaltantesSet = new Set(
-          todasFigurinhas.filter(f => !idsPossuidosSet.has(f.id)).map(f => f.id)
-        );
+        const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+        const minhasRepetidasIds = new Set(repetidasUser.map(r => r.figurinha_id));
 
-        // 4. Busca a cardeneta de TODOS os outros usuários
-        const { data: cardenetaOutros } = await _supabase
+        const { data: outrosUsuariosFiguritas } = await _supabase
           .from('usuario_cardeneta')
-          .select('user_id, figurinha_id, quantidade')
+          .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
           .neq('user_id', usuarioLogadoGlobal.id);
 
-        if (!cardenetaOutros || cardenetaOutros.length === 0) {
+        if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
           grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
           return;
         }
 
-        // Mapeia o que cada usuário possui
-        const usuariosPossesMap = {};
-        cardenetaOutros.forEach(item => {
-          if (!usuariosPossesMap[item.user_id]) {
-            usuariosPossesMap[item.user_id] = {
-              possuidos: new Set()
-            };
-          }
-          usuariosPossesMap[item.user_id].possuidos.add(item.figurinha_id);
-        });
+        const meuPerfil = perfilLogadoGlobal || {};
+        const raioFiltro = document.getElementById('selectFiltroRaio').value;
+        const busca = document.getElementById('inputBusca').value.toLowerCase();
+        const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
 
-        // 5. Cruzamento de Matches (O outro tem o que eu preciso)
+        // Agrupar matches por usuário parceiro
         const matchesPorUsuario = {};
 
-        for (const [outroId, dados] of Object.entries(usuariosPossesMap)) {
-          const ofereceParaMimIds = [...dados.possuidos].filter(figId => minhasFaltantesSet.has(figId));
-
-          if (ofereceParaMimIds.length > 0) {
-            const ofereceParaMimObjs = todasFigurinhas.filter(f => ofereceParaMimIds.includes(f.id));
-
+        outrosUsuariosFiguritas.forEach(item => {
+          if (!item.figurinha) return;
+          const outroId = item.user_id;
+          
+          if (!matchesPorUsuario[outroId]) {
             matchesPorUsuario[outroId] = {
               usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
-              ofereceParaMim: ofereceParaMimObjs
+              ofereceParaMim: [] // O que ele tem de repetida que eu preciso (faltante)
             };
           }
-        }
+
+          // Se o outro tem repetida e eu marco como faltante
+          if (item.status === 'repetida' && minhasFaltantesIds.has(item.figurinha_id)) {
+            matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
+          }
+        });
 
         let html = '';
         let contadorMatches = 0;
 
         for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
+          if (matchData.ofereceParaMim.length === 0) continue;
+
+          // Filtro por Álbum nas figurinhas oferecidas
+          let figurinhasFiltradas = matchData.ofereceParaMim.filter(f => {
+            const albumMatch = (filtroAlbum === 'todos' || String(f.album_id) === String(filtroAlbum));
+            const buscaMatch = f.nome.toLowerCase().includes(busca);
+            return albumMatch && buscaMatch;
+          });
+
+          if (figurinhasFiltradas.length === 0 && (filtroAlbum !== 'todos' || busca !== '')) continue;
+          if (figurinhasFiltradas.length === 0) figurinhasFiltradas = matchData.ofereceParaMim; // fallback se filtros vazios
+
           let distanciaKm = null;
-          if (meuPerfil?.latitude && meuPerfil?.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+          if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
             distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
             if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
               continue;
             }
           }
 
+          // Otimização do CARD: Agrupar quantidade de figurinhas por Álbum (Sem exibir o código numérico no card)
+          const contagemPorAlbum = {};
+          figurinhasFiltradas.forEach(f => {
+            const nomeAlbum = f.albuns?.nome || 'Álbum Geral';
+            contagemPorAlbum[nomeAlbum] = (contagemPorAlbum[nomeAlbum] || 0) + 1;
+          });
+
+          let albunsResumoHtml = '';
+          for (const [nomeAlbum, qtd] of Object.entries(contagemPorAlbum)) {
+            albunsResumoHtml += `<div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 4px; color: var(--text-main);">
+              <span>📖 ${nomeAlbum}</span>
+              <strong style="color: var(--gold);">${qtd} ${qtd === 1 ? 'figurinha' : 'figurinhas'}</strong>
+            </div>`;
+          }
+
           contadorMatches++;
           const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
-          const whatsAppNum = matchData.usuario.telefone_whats;
-          const botaoContato = whatsAppNum 
-            ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
-            : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
+          
+          // Serializar os itens para passar para a função do modal de proposta de troca
+          const itensJson = encodeURIComponent(JSON.stringify(matchData.ofereceParaMim));
 
           html += `
             <div class="market-card" style="grid-column: span 1;">
               <div class="market-info" style="padding: 15px;">
-                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
+                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca Disponível</span>
                 <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
                 <span class="market-vendedor">${distTexto}</span>
                 <hr style="border-color: var(--border-color); margin: 8px 0;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;" title="${f.nome}">#${f.numero}</span>`).join('')}
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Resumo por Álbum:</span>
+                <div style="margin-top: 4px; background: var(--bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  ${albunsResumoHtml}
                 </div>
               </div>
               <div class="market-footer">
-                ${botaoContato}
+                <button class="btn-acao btn-troca" onclick='abrirModalPropostaTroca("${outroId}", decodeURIComponent("${itensJson}"))'>🔄 Enviar Proposta</button>
               </div>
             </div>
           `;
@@ -895,6 +899,89 @@
       } catch (err) {
         console.error("Erro ao carregar matches de troca:", err);
         grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
+      }
+    }
+
+    // --- FUNÇÕES DA JANELA / MODAL DE PROPOSTA DE TROCA ---
+    function abrirModalPropostaTroca(destinatarioId, itensStr) {
+      destinatarioAtualId = destinatarioId;
+      try {
+        itensPropostaAtual = JSON.parse(itensStr);
+      } catch(e) {
+        itensPropostaAtual = [];
+      }
+      
+      renderizarConteudoModalProposta();
+      document.getElementById('modalProposta').style.display = 'flex';
+    }
+
+    function renderizarConteudoModalProposta() {
+      const container = document.getElementById('modalPropostaConteudo');
+      
+      if (!itensPropostaAtual || itensPropostaAtual.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding: 10px;">Nenhum item restante na proposta.</div>`;
+        return;
+      }
+
+      // Separar as figurinhas por álbum dentro do modal
+      const porAlbum = {};
+      itensPropostaAtual.forEach((item, index) => {
+        const nomeAlbum = item.albuns?.nome || 'Álbum Geral';
+        if (!porAlbum[nomeAlbum]) porAlbum[nomeAlbum] = [];
+        porAlbum[nomeAlbum].push({ ...item, indexOriginal: index });
+      });
+
+      let html = '';
+      for (const [nomeAlbum, itens] of Object.entries(porAlbum)) {
+        html += `<div style="margin-bottom: 10px; font-weight: 700; color: var(--gold); border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">📖 ${nomeAlbum}</div>`;
+        itens.forEach(fig => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid var(--border-color);">
+              <span>#${fig.numero} - ${fig.nome}</span>
+              <button onclick="removerItemProposta(${fig.indexOriginal})" style="background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">Eliminar</button>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    function removerItemProposta(indexOriginal) {
+      itensPropostaAtual.splice(indexOriginal, 1);
+      renderizarConteudoModalProposta();
+    }
+
+    async function enviarPropostaTroca() {
+      if (!usuarioLogadoGlobal || !destinatarioAtualId) return;
+      if (!itensPropostaAtual || itensPropostaAtual.length === 0) {
+        alert('A proposta precisa conter ao menos uma figurinha.');
+        return;
+      }
+
+      const btn = document.getElementById('btnConfirmarProposta');
+      btn.innerText = "Enviando...";
+      btn.disabled = true;
+
+      try {
+        const { error } = await _supabase.from('propostas_troca').insert([
+          {
+            remetente_id: usuarioLogadoGlobal.id,
+            destinatario_id: destinatarioAtualId,
+            status: 'pendente',
+            itens: itensPropostaAtual
+          }
+        ]);
+
+        if (error) throw error;
+
+        alert('Proposta de troca enviada com sucesso!');
+        fecharModalProposta();
+      } catch (err) {
+        console.error("Erro ao enviar proposta:", err);
+        alert('Erro ao enviar proposta de troca.');
+      } finally {
+        btn.innerText = "🚀 Enviar Proposta";
+        btn.disabled = false;
       }
     }
 
@@ -945,7 +1032,6 @@
     }
     function fecharModalChat() {
       document.getElementById('modalChatInterno').style.display = 'none';
-      if (chatIntervalo) clearInterval(chatIntervalo);
     }
     function verPerfilVendedor(userId) {
       alert('Redirecionando para o perfil do colecionador: ' + userId);
