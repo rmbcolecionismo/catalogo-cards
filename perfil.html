@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Perfil e Vitrine</title>
+  <title data-i18n="title">Perfil e Vitrine</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -14,6 +14,10 @@
     .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1350px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
     .nav-links { display: flex; align-items: center; gap: 15px; }
     .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    
+    /* Controles de Idioma e Moeda no Topo */
+    .nav-controls { display: flex; gap: 10px; align-items: center; }
+    .select-control { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; outline: none; }
 
     .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 320px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); height: fit-content; }
@@ -69,9 +73,26 @@
 
 <div class="top-nav">
   <div class="nav-links">
-    <a href="index.html">🏠 Início</a>
-    <a href="cardeneta.html">📖 Minhas Cardenetas</a>
-    <a href="vitrine.html">📦 Minha Vitrine</a>
+    <a href="index.html" data-i18n="nav_home">🏠 Início</a>
+    <a href="cardeneta.html" data-i18n="nav_cardenetas">📖 Minhas Cardenetas</a>
+    <a href="vitrine.html" data-i18n="nav_vitrine">📦 Minha Vitrine</a>
+  </div>
+  <div class="nav-controls">
+    <!-- Seletor de Moeda -->
+    <select id="selectMoeda" class="select-control" onchange="mudarMoeda(this.value)">
+      <option value="EUR">💶 EUR (€)</option>
+      <option value="BRL">🇧🇷 BRL (R$)</option>
+      <option value="USD">💵 USD ($)</option>
+      <option value="GBP">🇬🇧 GBP (£)</option>
+    </select>
+    <!-- Seletor de Idioma -->
+    <select id="selectIdioma" class="select-control" onchange="mudarIdioma(this.value)">
+      <option value="pt">PT</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+      <option value="it">IT</option>
+      <option value="en">EN</option>
+    </select>
   </div>
 </div>
 
@@ -80,120 +101,118 @@
     <div style="text-align:center">
       <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="avatar-img">
       <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
-      <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()">Trocar Foto</button>
+      <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInputइसलिए').click()" data-i18n="btn_change_photo">Trocar Foto</button>
     </div>
 
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
       <div id="profileDetails" style="font-size: 0.9rem; color: #cbd5e1; margin: 15px 0;"></div>
       <div id="mediaEstrelas" style="margin-bottom: 10px;"></div>
-      <a id="linkWhatsApp" href="#" target="_blank" style="display:none; color: var(--gold); font-size: 0.9rem; text-decoration: none; font-weight: 600; display:block; margin-bottom:10px;">💬 Falar no WhatsApp</a>
-      <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()">Editar Perfil</button>
+      <!-- WhatsApp removido conforme solicitado -->
+      <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()" data-i18n="btn_edit_profile">Editar Perfil</button>
     </div>
 
     <div id="editMode" style="display:none; margin-top:20px;">
-      <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
+      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_name">Nome:</label>
       <input type="text" id="editNome" class="edit-field">
       
-      <label style="font-size: 0.75rem; color: var(--gold);">📍 Código Postal / CEP:</label>
+      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_postal">📍 Código Postal / CEP:</label>
       <input type="text" id="editCodigoPostal" class="edit-field" placeholder="Ex: 2400-123 ou 01001-000">
-
-      <label style="font-size: 0.75rem; color: var(--gold);">WhatsApp (apenas números):</label>
-      <input type="text" id="editWhatsApp" class="edit-field" placeholder="Ex: 5511999999999">
       
-      <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
-      <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;">Cancelar</button>
+      <button class="btn-gold" onclick="salvarPerfil()" data-i18n="btn_save">Salvar Alterações</button>
+      <button onclick="toggleEdit()" style="background:transparent; border:1px solid white; color: white;" data-i18n="btn_cancel">Cancelar</button>
     </div>
 
     <div class="reviews-section">
-      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);">⭐ Avaliações do Vendedor</h4>
+      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);" data-i18n="reviews_title">⭐ Avaliações do Vendedor</h4>
       <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">Carregando avaliações...</div>
-      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()">Deixar Avaliação</button>
+      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()" data-i18n="btn_leave_review">Deixar Avaliação</button>
     </div>
 
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
       
       <div class="cardeneta-cta">
-        <p>✨ Quer organizar sua coleção?</p>
+        <p data-i18n="cta_organize">✨ Quer organizar sua coleção?</p>
         <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
-          <button style="background: white; color: #0f172a; border: none; font-weight: 800;">Acessar Minha Cardeneta Agora</button>
+          <button style="background: white; color: #0f172a; border: none; font-weight: 800;" data-i18n="cta_button">Acessar Minha Cardeneta Agora</button>
         </a>
       </div>
 
-      <a href="index.html" style="text-decoration:none;"><button style="background:#334155; color:white">🏠 Home</button></a>
+      <a href="index.html" style="text-decoration:none;"><button style="background:#334155; color:white" data-i18n="nav_home">🏠 Home</button></a>
       
       <div id="loggedMenu" style="display:none;">
-        <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold">📦 Gerenciar Vitrine</button></a>
+        <a href="vitrine.html" style="text-decoration:none;"><button class="btn-gold" data-i18n="nav_manage_showcase">📦 Gerenciar Vitrine</button></a>
         <div id="adminLinks" style="display:none;">
-          <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white">⚙️ Painel Admin</button></a>
-          <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white">📊 Ver Estoque</button></a>
+          <a href="admin.html" style="text-decoration:none;"><button style="background:#334155; color:white" data-i18n="nav_admin">⚙️ Painel Admin</button></a>
+          <a href="estoque.html" style="text-decoration:none;"><button style="background:#334155; color:white" data-i18n="nav_stock">📊 Ver Estoque</button></a>
         </div>
-        <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
+        <button class="btn-logout" onclick="fazerLogout()" data-i18n="btn_logout">Sair do Sistema</button>
       </div>
       <div id="unloggedMenu" style="display:none; margin-top: 10px;">
-        <a href="login.html" style="text-decoration:none;"><button class="btn-gold">Entrar / Fazer Login</button></a>
+        <a href="login.html" style="text-decoration:none;"><button class="btn-gold" data-i18n="btn_login">Entrar / Fazer Login</button></a>
       </div>
     </div>
   </div>
 
   <div class="vitrine-content">
-    <h2>🛍️ Vitrine do Vendedor</h2>
+    <h2 data-i18n="showcase_title">🛍️ Vitrine do Vendedor</h2>
     
     <div class="vitrine-filters">
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
-        <option value="">Filtrar por Álbum (Todos)</option>
+        <option value="" data-i18n="filter_all_albums">Filtrar por Álbum (Todos)</option>
       </select>
-      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código (ex: 15 ou #15)" oninput="aplicarFiltros()">
+      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código..." oninput="aplicarFiltros()" data-i18n-placeholder="search_placeholder">
     </div>
 
-    <div class="marketplace-alert">
+    <div class="marketplace-alert" data-i18n="marketplace_alert">
       ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.
     </div>
 
     <div class="cards-grid" id="vitrineGrid">Carregando vitrine...</div>
     <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
-      <button class="btn-gold" style="width: 200px;" onclick="carregarMais()">Carregar Mais</button>
+      <button class="btn-gold" style="width: 200px;" onclick="carregarMais()" data-i18n="btn_load_more">Carregar Mais</button>
     </div>
   </div>
 </div>
 
+<!-- Modais (Mantidos e adaptados) -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
-    <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
+    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_edit_title">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
-    <label style="font-size: 0.75rem; color: #94a3b8;">Preço (€):</label>
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_price">Preço:</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
-    <label style="font-size: 0.75rem; color: #94a3b8;">Estoque:</label>
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_stock">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
-    <label style="font-size: 0.75rem; color: #94a3b8;">Nota de Qualidade / Estado:</label>
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_quality">Nota de Qualidade / Estado:</label>
     <select id="modalQualidade" class="edit-field">
       <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
       <option value="Ótimo estado">👍 Ótimo estado</option>
       <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
       <option value="Com marcas de uso">📌 Com marcas de uso</option>
     </select>
-    <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
-    <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
+    <button class="btn-gold" onclick="salvarEdicaoOferta()" data-i18n="btn_save">Salvar</button>
+    <button onclick="fecharModal()" style="background:transparent; border:1px solid white; color:white;" data-i18n="btn_cancel">Cancelar</button>
   </div>
 </div>
 
 <div class="modal-overlay" id="modalAvaliar">
   <div class="modal-box">
-    <h3 style="margin-bottom: 15px; color: var(--gold);">⭐ Avaliar Vendedor</h3>
-    <label style="font-size: 0.75rem; color: #94a3b8;">Seu Nome:</label>
-    <input type="text" id="avaliacaoNome" class="edit-field" placeholder="Como te chamam?">
-    <label style="font-size: 0.75rem; color: #94a3b8;">Nota (Estrelas):</label>
+    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_review_title">⭐ Avaliar Vendedor</h3>
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_your_name">Seu Nome:</label>
+    <input type="text" id="avaliacaoNome" class="edit-field">
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_stars">Nota (Estrelas):</label>
     <select id="avaliacaoEstrelas" class="edit-field">
-      <option value="5">⭐⭐⭐⭐⭐ (5/5 - Excelente)</option>
-      <option value="4">⭐⭐⭐⭐ (4/5 - Muito Bom)</option>
-      <option value="3">⭐⭐⭐ (3/5 - Regular)</option>
-      <option value="2">⭐⭐ (2/5 - Ruim)</option>
-      <option value="1">⭐ (1/5 - Péssimo)</option>
+      <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+      <option value="4">⭐⭐⭐⭐ (4/5)</option>
+      <option value="3">⭐⭐⭐ (3/5)</option>
+      <option value="2">⭐⭐ (2/5)</option>
+      <option value="1">⭐ (1/5)</option>
     </select>
-    <label style="font-size: 0.75rem; color: #94a3b8;">Comentário:</label>
-    <textarea id="avaliacaoComentario" class="edit-field" rows="3" placeholder="Escreva sobre sua experiência com o vendedor..."></textarea>
-    <button class="btn-gold" onclick="enviarAvaliacao()">Enviar Avaliação</button>
-    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid white; color:white;">Cancelar</button>
+    <label style="font-size: 0.75rem; color: #94a3b8;" data-i18n="label_comment">Comentário:</label>
+    <textarea id="avaliacaoComentario" class="edit-field" rows="3"></textarea>
+    <button class="btn-gold" onclick="enviarAvaliacao()" data-i18n="btn_send">Enviar Avaliação</button>
+    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid white; color:white;" data-i18n="btn_cancel">Cancelar</button>
   </div>
 </div>
 
@@ -212,7 +231,223 @@
   let albunsMapGlobal = {};
   let limiteExibicao = 30;
 
+  // --- DICIONÁRIO DE TRADUÇÃO (Idiomas) ---
+  const traducoes = {
+    pt: {
+      title: "Perfil e Vitrine",
+      nav_home: "🏠 Início",
+      nav_cardenetas: "📖 Minhas Cardenetas",
+      nav_vitrine: "📦 Minha Vitrine",
+      btn_change_photo: "Trocar Foto",
+      btn_edit_profile: "Editar Perfil",
+      label_name: "Nome:",
+      label_postal: "📍 Código Postal / CEP:",
+      btn_save: "Salvar Alterações",
+      btn_cancel: "Cancelar",
+      reviews_title: "⭐ Avaliações do Vendedor",
+      btn_leave_review: "Deixar Avaliação",
+      cta_organize: "✨ Quer organizar sua coleção?",
+      cta_button: "Acessar Minha Cardeneta Agora",
+      nav_manage_showcase: "📦 Gerenciar Vitrine",
+      nav_admin: "⚙️ Painel Admin",
+      nav_stock: "📊 Ver Estoque",
+      btn_logout: "Sair do Sistema",
+      btn_login: "Entrar / Fazer Login",
+      showcase_title: "🛍️ Vitrine do Vendedor",
+      filter_all_albums: "Filtrar por Álbum (Todos)",
+      search_placeholder: "Buscar por Nome ou Código...",
+      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.",
+      btn_load_more: "Carregar Mais",
+      modal_edit_title: "✏️ Editar Oferta",
+      label_price: "Preço:",
+      label_stock: "Estoque:",
+      label_quality: "Nota de Qualidade / Estado:",
+      modal_review_title: "⭐ Avaliar Vendedor",
+      label_your_name: "Seu Nome:",
+      label_stars: "Nota (Estrelas):",
+      label_comment: "Comentário:",
+      btn_send: "Enviar Avaliação"
+    },
+    es: {
+      title: "Perfil y Vitrina",
+      nav_home: "🏠 Inicio",
+      nav_cardenetas: "📖 Mis Álbumes",
+      nav_vitrine: "📦 Mi Vitrina",
+      btn_change_photo: "Cambiar Foto",
+      btn_edit_profile: "Editar Perfil",
+      label_name: "Nombre:",
+      label_postal: "📍 Código Postal:",
+      btn_save: "Guardar Cambios",
+      btn_cancel: "Cancelar",
+      reviews_title: "⭐ Opiniones del Vendedor",
+      btn_leave_review: "Dejar Opinión",
+      cta_organize: "✨ ¿Quieres organizar tu colección?",
+      cta_button: "Acceder a mi Álbum Ahora",
+      nav_manage_showcase: "📦 Gestionar Vitrina",
+      nav_admin: "⚙️ Panel Admin",
+      nav_stock: "📊 Ver Stock",
+      btn_logout: "Cerrar Sesión",
+      btn_login: "Entrar / Iniciar Sesión",
+      showcase_title: "🛍️ Vitrina del Vendedor",
+      filter_all_albums: "Filtrar por Álbum (Todos)",
+      search_placeholder: "Buscar por Nombre o Código...",
+      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma actúa exclusivamente como escaparate de anuncios. Los artículos negociados son responsabilidad exclusiva de los usuarios.",
+      btn_load_more: "Cargar Más",
+      modal_edit_title: "✏️ Editar Oferta",
+      label_price: "Precio:",
+      label_stock: "Stock:",
+      label_quality: "Nota de Calidad / Estado:",
+      modal_review_title: "⭐ Calificar Vendedor",
+      label_your_name: "Tu Nombre:",
+      label_stars: "Calificación (Estrellas):",
+      label_comment: "Comentario:",
+      btn_send: "Enviar Opinión"
+    },
+    fr: {
+      title: "Profil et Vitrine",
+      nav_home: "🏠 Accueil",
+      nav_cardenetas: "📖 Mes Albums",
+      nav_vitrine: "📦 Ma Vitrine",
+      btn_change_photo: "Changer la Photo",
+      btn_edit_profile: "Modifier le Profil",
+      label_name: "Nom:",
+      label_postal: "📍 Code Postal:",
+      btn_save: "Enregistrer",
+      btn_cancel: "Annuler",
+      reviews_title: "⭐ Évaluations du Vendeur",
+      btn_leave_review: "Laisser un Avis",
+      cta_organize: "✨ Envie d'organiser votre collection?",
+      cta_button: "Accéder à mon Album Maintenant",
+      nav_manage_showcase: "📦 Gérer la Vitrine",
+      nav_admin: "⚙️ Panneau Admin",
+      nav_stock: "📊 Voir le Stock",
+      btn_logout: "Se Déconnecter",
+      btn_login: "Se Connecter",
+      showcase_title: "🛍️ Vitrine du Vendeur",
+      filter_all_albums: "Filtrer par Album (Tous)",
+      search_placeholder: "Rechercher par Nom ou Code...",
+      marketplace_alert: "⚠️ <strong>Avis Important:</strong> Cette plateforme sert exclusivement de vitrine d'annonces. Les articles négociés relèvent de la seule responsabilité des utilisateurs.",
+      btn_load_more: "Charger Plus",
+      modal_edit_title: "✏️ Modifier l'Offre",
+      label_price: "Prix:",
+      label_stock: "Stock:",
+      label_quality: "Qualité / État:",
+      modal_review_title: "⭐ Évaluer le Vendeur",
+      label_your_name: "Votre Nom:",
+      label_stars: "Note (Étoiles):",
+      label_comment: "Commentaire:",
+      btn_send: "Envoyer l'Avis"
+    },
+    it: {
+      title: "Profilo e Vetrina",
+      nav_home: "🏠 Inizio",
+      nav_cardenetas: "📖 I Miei Album",
+      nav_vitrine: "📦 La Mia Vetrina",
+      btn_change_photo: "Cambia Foto",
+      btn_edit_profile: "Modifica Profilo",
+      label_name: "Nome:",
+      label_postal: "📍 Codice Postale:",
+      btn_save: "Salva Modifiche",
+      btn_cancel: "Annulla",
+      reviews_title: "⭐ Recensioni del Venditore",
+      btn_leave_review: "Lascia una Recensione",
+      cta_organize: "✨ Vuoi organizzare la tua collezione?",
+      cta_button: "Accedi al mio Album Ora",
+      nav_manage_showcase: "📦 Gestisci Vetrina",
+      nav_admin: "⚙️ Pannello Admin",
+      nav_stock: "📊 Visualizza Magazzino",
+      btn_logout: "Esci dal Sistema",
+      btn_login: "Accedi / Login",
+      showcase_title: "🛍️ Vetrina del Venditore",
+      filter_all_albums: "Filtra per Album (Tutti)",
+      search_placeholder: "Cerca per Nome o Codice...",
+      marketplace_alert: "⚠️ <strong>Avviso Importante:</strong> Questa piattaforma funge esclusivamente da vetrina per annunci. Gli articoli negoziati sono di esclusiva responsabilità degli utenti.",
+      btn_load_more: "Carica Altri",
+      modal_edit_title: "✏️ Modifica Offerta",
+      label_price: "Prezzo:",
+      label_stock: "Magazzino:",
+      label_quality: "Qualità / Condizione:",
+      modal_review_title: "⭐ Valuta Venditore",
+      label_your_name: "Il tuo Nome:",
+      label_stars: "Valutazione (Stelle):",
+      label_comment: "Commento:",
+      btn_send: "Invia Recensione"
+    },
+    en: {
+      title: "Profile & Showcase",
+      nav_home: "🏠 Home",
+      nav_cardenetas: "📖 My Collections",
+      nav_vitrine: "📦 My Showcase",
+      btn_change_photo: "Change Photo",
+      btn_edit_profile: "Edit Profile",
+      label_name: "Name:",
+      label_postal: "📍 Postal Code / ZIP:",
+      btn_save: "Save Changes",
+      btn_cancel: "Cancel",
+      reviews_title: "⭐ Seller Reviews",
+      btn_leave_review: "Leave a Review",
+      cta_organize: "✨ Want to organize your collection?",
+      cta_button: "Access My Collection Now",
+      nav_manage_showcase: "📦 Manage Showcase",
+      nav_admin: "⚙️ Admin Panel",
+      nav_stock: "📊 View Stock",
+      btn_logout: "Log Out",
+      btn_login: "Log In",
+      showcase_title: "🛍️ Seller Showcase",
+      filter_all_albums: "Filter by Album (All)",
+      search_placeholder: "Search by Name or Code...",
+      marketplace_alert: "⚠️ <strong>Important Notice:</strong> This platform acts exclusively as an ad showcase. Negotiated items are the sole responsibility of the users.",
+      btn_load_more: "Load More",
+      modal_edit_title: "✏️ Edit Offer",
+      label_price: "Price:",
+      label_stock: "Stock:",
+      label_quality: "Quality / Condition:",
+      modal_review_title: "⭐ Rate Seller",
+      label_your_name: "Your Name:",
+      label_stars: "Rating (Stars):",
+      label_comment: "Comment:",
+      btn_send: "Send Review"
+    }
+  };
+
+  let idiomaAtual = localStorage.getItem('user_lang') || 'pt';
+  let moedaAtual = localStorage.getItem('user_currency') || 'EUR';
+
+  // Taxas de câmbio aproximadas baseadas em EUR (Modifique conforme necessário ou integre API)
+  const taxasCambio = { EUR: 1.0, BRL: 5.50, USD: 1.08, GBP: 0.85 };
+  const simbolosMoeda = { EUR: '€', BRL: 'R$', USD: '$', GBP: '£' };
+
+  function mudarIdioma(lang) {
+    idiomaAtual = lang;
+    localStorage.setItem('user_lang', lang);
+    aplicarTraducaoInterface();
+  }
+
+  function mudarMoeda(moeda) {
+    moedaAtual = moeda;
+    localStorage.setItem('user_currency', moeda);
+    if (todasOfertas.length > 0) renderizarGridFiltrado();
+  }
+
+  function aplicarTraducaoInterface() {
+    document.getElementById('selectIdioma').value = idiomaAtual;
+    document.getElementById('selectMoeda').value = moedaAtual;
+    const t = traducoes[idiomaAtual] || traducoes['pt'];
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const chave = el.getAttribute('data-i18n');
+      if (t[chave]) el.innerHTML = t[chave];
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const chave = el.getAttribute('data-i18n-placeholder');
+      if (t[chave]) el.placeholder = t[chave];
+    });
+  }
+
+  // --- LÓGICA DE DADOS E SUPABASE ---
   async function verificarAcesso() {
+    aplicarTraducaoInterface();
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
     const { data: { session } } = await _supabase.auth.getSession();
@@ -255,86 +490,45 @@
   function preencherDadosPerfil(perfil, ehProprio) {
     document.getElementById('userName').innerText = perfil.nome || "Usuário";
     document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-    
     document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Localidade não informada'}</strong></p>`;
 
-    if (perfil.telefone_whats) {
-      const linkWpp = document.getElementById('linkWhatsApp');
-      linkWpp.href = `https://wa.me/${perfil.telefone_whats.replace(/\D/g, '')}`;
-      linkWpp.style.display = 'block';
-    }
     const identificadorCardeneta = perfil.id;
     if (identificadorCardeneta) {
       document.getElementById('linkCardenetaColega').href = `cardeneta.html?id=${identificadorCardeneta}`;
     }
     document.getElementById('editNome').value = perfil.nome || '';
     document.getElementById('editCodigoPostal').value = perfil.codigo_postal || '';
-    document.getElementById('editWhatsApp').value = perfil.telefone_whats || '';
     if (ehProprio || isAdminOrMaster) {
       document.getElementById('btnTrocarFoto').style.display = 'block';
       document.getElementById('btnEditarPerfil').style.display = 'block';
     }
   }
 
-  // Função customizada para garantir formato estruturado Cidade - País
- async function buscarDadosPorCodigoPostal(codigoPostal) {
+  async function buscarDadosPorCodigoPostal(codigoPostal) {
     try {
       const limpo = codigoPostal.replace(/\D/g, '');
-      
-      // 1. Validação/Busca Brasil (CEP com 8 dígitos)
       if (limpo.length === 8) {
         const respostaCep = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
         const dadosCep = await respostaCep.json();
         if (!dadosCep.erro && dadosCep.localidade) {
           const municipio = dadosCep.localidade;
           const coords = await buscarCoordenadasPorEndereco(municipio);
-          return {
-            cidadeFormatada: `${municipio} - Brasil`,
-            lat: coords ? coords.lat : null,
-            lon: coords ? coords.lon : null
-          };
+          return { cidadeFormatada: `${municipio} - Brasil`, lat: coords ? coords.lat : null, lon: coords ? coords.lon : null };
         }
       }
-
-      // 2. Busca para Portugal / Europa
       let resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&country=Portugal&format=json&addressdetails=1&limit=1`, {
         headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
       });
       let dados = await resposta.json();
-
-      if (!dados || dados.length === 0) {
-        resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(codigoPostal + ' Portugal')}&format=json&addressdetails=1&limit=1`, {
-          headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
-        });
-        dados = await resposta.json();
-      }
-      
       if (dados && dados.length > 0) {
         const endereco = dados[0].address || {};
-        
-        // Em Portugal, priorizamos o concelho (county) ou cidade principal (city/town) para evitar ruas isoladas
         let localidade = endereco.city || endereco.town || endereco.municipality || endereco.county;
-        
-        // Ajuste específico caso venha detalhado de forma genérica
-        if (!localidade || localidade.toLowerCase() === codigoPostal.toLowerCase()) {
-          const partes = dados[0].display_name.split(',');
-          // Procura nas partes do endereço uma que se adeque ou pega uma referência limpa
-          localidade = partes.length > 2 ? partes[partes.length - 3].trim() : partes[0].trim();
-        }
-
         const pais = endereco.country || 'Portugal';
-        
         if (localidade) {
-          return {
-            cidadeFormatada: `${localidade} - ${pais}`,
-            lat: parseFloat(dados[0].lat),
-            lon: parseFloat(dados[0].lon)
-          };
+          return { cidadeFormatada: `${localidade} - ${pais}`, lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
         }
       }
-    } catch (err) {
-      console.error("Erro ao buscar dados postais:", err);
-    }
+    } catch (err) {}
     return null;
   }
 
@@ -342,16 +536,13 @@
     try {
       const resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(termo)}&format=json&limit=1`);
       const dados = await resposta.json();
-      if (dados && dados.length > 0) {
-        return { lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
-      }
+      if (dados && dados.length > 0) return { lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
     } catch(e) {}
     return null;
   }
 
   async function salvarPerfil() {
     if (!usuarioLogado) return alert("Você precisa estar logado.");
-    
     const codigoPostal = document.getElementById('editCodigoPostal').value.trim();
     let cidadeFormatada = usuarioLogado.cidade || '';
     let latitude = usuarioLogado.latitude;
@@ -364,7 +555,7 @@
         if (infoLocal.lat) latitude = infoLocal.lat;
         if (infoLocal.lon) longitude = infoLocal.lon;
       } else {
-        alert("Não foi possível encontrar a localidade para este código postal. Certifique-se de usar o formato correto (ex: 2410-250 para Portugal ou 01001-000 para o Brasil).");
+        alert("Localidade não encontrada para o código postal informado.");
         return;
       }
     }
@@ -374,17 +565,12 @@
       cidade: cidadeFormatada,
       codigo_postal: codigoPostal,
       latitude: latitude,
-      longitude: longitude,
-      telefone_whats: document.getElementById('editWhatsApp').value
+      longitude: longitude
     };
 
     const { error } = await _supabase.from('usuarios_cadastrados').update(updates).eq('id', usuarioLogado.id);
-    if (error) {
-      alert("Erro ao atualizar: " + error.message);
-    } else {
-      alert("Perfil atualizado com sucesso!");
-      location.reload();
-    }
+    if (error) alert("Erro: " + error.message);
+    else { alert("Perfil atualizado!"); location.reload(); }
   }
 
   function toggleEdit() {
@@ -443,20 +629,30 @@
       }
       return true;
     });
+
     if (filtradas.length === 0) {
-      grid.innerHTML = "Nenhuma figurinha encontrada com esses filtros.";
+      grid.innerHTML = "Nenhuma figurinha encontrada.";
       document.getElementById('carregarMaisContainer').style.display = 'none';
       return;
     }
+
     const visiveis = filtradas.slice(0, limiteExibicao);
     document.getElementById('carregarMaisContainer').style.display = (filtradas.length > limiteExibicao) ? 'block' : 'none';
+    
+    // Fator de conversão de moeda
+    const taxa = taxasCambio[moedaAtual] || 1.0;
+    const simbolo = simbolosMoeda[moedaAtual] || '€';
+
     grid.innerHTML = visiveis.map(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
       const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
       const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
       const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
       const qualid = item.qualidade || '100% (Nova / Perfeita)';
-      const precoHtml = `<div class="sticker-price">€ ${Number(item.preco).toFixed(2).replace('.', ',')}</div>`;
+      
+      const precoConvertido = (Number(item.preco) * taxa).toFixed(2).replace('.', ',');
+      const precoHtml = `<div class="sticker-price">${simbolo} ${precoConvertido}</div>`;
+      
       return `
         <div class="sticker-card">
           <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
@@ -494,16 +690,16 @@
     const novoPreco = document.getElementById('modalPreco').value;
     const novoEstoque = document.getElementById('modalEstoque').value;
     const novaQualidade = document.getElementById('modalQualidade').value;
-    if (!ofertaId) return alert("Erro: ID da oferta vazio!");
-    const { error } = await _supabase.postgrest ? await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId) : await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId);
+    if (!ofertaId) return alert("Erro: ID vazio!");
+    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId);
     if (error) alert("Erro ao atualizar: " + error.message);
     else location.reload();
   }
 
   async function excluirOfertaVitrine(id) {
-    if (!confirm("Tem certeza que deseja excluir esta figurinha da vitrine?")) return;
+    if (!confirm("Tem certeza que deseja excluir esta oferta?")) return;
     const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
-    if (error) alert("Erro ao excluir: " + error.message);
+    if (error) alert("Erro: " + error.message);
     else location.reload();
   }
 
@@ -520,8 +716,8 @@
     let media = (soma / avaliacoes.length).toFixed(1);
     document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${'⭐'.repeat(Math.round(media))}</div><span style="font-size:0.8rem; color:#cbd5e1;">Média ${media}</span>`;
     container.innerHTML = avaliacoes.map(av => `
-      <div class="review-card" id="review-card-${av.id}" style="position: relative;">
-        ${isAdminOrMaster ? `<button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer;" title="Excluir">X</button>` : ''}
+      <div class="review-card" id="review-card-${av.id}">
+        ${isAdminOrMaster ? `<button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer;">X</button>` : ''}
         <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
           <strong>${av.visitante_nome}</strong>
           <span style="color:var(--gold); font-size: 0.7rem;">${'⭐'.repeat(av.estrelas)}</span>
@@ -532,18 +728,11 @@
   }
 
   async function excluirAvaliacao(id) {
-    if (!confirm("Tem certeza que deseja apagar este comentário?")) return;
-    
-    const { error } = await _supabase
-      .from('avaliacoes_vendedores')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      alert("Erro ao excluir: " + error.message);
-    } else {
-      const cardElement = document.getElementById(`review-card-${id}`);
-      if (cardElement) cardElement.remove();
+    if (!confirm("Tem certeza que deseja apagar?")) return;
+    const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
+    if (error) alert("Erro: " + error.message);
+    else {
+      document.getElementById(`review-card-${id}`)?.remove();
       carregarAvaliacoes(perfilAlvoUuid);
     }
   }
@@ -555,10 +744,10 @@
     const nome = document.getElementById('avaliacaoNome').value.trim();
     const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
     const comentario = document.getElementById('avaliacaoComentario').value.trim();
-    if (!nome) return alert("Por favor, digite seu nome.");
+    if (!nome) return alert("Digite seu nome.");
     const { error } = await _supabase.from('avaliacoes_vendedores').insert([{ vendedor_id: perfilAlvoUuid, visitante_nome: nome, estrelas: estrelas, comentario: comentario }]);
-    if (error) alert("Erro ao enviar avaliação: " + error.message);
-    else { alert("Avaliação enviada!"); fecharModalAvaliacao(); carregarAvaliacoes(perfilAlvoUuid); }
+    if (error) alert("Erro: " + error.message);
+    else { alert("Enviado!"); fecharModalAvaliacao(); carregarAvaliacoes(perfilAlvoUuid); }
   }
 
   async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
