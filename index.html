@@ -758,9 +758,16 @@
       grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
       try {
-        const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
         const raioFiltro = document.getElementById('selectFiltroRaio').value;
 
+        // 1. Buscar perfil do usuário logado (para pegar latitude/longitude)
+        const { data: meuPerfil } = await _supabase
+          .from('usuarios_cadastrados')
+          .select('latitude, longitude')
+          .eq('id', usuarioLogadoGlobal.id)
+          .maybeSingle();
+
+        // 2. Buscar minhas repetidas e minhas faltantes na caderneta
         const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
           _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
           _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
@@ -771,39 +778,91 @@
           return;
         }
 
-        const minhasFaltantesIds = new Set(
-          faltantesUser
-            .filter(f => filtroAlbum === 'todos' || String(f.album_id) === String(filtroAlbum))
-            .map(f => f.figurinha_id)
-        );
+        const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+        const minhasRepetidasIds = new Set((repetidasUser || []).map(r => r.figurinha_id));
 
+        // 3. Buscar cadernetas de outros usuários
         const { data: outrosUsuariosFiguritas } = await _supabase
           .from('usuario_cardeneta')
           .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-          .neq('user_id', usuarioLogadoGlobal.id)
-          .eq('status', 'repetida');
+          .neq('user_id', usuarioLogadoGlobal.id);
 
         if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
-          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas repetidas cadastradas.</div>`;
+          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
           return;
         }
 
+        // 4. Organizar os matches por usuário
         const matchesPorUsuario = {};
 
         outrosUsuariosFiguritas.forEach(item => {
           if (!item.figurinha) return;
-          if (filtroAlbum !== 'todos' && String(item.figurinha.album_id) !== String(filtroAlbum)) return;
+          const outroId = item.user_id;
 
-          if (minhasFaltantesIds.has(item.figurinha_id)) {
-            if (!matchesPorUsuario[item.user_id]) {
-              matchesPorUsuario[item.user_id] = {
-                usuario: usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' },
-                ofereceParaMim: []
-              };
-            }
-            matchesPorUsuario[item.user_id].ofereceParaMim.push(item.figurinha);
+          if (!matchesPorUsuario[outroId]) {
+            matchesPorUsuario[outroId] = {
+              usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
+              ofereceParaMim: []
+            };
+          }
+
+          // Se o outro usuário tem como 'repetida' uma figurinha que EU tenho como 'faltante'
+          if (item.status === 'repetida' && minhasFaltantesIds.has(item.figurinha_id)) {
+            matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
           }
         });
+
+        let html = '';
+        let contadorMatches = 0;
+
+        for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
+          if (matchData.ofereceParaMim.length === 0) continue;
+
+          let distanciaKm = null;
+          if (meuPerfil && meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+            distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
+            if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
+              continue;
+            }
+          }
+
+          contadorMatches++;
+          const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
+          const whatsAppNum = matchData.usuario.telefone_whats;
+          const botaoContato = whatsAppNum 
+            ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
+            : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
+
+          html += `
+            <div class="market-card" style="grid-column: span 1;">
+              <div class="market-info" style="padding: 15px;">
+                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
+                <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
+                <span class="market-vendedor">${distTexto}</span>
+                <hr style="border-color: var(--border-color); margin: 8px 0;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+                </div>
+              </div>
+              <div class="market-footer">
+                ${botaoContato}
+              </div>
+            </div>
+          `;
+        }
+
+        if (contadorMatches === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
+        } else {
+          grid.innerHTML = html;
+        }
+
+      } catch (err) {
+        console.error("Erro ao carregar matches de troca:", err);
+        grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
+      }
+    }
 
         const meuPerfil = perfilLogadoGlobal || {};
         let html = '';
