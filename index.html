@@ -87,7 +87,6 @@
     .btn-acao:hover { opacity: 0.9; }
     .btn-troca { background: #38bdf8; color: #0f172a; }
     .btn-perfil { background: var(--gold); color: #0f172a; }
-    .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
     .language-selector-flags {
       display: flex;
@@ -109,15 +108,8 @@
       transition: 0.2s;
       opacity: 0.6;
     }
-    .flag-option:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-    .flag-option.active {
-      opacity: 1;
-      border-color: var(--gold);
-      background: rgba(245, 158, 11, 0.1);
-    }
+    .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
+    .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
 
     @keyframes pulseGlow {
       0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
@@ -155,24 +147,12 @@
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <div class="language-selector-flags">
-          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-            <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
-          </button>
-          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-            <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
-          </button>
-          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-            <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
-          </button>
-          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-            <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
-          </button>
-          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-            <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
-          </button>
-          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-            <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
-          </button>
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)"><img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)"><img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano"><img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español"><img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français"><img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;"></button>
         </div>
         
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
@@ -339,7 +319,6 @@
     let matchesTrocasGlobal = [];
     let usuariosMapGlobal = {};
     let albunsGlobaisMap = new Map();
-    let propostasPendentesMap = new Set();
     let abaAtual = 'market';
     let destinatarioAtualId = null;
     let itensPropostaAtual = [];
@@ -769,154 +748,246 @@
     }
 
     async function renderizarTrocas() {
-  const grid = document.getElementById('trocasGrid');
-  
-  if (!usuarioLogadoGlobal) {
-    grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
-    return;
-  }
-
-  grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
-
-  try {
-    // 1. Busca todas as figurinhas cadastradas do usuário logado na caderneta
-    const { data: minhaCaderneta, error: errMinha } = await _supabase
-      .from('usuario_cardeneta')
-      .select('figurinha_id, quantidade')
-      .eq('user_id', usuarioLogadoGlobal.id);
-
-    if (errMinha) {
-      console.error("Erro ao buscar sua caderneta:", errMinha);
-      grid.innerHTML = `<div class="empty-state">Erro ao carregar sua caderneta: ${errMinha.message}</div>`;
-      return;
-    }
-
-    // Mapeia o que o usuário tem e as quantidades
-    const minhasQuantidades = {};
-    minhaCaderneta.forEach(item => {
-      minhasQuantidades[item.figurinha_id] = item.quantidade;
-    });
-
-    // Consideramos faltantes as figurinhas que não estão na caderneta ou tem quantidade <= 0
-    // E repetidas as que possuem quantidade > 1
-    // (Vamos buscar a lista completa de figurinhas do sistema para cruzar)
-    const { data: todasFigurinhas } = await _supabase
-      .from('figurinhas')
-      .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
-
-    if (!todasFigurinhas) {
-      grid.innerHTML = `<div class="empty-state">Nenhuma figurinha encontrada no catálogo.</div>`;
-      return;
-    }
-
-    const minhasFaltantesIds = new Set();
-    todasFigurinhas.forEach(fig => {
-      const qtd = minhasQuantidades[fig.id] || 0;
-      if (qtd === 0) {
-        minhasFaltantesIds.add(fig.id);
+      const grid = document.getElementById('trocasGrid');
+      
+      if (!usuarioLogadoGlobal) {
+        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
+        return;
       }
-    });
 
-    if (minhasFaltantesIds.size === 0) {
-      grid.innerHTML = `<div class="empty-state">Você não possui figurinhas faltantes cadastradas para cruzar matches!</div>`;
-      return;
-    }
+      grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
-    // 2. Busca as cadernetas de todos os outros usuários junto com os dados da figurinha
-    const { data: outrasCadernetas, error: errOutras } = await _supabase
-      .from('usuario_cardeneta')
-      .select(`
-        user_id,
-        quantidade,
-        figurinha_id,
-        figurinha:figurinha_id (
-          id, numero, nome, imagem, album_id, albuns ( id, nome )
-        )
-      `)
-      .neq('user_id', usuarioLogadoGlobal.id);
+      try {
+        const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
+        const raioFiltro = document.getElementById('selectFiltroRaio').value;
 
-    if (errOutras) {
-      console.error("Erro ao buscar outras cadernetas:", errOutras);
-      grid.innerHTML = `<div class="empty-state">Erro ao buscar dados dos colecionadores: ${errOutras.message}</div>`;
-      return;
-    }
+        const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
+          _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
+          _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
+        ]);
 
-    if (!outrasCadernetas || outrasCadernetas.length === 0) {
-      grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui itens cadastrados no momento.</div>`;
-      return;
-    }
-
-    const matchesPorUsuario = {};
-    const raioFiltro = document.getElementById('selectFiltroRaio').value;
-    const meuPerfil = perfilLogadoGlobal || {};
-
-    outrasCadernetas.forEach(item => {
-      if (!item.figurinha) return;
-      const outroId = item.user_id;
-
-      // Se o outro usuário tem quantidade > 1 (repetida) E ela está na lista das minhas faltantes
-      if (item.quantidade > 1 && minhasFaltantesIds.has(item.figurinha_id)) {
-        if (!matchesPorUsuario[outroId]) {
-          matchesPorUsuario[outroId] = {
-            usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
-            ofereceParaMim: []
-          };
+        if (!faltantesUser || faltantesUser.length === 0) {
+          grid.innerHTML = `<div class="empty-state">Cadastre as figurinhas que lhe faltam na sua Caderneta para encontrar matches!</div>`;
+          return;
         }
-        matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
-      }
-    });
 
-    let html = '';
-    let contadorMatches = 0;
+        const minhasFaltantesIds = new Set(
+          faltantesUser
+            .filter(f => filtroAlbum === 'todos' || String(f.album_id) === String(filtroAlbum))
+            .map(f => f.figurinha_id)
+        );
 
-    for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
-      if (matchData.ofereceParaMim.length === 0) continue;
+        const { data: outrosUsuariosFiguritas } = await _supabase
+          .from('usuario_cardeneta')
+          .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+          .neq('user_id', usuarioLogadoGlobal.id)
+          .eq('status', 'repetida');
 
-      let distanciaKm = null;
-      if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
-        distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
-        if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
-          continue;
+        if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas repetidas cadastradas.</div>`;
+          return;
         }
-      }
 
-      contadorMatches++;
-      const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
-      const whatsAppNum = matchData.usuario.telefone_whats;
-      const botaoContato = whatsAppNum 
-        ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
-        : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
+        const matchesPorUsuario = {};
 
-      html += `
-        <div class="market-card" style="grid-column: span 1;">
-          <div class="market-info" style="padding: 15px;">
-            <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
-            <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
-            <span class="market-vendedor">${distTexto}</span>
-            <hr style="border-color: var(--border-color); margin: 8px 0;">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem repetidas para você:</span>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-              ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+        outrosUsuariosFiguritas.forEach(item => {
+          if (!item.figurinha) return;
+          if (filtroAlbum !== 'todos' && String(item.figurinha.album_id) !== String(filtroAlbum)) return;
+
+          if (minhasFaltantesIds.has(item.figurinha_id)) {
+            if (!matchesPorUsuario[item.user_id]) {
+              matchesPorUsuario[item.user_id] = {
+                usuario: usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' },
+                ofereceParaMim: []
+              };
+            }
+            matchesPorUsuario[item.user_id].ofereceParaMim.push(item.figurinha);
+          }
+        });
+
+        const meuPerfil = perfilLogadoGlobal || {};
+        let html = '';
+        let contadorMatches = 0;
+
+        for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
+          if (matchData.ofereceParaMim.length === 0) continue;
+
+          let distanciaKm = null;
+          if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+            distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
+            if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
+              continue;
+            }
+          }
+
+          contadorMatches++;
+          const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
+          const qtdRepetidas = matchData.ofereceParaMim.length;
+
+          html += `
+            <div class="market-card" style="grid-column: span 1;">
+              <div class="market-info" style="padding: 15px;">
+                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
+                <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
+                <span class="market-vendedor">${distTexto}</span>
+                <hr style="border-color: var(--border-color); margin: 8px 0;">
+                <div style="font-size: 0.85rem; color: var(--text-main); margin-top: 4px;">
+                  Figurinhas que ele(a) tem repetidas para você: <strong style="color: var(--gold);">${qtdRepetidas} ${qtdRepetidas === 1 ? 'figurinha' : 'figurinhas'}</strong>
+                </div>
+              </div>
+              <div class="market-footer">
+                <button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}', ${JSON.stringify(matchData.ofereceParaMim).replace(/"/g, '&quot;')})">🔄 Enviar Proposta</button>
+              </div>
             </div>
-          </div>
-          <div class="market-footer">
-            ${botaoContato}
-          </div>
-        </div>
-      `;
+          `;
+        }
+
+        if (contadorMatches === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
+        } else {
+          grid.innerHTML = html;
+        }
+
+      } catch (err) {
+        console.error("Erro ao carregar matches de troca:", err);
+        grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
+      }
     }
 
-    if (contadorMatches === 0) {
-      grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
-    } else {
-      grid.innerHTML = html;
+    function abrirModalPropostaTroca(destinatarioId, figurinhasOferecidas) {
+      destinatarioAtualId = destinatarioId;
+      itensPropostaAtual = [...figurinhasOferecidas];
+      renderizarItensPropostaModal();
+      document.getElementById('modalProposta').style.display = 'flex';
     }
 
-  } catch (err) {
-    console.error("Erro geral ao carregar matches de troca:", err);
-    grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
-  }
-}
+    function renderizarItensPropostaModal() {
+      const container = document.getElementById('modalPropostaConteudo');
+      if (!itensPropostaAtual || itensPropostaAtual.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding: 10px;">Nenhum item selecionado para a proposta.</div>`;
+        return;
+      }
+
+      // Agrupar por Álbum
+      const agrupadosPorAlbum = {};
+      itensPropostaAtual.forEach((fig, index) => {
+        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
+        if (!agrupadosPorAlbum[albumNome]) agrupadosPorAlbum[albumNome] = [];
+        agrupadosPorAlbum[albumNome].push({ ...fig, indexOriginal: index });
+      });
+
+      let html = '';
+      for (const [albumNome, figs] of Object.entries(agrupadosPorAlbum)) {
+        html += `<div style="margin-bottom: 10px; font-weight: 700; color: var(--gold);">${albumNome} (${figs.length})</div>`;
+        figs.forEach(f => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid var(--border-color);">
+              <span style="font-size: 0.8rem;">#${f.numero} - ${f.nome}</span>
+              <button onclick="removerItemProposta(${f.indexOriginal})" style="background: #ef4444; color: white; border: none; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;">Excluir</button>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    function removerItemProposta(indexOriginal) {
+      itensPropostaAtual.splice(indexOriginal, 1);
+      renderizarItensPropostaModal();
+    }
+
+    async function enviarPropostaTroca() {
+      if (!usuarioLogadoGlobal) {
+        alert("Você precisa estar logado para enviar propostas.");
+        return;
+      }
+      if (!itensPropostaAtual || itensPropostaAtual.length === 0) {
+        alert("A proposta precisa conter ao menos uma figurinha.");
+        return;
+      }
+
+      const hojeStr = new Date().toISOString().split('T')[0];
+
+      try {
+        // Verificar limite de propostas diárias com base no plano do usuário
+        let { data: historicoHoje } = await _supabase
+          .from('historico_propostas_diarias')
+          .select('*')
+          .eq('user_id', usuarioLogadoGlobal.id)
+          .eq('data', hojeStr)
+          .maybeSingle();
+
+        const planoUsuario = perfilLogadoGlobal?.plano || 'gratis';
+        let limiteDiario = 5; // plano gratis padrão
+        if (planoUsuario === 'premium') limiteDiario = 25;
+        if (planoUsuario === 'anual' || planoUsuario === 'master') limiteDiario = 9999;
+
+        const qtdAtualFeitas = historicoHoje ? historicoHoje.quantidade : 0;
+        if (qtdAtualFeitas >= limiteDiario) {
+          alert(`Você atingiu o limite de ${limiteDiario} propostas para o seu plano (${planoUsuario}) hoje.`);
+          return;
+        }
+
+        // 1. Inserir em propostas_troca
+        const { data: novaProposta, error: errProp } = await _supabase
+          .from('propostas_troca')
+          .insert([
+            {
+              remetente_id: usuarioLogadoGlobal.id,
+              destinatario_id: destinatarioAtualId,
+              status: 'pendente'
+            }
+          ])
+          .select()
+          .maybeSingle();
+
+        if (errProp || !novaProposta) {
+          throw new Error(errProp?.message || "Erro ao registrar proposta de troca.");
+        }
+
+        const propostaId = novaProposta.id;
+
+        // 2. Inserir itens em propostas_itens
+        const itensParaInserir = itensPropostaAtual.map(fig => ({
+          proposta_id: propostaId,
+          figurinha_id: fig.id || fig.figurinha_id
+        }));
+
+        const { error: errItens } = await _supabase.from('propostas_itens').insert(itensParaInserir);
+        if (errItens) throw new Error(errItens.message);
+
+        // 3. Inserir mensagem inicial no chat da proposta (propostas_mensagens)
+        await _supabase.from('propostas_mensagens').insert([
+          {
+            proposta_id: propostaId,
+            remetente_id: usuarioLogadoGlobal.id,
+            mensagem: 'Olá! Envie uma proposta de troca com figurinhas selecionadas.'
+          }
+        ]);
+
+        // 4. Atualizar historico_propostas_diarias
+        if (historicoHoje) {
+          await _supabase
+            .from('historico_propostas_diarias')
+            .update({ quantidade: qtdAtualFeitas + 1 })
+            .eq('id', historicoHoje.id);
+        } else {
+          await _supabase.from('historico_propostas_diarias').insert([
+            {
+              user_id: usuarioLogadoGlobal.id,
+              data: hojeStr,
+              quantidade: 1
+            }
+          ]);
+        }
+
+        alert("Proposta enviada com sucesso!");
+        fecharModalProposta();
+      } catch (err) {
+        console.error("Erro ao enviar proposta:", err);
+        alert("Erro ao enviar proposta: " + err.message);
+      }
+    }
 
     function filtrarAtivo() {
       renderizarAtivo();
