@@ -133,8 +133,12 @@
 
     <div class="header-title-box">
       <h1>🛍️ Gerenciar Minha Vitrine</h1>
-      <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+        <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+        <div id="avisoLimiteVitrine" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
+      </div>
     </div>
+    
     <div class="controls-panel">
       <div class="filter-group">
         <label>Filtrar por Álbum:</label>
@@ -144,7 +148,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" class="filter-field" placeholder="🔍 Ex: 10, #10, Messi, Brasil...">
+        <input type="text" id="search" class="filter-field" placeholder="🔍 Ex: 10, #001, Messi, Brasil...">
       </div>
     </div>
 
@@ -156,14 +160,14 @@
   </div>
 
   <footer>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong>[cite: 9]</p>
   </footer>
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 24; // Exatamente 24 cards por página
+    const ITENS_POR_PAGINA = 24;
 
     let authUserId = null;
     let perfilLogado = null;
@@ -223,6 +227,38 @@
         }
       }
 
+      // Verificação do limite e anúncios ativos para exibir no cabeçalho
+      const planoUsuario = (perfil?.plano || 'gratis').toLowerCase().trim();
+      const { data: configPlano } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_anuncios')
+        .ilike('plano', planoUsuario)
+        .maybeSingle();
+
+      const limiteMaximo = configPlano ? configPlano.limite_anuncios : 10;
+
+      const { count: totalAtivos } = await _supabase
+        .from('vitrine_ofertas')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', authUserId)
+        .gt('estoque', 0);
+
+      const qtdAtivos = totalAtivos || 0;
+      const avisoEl = document.getElementById('avisoLimiteVitrine');
+
+      if (limiteMaximo !== -1 && qtdAtivos >= limiteMaximo) {
+        avisoEl.style.display = 'block';
+        avisoEl.innerHTML = `⚠️ Excedeu o limite da Vitrine (${qtdAtivos}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mudar de plano</a>`;
+      } else if (limiteMaximo !== -1) {
+        avisoEl.style.display = 'block';
+        avisoEl.style.color = 'var(--text-muted)';
+        avisoEl.innerText = `Anúncios ativos: ${qtdAtivos} / ${limiteMaximo}`;
+      } else {
+        avisoEl.style.display = 'block';
+        avisoEl.style.color = 'var(--gold)';
+        avisoEl.innerText = `Anúncios ativos: ${qtdAtivos} (Ilimitado)`;
+      }
+
       const { data: albuns } = await _supabase.from('albuns').select('*');
       if (albuns) {
         const selectAlbum = document.getElementById('filterAlbum');
@@ -251,7 +287,7 @@
       buscarDados();
     }
 
-    aasync function buscarDados() {
+    async function buscarDados() {
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim();
       const inicio = paginaAtual * ITENS_POR_PAGINA;
@@ -267,10 +303,8 @@
           const termoLimpo = termo.replace('#', '').trim();
           
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
-            // Se for número (ex: 1, 01, 001, #001), busca exata pelo número OU texto no nome/selecao
             query = query.or(`numero.eq.${termoLimpo},numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           } else {
-            // Se for texto (ex: Messi, Brasil), busca no nome e na selecao_escuderia
             query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           }
         }
@@ -345,7 +379,6 @@
 
       const estoqueAnterior = meusPrecosQtd[fId]?.estoque || 0;
 
-      // Verificação rigorosa do limite do plano se for um novo anúncio ativo (estoque > 0 e antes era 0)
       if (estoque > 0 && estoqueAnterior === 0) {
         const planoUsuario = (perfilLogado?.plano || 'gratis').toLowerCase().trim();
         
@@ -358,7 +391,6 @@
         const limiteMaximo = config ? config.limite_anuncios : 10;
 
         if (limiteMaximo !== -1) {
-          // Conta quantos anúncios ativos reais o usuário tem na tabela vitrine_ofertas
           const { count, error: errCount } = await _supabase
             .from('vitrine_ofertas')
             .select('*', { count: 'exact', head: true })
@@ -388,7 +420,7 @@
       } else {
         meusPrecosQtd[fId] = { preco, estoque, qualidade };
         alert("✅ Anúncio salvo com sucesso!");
-        buscarDados();
+        window.location.reload();
       }
     }
 
