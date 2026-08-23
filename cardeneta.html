@@ -581,7 +581,7 @@
       document.getElementById('modalCriarCardeneta').style.display = 'none';
     }
 
-   async function salvarNovaCaderneta() {
+  async function salvarNovaCaderneta() {
   const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
   const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
   
@@ -589,15 +589,29 @@
 
   const funcaoUsuario = dadosPerfilUsuario.funcao || 'gratis';
   
-  // REGRA DO PLANO: Se for grátis e já possuir 1 caderneta, bloqueia e oferta o plano Premium Anual
-  if (funcaoUsuario === 'gratis' && minhasCadernetas.length >= 1) {
-    alert("🌟 Limite do Plano Gratuito Atingido!\n\nNo plano gratuito, você pode cadastrar apenas 1 caderneta. Desbloqueie álbuns ilimitados agora mesmo fazendo um upgrade para o nosso **Plano Premium Anual**!");
-    
-    // Aqui você pode redirecionar para a página de planos ou checkout, ex:
-    // window.location.href = "planos.html";
-    return;
+  // Se o usuário for grátis, verificamos diretamente no banco de dados quantos álbuns ele tem
+  if (funcaoUsuario === 'gratis') {
+    const { count, error: countError } = await _supabase
+      .from('usuario_albuns')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', usuarioAtual.id);
+
+    if (countError) {
+      alert("Erro ao verificar limite de cadernetas.");
+      return;
+    }
+
+    // Se já possuir 1 ou mais, bloqueia e oferta o plano Premium Anual
+    if (count >= 1) {
+      alert("🌟 Limite do Plano Gratuito Atingido!\n\nNo plano gratuito, você pode cadastrar apenas 1 caderneta. Desbloqueie álbuns ilimitados agora mesmo fazendo um upgrade para o nosso **Plano Premium Anual**!");
+      
+      // Exemplo de redirecionamento opcional:
+      // window.location.href = "planos.html";
+      return;
+    }
   }
 
+  // Prossegue com a inserção se passou pela validação
   const { error } = await _supabase.from('usuario_albuns').insert([{
     user_id: usuarioAtual.id,
     album_base_id: albumBaseId,
