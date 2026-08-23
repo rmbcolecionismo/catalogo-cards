@@ -779,81 +779,144 @@
   grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
   try {
-        // CORRIGIDO: Tabela alterada de 'usuario_figurinha' para 'usuario_cardeneta'
-    const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
-      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
-      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
-    ]);
+    // 1. Busca todas as figurinhas cadastradas do usuário logado na caderneta
+    const { data: minhaCaderneta, error: errMinha } = await _supabase
+      .from('usuario_cardeneta')
+      .select('figurinha_id, quantidade')
+      .eq('user_id', usuarioLogadoGlobal.id);
 
-    if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
-      grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
+    if (errMinha) {
+      console.error("Erro ao buscar sua caderneta:", errMinha);
+      grid.innerHTML = `<div class="empty-state">Erro ao carregar sua caderneta: ${errMinha.message}</div>`;
       return;
     }
 
-    const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+    // Mapeia o que o usuário tem e as quantidades
+    const minhasQuantidades = {};
+    minhaCaderneta.forEach(item => {
+      minhasQuantidades[item.figurinha_id] = item.quantidade;
+    });
 
-        // CORRIGIDO: Tabela alterada aqui também
-    const { data: outrosUsuariosFiguritas } = await _supabase
+    // Consideramos faltantes as figurinhas que não estão na caderneta ou tem quantidade <= 0
+    // E repetidas as que possuem quantidade > 1
+    // (Vamos buscar a lista completa de figurinhas do sistema para cruzar)
+    const { data: todasFigurinhas } = await _supabase
+      .from('figurinhas')
+      .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+
+    if (!todasFigurinhas) {
+      grid.innerHTML = `<div class="empty-state">Nenhuma figurinha encontrada no catálogo.</div>`;
+      return;
+    }
+
+    const minhasFaltantesIds = new Set();
+    todasFigurinhas.forEach(fig => {
+      const qtd = minhasQuantidades[fig.id] || 0;
+      if (qtd === 0) {
+        minhasFaltantesIds.add(fig.id);
+      }
+    });
+
+    if (minhasFaltantesIds.size === 0) {
+      grid.innerHTML = `<div class="empty-state">Você não possui figurinhas faltantes cadastradas para cruzar matches!</div>`;
+      return;
+    }
+
+    // 2. Busca as cadernetas de todos os outros usuários junto com os dados da figurinha
+    const { data: outrasCadernetas, error: errOutras } = await _supabase
       .from('usuario_cardeneta')
-      .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+      .select(`
+        user_id,
+        quantidade,
+        figurinha_id,
+        figurinha:figurinha_id (
+          id, numero, nome, imagem, album_id, albuns ( id, nome )
+        )
+      `)
       .neq('user_id', usuarioLogadoGlobal.id);
 
-    if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
-      grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
+    if (errOutras) {
+      console.error("Erro ao buscar outras cadernetas:", errOutras);
+      grid.innerHTML = `<div class="empty-state">Erro ao buscar dados dos colecionadores: ${errOutras.message}</div>`;
       return;
     }
 
-        let html = '';
-        let contadorMatches = 0;
-
-        for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
-          if (matchData.ofereceParaMim.length === 0) continue;
-
-          let distanciaKm = null;
-          if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
-            distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
-            if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
-              continue;
-            }
-          }
-
-          contadorMatches++;
-          const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
-          const whatsAppNum = matchData.usuario.telefone_whats;
-          const botaoContato = whatsAppNum 
-            ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
-            : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
-
-          html += `
-            <div class="market-card" style="grid-column: span 1;">
-              <div class="market-info" style="padding: 15px;">
-                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
-                <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
-                <span class="market-vendedor">${distTexto}</span>
-                <hr style="border-color: var(--border-color); margin: 8px 0;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
-                </div>
-              </div>
-              <div class="market-footer">
-                ${botaoContato}
-              </div>
-            </div>
-          `;
-        }
-
-        if (contadorMatches === 0) {
-          grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
-        } else {
-          grid.innerHTML = html;
-        }
-
-      } catch (err) {
-        console.error("Erro ao carregar matches de troca:", err);
-        grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
-      }
+    if (!outrasCadernetas || outrasCadernetas.length === 0) {
+      grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui itens cadastrados no momento.</div>`;
+      return;
     }
+
+    const matchesPorUsuario = {};
+    const raioFiltro = document.getElementById('selectFiltroRaio').value;
+    const meuPerfil = perfilLogadoGlobal || {};
+
+    outrasCadernetas.forEach(item => {
+      if (!item.figurinha) return;
+      const outroId = item.user_id;
+
+      // Se o outro usuário tem quantidade > 1 (repetida) E ela está na lista das minhas faltantes
+      if (item.quantidade > 1 && minhasFaltantesIds.has(item.figurinha_id)) {
+        if (!matchesPorUsuario[outroId]) {
+          matchesPorUsuario[outroId] = {
+            usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
+            ofereceParaMim: []
+          };
+        }
+        matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
+      }
+    });
+
+    let html = '';
+    let contadorMatches = 0;
+
+    for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
+      if (matchData.ofereceParaMim.length === 0) continue;
+
+      let distanciaKm = null;
+      if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+        distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
+        if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
+          continue;
+        }
+      }
+
+      contadorMatches++;
+      const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
+      const whatsAppNum = matchData.usuario.telefone_whats;
+      const botaoContato = whatsAppNum 
+        ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
+        : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
+
+      html += `
+        <div class="market-card" style="grid-column: span 1;">
+          <div class="market-info" style="padding: 15px;">
+            <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
+            <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
+            <span class="market-vendedor">${distTexto}</span>
+            <hr style="border-color: var(--border-color); margin: 8px 0;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem repetidas para você:</span>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+              ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+            </div>
+          </div>
+          <div class="market-footer">
+            ${botaoContato}
+          </div>
+        </div>
+      `;
+    }
+
+    if (contadorMatches === 0) {
+      grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
+    } else {
+      grid.innerHTML = html;
+    }
+
+  } catch (err) {
+    console.error("Erro geral ao carregar matches de troca:", err);
+    grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
+  }
+}
 
     function filtrarAtivo() {
       renderizarAtivo();
