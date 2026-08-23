@@ -117,24 +117,28 @@
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Início</a>
-        <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Minhas Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Minha Vitrine</a>
-        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Meu Perfil</a>
+        <!-- Nomes encurtados conforme solicitado -->
+        <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Perfil</a>
         <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <!-- Seletor de Moeda -->
         <select id="selectMoedaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 70px;" onchange="mudarMoedaGlobal(this.value)">
-          <option value="BRL">R$ BRL</option>
           <option value="EUR">€ EUR</option>
+          <option value="BRL">R$ BRL</option>
           <option value="USD">$ USD</option>
+          <option value="GBP">£ GBP</option>
         </select>
         <!-- Seletor de Idioma -->
         <select id="selectIdiomaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 75px;" onchange="mudarIdiomaGlobal(this.value)">
-          <option value="pt">🇧🇷 PT</option>
+          <option value="pt-PT">🇵🇹 PT-PT</option>
+          <option value="pt-BR">🇧🇷 PT-BR</option>
           <option value="en">🇺🇸 EN</option>
           <option value="es">🇪🇸 ES</option>
+          <option value="fr">🇫🇷 FR</option>
         </select>
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
@@ -321,9 +325,9 @@
     let chatIntervalo = null;
     let matchesCacheMap = new Map();
 
-    // Preferências globais de Moeda e Idioma
-    let moedaAtual = localStorage.getItem('moeda_app') || 'BRL';
-    let idiomaAtual = localStorage.getItem('idioma_app') || 'pt';
+    // Preferências globais com valores padrão iniciais (PT-PT e EUR)
+    let moedaAtual = 'EUR';
+    let idiomaAtual = 'pt-PT';
 
     function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
@@ -337,16 +341,36 @@
       }
     }
 
-    function mudarMoedaGlobal(valor) {
+    async function mudarMoedaGlobal(valor) {
       moedaAtual = valor;
       localStorage.setItem('moeda_app', valor);
+
+      // Se o usuário estiver logado, salva diretamente no banco
+      if (usuarioLogadoGlobal) {
+        await _supabase
+          .from('usuarios_cadastrados')
+          .update({ moeda_preferida: valor })
+          .eq('id', usuarioLogadoGlobal.id);
+      }
       renderizarAtivo();
     }
 
-    function mudarIdiomaGlobal(valor) {
+    async function mudarIdiomaGlobal(valor) {
       idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
-      // Aqui você pode expandir para traduzir textos estáticos da interface se desejar
+
+      // Sincroniza a moeda padrão caso o idioma mude, se desejado
+      if (valor === 'pt-BR') mudarMoedaGlobal('BRL');
+      else if (valor === 'en') mudarMoedaGlobal('USD');
+      else if (['pt-PT', 'es', 'fr'].includes(valor)) mudarMoedaGlobal('EUR');
+
+      // Se o usuário estiver logado, salva no banco de dados
+      if (usuarioLogadoGlobal) {
+        await _supabase
+          .from('usuarios_cadastrados')
+          .update({ idioma_preferido: valor, moeda_preferida: moedaAtual })
+          .eq('id', usuarioLogadoGlobal.id);
+      }
       renderizarAtivo();
     }
 
@@ -355,12 +379,6 @@
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
-      
-      const selMoeda = document.getElementById('selectMoedaGlobal');
-      if (selMoeda) selMoeda.value = moedaAtual;
-
-      const selIdioma = document.getElementById('selectIdiomaGlobal');
-      if (selIdioma) selIdioma.value = idiomaAtual;
     });
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
@@ -390,18 +408,30 @@
 
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
-          .select('id, nome, funcao, plano, latitude, longitude')
+          .select('id, nome, funcao, plano, latitude, longitude, idioma_preferido, moeda_preferida')
           .eq('email', usuarioLogadoGlobal.email)
           .maybeSingle();
 
         if (!perfil) {
           const nomeSugerido = usuarioLogadoGlobal.user_metadata?.full_name || usuarioLogadoGlobal.user_metadata?.name || usuarioLogadoGlobal.email.split('@')[0];
           const { data: novoPerfil } = await _supabase.from('usuarios_cadastrados').insert([
-            { id: usuarioLogadoGlobal.id, email: usuarioLogadoGlobal.email, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' }
+            { 
+              id: usuarioLogadoGlobal.id, 
+              email: usuarioLogadoGlobal.email, 
+              nome: nomeSugerido, 
+              funcao: 'colecionador', 
+              plano: 'gratis',
+              idioma_preferido: 'pt-PT',
+              moeda_preferida: 'EUR'
+            }
           ]).select().maybeSingle();
-          perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis' };
+          perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis', idioma_preferido: 'pt-PT', moeda_preferida: 'EUR' };
         }
         perfilLogadoGlobal = perfil;
+
+        // Recupera idioma e moeda do banco do usuário logado (com fallback para pt-PT / EUR)
+        idiomaAtual = perfil?.idioma_preferido || 'pt-PT';
+        moedaAtual = perfil?.moeda_preferida || 'EUR';
 
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
@@ -438,7 +468,18 @@
         } else {
           badge.style.display = 'none';
         }
+      } else {
+        // Para visitantes, usa o localStorage ou o padrão PT-PT / EUR
+        idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
+        moedaAtual = localStorage.getItem('moeda_app') || 'EUR';
       }
+
+      // Seta os selects na interface com os valores carregados
+      const selMoeda = document.getElementById('selectMoedaGlobal');
+      if (selMoeda) selMoeda.value = moedaAtual;
+
+      const selIdioma = document.getElementById('selectIdiomaGlobal');
+      if (selIdioma) selIdioma.value = idiomaAtual;
 
       await carregarDadosGlobais();
     }
@@ -589,9 +630,8 @@
         return;
       }
 
-      // Locale e moedas dinâmicos baseados nas preferências do usuário
-      const localesMap = { 'pt': 'pt-BR', 'en': 'en-US', 'es': 'es-ES' };
-      const localeAtual = localesMap[idiomaAtual] || 'pt-BR';
+      const localesMap = { 'pt-PT': 'pt-PT', 'pt-BR': 'pt-BR', 'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR' };
+      const localeAtual = localesMap[idiomaAtual] || 'pt-PT';
 
       grid.innerHTML = itens.map(item => {
         const fig = item.figurinha || {};
