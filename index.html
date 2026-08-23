@@ -116,80 +116,73 @@
   <div class="container">
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Início</a>
-        <!-- Nomes encurtados conforme solicitado -->
-        <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Vitrine</a>
-        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Perfil</a>
-        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
-        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
+        <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
+        <a href="cardeneta.html" id="linkCardeneta" style="display:none;" data-i18n="nav_cadernetas">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" style="display:none;" data-i18n="nav_vitrine">📦 Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" style="display:none;" data-i18n="nav_perfil">⚙️ Perfil</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
+        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Seletor de Moeda -->
-        <select id="selectMoedaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 70px;" onchange="mudarMoedaGlobal(this.value)">
-          <option value="EUR">€ EUR</option>
-          <option value="BRL">R$ BRL</option>
-          <option value="USD">$ USD</option>
-          <option value="GBP">£ GBP</option>
-        </select>
-        <!-- Seletor de Idioma -->
-        <select id="selectIdiomaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 75px;" onchange="mudarIdiomaGlobal(this.value)">
+        <!-- Seletor de Idioma Atualizado com Bandeiras, EN e IT -->
+        <select id="selectIdiomaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 90px;" onchange="mudarIdiomaGlobal(this.value)">
           <option value="pt-PT">🇵🇹 PT-PT</option>
           <option value="pt-BR">🇧🇷 PT-BR</option>
-          <option value="en">🇺🇸 EN</option>
+          <option value="en">🇬🇧 EN</option>
+          <option value="it">🇮🇹 IT</option>
           <option value="es">🇪🇸 ES</option>
           <option value="fr">🇫🇷 FR</option>
         </select>
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
-          <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;">Entrar / Criar Conta</button>
+          <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</button>
         </div>
       </div>
     </div>
 
     <div id="heroBannerVisitante" class="hero-banner">
       <div class="hero-content">
-        <h1>Organize sua Coleção & Venda/Troque Figurinhas![cite: 1]</h1>
-        <p>Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.[cite: 1]</p>
+        <h1 data-i18n="hero_titulo">Organize sua Coleção & Venda/Troque Figurinhas!</h1>
+        <p data-i18n="hero_desc">Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.</p>
         <div class="hero-features">
-          <span>✅ Caderneta Inteligente</span>
-          <span>✅ Vitrine de Vendas</span>
-          <span>✅ Mercado de Trocas por Proximidade</span>
+          <span data-i18n="hero_feat1">✅ Caderneta Inteligente</span>
+          <span data-i18n="hero_feat2">✅ Vitrine de Vendas</span>
+          <span data-i18n="hero_feat3">✅ Mercado de Trocas por Proximidade</span>
         </div>
       </div>
       <div class="hero-action">
-        <button class="btn-gold" onclick="abrirModalAuth()">✨ Criar Minha Conta Grátis</button>
-        <a href="cardeneta.html" class="btn-outline">Ver Demonstração</a>
+        <button class="btn-gold" onclick="abrirModalAuth()" data-i18n="hero_btn_criar">✨ Criar Minha Conta Grátis</button>
+        <a href="cardeneta.html" class="btn-outline" data-i18n="hero_btn_demo">Ver Demonstração</a>
       </div>
     </div>
 
     <div class="collab-card">
       <div class="collab-text">
-        <h4>📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
-        <p>Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.</p>
+        <h4 data-i18n="collab_titulo">📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
+        <p data-i18n="collab_desc">Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.</p>
       </div>
-      <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);">Contribuir com Fotos</a>
+      <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
     </div>
 
     <div class="sections-tabs">
       <div class="tab-group">
-        <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')">📦 Marketplace (Vendas)</button>
-        <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')">🔄 Mercado de Trocas (Match)</button>
+        <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')" data-i18n="tab_market">📦 Marketplace (Vendas)</button>
+        <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')" data-i18n="tab_trocas">🔄 Mercado de Trocas (Match)</button>
       </div>
       <div>
         <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;">
-          📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+          <span data-i18n="btn_propostas">📬 Minhas Propostas</span> <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
         </button>
       </div>
     </div>
 
     <div class="controls-bar">
-      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()">
+      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()" data-i18n-placeholder="busca_placeholder">
       <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
-        <option value="todos">📖 Todos os Álbuns</option>
+        <option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>
       </select>
       <select id="selectFiltroRaio" class="filter-field" onchange="filtrarAtivo()" style="display:none;">
-        <option value="todos">📍 Qualquer Distância</option>
+        <option value="todos" data-i18n="filtro_qualquer_dist">📍 Qualquer Distância</option>
         <option value="5">Até 5 km</option>
         <option value="10">Até 10 km</option>
         <option value="25">Até 25 km</option>
@@ -198,109 +191,99 @@
     </div>
 
     <div id="secaoMarketplace">
-      <div class="section-title">📦 Figurinhas à Venda</div>
+      <div class="section-title" data-i18n="sec_vendas_titulo">📦 Figurinhas à Venda</div>
       <div id="marketplaceGrid" class="marketplace-grid">
-        <div class="empty-state">Carregando ofertas do marketplace...</div>
+        <div class="empty-state" data-i18n="msg_carregando_ofertas">Carregando ofertas do marketplace...</div>
       </div>
     </div>
 
     <div id="secaoTrocas" style="display: none;">
-      <div class="section-title">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
+      <div class="section-title" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
       <div id="trocasGrid" class="marketplace-grid">
-        <div class="empty-state">Carregando matches de troca...</div>
+        <div class="empty-state" data-i18n="msg_carregando_matches">Carregando matches de troca...</div>
       </div>
     </div>
   </div>
 
   <footer>
     <div class="footer-links">
-      <a href="ajudar.html">📸 Ajudar o Catálogo</a>
-      <a href="contato.html">✉️ Fale Conosco</a>
+      <a href="ajudar.html" data-i18n="footer_ajudar">📸 Ajudar o Catálogo</a>
+      <a href="contato.html" data-i18n="footer_contato">✉️ Fale Conosco</a>
     </div>
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <!-- Modal de Autenticação -->
+  <!-- Modais -->
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
-      <h3>Acesse sua Conta</h3>
-      <p>Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
+      <h3 data-i18n="modal_auth_titulo">Acesse sua Conta</h3>
+      <p data-i18n="modal_auth_desc">Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
       
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <button class="btn-outline" onclick="fazerLoginGoogle()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #0f172a; border: none; font-weight: 600; cursor: pointer;">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.35 11.1h-9.17v2.73h5.51c-.24 1.25-1.04 2.31-2.2 3.03v2.51h3.56c2.08-1.92 3.28-4.74 3.28-8.1 0-.69-.06-1.35-.18-2.17z"/><path fill="#34A853" d="M12.18 21.5c2.75 0 5.06-.91 6.74-2.47l-3.56-2.51c-.91.61-2.07.97-3.18.97-2.45 0-4.52-1.66-5.26-3.9H3.25v2.59c1.74 3.44 5.31 5.72 8.93 5.72z"/><path fill="#FBBC05" d="M6.92 13.59c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.12H3.25C2.58 8.45 2.2 9.94 2.2 11.65s.38 3.2 1.05 4.53l3.67-2.59z"/><path fill="#EA4335" d="M12.18 6.4c1.49 0 2.82.51 3.87 1.51l2.9-2.9C17.24 3.4 14.93 2.5 12.18 2.5 8.56 2.5 4.99 4.78 3.25 8.22l3.67 2.59c.74-2.24 2.81-3.9 5.26-3.9z"/></svg>
-          Continuar com Google
+          <span data-i18n="btn_google">Continuar com Google</span>
         </button>
 
         <div style="display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 2px 0;">
           <hr style="flex: 1; border-color: var(--border-color);">
-          <span style="padding: 0 10px;">ou com e-mail</span>
+          <span style="padding: 0 10px;" data-i18n="ou_email">ou com e-mail</span>
           <hr style="flex: 1; border-color: var(--border-color);">
         </div>
 
-        <input type="email" id="authEmail" class="filter-field" placeholder="Seu e-mail" style="width: 100%;">
-        <input type="password" id="authSenha" class="filter-field" placeholder="Sua senha" style="width: 100%;">
+        <input type="email" id="authEmail" class="filter-field" placeholder="Seu e-mail" style="width: 100%;" data-i18n-placeholder="placeholder_email">
+        <input type="password" id="authSenha" class="filter-field" placeholder="Sua senha" style="width: 100%;" data-i18n-placeholder="placeholder_senha">
         
         <div style="display: flex; gap: 8px;">
-          <button class="btn-gold" onclick="fazerLoginEmail()" style="flex: 1; justify-content: center;">Entrar</button>
-          <button class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;">Criar Conta</button>
+          <button class="btn-gold" onclick="fazerLoginEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_entrar_modal">Entrar</button>
+          <button class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_criar_conta">Criar Conta</button>
         </div>
 
-        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted); margin-top: 5px;">Fechar</button>
+        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted); margin-top: 5px;" data-i18n="btn_fechar">Fechar</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Envio de Proposta de Troca -->
+  <!-- Outros Modais (Propostas e Chat) mantidos simplificados -->
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
-      <h3>🔄 Enviar Proposta de Troca</h3>
+      <h3 data-i18n="modal_prop_titulo">🔄 Enviar Proposta de Troca</h3>
       <p id="modalPropostaSubtitulo">Ajuste os itens da proposta antes de enviar:</p>
-      
-      <div id="modalPropostaConteudo" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);">
-      </div>
-
+      <div id="modalPropostaConteudo" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);"></div>
       <div style="display: flex; gap: 8px;">
-        <button class="btn-gold" id="btnConfirmarProposta" style="flex: 1; justify-content: center;" onclick="enviarPropostaTroca()">🚀 Enviar Proposta</button>
-        <button class="btn-outline" onclick="fecharModalProposta()" style="flex: 1; justify-content: center;">Cancelar</button>
+        <button class="btn-gold" id="btnConfirmarProposta" style="flex: 1; justify-content: center;" onclick="enviarPropostaTroca()" data-i18n="btn_enviar_prop">🚀 Enviar Proposta</button>
+        <button class="btn-outline" onclick="fecharModalProposta()" style="flex: 1; justify-content: center;" data-i18n="btn_cancelar">Cancelar</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Central de Propostas com Chat Integrado -->
   <div id="modalCentralPropostas" class="modal-overlay">
     <div class="modal-box" style="max-width: 680px;">
-      <h3>📬 Central de Propostas & Chat</h3>
-      <p>Gerencie negociações e converse com outros colecionadores.</p>
-
+      <h3 data-i18n="modal_cent_titulo">📬 Central de Propostas & Chat</h3>
+      <p data-i18n="modal_cent_desc">Gerencie negociações e converse com outros colecionadores.</p>
       <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-        <button class="tab-btn active" id="tabPropRec" onclick="alternarAbaPropostas('recebidas')" style="flex: 1; font-size: 0.85rem;">📥 Recebidas</button>
-        <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;">📤 Enviadas</button>
+        <button class="tab-btn active" id="tabPropRec" onclick="alternarAbaPropostas('recebidas')" style="flex: 1; font-size: 0.85rem;" data-i18n="tab_recebidas">📥 Recebidas</button>
+        <button class="tab-btn" id="tabPropEnv" onclick="alternarAbaPropostas('enviadas')" style="flex: 1; font-size: 0.85rem;" data-i18n="tab_enviadas">📤 Enviadas</button>
       </div>
-
       <div id="listaPropostasContainer" style="text-align: left; background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 380px; overflow-y: auto; border: 1px solid var(--border-color);">
-        <div class="empty-state">Carregando propostas...</div>
+        <div class="empty-state" data-i18n="msg_carregando">Carregando propostas...</div>
       </div>
-
-      <button class="btn-outline" onclick="fecharModalPropostasRecebidas()" style="width: 100%;">Fechar</button>
+      <button class="btn-outline" onclick="fecharModalPropostasRecebidas()" style="width: 100%;" data-i18n="btn_fechar">Fechar</button>
     </div>
   </div>
 
-  <!-- Modal de Chat Interno Detalhado -->
   <div id="modalChatInterno" class="modal-overlay">
     <div class="modal-box" style="max-width: 600px; display: flex; flex-direction: column; height: 500px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
         <h3 id="chatTitulo" style="margin: 0; font-size: 1.1rem;">💬 Chat da Negociação</h3>
-        <button onclick="fecharModalChat()" class="btn-outline" style="padding: 2px 8px; font-size: 0.75rem;">✕ Fechar</button>
+        <button onclick="fecharModalChat()" class="btn-outline" style="padding: 2px 8px; font-size: 0.75rem;" data-i18n="btn_fechar">✕ Fechar</button>
       </div>
-
       <div id="chatMensagensContainer" style="flex: 1; background: var(--bg); border-radius: 8px; padding: 10px; overflow-y: auto; text-align: left; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
-        <div class="empty-state">Carregando mensagens...</div>
+        <div class="empty-state" data-i18n="msg_carregando">Carregando mensagens...</div>
       </div>
-
       <div style="display: flex; gap: 8px;">
-        <input type="text" id="inputMensagemChat" class="filter-field" placeholder="Digite sua mensagem..." onkeypress="if(event.key === 'Enter') enviarMensagemChat()" style="margin: 0;">
-        <button class="btn-gold" onclick="enviarMensagemChat()" style="padding: 8px 16px;">Enviar</button>
+        <input type="text" id="inputMensagemChat" class="filter-field" placeholder="Digite sua mensagem..." onkeypress="if(event.key === 'Enter') enviarMensagemChat()" style="margin: 0;" data-i18n-placeholder="placeholder_msg">
+        <button class="btn-gold" onclick="enviarMensagemChat()" style="padding: 8px 16px;" data-i18n="btn_enviar">Enviar</button>
       </div>
     </div>
   </div>
@@ -325,11 +308,188 @@
     let chatIntervalo = null;
     let matchesCacheMap = new Map();
 
-    // Preferências globais com valores padrão iniciais (PT-PT e EUR)
-    let moedaAtual = 'EUR';
     let idiomaAtual = 'pt-PT';
+    let moedaAtual = 'EUR';
 
-    function alternarTema() {
+    // Dicionário de Traduções para os idiomas suportados
+    const dicionarios = {
+      'pt-PT': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        btn_entrar: "Entrar / Criar Conta",
+        hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
+        hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
+        hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
+        hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
+        collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
+        collab_btn: "Contribuir com Fotos",
+        tab_market: "📦 Marketplace (Vendas)", tab_trocas: "🔄 Mercado de Trocas (Match)",
+        btn_propostas: "📬 Minhas Propostas",
+        busca_placeholder: "🔍 Pesquisar por nome ou número...",
+        filtro_todos_albuns: "📖 Todos os Álbuns", filtro_qualquer_dist: "📍 Qualquer Distância",
+        sec_vendas_titulo: "📦 Figurinhas à Venda", sec_trocas_titulo: "🔄 Mercado de Trocas Inteligente (Matches Próximos)",
+        msg_carregando_ofertas: "Carregando ofertas do marketplace...",
+        msg_carregando_matches: "Carregando matches de troca...",
+        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
+        modal_auth_titulo: "Acesse sua Conta", modal_auth_desc: "Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.",
+        btn_google: "Continuar com Google", ou_email: "ou com e-mail",
+        placeholder_email: "Seu e-mail", placeholder_senha: "Sua senha",
+        btn_entrar_modal: "Entrar", btn_criar_conta: "Criar Conta", btn_fechar: "Fechar",
+        modal_prop_titulo: "🔄 Enviar Proposta de Troca", btn_enviar_prop: "🚀 Enviar Proposta", btn_cancelar: "Cancelar",
+        modal_cent_titulo: "📬 Central de Propostas & Chat", modal_cent_desc: "Gerencie negociações e converse com outros colecionadores.",
+        tab_recebidas: "📥 Recebidas", tab_enviadas: "📤 Enviadas", msg_carregando: "Carregando...",
+        placeholder_msg: "Digite sua mensagem...", btn_enviar: "Enviar"
+      },
+      'pt-BR': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Figurinhas", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        btn_entrar: "Entrar / Criar Conta",
+        hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
+        hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
+        hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
+        hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
+        collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
+        collab_btn: "Contribuir com Fotos",
+        tab_market: "📦 Marketplace (Vendas)", tab_trocas: "🔄 Mercado de Trocas (Match)",
+        btn_propostas: "📬 Minhas Propostas",
+        busca_placeholder: "🔍 Pesquisar por nome ou número...",
+        filtro_todos_albuns: "📖 Todos os Álbuns", filtro_qualquer_dist: "📍 Qualquer Distância",
+        sec_vendas_titulo: "📦 Figurinhas à Venda", sec_trocas_titulo: "🔄 Mercado de Trocas Inteligente (Matches Próximos)",
+        msg_carregando_ofertas: "Carregando ofertas do marketplace...",
+        msg_carregando_matches: "Carregando matches de troca...",
+        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
+        modal_auth_titulo: "Acesse sua Conta", modal_auth_desc: "Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.",
+        btn_google: "Continuar com Google", ou_email: "ou com e-mail",
+        placeholder_email: "Seu e-mail", placeholder_senha: "Sua senha",
+        btn_entrar_modal: "Entrar", btn_criar_conta: "Criar Conta", btn_fechar: "Fechar",
+        modal_prop_titulo: "🔄 Enviar Proposta de Troca", btn_enviar_prop: "🚀 Enviar Proposta", btn_cancelar: "Cancelar",
+        modal_cent_titulo: "📬 Central de Propostas & Chat", modal_cent_desc: "Gerencie negociações e converse com outros colecionadores.",
+        tab_recebidas: "📥 Recebidas", tab_enviadas: "📤 Enviadas", msg_carregando: "Carregando...",
+        placeholder_msg: "Digite sua mensagem...", btn_enviar: "Enviar"
+      },
+      'en': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
+        btn_entrar: "Sign In / Register",
+        hero_titulo: "Organize Your Collection & Buy/Trade Stickers!",
+        hero_desc: "Create your free account right now. Get full control of your digital album, manage missing and duplicates, and trade directly in the marketplace.",
+        hero_feat1: "✅ Smart Album", hero_feat2: "✅ Sales Showcase", hero_feat3: "✅ Proximity Trade Market",
+        hero_btn_criar: "✨ Create Free Account", hero_btn_demo: "View Demo",
+        collab_titulo: "📸 Spotted a missing or low-quality sticker?",
+        collab_desc: "Help our community by submitting photos of missing stickers or cards for the official catalog.",
+        collab_btn: "Contribute Photos",
+        tab_market: "📦 Marketplace (Sales)", tab_trocas: "🔄 Trade Market (Match)",
+        btn_propostas: "📬 My Proposals",
+        busca_placeholder: "🔍 Search by name or number...",
+        filtro_todos_albuns: "📖 All Albums", filtro_qualquer_dist: "📍 Any Distance",
+        sec_vendas_titulo: "📦 Stickers for Sale", sec_trocas_titulo: "🔄 Smart Trade Market (Nearby Matches)",
+        msg_carregando_ofertas: "Loading marketplace offers...",
+        msg_carregando_matches: "Loading trade matches...",
+        footer_ajudar: "📸 Help Catalog", footer_contato: "✉️ Contact Us",
+        modal_auth_titulo: "Access Your Account", modal_auth_desc: "Sign in or create an account to control your album and trade stickers.",
+        btn_google: "Continue with Google", ou_email: "or with email",
+        placeholder_email: "Your email", placeholder_senha: "Your password",
+        btn_entrar_modal: "Sign In", btn_criar_conta: "Create Account", btn_fechar: "Close",
+        modal_prop_titulo: "🔄 Send Trade Proposal", btn_enviar_prop: "🚀 Send Proposal", btn_cancelar: "Cancel",
+        modal_cent_titulo: "📬 Proposals Center & Chat", modal_cent_desc: "Manage negotiations and chat with other collectors.",
+        tab_recebidas: "📥 Received", tab_enviadas: "📤 Sent", msg_carregando: "Loading...",
+        placeholder_msg: "Type your message...", btn_enviar: "Send"
+      },
+      'it': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
+        btn_entrar: "Accedi / Registrati",
+        hero_titulo: "Organizza la tua collezione e Vendi/Scambia figurine!",
+        hero_desc: "Crea il tuo account gratuito adesso. Gestisci il tuo album digitale, le figurine mancanti e doppie, e negozia direttamente nel marketplace.",
+        hero_feat1: "✅ Album Intelligente", hero_feat2: "✅ Vetrina Vendite", hero_feat3: "✅ Mercato Scambi per Vicinanza",
+        hero_btn_criar: "✨ Crea Account Gratuito", hero_btn_demo: "Vedi Demo",
+        collab_titulo: "📸 Hai notato una figurina mancante o di bassa qualità?",
+        collab_desc: "Aiuta la nostra comunità inviando foto delle figurine mancanti nel catalogo ufficiale.",
+        collab_btn: "Contribuisci con Foto",
+        tab_market: "📦 Marketplace (Vendite)", tab_trocas: "🔄 Mercato Scambi (Match)",
+        btn_propostas: "📬 Le Mie Proposte",
+        busca_placeholder: "🔍 Cerca per nome o numero...",
+        filtro_todos_albuns: "📖 Tutti gli Album", filtro_qualquer_dist: "📍 Qualsiasi Distanza",
+        sec_vendas_titulo: "📦 Figurine in Vendita", sec_trocas_titulo: "🔄 Mercato Scambi Intelligente (Match Vicini)",
+        msg_carregando_ofertas: "Caricamento offerte marketplace...",
+        msg_carregando_matches: "Caricamento match di scambio...",
+        footer_ajudar: "📸 Aiuta Catalogo", footer_contato: "✉️ Contattaci",
+        modal_auth_titulo: "Accedi al tuo Account", modal_auth_desc: "Accedi o crea un account per gestire il tuo album e scambiare figurine.",
+        btn_google: "Continua con Google", ou_email: "o con email",
+        placeholder_email: "La tua email", placeholder_senha: "La tua password",
+        btn_entrar_modal: "Accedi", btn_criar_conta: "Crea Account", btn_fechar: "Chiudi",
+        modal_prop_titulo: "🔄 Invia Proposta di Scambio", btn_enviar_prop: "🚀 Invia Proposta", btn_cancelar: "Annulla",
+        modal_cent_titulo: "📬 Centro Proposte & Chat", modal_cent_desc: "Gestisci le trattative e chatta con altri collezionisti.",
+        tab_recebidas: "📥 Ricevute", tab_enviadas: "📤 Inviate", msg_carregando: "Caricamento...",
+        placeholder_msg: "Scrivi un messaggio...", btn_enviar: "Invia"
+      },
+      'es': {
+        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
+        btn_entrar: "Entrar / Crear Cuenta",
+        hero_titulo: "¡Organiza tu Colección & Vende/Intercambia Figus!",
+        hero_desc: "Crea tu cuenta gratuita ahora mismo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
+        hero_feat1: "✅ Álbum Inteligente", hero_feat2: "✅ Vitrina de Ventas", hero_feat3: "✅ Mercado de Intercambio por Proximidad",
+        hero_btn_criar: "✨ Crear Cuenta Gratis", hero_btn_demo: "Ver Demostración",
+        collab_titulo: "📸 ¿Viste alguna figurita faltante o de baja calidad?",
+        collab_desc: "Ayuda a nuestra comunidad enviando fotos de las figuritas o cards faltantes en el catálogo oficial.",
+        collab_btn: "Contribuir con Fotos",
+        tab_market: "📦 Marketplace (Ventas)", tab_trocas: "🔄 Mercado de Intercambios (Match)",
+        btn_propostas: "📬 Mis Propuestas",
+        busca_placeholder: "🔍 Buscar por nombre o número...",
+        filtro_todos_albuns: "📖 Todos los Álbumes", filtro_qualquer_dist: "📍 Cualquier Distancia",
+        sec_vendas_titulo: "📦 Figuritas a la Venta", sec_trocas_titulo: "🔄 Mercado de Intercambios Inteligente (Matches Cercanos)",
+        msg_carregando_ofertas: "Cargando ofertas del marketplace...",
+        msg_carregando_matches: "Cargando matches de intercambio...",
+        footer_ajudar: "📸 Ayudar al Catálogo", footer_contato: "✉️ Contáctanos",
+        modal_auth_titulo: "Accede a tu Cuenta", modal_auth_desc: "Entra o crea tu cuenta para controlar tu álbum y negociar figuritas.",
+        btn_google: "Continuar con Google", ou_email: "o con correo electrónico",
+        placeholder_email: "Tu correo", placeholder_senha: "Tu contraseña",
+        btn_entrar_modal: "Entrar", btn_criar_conta: "Crear Cuenta", btn_fechar: "Cerrar",
+        modal_prop_titulo: "🔄 Enviar Propuesta de Intercambio", btn_enviar_prop: "🚀 Enviar Propuesta", btn_cancelar: "Cancelar",
+        modal_cent_titulo: "📬 Centro de Propuestas & Chat", modal_cent_desc: "Gestiona negociaciones y chatea con otros coleccionistas.",
+        tab_recebidas: "📥 Recibidas", tab_enviadas: "📤 Enviadas", msg_carregando: "Cargando...",
+        placeholder_msg: "Escribe tu mensaje...", btn_enviar: "Enviar"
+      },
+      'fr': {
+        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
+        btn_entrar: "Se connecter / Créer un compte",
+        hero_titulo: "Organisez votre collection & Vendez/Échangez vos stickers !",
+        hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
+        hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximité",
+        hero_btn_criar: "✨ Créer un Compte Gratuit", hero_btn_demo: "Voir la Démo",
+        collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
+        collab_desc: "Aidez notre communauté en envoyant des photos des stickers manquants dans le catalogue officiel.",
+        collab_btn: "Contribuer avec des Photos",
+        tab_market: "📦 Marketplace (Ventes)", tab_trocas: "🔄 Marché des Échanges (Match)",
+        btn_propostas: "📬 Mes Propositions",
+        busca_placeholder: "🔍 Rechercher par nom ou numéro...",
+        filtro_todos_albuns: "📖 Tous les Albums", filtro_qualquer_dist: "📍 N'importe Quelle Distance",
+        sec_vendas_titulo: "📦 Stickers à Vendre", sec_trocas_titulo: "🔄 Marché d'Échange Intelligent (Matchs Proches)",
+        msg_carregando_ofertas: "Chargement des offres du marketplace...",
+        msg_carregando_matches: "Chargement des matchs d'échange...",
+        footer_ajudar: "📸 Aide au Catalogue", footer_contato: "✉️ Contactez-nous",
+        modal_auth_titulo: "Accédez à votre Compte", modal_auth_desc: "Connectez-vous ou créez un compte pour contrôler votre album et échanger des stickers.",
+        btn_google: "Continuer avec Google", ou_email: "ou avec un e-mail",
+        placeholder_email: "Votre e-mail", placeholder_senha: "Votre mot de passe",
+        btn_entrar_modal: "Se connecter", btn_criar_conta: "Créer un Compte", btn_fechar: "Fermer",
+        modal_prop_titulo: "🔄 Envoyer une Proposition d'Échange", btn_enviar_prop: "🚀 Envoyer la Proposition", btn_cancelar: "Annuler",
+        modal_cent_titulo: "📬 Centre de Propositions & Chat", modal_cent_desc: "Gérez les négociations et discutez avec d'autres collectionneurs.",
+        tab_recebidas: "📥 Reçues", tab_enviadas: "📤 Envoyées", msg_carregando: "Chargement...",
+        placeholder_msg: "Tapez votre message...", btn_enviar: "Envoyer"
+      }
+    };
+
+    function aplicarTraducao() {
+      const dic = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const chave = el.getAttribute('data-i18n');
+        if (dic[chave]) el.innerText = dic[chave];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const chave = el.getAttribute('data-i18n-placeholder');
+        if (dic[chave]) el.setAttribute('placeholder', dic[chave]);
+      });
+    }
+
+    async function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
       const novo = atual === 'light' ? 'dark' : 'light';
       if (novo === 'light') {
@@ -341,36 +501,25 @@
       }
     }
 
-    async function mudarMoedaGlobal(valor) {
-      moedaAtual = valor;
-      localStorage.setItem('moeda_app', valor);
-
-      // Se o usuário estiver logado, salva diretamente no banco
-      if (usuarioLogadoGlobal) {
-        await _supabase
-          .from('usuarios_cadastrados')
-          .update({ moeda_preferida: valor })
-          .eq('id', usuarioLogadoGlobal.id);
-      }
-      renderizarAtivo();
-    }
-
     async function mudarIdiomaGlobal(valor) {
       idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
 
-      // Sincroniza a moeda padrão caso o idioma mude, se desejado
-      if (valor === 'pt-BR') mudarMoedaGlobal('BRL');
-      else if (valor === 'en') mudarMoedaGlobal('USD');
-      else if (['pt-PT', 'es', 'fr'].includes(valor)) mudarMoedaGlobal('EUR');
+      // Define automaticamente a moeda com base no idioma selecionado[cite: 7]
+      if (valor === 'pt-BR') moedaAtual = 'BRL';
+      else if (valor === 'en') moedaAtual = 'USD';
+      else if (['pt-PT', 'es', 'fr', 'it'].includes(valor)) moedaAtual = 'EUR';
 
-      // Se o usuário estiver logado, salva no banco de dados
+      localStorage.setItem('moeda_app', moedaAtual);
+
       if (usuarioLogadoGlobal) {
         await _supabase
           .from('usuarios_cadastrados')
           .update({ idioma_preferido: valor, moeda_preferida: moedaAtual })
           .eq('id', usuarioLogadoGlobal.id);
       }
+      
+      aplicarTraducao();
       renderizarAtivo();
     }
 
@@ -429,7 +578,6 @@
         }
         perfilLogadoGlobal = perfil;
 
-        // Recupera idioma e moeda do banco do usuário logado (com fallback para pt-PT / EUR)
         idiomaAtual = perfil?.idioma_preferido || 'pt-PT';
         moedaAtual = perfil?.moeda_preferida || 'EUR';
 
@@ -452,7 +600,7 @@
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
           <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
-          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 5px;">Sair</button>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 5px;" data-i18n="btn_sair">Sair</button>
         `;
 
         const { count: qtdPendentes } = await _supabase
@@ -469,18 +617,14 @@
           badge.style.display = 'none';
         }
       } else {
-        // Para visitantes, usa o localStorage ou o padrão PT-PT / EUR
         idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
         moedaAtual = localStorage.getItem('moeda_app') || 'EUR';
       }
 
-      // Seta os selects na interface com os valores carregados
-      const selMoeda = document.getElementById('selectMoedaGlobal');
-      if (selMoeda) selMoeda.value = moedaAtual;
-
       const selIdioma = document.getElementById('selectIdiomaGlobal');
       if (selIdioma) selIdioma.value = idiomaAtual;
 
+      aplicarTraducao();
       await carregarDadosGlobais();
     }
 
@@ -591,7 +735,7 @@
 
     function popularFiltroAlbuns() {
       const select = document.getElementById('selectFiltroAlbum');
-      let html = '<option value="todos">📖 Todos os Álbuns</option>';
+      let html = `<option value="todos">${dicionarios[idiomaAtual]?.filtro_todos_albuns || '📖 Todos os Álbuns'}</option>`;
       const albunsOrdenados = Array.from(albunsGlobaisMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
 
       albunsOrdenados.forEach(([id, nome]) => {
@@ -626,11 +770,11 @@
     function renderizarMarketplace(itens) {
       const grid = document.getElementById('marketplaceGrid');
       if (itens.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhuma figurinha disponível para venda no momento.</div>';
+        grid.innerHTML = `<div class="empty-state">${dicionarios[idiomaAtual]?.msg_carregando_ofertas || 'Nenhuma figurinha disponível.'}</div>`;
         return;
       }
 
-      const localesMap = { 'pt-PT': 'pt-PT', 'pt-BR': 'pt-BR', 'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR' };
+      const localesMap = { 'pt-PT': 'pt-PT', 'pt-BR': 'pt-BR', 'en': 'en-US', 'it': 'it-IT', 'es': 'es-ES', 'fr': 'fr-FR' };
       const localeAtual = localesMap[idiomaAtual] || 'pt-PT';
 
       grid.innerHTML = itens.map(item => {
@@ -668,12 +812,12 @@
       const grid = document.getElementById('trocasGrid');
       
       if (!usuarioLogadoGlobal) {
-        grid.innerHTML = '<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca!</div>';
+        grid.innerHTML = `<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca!</div>`;
         return;
       }
 
       if (matches.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Nenhum colecionador próximo possui figurinhas repetidas correspondentes às suas faltantes no momento.</div>';
+        grid.innerHTML = `<div class="empty-state">Nenhum colecionador próximo possui figurinhas repetidas correspondentes às suas faltantes no momento.</div>`;
         return;
       }
 
@@ -694,13 +838,9 @@
         }
 
         const jaTemProposta = propostasPendentesMap.has(match.user_id);
-
-        let botaoAcaoHtml = '';
-        if (jaTemProposta) {
-          botaoAcaoHtml = `<button class="btn-acao btn-pendente" style="width: 100%; padding: 8px; font-size: 0.75rem;" disabled>⏳ Proposta Pendente</button>`;
-        } else {
-          botaoAcaoHtml = `<button onclick="abrirModalPropostaPorUserId('${match.user_id}')" class="btn-acao btn-troca" style="width: 100%; padding: 8px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
-        }
+        let botaoAcaoHtml = jaTemProposta 
+          ? `<button class="btn-acao btn-pendente" style="width: 100%; padding: 8px; font-size: 0.75rem;" disabled>⏳ Proposta Pendente</button>`
+          : `<button onclick="abrirModalPropostaPorUserId('${match.user_id}')" class="btn-acao btn-troca" style="width: 100%; padding: 8px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
 
         return `
           <div class="market-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
@@ -709,19 +849,10 @@
                 <span style="font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">👤 ${match.nome}</span>
                 <span style="font-size: 0.7rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
               </div>
-              
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">
-                Possui <strong style="color: var(--gold);">${totalItens}</strong> figurinha(s) que te faltam:
-              </div>
-
-              <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                ${miniBadges}
-              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">Possui <strong style="color: var(--gold);">${totalItens}</strong> figurinha(s):</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">${miniBadges}</div>
             </div>
-
-            <div style="margin-top: 4px;">
-              ${botaoAcaoHtml}
-            </div>
+            <div>${botaoAcaoHtml}</div>
           </div>
         `;
       }).join('');
@@ -730,10 +861,8 @@
     function abrirModalPropostaPorUserId(userId) {
       const match = matchesCacheMap.get(userId);
       if (!match) return;
-
       destinatarioAtualId = match.user_id;
       itensPropostaAtual = JSON.parse(JSON.stringify(match.itens));
-
       document.getElementById('modalPropostaSubtitulo').innerHTML = `Ajuste os itens da proposta para <strong>${match.nome}</strong> antes de enviar:`;
       renderizarConteudoModalProposta();
       document.getElementById('modalProposta').style.display = 'flex';
@@ -741,7 +870,6 @@
 
     function renderizarConteudoModalProposta() {
       let albunsAgrupados = {};
-      
       itensPropostaAtual.forEach((i, indexOriginal) => {
         const fig = i.figurinhas || {};
         const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
@@ -751,23 +879,20 @@
 
       let conteudoHtml = '';
       for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
-        const quantidadeTotalAlbum = listaItens.length;
-        
         conteudoHtml += `
           <div style="margin-top: 6px; margin-bottom: 8px; background: var(--bg); padding: 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
-              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${quantidadeTotalAlbum} item(ns)</span>
+              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${listaItens.length} item(ns)</span>
             </div>
         `;
-        
         listaItens.forEach(item => {
           const fig = item.figurinhas || {};
           let numFig = String(fig.numero || '').replace(/^#+/, '');
           conteudoHtml += `
             <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 3px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button onclick="removerItemModalEnvio(${item.indexOriginal})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Retirar da proposta">🗑️ Retirar</button>
+              <button onclick="removerItemModalEnvio(${item.indexOriginal})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;">🗑️ Retirar</button>
             </div>
           `;
         });
@@ -775,12 +900,11 @@
       }
 
       if (itensPropostaAtual.length === 0) {
-        conteudoHtml = '<div class="empty-state" style="padding: 20px;">Nenhum item restante na proposta.</div>';
+        conteudoHtml = '<div class="empty-state" style="padding: 20px;">Nenhum item restante.</div>';
         document.getElementById('btnConfirmarProposta').style.display = 'none';
       } else {
         document.getElementById('btnConfirmarProposta').style.display = 'inline-flex';
       }
-
       document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
     }
 
@@ -789,43 +913,17 @@
       renderizarConteudoModalProposta();
     }
 
-    function fecharModalProposta() {
-      document.getElementById('modalProposta').style.display = 'none';
-    }
+    function fecharModalProposta() { document.getElementById('modalProposta').style.display = 'none'; }
 
     async function enviarPropostaTroca() {
       if (!usuarioLogadoGlobal || !destinatarioAtualId) return;
-
-      const planoUsuario = String(perfilLogadoGlobal?.plano || 'gratis').toLowerCase().trim();
-      const limites = { 'gratis': 3, 'premium': 30, 'vitalicio': 50 };
-      const limiteMaximo = limites[planoUsuario] || 3;
-      const hoje = new Date().toISOString().split('T')[0];
-
-      let { data: controle } = await _supabase
-        .from('historico_propostas_diarias')
-        .select('*')
-        .eq('user_id', usuarioLogadoGlobal.id)
-        .eq('data', hoje)
-        .maybeSingle();
-
-      let enviadasHoje = controle ? controle.propostas_enviadas : 0;
-
-      if (enviadasHoje >= limiteMaximo) {
-        alert(`⚠️ Você atingiu o limite de ${limiteMaximo} propostas diárias do seu plano (${planoUsuario.toUpperCase()}). Faça upgrade para enviar mais!`);
-        fecharModalProposta();
-        return;
-      }
-
       const { data: novaProposta, error: erroProp } = await _supabase
         .from('propostas_troca')
         .insert([{ remetente_id: usuarioLogadoGlobal.id, destinatario_id: destinatarioAtualId, status: 'pendente' }])
         .select()
         .maybeSingle();
 
-      if (erroProp || !novaProposta) {
-        alert("Erro ao enviar proposta: " + (erroProp?.message || 'Erro desconhecido'));
-        return;
-      }
+      if (erroProp || !novaProposta) return alert("Erro ao enviar proposta.");
 
       const itensInsert = itensPropostaAtual.map(i => ({
         proposta_id: novaProposta.id,
@@ -834,19 +932,7 @@
       }));
 
       await _supabase.from('proposta_itens').insert(itensInsert);
-
-      if (controle) {
-        await _supabase
-          .from('historico_propostas_diarias')
-          .update({ propostas_enviadas: enviadasHoje + 1 })
-          .eq('id', controle.id);
-      } else {
-        await _supabase
-          .from('historico_propostas_diarias')
-          .insert([{ user_id: usuarioLogadoGlobal.id, data: hoje, propostas_enviadas: 1 }]);
-      }
-
-      alert("🎉 Proposta enviada com sucesso! Acompanhe na central de propostas.");
+      alert("🎉 Proposta enviada com sucesso!");
       fecharModalProposta();
       initHome();
     }
@@ -863,7 +949,6 @@
 
     function formatarItensComSelecao(itens, propostaId) {
       let albunsAgrupados = {};
-
       itens.forEach(i => {
         const fig = i.figurinhas || {};
         const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
@@ -873,13 +958,11 @@
 
       let html = '';
       for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
-        const quantidadeTotalAlbum = listaItens.length;
-        
         html += `
           <div style="margin-top: 6px; margin-bottom: 6px; background: var(--bg); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
               <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
-              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${quantidadeTotalAlbum} item(ns)</span>
+              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${listaItens.length} item(ns)</span>
             </div>
         `;
         listaItens.forEach(item => {
@@ -888,7 +971,7 @@
           html += `
             <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 2px;">
               <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button type="button" onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;" title="Remover item da proposta">🗑️ Retirar</button>
+              <button type="button" onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;">🗑️ Retirar</button>
             </div>
           `;
         });
@@ -898,149 +981,77 @@
     }
 
     window.removerItemProposta = async function(itemPropostaId, propostaId) {
-      if (!confirm("Deseja remover esta figurinha da proposta?")) return;
-
-      const { error } = await _supabase
-        .from('proposta_itens')
-        .delete()
-        .eq('id', itemPropostaId);
-
-      if (error) {
-        alert("Erro ao remover item: " + error.message);
-      } else {
-        const { data: restantes } = await _supabase
-          .from('proposta_itens')
-          .select('id')
-          .eq('proposta_id', propostaId);
-
-        if (!restantes || restantes.length === 0) {
-          await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
-          await _supabase.from('propostas_troca').delete().eq('id', propostaId);
-          alert("Como todos os itens foram removidos, a proposta foi cancelada automaticamente.");
-        } else {
-          alert("Item removido com sucesso da proposta!");
-        }
-        await alternarAbaPropostas(tipoAbaPropostaModal);
-      }
+      if (!confirm("Deseja remover esta figurinha?")) return;
+      await _supabase.from('proposta_itens').delete().eq('id', itemPropostaId);
+      await alternarAbaPropostas(tipoAbaPropostaModal);
     };
 
     async function cancelarPropostaEnviada(propostaId) {
-      if (!confirm("Tem certeza que deseja cancelar esta proposta enviada?")) return;
-
+      if (!confirm("Cancelar esta proposta?")) return;
       await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
       await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
-      const { error } = await _supabase.from('propostas_troca').delete().eq('id', propostaId);
-
-      if (error) {
-        alert("Erro ao cancelar proposta: " + error.message);
-      } else {
-        alert("Proposta cancelada e limpa do banco de dados!");
-        await alternarAbaPropostas('enviadas');
-      }
+      await _supabase.from('propostas_troca').delete().eq('id', propostaId);
+      await alternarAbaPropostas('enviadas');
     }
 
     async function alternarAbaPropostas(tipo) {
       tipoAbaPropostaModal = tipo;
       document.getElementById('tabPropRec').classList.toggle('active', tipo === 'recebidas');
       document.getElementById('tabPropEnv').classList.toggle('active', tipo === 'enviadas');
-
       const container = document.getElementById('listaPropostasContainer');
       container.innerHTML = '<div class="empty-state">Carregando...</div>';
-
       if (!usuarioLogadoGlobal) return;
 
       if (tipo === 'recebidas') {
-        const { data: propostas, error } = await _supabase
-          .from('propostas_troca')
-          .select(`id, status, remetente_id`)
-          .eq('destinatario_id', usuarioLogadoGlobal.id)
-          .order('id', { ascending: false });
-
-        if (error || !propostas || propostas.length === 0) {
-          container.innerHTML = '<div class="empty-state">Nenhuma proposta recebida no momento.</div>';
-          return;
-        }
+        const { data: propostas } = await _supabase.from('propostas_troca').select(`id, status, remetente_id`).eq('destinatario_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
+        if (!propostas || propostas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma proposta recebida.</div>'; return; }
 
         let htmlFinal = '';
         for (const p of propostas) {
           const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
+          const { data: itensProp } = await _supabase.from('proposta_itens').select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`).eq('proposta_id', p.id);
+          const itensHtml = formatarItensComSelecao(itensProp || [], p.id);
           
-          const { data: itensProp } = await _supabase
-            .from('proposta_itens')
-            .select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
-            .eq('proposta_id', p.id);
-
-          const itens = itensProp || [];
-          const itensHtml = formatarItensComSelecao(itens, p.id);
-          
-          let acoesHtml = '';
-          if (p.status === 'pendente') {
-            acoesHtml = `
-              <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
-                <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar & Atualizar</button>
-                <button class="btn-outline" onclick="atualizarStatusProposta('${p.id}', 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
-              </div>
-            `;
-          } else {
-            acoesHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
-          }
+          let acoesHtml = p.status === 'pendente' ? `
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+              <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
+              <button class="btn-outline" onclick="atualizarStatusProposta('${p.id}', 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
+            </div>
+          ` : `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
 
           htmlFinal += `
             <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
-                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${remetente.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
+                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${remetente.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Chat</button>
               </div>
-              <div style="font-size: 0.80rem; color: var(--text-muted); margin-top: 4px;">Itens solicitados:</div>
-              ${itensHtml}
-              ${acoesHtml}
+              ${itensHtml} ${acoesHtml}
             </div>
           `;
         }
         container.innerHTML = htmlFinal;
-
       } else {
-        const { data: propostas, error } = await _supabase
-          .from('propostas_troca')
-          .select(`id, status, destinatario_id`)
-          .eq('remetente_id', usuarioLogadoGlobal.id)
-          .order('id', { ascending: false });
-
-        if (error || !propostas || propostas.length === 0) {
-          container.innerHTML = '<div class="empty-state">Você ainda não enviou nenhuma proposta.</div>';
-          return;
-        }
+        const { data: propostas } = await _supabase.from('propostas_troca').select(`id, status, destinatario_id`).eq('remetente_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
+        if (!propostas || propostas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma proposta enviada.</div>'; return; }
 
         let htmlFinal = '';
         for (const p of propostas) {
           const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
-          
-          const { data: itensProp } = await _supabase
-            .from('proposta_itens')
-            .select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`)
-            .eq('proposta_id', p.id);
-
-          const itens = itensProp || [];
-          const itensHtml = formatarItensComSelecao(itens, p.id);
+          const { data: itensProp } = await _supabase.from('proposta_itens').select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`).eq('proposta_id', p.id);
+          const itensHtml = formatarItensComSelecao(itensProp || [], p.id);
 
           let botoesEnvioHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
           if (p.status === 'pendente') {
-            botoesEnvioHtml += `
-              <div style="margin-top: 6px;">
-                <button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar Envio</button>
-              </div>
-            `;
+            botoesEnvioHtml += `<div style="margin-top: 6px;"><button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar</button></div>`;
           }
 
           htmlFinal += `
             <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</span>
-                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${destinatario.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Abrir Chat</button>
+                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${destinatario.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Chat</button>
               </div>
-              <div style="font-size: 0.80rem; color: var(--text-muted); margin-top: 4px;">Itens da proposta:</div>
-              ${itensHtml}
-              ${botoesEnvioHtml}
+              ${itensHtml} ${botoesEnvioHtml}
             </div>
           `;
         }
@@ -1050,65 +1061,28 @@
 
     async function atualizarStatusProposta(propostaId, novoStatus) {
       if (novoStatus === 'aceita') {
-        const { data: itensProp } = await _supabase
-          .from('proposta_itens')
-          .select('figurinha_id')
-          .eq('proposta_id', propostaId);
-
-        const { data: propInfo } = await _supabase
-          .from('propostas_troca')
-          .select('remetente_id, destinatario_id')
-          .eq('id', propostaId)
-          .single();
-
+        const { data: itensProp } = await _supabase.from('proposta_itens').select('figurinha_id').eq('proposta_id', propostaId);
+        const { data: propInfo } = await _supabase.from('propostas_troca').select('remetente_id, destinatario_id').eq('id', propostaId).single();
         if (propInfo && itensProp) {
           for (const item of itensProp) {
-            const { data: cadDest } = await _supabase
-              .from('usuario_cardeneta')
-              .select('id, quantidade')
-              .eq('user_id', propInfo.destinatario_id)
-              .eq('figurinha_id', item.figurinha_id)
-              .maybeSingle();
+            const { data: cadDest } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', propInfo.destinatario_id).eq('figurinha_id', item.figurinha_id).maybeSingle();
+            if (cadDest) await _supabase.from('usuario_cardeneta').update({ quantidade: (cadDest.quantidade || 1) + 1 }).eq('id', cadDest.id);
+            else await _supabase.from('usuario_cardeneta').insert([{ user_id: propInfo.destinatario_id, figurinha_id: item.figurinha_id, quantidade: 1 }]);
 
-            if (cadDest) {
-              await _supabase.from('usuario_cardeneta').update({ quantidade: (cadDest.quantidade || 1) + 1 }).eq('id', cadDest.id);
-            } else {
-              await _supabase.from('usuario_cardeneta').insert([{ user_id: propInfo.destinatario_id, figurinha_id: item.figurinha_id, quantidade: 1 }]);
-            }
-
-            const { data: cadRem } = await _supabase
-              .from('usuario_cardeneta')
-              .select('id, quantidade')
-              .eq('user_id', propInfo.remetente_id)
-              .eq('figurinha_id', item.figurinha_id)
-              .maybeSingle();
-
+            const { data: cadRem } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', propInfo.remetente_id).eq('figurinha_id', item.figurinha_id).maybeSingle();
             if (cadRem) {
-              if (cadRem.quantidade > 1) {
-                await _supabase.from('usuario_cardeneta').update({ quantidade: cadRem.quantidade - 1 }).eq('id', cadRem.id);
-              } else {
-                await _supabase.from('usuario_cardeneta').delete().eq('id', cadRem.id);
-              }
+              if (cadRem.quantidade > 1) await _supabase.from('usuario_cardeneta').update({ quantidade: cadRem.quantidade - 1 }).eq('id', cadRem.id);
+              else await _supabase.from('usuario_cardeneta').delete().eq('id', cadRem.id);
             }
           }
         }
-
         await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
         await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
       }
-
-      const { error } = await _supabase
-        .from('propostas_troca')
-        .update({ status: novoStatus })
-        .eq('id', propostaId);
-
-      if (error) {
-        alert("Erro ao atualizar proposta: " + error.message);
-      } else {
-        alert(`Proposta ${novoStatus} com sucesso! Cadernetas atualizadas de ambos os lados.`);
-        await alternarAbaPropostas(tipoAbaPropostaModal);
-        carregarDadosGlobais();
-      }
+      await _supabase.from('propostas_troca').update({ status: novoStatus }).eq('id', propostaId);
+      alert(`Proposta ${novoStatus} com sucesso!`);
+      await alternarAbaPropostas(tipoAbaPropostaModal);
+      carregarDadosGlobais();
     }
 
     async function abrirChatInterno(propostaId, nomeOutroUsuario) {
@@ -1116,7 +1090,6 @@
       document.getElementById('chatTitulo').innerText = `💬 Chat com ${nomeOutroUsuario}`;
       document.getElementById('modalChatInterno').style.display = 'flex';
       await carregarMensagensChat();
-
       if (chatIntervalo) clearInterval(chatIntervalo);
       chatIntervalo = setInterval(carregarMensagensChat, 4000);
     }
@@ -1129,42 +1102,15 @@
 
     async function carregarMensagensChat() {
       if (!propostaChatAtualId) return;
-
-      const { data: mensagens, error } = await _supabase
-        .from('proposta_mensagens')
-        .select('*')
-        .eq('proposta_id', propostaChatAtualId)
-        .order('created_at', { ascending: true });
-
+      const { data: mensagens } = await _supabase.from('proposta_mensagens').select('*').eq('proposta_id', propostaChatAtualId).order('created_at', { ascending: true });
       const container = document.getElementById('chatMensagensContainer');
-      if (error || !mensagens || mensagens.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma mensagem enviada ainda. Comece a conversa!</div>';
-        return;
-      }
+      if (!mensagens || mensagens.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma mensagem ainda.</div>'; return; }
 
       container.innerHTML = mensagens.map(m => {
         const meuEnvio = m.remetente_id === usuarioLogadoGlobal.id;
         const alinhamento = meuEnvio ? 'align-self: flex-end; background: #38bdf8; color: #0f172a;' : 'align-self: flex-start; background: var(--bg); color: var(--text-main);';
         const hora = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        let acoesMsg = '';
-        if (meuEnvio) {
-          const mensagemEscapada = encodeURIComponent(m.mensagem);
-          acoesMsg = `
-            <div style="display: flex; gap: 6px; font-size: 0.6rem; margin-top: 3px; justify-content: flex-end; opacity: 0.8;">
-              <span onclick="editarMensagemChat('${m.id}', '${mensagemEscapada}')" style="cursor: pointer; text-decoration: underline;">Editar</span>
-              <span onclick="apagarMensagemChat('${m.id}')" style="cursor: pointer; text-decoration: underline;">Apagar</span>
-            </div>
-          `;
-        }
-
-        return `
-          <div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; word-break: break-word; border: 1px solid var(--border-color);">
-            <div>${m.mensagem}</div>
-            <div style="font-size: 0.6rem; opacity: 0.7; text-align: right; margin-top: 2px;">${hora}</div>
-            ${acoesMsg}
-          </div>
-        `;
+        return `<div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; border: 1px solid var(--border-color);"><div>${m.mensagem}</div><div style="font-size: 0.6rem; opacity: 0.7; text-align: right; margin-top: 2px;">${hora}</div></div>`;
       }).join('');
       container.scrollTop = container.scrollHeight;
     }
@@ -1173,39 +1119,10 @@
       const input = document.getElementById('inputMensagemChat');
       const texto = input.value.trim();
       if (!texto || !propostaChatAtualId || !usuarioLogadoGlobal) return;
-
-      const { error } = await _supabase
-        .from('proposta_mensagens')
-        .insert([{
-          proposta_id: propostaChatAtualId,
-          remetente_id: usuarioLogadoGlobal.id,
-          mensagem: texto
-        }]);
-
-      if (error) {
-        alert("Erro ao enviar mensagem: " + error.message);
-      } else {
-        input.value = '';
-        await carregarMensagensChat();
-      }
+      await _supabase.from('proposta_mensagens').insert([{ proposta_id: propostaChatAtualId, remetente_id: usuarioLogadoGlobal.id, mensagem: texto }]);
+      input.value = '';
+      await carregarMensagensChat();
     }
-
-    window.apagarMensagemChat = async function(msgId) {
-      if (!confirm("Deseja apagar esta mensagem permanentemente?")) return;
-      const { error } = await _supabase.from('proposta_mensagens').delete().eq('id', msgId);
-      if (error) alert("Erro ao apagar: " + error.message);
-      else await carregarMensagensChat();
-    };
-
-    window.editarMensagemChat = async function(msgId, textoCodificado) {
-      const textoAntigo = decodeURIComponent(textoCodificado);
-      const novoTexto = prompt("Edite sua mensagem:", textoAntigo);
-      if (novoTexto === null || !novoTexto.trim()) return;
-
-      const { error } = await _supabase.from('proposta_mensagens').update({ mensagem: novoTexto.trim() }).eq('id', msgId);
-      if (error) alert("Erro ao editar: " + error.message);
-      else await carregarMensagensChat();
-    };
 
     function filtrarAtivo() {
       const termo = document.getElementById('inputBusca').value.toLowerCase();
@@ -1222,27 +1139,14 @@
         renderizarMarketplace(filtrados);
       } else {
         let filtrados = matchesTrocasGlobal.map(match => {
-          let matchRaio = true;
-          if (raioFiltro !== 'todos') {
-            const limiteKm = parseFloat(raioFiltro);
-            if (match.distanciaKm === null || match.distanciaKm > limiteKm) matchRaio = false;
-          }
-          if (!matchRaio) return null;
-
+          if (raioFiltro !== 'todos' && (match.distanciaKm === null || match.distanciaKm > parseFloat(raioFiltro))) return null;
           let itensFiltrados = match.itens.filter(i => {
             const fig = i.figurinhas || {};
-            const nomeFig = String(fig.nome || '').toLowerCase();
-            const numFig = String(fig.numero || '').toLowerCase();
-            const passaTermo = nomeFig.includes(termo) || numFig.includes(termo);
-            const passaAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
-            return passaTermo && passaAlbum;
+            return (String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo)) && (albumFiltro === 'todos' || String(fig.album_id) === albumFiltro);
           });
-
           if (itensFiltrados.length === 0) return null;
-
           return { ...match, itens: itensFiltrados };
         }).filter(Boolean);
-
         renderizarTrocasMatches(filtrados);
       }
     }
@@ -1251,11 +1155,7 @@
     function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
 
     async function fazerLoginGoogle() {
-      const { error } = await _supabase.auth.signInWithOAuth({ 
-        provider: 'google', 
-        options: { redirectTo: window.location.origin + window.location.pathname } 
-      });
-      if (error) alert("Erro ao autenticar com Google: " + error.message);
+      await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
     }
 
     async function fazerLoginEmail() {
@@ -1263,7 +1163,7 @@
       const password = document.getElementById('authSenha').value;
       if (!email || !password) return alert("Preencha e-mail e senha!");
       const { error } = await _supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("Erro ao entrar: " + error.message);
+      if (error) alert("Erro: " + error.message);
       else window.location.reload();
     }
 
@@ -1272,8 +1172,8 @@
       const password = document.getElementById('authSenha').value;
       if (!email || !password) return alert("Preencha e-mail e senha!");
       const { error } = await _supabase.auth.signUp({ email, password });
-      if (error) alert("Erro ao criar conta: " + error.message);
-      else { alert("Conta criada com sucesso!"); window.location.reload(); }
+      if (error) alert("Erro: " + error.message);
+      else { alert("Conta criada!"); window.location.reload(); }
     }
 
     async function fazerLogout() {
