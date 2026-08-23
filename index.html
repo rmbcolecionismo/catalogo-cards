@@ -64,6 +64,27 @@
 
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
+    /* Estilos para a Seção de Destaques */
+    .destaques-container {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, var(--bg-card) 100%);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+    }
+    .destaque-badge-tag {
+      background: var(--gold);
+      color: #0f172a;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
@@ -157,25 +178,25 @@
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <!-- Seletor de Idioma via Bandeiras -->
         <div class="language-selector-flags">
-  <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-    <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-    <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-    <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-    <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-    <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-    <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
-  </button>
-</div>
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
+            <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
+            <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
+            <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
+            <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
+            <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
+            <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
+          </button>
+        </div>
         
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
@@ -235,6 +256,14 @@
     </div>
 
     <div id="secaoMarketplace">
+      <!-- Seção de Figurinhas em Destaque -->
+      <div class="destaques-container" id="blocoDestaquesMarket" style="display: none;">
+        <div class="section-title" style="color: var(--gold);">⭐ Figurinhas em Destaque (Mais Desejadas)</div>
+        <div id="marketplaceDestaquesGrid" class="marketplace-grid">
+          <!-- Os destaques serão injetados aqui via JS -->
+        </div>
+      </div>
+
       <div class="section-title" data-i18n="sec_vendas_titulo">📦 Figurinhas à Venda</div>
       <div id="marketplaceGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_ofertas">Carregando ofertas do marketplace...</div>
@@ -353,6 +382,9 @@
 
     let idiomaAtual = 'pt-PT';
     let moedaAtual = 'EUR';
+
+    // Lista de tipos considerados Destaques
+    const tiposDestaqueGlobais = ['golden baller', 'limited edition', 'rare', 'special'];
 
     const dicionarios = {
       'pt-PT': {
@@ -698,7 +730,7 @@
 
       const { data: dataMarket, error: errorMarket } = await _supabase
         .from('vitrine_ofertas')
-        .select(`id, preco, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+        .select(`id, preco, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, tipo, categoria, album_id, albuns ( id, nome ) )`)
         .order('id', { ascending: false });
       
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
@@ -729,6 +761,9 @@
 
     function renderizarMarketplace() {
       const grid = document.getElementById('marketplaceGrid');
+      const gridDestaques = document.getElementById('marketplaceDestaquesGrid');
+      const blocoDestaques = document.getElementById('blocoDestaquesMarket');
+      
       const busca = document.getElementById('inputBusca').value.toLowerCase();
       const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
 
@@ -740,18 +775,63 @@
         return (nomeMatch || numMatch) && albumMatch;
       });
 
-      if (filtrados.length === 0) {
+      // Separar Destaques e Normais
+      const itensDestaques = filtrados.filter(item => {
+        const tipoFigurinha = String(item.figurinha.tipo || item.figurinha.categoria || '').toLowerCase();
+        return tiposDestaqueGlobais.some(t => tipoFigurinha.includes(t));
+      });
+
+      const itensNormais = filtrados.filter(item => {
+        const tipoFigurinha = String(item.figurinha.tipo || item.figurinha.categoria || '').toLowerCase();
+        return !tiposDestaqueGlobais.some(t => tipoFigurinha.includes(t));
+      });
+
+      // 1. Renderizar Destaques
+      if (itensDestaques.length > 0 && !busca && filtroAlbum === 'todos') {
+        blocoDestaques.style.display = 'block';
+        let htmlDestaques = '';
+        itensDestaques.forEach(item => {
+          const fig = item.figurinha;
+          const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
+          const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
+          const tipoTexto = fig.tipo || fig.categoria || 'Destaque';
+
+          htmlDestaques += `
+            <div class="market-card" style="border-color: var(--gold);">
+              <div class="market-img-wrap">
+                <span class="destaque-badge-tag" style="position: absolute; top: 8px; left: 8px; z-index: 2;">${tipoTexto}</span>
+                <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="market-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              </div>
+              <div class="market-info">
+                <span class="market-num">${fig.numero} • ${fig.albuns?.nome || 'Álbum'}</span>
+                <span class="market-name" title="${fig.nome}">${fig.nome}</span>
+                <span class="market-preco">${precoFormatado}</span>
+                <span class="market-vendedor">Vendedor: <strong>${vendedor.nome}</strong></span>
+              </div>
+              <div class="market-footer">
+                <button class="btn-acao btn-perfil" onclick="verPerfilVendedor('${item.user_id}')">Ver Perfil / Comprar</button>
+              </div>
+            </div>
+          `;
+        });
+        gridDestaques.innerHTML = htmlDestaques;
+      } else {
+        blocoDestaques.style.display = 'none';
+      }
+
+      // 2. Renderizar Figurinhas à Venda Comuns
+      if (itensNormais.length === 0 && itensDestaques.length === 0) {
         grid.innerHTML = `<div class="empty-state">Nenhuma oferta encontrada no marketplace.</div>`;
         return;
       }
 
-      let html = '';
-      filtrados.forEach(item => {
+      let htmlNormais = '';
+      itensNormais.forEach(item => {
         const fig = item.figurinha;
         const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
 
-        html += `
+        htmlNormais += `
           <div class="market-card">
             <div class="market-img-wrap">
               <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="market-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
@@ -768,7 +848,7 @@
           </div>
         `;
       });
-      grid.innerHTML = html;
+      grid.innerHTML = htmlNormais;
     }
 
     function renderizarTrocas() {
