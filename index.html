@@ -87,7 +87,6 @@
     .btn-acao:hover { opacity: 0.9; }
     .btn-troca { background: #38bdf8; color: #0f172a; }
     .btn-perfil { background: var(--gold); color: #0f172a; }
-    .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
     .language-selector-flags {
       display: flex;
@@ -769,48 +768,92 @@
     }
 
     async function renderizarTrocas() {
-  const grid = document.getElementById('trocasGrid');
-  
-  if (!usuarioLogadoGlobal) {
-    grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
-    return;
-  }
+      const grid = document.getElementById('trocasGrid');
+      
+      if (!usuarioLogadoGlobal) {
+        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
+        return;
+      }
 
-  grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
+      grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
-  try {
-        // CORRIGIDO: Tabela alterada de 'usuario_figurinha' para 'usuario_cardeneta'
-    const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
-      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
-      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
-    ]);
+      try {
+        const raioFiltro = document.getElementById('selectFiltroRaio').value;
 
-    if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
-      grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
-      return;
-    }
+        // 1. Pega o perfil do usuário logado para saber a localização
+        const { data: meuPerfil } = await _supabase
+          .from('usuarios_cadastrados')
+          .select('latitude, longitude, nome')
+          .eq('id', usuarioLogadoGlobal.id)
+          .single();
 
-    const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+        // 2. Busca o que o usuário logado possui na cardeneta
+        const { data: minhaCardeneta } = await _supabase
+          .from('usuario_cardeneta')
+          .select('figurinha_id, quantidade')
+          .eq('user_id', usuarioLogadoGlobal.id);
 
-        // CORRIGIDO: Tabela alterada aqui também
-    const { data: outrosUsuariosFiguritas } = await _supabase
-      .from('usuario_cardeneta')
-      .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-      .neq('user_id', usuarioLogadoGlobal.id);
+        const idsPossuidosSet = new Set((minhaCardeneta || []).map(item => item.figurinha_id));
 
-    if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
-      grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
-      return;
-    }
+        // 3. Busca TODAS as figurinhas cadastradas no sistema geral com dados do álbum[cite: 4]
+        const { data: todasFigurinhas } = await _supabase
+          .from('figurinhas')
+          .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+
+        if (!todasFigurinhas || todasFigurinhas.length === 0) {
+          grid.innerHTML = `<div class="empty-state">Não há figurinhas cadastradas no sistema geral.</div>`;
+          return;
+        }
+
+        // Descobre as FALTANTES do usuário logado (tudo na tabela geral que NÃO está na cardeneta dele)[cite: 4]
+        const minhasFaltantesSet = new Set(
+          todasFigurinhas.filter(f => !idsPossuidosSet.has(f.id)).map(f => f.id)
+        );
+
+        // 4. Busca a cardeneta de TODOS os outros usuários
+        const { data: cardenetaOutros } = await _supabase
+          .from('usuario_cardeneta')
+          .select('user_id, figurinha_id, quantidade')
+          .neq('user_id', usuarioLogadoGlobal.id);
+
+        if (!cardenetaOutros || cardenetaOutros.length === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
+          return;
+        }
+
+        // Mapeia o que cada usuário possui
+        const usuariosPossesMap = {};
+        cardenetaOutros.forEach(item => {
+          if (!usuariosPossesMap[item.user_id]) {
+            usuariosPossesMap[item.user_id] = {
+              possuidos: new Set()
+            };
+          }
+          usuariosPossesMap[item.user_id].possuidos.add(item.figurinha_id);
+        });
+
+        // 5. Cruzamento de Matches (O outro tem o que eu preciso)
+        const matchesPorUsuario = {};
+
+        for (const [outroId, dados] of Object.entries(usuariosPossesMap)) {
+          const ofereceParaMimIds = [...dados.possuidos].filter(figId => minhasFaltantesSet.has(figId));
+
+          if (ofereceParaMimIds.length > 0) {
+            const ofereceParaMimObjs = todasFigurinhas.filter(f => ofereceParaMimIds.includes(f.id));
+
+            matchesPorUsuario[outroId] = {
+              usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
+              ofereceParaMim: ofereceParaMimObjs
+            };
+          }
+        }
 
         let html = '';
         let contadorMatches = 0;
 
         for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
-          if (matchData.ofereceParaMim.length === 0) continue;
-
           let distanciaKm = null;
-          if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+          if (meuPerfil?.latitude && meuPerfil?.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
             distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
             if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
               continue;
@@ -833,7 +876,7 @@
                 <hr style="border-color: var(--border-color); margin: 8px 0;">
                 <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;" title="${f.nome}">#${f.numero}</span>`).join('')}
                 </div>
               </div>
               <div class="market-footer">
