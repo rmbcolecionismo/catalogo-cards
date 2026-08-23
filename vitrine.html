@@ -30,7 +30,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
@@ -38,7 +38,7 @@
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
     
-    .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
+    .container { max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
 
     .header-title-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     h1 { font-size: 1.8rem; color: var(--gold); font-weight: 800; display: flex; align-items: center; gap: 10px; }
@@ -52,24 +52,25 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; width: 100%; }
     .filter-field:focus { border-color: var(--gold); }
 
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    .card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    /* Grelha ajustada para até 6 itens por linha (minmax menor) */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .card:hover { transform: translateY(-2px); border-color: var(--gold); }
     
-    .card-img-wrap { width: 100px; height: 130px; background: var(--bg); border-radius: 8px; padding: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
+    .card-img-wrap { width: 85px; height: 110px; background: var(--bg); border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
     .card img { width: 100%; height: 100%; object-fit: contain; }
     
-    .card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-    .card-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+    .card-title { font-size: 0.8rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .card-subtitle { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
     
-    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 5px; text-align: left; }
-    .input-row { display: flex; gap: 8px; width: 100%; }
-    .input-wrapper { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .input-wrapper label { font-size: 0.7rem; color: var(--gold); font-weight: 700; }
-    .input-wrapper select, .input-wrapper input { width: 100%; padding: 7px; font-size: 0.8rem; text-align: center; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; }
+    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 2px; text-align: left; }
+    .input-row { display: flex; gap: 6px; width: 100%; }
+    .input-wrapper { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); font-weight: 700; }
+    .input-wrapper select, .input-wrapper input { width: 100%; padding: 5px; font-size: 0.75rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; }
     .input-wrapper select:focus, .input-wrapper input:focus { border-color: var(--gold); }
 
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 5px; font-size: 0.85rem; transition: 0.2s; box-shadow: 0 4px 10px rgba(245,158,11,0.2); }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 7px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 4px; font-size: 0.78rem; transition: 0.2s; box-shadow: 0 3px 8px rgba(245,158,11,0.2); }
     .btn-add-vitrine:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .pagination-nav { text-align: center; margin: 30px 0; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
@@ -92,7 +93,7 @@
 <body>
 
   <div class="container">
-    <!-- Menu Superior Igual da Index -->
+    <!-- Menu Superior -->
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Início</a>
@@ -176,7 +177,7 @@
     let meusPrecosQtd = {};
     let idiomaAtual = 'pt-PT';
 
-   async function init() {
+    async function init() {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
@@ -189,7 +190,6 @@
       }
       authUserId = session.user.id;
 
-      // Buscar perfil do usuário na tabela correta
       let { data: perfil } = await _supabase
         .from('usuarios_cadastrados')
         .select('*')
@@ -214,8 +214,8 @@
 
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-          <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
-          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 8px; font-size: 0.75rem; margin-left: 5px;">Sair</button>
+          <span style="font-size: 0.8rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 3px 6px; font-size: 0.7rem; margin-left: 3px;">Sair</button>
         `;
 
         const planoNome = (perfil.plano || 'gratis').toUpperCase();
@@ -223,13 +223,11 @@
 
         const funcaoUsuario = String(perfil.funcao || '').toLowerCase().trim();
         if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
-          // CORRIGIDO: Utilizando o ID correto 'linkAdmin' em vez de 'adminLinks'
           const linkAdminEl = document.getElementById('linkAdmin');
           if (linkAdminEl) linkAdminEl.style.display = 'inline';
         }
       }
 
-      // Carregar álbuns para o select de filtro
       const { data: albuns } = await _supabase.from('albuns').select('*');
       if (albuns) {
         const selectAlbum = document.getElementById('filterAlbum');
@@ -239,10 +237,9 @@
         });
       }
 
-      // Carregar ofertas salvas na vitrine do usuário
       const { data: vitrineSalva } = await _supabase
         .from('vitrine_ofertas')
-        .select('figurinha_id, preco, estoque, tipo, qualidade')
+        .select('figurinha_id, preco, estoque, qualidade')
         .eq('user_id', authUserId);
 
       if (vitrineSalva) {
@@ -250,7 +247,6 @@
           meusPrecosQtd[item.figurinha_id] = { 
             preco: item.preco, 
             estoque: item.estoque, 
-            tipo: item.tipo || 'venda',
             qualidade: item.qualidade || '100% (Nova / Perfeita)'
           };
         });
@@ -265,21 +261,32 @@
       const termo = document.getElementById('search').value.trim();
       const inicio = paginaAtual * ITENS_POR_PAGINA;
       
-      let query = _supabase.from('figurinhas').select('*', { count: 'exact' }).order('numero', { ascending: true });
-      if (albumId !== 'todos') query = query.eq('album_id', albumId);
-      if (termo !== "") {
-        const t = termo.replace('#', '');
-        query = (!isNaN(t) && t !== "") ? query.or(`numero.eq.${t},nome.ilike.%${termo}%`) : query.ilike('nome', `%${termo}%`);
-      }
+      try {
+        let query = _supabase.from('figurinhas').select('*', { count: 'exact' }).order('numero', { ascending: true });
+        
+        if (albumId !== 'todos') {
+          query = query.eq('album_id', albumId);
+        }
+        
+        if (termo !== "") {
+          const t = termo.replace('#', '');
+          query = (!isNaN(t) && t !== "") ? query.or(`numero.eq.${t},nome.ilike.%${termo}%`) : query.ilike('nome', `%${termo}%`);
+        }
 
-      const { data, count, error } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
-      if (error) {
-        console.error("Erro ao buscar figurinhas:", error.message);
-        return;
-      }
+        const { data, count, error } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
+        
+        if (error) {
+          console.error("Erro retornado pelo Supabase:", error);
+          document.getElementById('vitrineGrid').innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #ef4444;">Erro ao carregar: ${error.message}</div>`;
+          return;
+        }
 
-      renderizarCards(data || []);
-      renderizarPaginacao(count || 0);
+        renderizarCards(data || []);
+        renderizarPaginacao(count || 0);
+      } catch (err) {
+        console.error("Erro inesperado:", err);
+        document.getElementById('vitrineGrid').innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #ef4444;">Erro inesperado ao consultar a base de dados.</div>`;
+      }
     }
 
     function renderizarCards(lista) {
@@ -290,8 +297,7 @@
       }
 
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, tipo: 'venda', qualidade: '100% (Nova / Perfeita)' };
-        const estiloPreco = salvo.tipo === 'troca' ? 'display: none;' : 'display: flex;';
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, qualidade: '100% (Nova / Perfeita)' };
 
         return `
           <div class="card">
@@ -303,14 +309,6 @@
             
             <div class="card-inputs">
               <div class="input-wrapper">
-                <label>Tipo de Anúncio</label>
-                <select id="tipo-${f.id}" onchange="alternarTipo(${f.id})">
-                  <option value="venda" ${salvo.tipo === 'venda' ? 'selected' : ''}>Venda</option>
-                  <option value="troca" ${salvo.tipo === 'troca' ? 'selected' : ''}>Troca</option>
-                </select>
-              </div>
-
-              <div class="input-wrapper">
                 <label>Qualidade</label>
                 <select id="qualidade-${f.id}">
                   <option value="100% (Nova / Perfeita)" ${salvo.qualidade === '100% (Nova / Perfeita)' ? 'selected' : ''}>✨ 100% Nova</option>
@@ -321,8 +319,8 @@
               </div>
 
               <div class="input-row">
-                <div class="input-wrapper" id="wrapper-preco-${f.id}" style="${estiloPreco}">
-                  <label>Preço</label>
+                <div class="input-wrapper">
+                  <label>Preço (€/$)</label>
                   <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01" min="0">
                 </div>
                 <div class="input-wrapper">
@@ -332,31 +330,19 @@
               </div>
             </div>
 
-            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar Anúncio</button>
+            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar</button>
           </div>
         `;
       }).join('');
     }
 
-    function alternarTipo(fId) {
-      const tipo = document.getElementById(`tipo-${fId}`).value;
-      const wrapperPreco = document.getElementById(`wrapper-preco-${fId}`);
-      if (tipo === 'troca') {
-        wrapperPreco.style.display = 'none';
-      } else {
-        wrapperPreco.style.display = 'flex';
-      }
-    }
-
     async function adicionarNaVitrine(fId) {
-      const tipo = document.getElementById(`tipo-${fId}`).value;
       const qualidade = document.getElementById(`qualidade-${fId}`).value;
-      const preco = tipo === 'troca' ? 0 : (parseFloat(document.getElementById(`preco-${fId}`).value) || 0);
+      const preco = parseFloat(document.getElementById(`preco-${fId}`).value) || 0;
       const estoque = parseInt(document.getElementById(`qtd-${fId}`).value) || 0;
 
       const estoqueAnterior = meusPrecosQtd[fId]?.estoque || 0;
 
-      // Validação de limite de anúncios com base na tabela configuracoes_planos
       if (estoque > 0 && estoqueAnterior === 0) {
         const planoUsuario = perfilLogado?.plano || 'gratis';
         
@@ -369,7 +355,6 @@
         const limiteMaximo = config ? config.limite_anuncios : 10;
 
         if (limiteMaximo !== -1) {
-          // Conta quantos anúncios ativos o utilizador possui na vitrine (estoque > 0)
           const { count } = await _supabase
             .from('vitrine_ofertas')
             .select('*', { count: 'exact', head: true })
@@ -389,7 +374,7 @@
         figurinha_id: fId, 
         preco: preco, 
         estoque: estoque, 
-        tipo: tipo, 
+        tipo: 'venda', 
         qualidade: qualidade,
         nome_vendedor: perfilLogado?.nome || 'Colecionador'
       }, { onConflict: 'user_id, figurinha_id' });
@@ -397,8 +382,8 @@
       if (error) {
         alert("Erro ao salvar anúncio: " + error.message);
       } else {
-        meusPrecosQtd[fId] = { preco, estoque, tipo, qualidade };
-        alert("✅ Anúncio salvo com sucesso na sua vitrine!");
+        meusPrecosQtd[fId] = { preco, estoque, qualidade };
+        alert("✅ Anúncio salvo com sucesso!");
         buscarDados();
       }
     }
