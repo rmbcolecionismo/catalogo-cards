@@ -176,7 +176,7 @@
     let meusPrecosQtd = {};
     let idiomaAtual = 'pt-PT';
 
-    async function init() {
+   async function init() {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
@@ -197,7 +197,6 @@
         .maybeSingle();
 
       if (!perfil) {
-        // Tenta buscar por email caso o id não bata certo
         const { data: perfilEmail } = await _supabase
           .from('usuarios_cadastrados')
           .select('*')
@@ -224,7 +223,9 @@
 
         const funcaoUsuario = String(perfil.funcao || '').toLowerCase().trim();
         if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
-          document.getElementById('adminLinks').style.display = 'inline';
+          // CORRIGIDO: Utilizando o ID correto 'linkAdmin' em vez de 'adminLinks'
+          const linkAdminEl = document.getElementById('linkAdmin');
+          if (linkAdminEl) linkAdminEl.style.display = 'inline';
         }
       }
 
