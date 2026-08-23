@@ -252,7 +252,7 @@
       buscarDados();
     }
 
-    async function buscarDados() {
+    aasync function buscarDados() {
       const albumId = document.getElementById('filterAlbum').value;
       const termo = document.getElementById('search').value.trim();
       const inicio = paginaAtual * ITENS_POR_PAGINA;
@@ -266,11 +266,13 @@
         
         if (termo !== "") {
           const termoLimpo = termo.replace('#', '').trim();
+          
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
-            // Busca por número exato ou nome contendo o termo
-            query = query.or(`numero.eq.${termoLimpo},nome.ilike.%${termo}%`);
+            // Se for número (ex: 1, 01, 001, #001), busca exata pelo número OU texto no nome/selecao
+            query = query.or(`numero.eq.${termoLimpo},numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           } else {
-            query = query.ilike('nome', `%${termo}%`);
+            // Se for texto (ex: Messi, Brasil), busca no nome e na selecao_escuderia
+            query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           }
         }
 
