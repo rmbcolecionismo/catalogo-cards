@@ -303,7 +303,8 @@
           const termoLimpo = termo.replace('#', '').trim();
           
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
-            query = query.or(`numero.eq.${termoLimpo},numero.eq.${termo},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+            const numeroInt = parseInt(termoLimpo, 10);
+            query = query.or(`numero.eq.${numeroInt},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           } else {
             query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
           }
