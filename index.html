@@ -155,7 +155,7 @@
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Seletor de Idioma Atualizado: Apenas Ícones de Bandeiras -->
+        <!-- Seletor de Idioma via Bandeiras -->
         <div class="language-selector-flags">
           <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">🇵🇹</button>
           <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">🇧🇷</button>
@@ -342,7 +342,6 @@
     let idiomaAtual = 'pt-PT';
     let moedaAtual = 'EUR';
 
-    // Dicionário de Traduções para os idiomas suportados
     const dicionarios = {
       'pt-PT': {
         nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
@@ -469,7 +468,7 @@
         sec_vendas_titulo: "📦 Figuritas a la Venta", sec_trocas_titulo: "🔄 Mercado de Intercambios Inteligente (Matches Cercanos)",
         msg_carregando_ofertas: "Cargando ofertas del marketplace...",
         msg_carregando_matches: "Cargando matches de intercambio...",
-        footer_ajudar: "📸 Ayudar al Catálogo", footer_contato: "✉️ Contáctanos",
+        footer_ajudar: "📸 Ayudar al Catalogo", footer_contato: "✉️ Contáctanos",
         modal_auth_titulo: "Accede a tu Cuenta", modal_auth_desc: "Entra o crea tu cuenta para controlar tu álbum y negociar figuritas.",
         btn_google: "Continuar con Google", ou_email: "o con correo electrónico",
         placeholder_email: "Tu correo", placeholder_senha: "Tu contraseña",
@@ -519,7 +518,6 @@
         if (dic[chave]) el.setAttribute('placeholder', dic[chave]);
       });
 
-      // Atualiza o destaque visual do botão de bandeira ativo
       document.querySelectorAll('.flag-option').forEach(btn => {
         if (btn.getAttribute('data-lang') === idiomaAtual) {
           btn.classList.add('active');
@@ -545,7 +543,6 @@
       idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
 
-      // Define automaticamente a moeda com base no idioma selecionado
       if (valor === 'pt-BR') moedaAtual = 'BRL';
       else if (valor === 'en') moedaAtual = 'USD';
       else if (['pt-PT', 'es', 'fr', 'it'].includes(valor)) moedaAtual = 'EUR';
