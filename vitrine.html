@@ -148,7 +148,7 @@
       </div>
       <div class="filter-group">
         <label>Buscar Figurinha:</label>
-        <input type="text" id="search" class="filter-field" placeholder="🔍 Ex: 10, #001, Messi, Brasil...">
+        <input type="text" id="search" class="filter-field" placeholder="🔍 Nº, Nome, Seleção/Escuderia ou Tipo...">
       </div>
     </div>
 
@@ -304,9 +304,9 @@
           
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
             const numeroInt = parseInt(termoLimpo, 10);
-            query = query.or(`numero.eq.${numeroInt},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+            query = query.or(`numero.eq.${numeroInt},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
           } else {
-            query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%`);
+            query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
           }
         }
 
