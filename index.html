@@ -89,7 +89,6 @@
     .btn-perfil { background: var(--gold); color: #0f172a; }
     .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
-    /* Estilos do Seletor de Idioma via Bandeiras */
     .language-selector-flags {
       display: flex;
       align-items: center;
@@ -155,27 +154,26 @@
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Seletor de Idioma via Bandeiras -->
         <div class="language-selector-flags">
-  <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-    <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-    <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-    <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-    <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-    <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
-  </button>
-  <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-    <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
-  </button>
-</div>
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
+            <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
+            <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
+            <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
+            <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
+            <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
+            <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
+          </button>
+        </div>
         
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
@@ -257,7 +255,6 @@
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <!-- Modais -->
   <div id="modalAuth" class="modal-overlay">
     <div class="modal-box">
       <h3 data-i18n="modal_auth_titulo">Acesse sua Conta</h3>
@@ -771,9 +768,109 @@
       grid.innerHTML = html;
     }
 
-    function renderizarTrocas() {
+    async function renderizarTrocas() {
       const grid = document.getElementById('trocasGrid');
-      grid.innerHTML = `<div class="empty-state">Funcionalidade de Mercado de Trocas Inteligente em carregamento...</div>`;
+      
+      if (!usuarioLogadoGlobal) {
+        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
+        return;
+      }
+
+      grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
+
+      try {
+        const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
+          _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
+          _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
+        ]);
+
+        if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
+          grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
+          return;
+        }
+
+        const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+
+        const { data: outrosUsuariosFiguritas } = await _supabase
+          .from('usuario_figurinha')
+          .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+          .neq('user_id', usuarioLogadoGlobal.id);
+
+        if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
+          return;
+        }
+
+        const matchesPorUsuario = {};
+        const raioFiltro = document.getElementById('selectFiltroRaio').value;
+        const meuPerfil = perfilLogadoGlobal || {};
+
+        outrosUsuariosFiguritas.forEach(item => {
+          if (!item.figurinha) return;
+          const outroId = item.user_id;
+          
+          if (!matchesPorUsuario[outroId]) {
+            matchesPorUsuario[outroId] = {
+              usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
+              ofereceParaMim: []
+            };
+          }
+
+          if (item.status === 'repetida' && minhasFaltantesIds.has(item.figurinha_id)) {
+            matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
+          }
+        });
+
+        let html = '';
+        let contadorMatches = 0;
+
+        for (const [outroId, matchData] of Object.entries(matchesPorUsuario)) {
+          if (matchData.ofereceParaMim.length === 0) continue;
+
+          let distanciaKm = null;
+          if (meuPerfil.latitude && meuPerfil.longitude && matchData.usuario.latitude && matchData.usuario.longitude) {
+            distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, matchData.usuario.latitude, matchData.usuario.longitude);
+            if (raioFiltro !== 'todos' && distanciaKm > parseFloat(raioFiltro)) {
+              continue;
+            }
+          }
+
+          contadorMatches++;
+          const distTexto = distanciaKm !== null ? `📍 Aprox. ${distanciaKm.toFixed(1)} km` : '';
+          const whatsAppNum = matchData.usuario.telefone_whats;
+          const botaoContato = whatsAppNum 
+            ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(matchData.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao btn-troca">💬 Negociar via WhatsApp</a>`
+            : `<button class="btn-acao btn-troca" onclick="abrirModalPropostaTroca('${outroId}')">🔄 Enviar Proposta</button>`;
+
+          html += `
+            <div class="market-card" style="grid-column: span 1;">
+              <div class="market-info" style="padding: 15px;">
+                <span class="market-num" style="color: #38bdf8;">🔄 Match de Troca</span>
+                <span class="market-name" style="font-size: 1rem; font-weight: 700;">${matchData.usuario.nome}</span>
+                <span class="market-vendedor">${distTexto}</span>
+                <hr style="border-color: var(--border-color); margin: 8px 0;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                  ${matchData.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+                </div>
+              </div>
+              <div class="market-footer">
+                ${botaoContato}
+              </div>
+            </div>
+          `;
+        }
+
+        if (contadorMatches === 0) {
+          grid.innerHTML = `<div class="empty-state">Nenhum match de troca encontrado com os critérios atuais ou raio selecionado.</div>`;
+        } else {
+          grid.innerHTML = html;
+        }
+
+      } catch (err) {
+        console.error("Erro ao carregar matches de troca:", err);
+        grid.innerHTML = `<div class="empty-state">Erro ao processar o mercado de trocas inteligente.</div>`;
+      }
     }
 
     function filtrarAtivo() {
@@ -831,4 +928,3 @@
   </script>
 </body>
 </html>
-
