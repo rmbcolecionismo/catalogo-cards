@@ -581,7 +581,7 @@
       document.getElementById('modalCriarCardeneta').style.display = 'none';
     }
 
-  async function salvarNovaCaderneta() {
+ async function salvarNovaCaderneta() {
   const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
   const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
   
@@ -592,28 +592,31 @@
     .from('usuarios_cadastrados')
     .select('plano')
     .eq('id', usuarioAtual.id)
-    .single();
+    .maybeSingle();
 
-  if (erroUsuario || !dadosUsuario) {
-    alert("Erro ao identificar o plano do usuário.");
-    return;
-  }
-
-  const nomePlanoUsuario = dadosUsuario.plano; // Ex: 'gratis', 'premium', etc.
+  // Se não encontrar o perfil ou houver erro, assumimos 'gratis' por segurança
+  const nomePlanoUsuario = (dadosUsuario && dadosUsuario.plano) ? dadosUsuario.plano : 'gratis';
 
   // 2. Buscar o limite de cadernetas permitido para este plano na tabela configuracoes_planos
+  let limitePermitido = 1; // Padrão de segurança para o plano grátis se falhar
+  
   const { data: dadosConfigPlano, error: erroConfig } = await _supabase
     .from('configuracoes_planos')
     .select('limite_cardenetas')
     .eq('plano', nomePlanoUsuario)
-    .single();
+    .maybeSingle();
 
-  if (erroConfig || !dadosConfigPlano) {
-    alert("Erro ao verificar as configurações do plano.");
-    return;
+  if (!erroConfig && dadosConfigPlano) {
+    limitePermitido = dadosConfigPlano.limite_cardenetas;
+  } else {
+    // Fallback caso a tabela de configurações use outro nome de coluna (ex: 'nome' ou 'id')
+    // ou se o plano for explicitamente 'gratis'
+    if (nomePlanoUsuario === 'gratis') {
+      limitePermitido = 1;
+    } else {
+      limitePermitido = 999; // Se for um plano pago e der erro na tabela, libera por precaução
+    }
   }
-
-  const limitePermitido = dadosConfigPlano.limite_cardenetas;
 
   // 3. Contar quantos álbuns o usuário já cadastrou na tabela usuario_albuns
   const { count, error: countError } = await _supabase
@@ -626,12 +629,11 @@
     return;
   }
 
+  const totalCadernetasAtuais = count || 0;
+
   // 4. Validação: Se a quantidade atual atingiu ou passou do limite do plano
-  if (count >= limitePermitido) {
+  if (totalCadernetasAtuais >= limitePermitido) {
     alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso **Plano Premium Anual** para desbloquear álbuns ilimitados!`);
-    
-    // Opcional: Redirecionar para página de planos
-    // window.location.href = "planos.html";
     return;
   }
 
