@@ -769,60 +769,39 @@
     }
 
     async function renderizarTrocas() {
-      const grid = document.getElementById('trocasGrid');
-      
-      if (!usuarioLogadoGlobal) {
-        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
-        return;
-      }
+  const grid = document.getElementById('trocasGrid');
+  
+  if (!usuarioLogadoGlobal) {
+    grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente.</div>`;
+    return;
+  }
 
-      grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
+  grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
-      try {
-       const [{ data: repetidasUser, error: errRepetidas }, { data: faltantesUser, error: errFaltantes }] = await Promise.all([
-  _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
-  _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
-]);
+  try {
+        // CORRIGIDO: Tabela alterada de 'usuario_figurinha' para 'usuario_cardeneta'
+    const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
+      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
+      _supabase.from('usuario_cardeneta').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
+    ]);
 
-if (errRepetidas) console.error("Erro repetidas:", errRepetidas.message);
-if (errFaltantes) console.error("Erro faltantes:", errFaltantes.message);
+    if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
+      grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
+      return;
+    }
 
-        if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
-          grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
-          return;
-        }
+    const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
 
-        const minhasFaltantesIds = new Set(faltantesUser.map(f => f.figurinha_id));
+        // CORRIGIDO: Tabela alterada aqui também
+    const { data: outrosUsuariosFiguritas } = await _supabase
+      .from('usuario_cardeneta')
+      .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
+      .neq('user_id', usuarioLogadoGlobal.id);
 
-        const { data: outrosUsuariosFiguritas } = await _supabase
-          .from('usuario_figurinha')
-          .select(`user_id, status, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
-          .neq('user_id', usuarioLogadoGlobal.id);
-
-        if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
-          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
-          return;
-        }
-
-        const matchesPorUsuario = {};
-        const raioFiltro = document.getElementById('selectFiltroRaio').value;
-        const meuPerfil = perfilLogadoGlobal || {};
-
-        outrosUsuariosFiguritas.forEach(item => {
-          if (!item.figurinha) return;
-          const outroId = item.user_id;
-          
-          if (!matchesPorUsuario[outroId]) {
-            matchesPorUsuario[outroId] = {
-              usuario: usuariosMapGlobal[outroId] || { nome: 'Colecionador' },
-              ofereceParaMim: []
-            };
-          }
-
-          if (item.status === 'repetida' && minhasFaltantesIds.has(item.figurinha_id)) {
-            matchesPorUsuario[outroId].ofereceParaMim.push(item.figurinha);
-          }
-        });
+    if (!outrosUsuariosFiguritas || outrosUsuariosFiguritas.length === 0) {
+      grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui figurinhas cadastradas no momento.</div>`;
+      return;
+    }
 
         let html = '';
         let contadorMatches = 0;
