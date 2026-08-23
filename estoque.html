@@ -2,57 +2,79 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciador de Cadastro de Figurinhas - Painel Profissional</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gerenciador de Cadastro de Figurinhas - Estoque Master</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root { 
       --gold: #f59e0b; 
       --gold-dark: #d97706;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      --card-bg: rgba(30, 41, 59, 0.85);
+      --bg: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       --border-color: rgba(255, 255, 255, 0.1);
+      --modal-bg: #1e293b;
+    }
+
+    [data-theme="light"] {
+      --gold: #d97706;
+      --bg: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: rgba(0,0,0,0.1);
+      --modal-bg: #ffffff;
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     
-    body { background: var(--bg-gradient); min-height: 100vh; color: #f8fafc; padding: 1.5rem; }
+    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 1.5rem; transition: 0.3s; }
     
     header { max-width: 1400px; margin: 0 auto 1.5rem; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem; background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); backdrop-filter: blur(10px); }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem; background: var(--bg-card); padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
-    .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 30px; }
+    .user-profile-top { display: flex; align-items: center; gap: 0.75rem; background: var(--bg); border: 1px solid var(--border-color); padding: 0.4rem 1rem; border-radius: 30px; }
     .user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
-    .user-greeting { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; }
+    .user-greeting { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+    
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; text-decoration: none; text-align: center; transition: 0.2s; }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
     .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
     .btn-logout:hover { background: #ef4444; color: white; }
+
+    .language-selector-flags { display: flex; align-items: center; gap: 5px; background: var(--bg); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 8px; }
+    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: 0.2s; opacity: 0.6; }
+    .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
+    .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
 
     h1 { font-size: 1.7rem; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 0.5rem; }
     
     .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
     
-    .controls-panel { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    .controls-panel { background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
     .filter-group { flex: 1; min-width: 250px; }
     
-    label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select { width: 100%; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: #0f172a; color: white; outline: none; font-size: 0.85rem; transition: border-color 0.2s; }
+    label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select { width: 100%; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; font-size: 0.85rem; transition: border-color 0.2s; }
     input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15); }
 
-    .tabela-container { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    .tabela-container { background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
     
     .tabela-estoque { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 1100px; }
-    .tabela-estoque th { background: rgba(15, 23, 42, 0.8); color: var(--gold); padding: 1rem; font-weight: 700; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-    .tabela-estoque td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    .tabela-estoque th { background: var(--bg); color: var(--gold); padding: 1rem; font-weight: 700; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    .tabela-estoque td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; color: var(--text-main); }
     .tabela-estoque tr:hover { background: rgba(255, 255, 255, 0.02); }
 
     .item-foto-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 85px; margin: 0 auto; }
-    .item-foto { width: 60px; height: 75px; object-fit: contain; background: #0f172a; border-radius: 6px; border: 1px solid var(--border-color); padding: 2px; }
+    .item-foto { width: 60px; height: 75px; object-fit: contain; background: var(--bg); border-radius: 6px; border: 1px solid var(--border-color); padding: 2px; }
     
     .input-tabela { padding: 0.45rem 0.6rem; font-size: 0.8rem; border-radius: 6px; }
     
@@ -72,7 +94,7 @@
     .btn-load-more { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
     .btn-load-more:hover { background: var(--gold); color: #0f172a; }
 
-    .vazio-mensagem { text-align: center; padding: 3rem; color: #94a3b8; font-size: 0.95rem; }
+    .vazio-mensagem { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.95rem; }
   </style>
 </head>
 <body>
@@ -80,21 +102,34 @@
   <header>
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Home</a>
-        <a href="perfil.html">👤 Meu Perfil</a>
-        <a href="vitrine.html">🛍️ Vitrine</a>
-        <div id="adminLinks" style="display:inline; display:none;">
-          <a href="admin.html">⚙️ Painel Admin</a>
-          <a href="estoque.html" style="color: var(--gold);">📊 Estoque</a>
+        <a href="index.html">🏠 Início</a>
+        <a href="cardeneta.html">📖 Cadernetas</a>
+        <a href="vitrine.html">📦 Vitrine</a>
+        <a href="perfil.html">⚙️ Perfil</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
+        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div class="language-selector-flags">
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)"><img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)"><img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano"><img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español"><img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français"><img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;"></button>
+        </div>
+        
+        <button class="btn-outline" onclick="alternarTema()" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
+        
+        <div class="user-profile-top">
+          <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+          <span id="userGreeting" class="user-greeting">Carregando...</span>
+          <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
         </div>
       </div>
-      <div class="user-profile-top">
-        <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-        <span id="userGreeting" class="user-greeting">Carregando...</span>
-        <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
-      </div>
     </div>
-    <h1>📊 Gerenciador de Cadastro de Figurinhas</h1>
+    <h1>📊 Gerenciador de Cadastro de Figurinhas (Estoque Master)</h1>
   </header>
 
   <div class="container">
@@ -147,25 +182,66 @@
     let listaAlbunsSelectOptions = '';
     let paginaAtual = 0;
 
+    // Aplicar tema salvo localmente ao iniciar
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaSalvo = localStorage.getItem('tema_app');
+      if (temaSalvo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    });
+
+    async function alternarTema() {
+      const atual = document.documentElement.getAttribute('data-theme');
+      const novo = atual === 'light' ? 'dark' : 'light';
+      if (novo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('tema_app', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('tema_app', 'dark');
+      }
+    }
+
+    async function mudarIdiomaGlobal(valor) {
+      localStorage.setItem('idioma_app', valor);
+      if (usuarioLogado) {
+        await _supabase.from('usuarios_cadastrados').update({ idioma_preferido: valor }).eq('id', usuarioLogado.id);
+      }
+      window.location.reload();
+    }
+
     async function verificarAcesso() {
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) { window.location.href = "login.html"; return null; }
 
+      // Restrito às tabelas/perfis de autorização ou usuários cadastrados
       const { data: perfil } = await _supabase
-        .from('vendedores_autorizados')
+        .from('usuarios_cadastrados')
         .select('*')
         .eq('email', session.user.email)
         .maybeSingle();
 
-      if (!perfil) { window.location.href = "login.html"; return null; }
+      if (!perfil) { window.location.href = "index.html"; return null; }
+
+      const funcao = String(perfil.funcao || '').toLowerCase().trim();
+      
+      // Validação restrita: Apenas Administrador e Master[cite: 1]
+      if (funcao !== 'administrador' && funcao !== 'master' && funcao !== 'admin') {
+        alert("Acesso restrito a administradores e master.");
+        window.location.href = "index.html";
+        return null;
+      }
 
       usuarioLogado = perfil;
-      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Vendedor'}`;
+      document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Admin'}`;
       if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
       
-      if (perfil.is_admin === true || perfil.funcao === 'admin' || perfil.funcao === 'master') {
-        document.getElementById('adminLinks').style.display = 'inline';
+      // Exibir links de navegação condicionados
+      document.getElementById('linkAdmin').style.display = 'inline';
+      if (funcao === 'master' || funcao === 'administrador') {
+        document.getElementById('linkEstoque').style.display = 'inline';
       }
+
       return session;
     }
 
@@ -182,36 +258,29 @@
     }
 
     function executarConsultaSupabase(albumId, termo, inicio, fim) {
-  let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-  
-  if (albumId !== 'todos') {
-    query = query.eq('album_id', albumId);
-  }
-
-  if (termo !== "") {
-    const t = termo.trim().toLowerCase();
-    
-    // Verifica se o usuário buscou algo como "040 em diante" ou "partir de 40"
-    if (t.includes("em diante") || t.includes("a partir de")) {
-      // Extrai apenas os números da string digitada
-      const numeros = t.match(/\d+/g);
-      if (numeros && numeros.length > 0) {
-        const limiteInferior = parseInt(numeros[0], 10);
-        // Filtra números maiores ou iguais ao valor informado
-        // Nota: O campo 'numero' no banco precisa ser tratado ou numérico para comparação exata, 
-        // mas se for texto, podemos usar gte (greater than or equal) se os códigos forem limpos, 
-        // ou buscar aproximações. Abaixo tratamos o filtro básico:
-        query = query.gte('numero', limiteInferior.toString());
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      
+      if (albumId !== 'todos') {
+        query = query.eq('album_id', albumId);
       }
-    } else {
-      // Comportamento normal de busca por texto/número específico
-      const tSemHash = t.replace('#', '');
-      query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
-    }
-  }
 
-  return query.range(inicio, fim);
-}
+      if (termo !== "") {
+        const t = termo.trim().toLowerCase();
+        if (t.includes("em diante") || t.includes("a partir de")) {
+          const numeros = t.match(/\d+/g);
+          if (numeros && numeros.length > 0) {
+            const limiteInferior = parseInt(numeros[0], 10);
+            query = query.gte('numero', limiteInferior.toString());
+          }
+        } else {
+          const tSemHash = t.replace('#', '');
+          query = query.or(`numero.ilike.%${t}%,numero.ilike.%${tSemHash}%,nome.ilike.%${t}%,selecao_escuderia.ilike.%${t}%,tipo.ilike.%${t}%`);
+        }
+      }
+
+      return query.range(inicio, fim);
+    }
+
     async function aplicarFiltros() {
       paginaAtual = 0;
       figurinhasGlobal = [];
@@ -331,7 +400,6 @@
       }
     }
 
-    // Função auxiliar para converter imagem para WebP e formatar nome
     function converterParaWebP(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -351,7 +419,7 @@
               } else {
                 reject(new Error("Falha ao converter a imagem para WebP."));
               }
-            }, 'image/webp', 0.85); // Qualidade de compressão webp de 85%
+            }, 'image/webp', 0.85);
           };
           img.onerror = (err) => reject(err);
         };
@@ -363,7 +431,6 @@
       if (!input.files || input.files.length === 0) return;
       const file = input.files[0];
 
-      // 1. Obter o nome do álbum e o número preenchidos na linha atual
       const selectAlbum = document.getElementById(`album-${id}`);
       const albumIdSelecionado = selectAlbum.value;
       const numeroFigurinha = document.getElementById(`numero-${id}`).value.trim() || 's-num';
@@ -374,19 +441,15 @@
         return;
       }
 
-      // Nome do álbum obtido do mapa de álbuns carregados
       let nomeAlbumStr = mapaAlbuns[albumIdSelecionado] || 'Album';
-      // Limpar caracteres especiais ou espaços para um nome de arquivo seguro
       nomeAlbumStr = nomeAlbumStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9-_]/g, "_");
       const numSeguro = numeroFigurinha.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9-_]/g, "_");
 
       const nomeArquivo = `${nomeAlbumStr}-${numSeguro}_${Date.now()}.webp`;
 
       try {
-        // 2. Converter imagem para WebP
         const webpBlob = await converterParaWebP(file);
 
-        // 3. Upload para o Storage do Supabase
         const { error: uploadError } = await _supabase.storage
           .from('figurinhas')
           .upload(nomeArquivo, webpBlob, {
@@ -402,7 +465,6 @@
         const { data: publicUrlData } = _supabase.storage.from('figurinhas').getPublicUrl(nomeArquivo);
         const novaUrl = publicUrlData.publicUrl;
 
-        // 4. Atualizar registro da figurinha no banco de dados
         const { error: updateError } = await _supabase
           .from('figurinhas')
           .update({ imagem: novaUrl })
@@ -458,7 +520,7 @@
 
     function fazerLogout() { 
       _supabase.auth.signOut(); 
-      window.location.href = "login.html"; 
+      window.location.href = "index.html"; 
     }
     
     init();
