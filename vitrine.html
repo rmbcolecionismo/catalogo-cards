@@ -135,40 +135,6 @@
       <h1>🛍️ Gerenciar Minha Vitrine</h1>
       <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
     </div>
-    // Adicione esta lógica logo após carregar o perfil e as configurações do plano no init()
-      const planoUsuario = (perfil?.plano || 'gratis').toLowerCase().trim();
-      
-      const { data: config } = await _supabase
-        .from('configuracoes_planos')
-        .select('limite_anuncios')
-        .ilike('plano', planoUsuario)
-        .maybeSingle();
-
-      const limiteMaximo = config ? config.limite_anuncios : 10;
-
-      // Conta quantos anúncios ativos o usuário tem atualmente
-      const { count: totalAtivos } = await _supabase
-        .from('vitrine_ofertas')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', authUserId)
-        .gt('estoque', 0);
-
-      const qtdAtivos = totalAtivos || 0;
-      const avisoEl = document.getElementById('avisoLimiteVitrine');
-
-      if (limiteMaximo !== -1 && qtdAtivos >= limiteMaximo) {
-        avisoEl.style.display = 'block';
-        avisoEl.innerHTML = `⚠️ Atingiu o limite de anúncios (${qtdAtivos}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mude de plano</a>`;
-      } else if (limiteMaximo !== -1) {
-        avisoEl.style.display = 'block';
-        avisoEl.style.color = 'var(--text-muted)';
-        avisoEl.innerText = `Anúncios ativos: ${qtdAtivos} / ${limiteMaximo}`;
-      } else {
-        avisoEl.style.display = 'block';
-        avisoEl.style.color = 'var(--gold)';
-        avisoEl.innerText = `Anúncios ativos: ${qtdAtivos} (Ilimitado)`;
-      }
-
     <div class="controls-panel">
       <div class="filter-group">
         <label>Filtrar por Álbum:</label>
