@@ -779,10 +779,13 @@
       grid.innerHTML = `<div class="empty-state">Calculando matches inteligentes...</div>`;
 
       try {
-        const [{ data: repetidasUser }, { data: faltantesUser }] = await Promise.all([
-          _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
-          _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
-        ]);
+       const [{ data: repetidasUser, error: errRepetidas }, { data: faltantesUser, error: errFaltantes }] = await Promise.all([
+  _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'repetida'),
+  _supabase.from('usuario_figurinha').select('figurinha_id, album_id').eq('user_id', usuarioLogadoGlobal.id).eq('status', 'faltante')
+]);
+
+if (errRepetidas) console.error("Erro repetidas:", errRepetidas.message);
+if (errFaltantes) console.error("Erro faltantes:", errFaltantes.message);
 
         if (!repetidasUser || !faltantesUser || (repetidasUser.length === 0 && faltantesUser.length === 0)) {
           grid.innerHTML = `<div class="empty-state">Cadastre suas figurinhas repetidas e faltantes na sua Caderneta para encontrar matches!</div>`;
