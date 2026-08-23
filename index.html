@@ -123,8 +123,20 @@
         <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
       </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 6px 10px; font-size: 0.75rem;">☀️ / 🌙 Tema</button>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <!-- Seletor de Moeda -->
+        <select id="selectMoedaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 70px;" onchange="mudarMoedaGlobal(this.value)">
+          <option value="BRL">R$ BRL</option>
+          <option value="EUR">€ EUR</option>
+          <option value="USD">$ USD</option>
+        </select>
+        <!-- Seletor de Idioma -->
+        <select id="selectIdiomaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 75px;" onchange="mudarIdiomaGlobal(this.value)">
+          <option value="pt">🇧🇷 PT</option>
+          <option value="en">🇺🇸 EN</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+        <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
           <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;">Entrar / Criar Conta</button>
         </div>
@@ -309,6 +321,10 @@
     let chatIntervalo = null;
     let matchesCacheMap = new Map();
 
+    // Preferências globais de Moeda e Idioma
+    let moedaAtual = localStorage.getItem('moeda_app') || 'BRL';
+    let idiomaAtual = localStorage.getItem('idioma_app') || 'pt';
+
     function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
       const novo = atual === 'light' ? 'dark' : 'light';
@@ -321,11 +337,30 @@
       }
     }
 
+    function mudarMoedaGlobal(valor) {
+      moedaAtual = valor;
+      localStorage.setItem('moeda_app', valor);
+      renderizarAtivo();
+    }
+
+    function mudarIdiomaGlobal(valor) {
+      idiomaAtual = valor;
+      localStorage.setItem('idioma_app', valor);
+      // Aqui você pode expandir para traduzir textos estáticos da interface se desejar
+      renderizarAtivo();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
+      
+      const selMoeda = document.getElementById('selectMoedaGlobal');
+      if (selMoeda) selMoeda.value = moedaAtual;
+
+      const selIdioma = document.getElementById('selectIdiomaGlobal');
+      if (selIdioma) selIdioma.value = idiomaAtual;
     });
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
@@ -554,11 +589,20 @@
         return;
       }
 
+      // Locale e moedas dinâmicos baseados nas preferências do usuário
+      const localesMap = { 'pt': 'pt-BR', 'en': 'en-US', 'es': 'es-ES' };
+      const localeAtual = localesMap[idiomaAtual] || 'pt-BR';
+
       grid.innerHTML = itens.map(item => {
         const fig = item.figurinha || {};
         const albumNome = fig.albuns?.nome || 'Álbum';
         const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        const precoFormatado = Number(item.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'EUR' });
+        
+        const precoFormatado = Number(item.preco || 0).toLocaleString(localeAtual, { 
+          style: 'currency', 
+          currency: moedaAtual 
+        });
+
         const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         const linkPerfilDono = `perfil.html?id=${item.user_id}`;
         let numFig = String(fig.numero || '').replace(/^#+/, '');
