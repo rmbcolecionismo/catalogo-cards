@@ -7,17 +7,36 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --gold: #f59e0b; --bg: #0f172a; }
+    :root { 
+      --gold: #f59e0b; 
+      --bg: #0f172a; 
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255,255,255,0.1);
+      --modal-bg: #1e293b;
+    }
+
+    [data-theme="light"] {
+      --gold: #d97706;
+      --bg: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: rgba(0,0,0,0.1);
+      --modal-bg: #ffffff;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; color: #f8fafc; padding: 20px; padding-bottom: 50px; }
+    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 50px; transition: 0.3s; }
     
-    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.6); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-    .nav-links a { color: #cbd5e1; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
-    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: #0f172a; }
+    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
     
     .container { max-width: 1250px; margin: 0 auto; }
     
@@ -28,32 +47,35 @@
     .header-painel h2 { font-size: 1.6rem; color: var(--gold); }
 
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .album-criado-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .album-criado-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     .album-criado-card:hover { transform: translateY(-4px); border-color: var(--gold); }
     
-    .album-criado-capa { height: 160px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px; }
+    .album-criado-capa { height: 160px; background: var(--bg); display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); padding: 8px; }
     .album-criado-capa img { width: 100%; height: 100%; object-fit: contain; }
     
     .album-criado-info { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-    .album-criado-titulo { font-size: 1rem; font-weight: 700; color: #f8fafc; }
+    .album-criado-titulo { font-size: 1rem; font-weight: 700; color: var(--text-main); }
     .album-criado-sub { font-size: 0.75rem; color: var(--gold); font-weight: 600; }
 
-    .btn-voltar { background: rgba(255, 255, 255, 0.08); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
+    .btn-voltar { background: var(--border-color); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
     .btn-voltar:hover { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); color: var(--gold); }
 
-    .stats-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .stats-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .stats-info h2 { font-size: 1.4rem; color: var(--gold); margin-bottom: 5px; }
     .stats-numbers { display: flex; gap: 10px; flex-wrap: wrap; }
-    .stat-box { background: rgba(15, 23, 42, 0.6); padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); text-align: center; min-width: 85px; }
-    .stat-box span { display: block; font-size: 0.65rem; color: #94a3b8; }
-    .stat-box strong { font-size: 0.95rem; color: #f8fafc; }
+    .stat-box { background: var(--bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center; min-width: 85px; }
+    .stat-box span { display: block; font-size: 0.65rem; color: var(--text-muted); }
+    .stat-box strong { font-size: 0.95rem; color: var(--text-main); }
 
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); align-items: center; }
-    .filter-field { background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; }
+    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
     
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-gold:hover { background: #fbbf24; }
+    .btn-gold:hover { opacity: 0.9; }
+
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; text-decoration: none; transition: 0.2s; }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
     .btn-success-outline { background: transparent; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-success-outline:hover { background: rgba(52, 211, 153, 0.15); }
@@ -62,8 +84,8 @@
     .btn-danger-outline:hover { background: rgba(248, 113, 113, 0.15); }
 
     .share-dropdown { position: relative; display: inline-block; }
-    .share-menu-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
-    .share-menu-content button { color: #f8fafc; padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+    .share-menu-content { display: none; position: absolute; right: 0; background-color: var(--modal-bg); min-width: 220px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3); overflow: hidden; }
+    .share-menu-content button { color: var(--text-main); padding: 10px 14px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.8rem; border-bottom: 1px solid var(--border-color); cursor: pointer; }
     .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.15); color: var(--gold); }
     .share-dropdown.active .share-menu-content { display: block; }
 
@@ -73,34 +95,57 @@
     .cardeneta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     @media (min-width: 768px) { .cardeneta-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
     
-    .fig-card { background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .fig-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .fig-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-    .fig-card.possui { background: rgba(15, 23, 42, 0.7); border-color: rgba(52, 211, 153, 0.5); }
+    .fig-card.possui { background: var(--bg); border-color: rgba(52, 211, 153, 0.5); }
     .fig-card.possui img.fig-img { opacity: 0.4; filter: grayscale(20%); }
     .fig-card.possui .fig-footer { background: rgba(52, 211, 153, 0.2); color: #34d399; }
 
-    .fig-img-wrap { height: 170px; background: #0f172a; padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .fig-img-wrap { height: 170px; background: var(--bg); padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); }
     .fig-card img.fig-img { width: 100%; height: 100%; object-fit: contain; }
     .fig-badge-status { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.65rem; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
     .fig-card.possui .fig-badge-status { background: #34d399; color: #0f172a; }
 
     .fig-content { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .fig-numero { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
-    .fig-nome { font-size: 0.8rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fig-nome { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .fig-actions-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255,255,255,0.05); }
+    .fig-actions-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--bg); border-top: 1px solid var(--border-color); }
     .qty-btn { background: #334155; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
     .qty-btn:hover { background: var(--gold); color: #0f172a; }
-    .qty-display { font-size: 0.75rem; font-weight: 700; color: #cbd5e1; }
-    .fig-footer { padding: 6px; text-align: center; font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.05); color: #94a3b8; }
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #94a3b8; }
+    .qty-display { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+    .fig-footer { padding: 6px; text-align: center; font-size: 0.7rem; font-weight: 700; background: var(--border-color); color: var(--text-muted); }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 14px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 14px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .modal-box h3 { color: var(--gold); margin-bottom: 15px; font-size: 1.2rem; }
-    .modal-box label { display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 5px; }
-    .modal-box select, .modal-box input { width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; }
+    .modal-box label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+    .modal-box select, .modal-box input { width: 100%; background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+    .language-selector-flags {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg);
+      border: 1px solid var(--border-color);
+      padding: 3px 6px;
+      border-radius: 8px;
+    }
+    .flag-option {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: 0.2s;
+      opacity: 0.6;
+    }
+    .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
+    .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
   </style>
 </head>
 <body>
@@ -108,39 +153,49 @@
   <div class="container">
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Home</a>
-        <a href="vitrine.html">📦 Minha Vitrine</a>
+        <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
+        <a href="cardeneta.html" data-i18n="nav_cadernetas">📖 Cadernetas</a>
+        <a href="vitrine.html" data-i18n="nav_vitrine">📦 Vitrine</a>
       </div>
-      <div>
-        <div id="userInfoHeader" class="user-profile-header">
-          <span style="font-size: 0.85rem; color: var(--gold);">Carregando...</span>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <!-- Seletor de bandeiras por idioma (igual ao index, sem o select antigo de moedas visível diretamente) -->
+        <div class="language-selector-flags">
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
+            <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
+            <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
+            <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
+            <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
+            <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
+          </button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
+            <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
+          </button>
         </div>
-        <div class="nav-controls">
-  <select id="selectMoeda" class="select-control" onchange="mudarMoeda(this.value)">
-    <option value="EUR">💶 EUR (€)</option>
-    <option value="BRL">🇧🇷 BRL (R$)</option>
-    <option value="USD">💵 USD ($)</option>
-    <option value="GBP">🇬🇧 GBP (£)</option>
-  </select>
-  <select id="selectIdioma" class="select-control" onchange="mudarIdioma(this.value)">
-    <option value="pt">PT</option>
-    <option value="es">ES</option>
-    <option value="fr">FR</option>
-    <option value="it">IT</option>
-    <option value="en">EN</option>
-  </select>
-</div>
+        
+        <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 6px 10px; font-size: 0.75rem;">☀️ / 🌙</button>
+        
+        <div id="userInfoHeader" class="user-profile-header">
+          <span style="font-size: 0.85rem; color: var(--gold);" data-i18n="msg_carregando">Carregando...</span>
+        </div>
       </div>
     </div>
 
     <!-- TELA 1 -->
     <div id="viewMeusAlbuns">
       <div class="header-painel">
-        <h2>📖 Minhas Cadernetas</h2>
-        <button class="btn-gold" onclick="abrirModalCriar()">+ Adicionar Nova Caderneta</button>
+        <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
+        <button class="btn-gold" onclick="abrirModalCriar()" data-i18n="btn_add_cardeneta">+ Adicionar Nova Caderneta</button>
       </div>
       <div id="gridMeusAlbuns" class="albuns-usuario-grid">
-        <div class="empty-state">Carregando suas cadernetas...</div>
+        <div class="empty-state" data-i18n="msg_carregando_cardenetas">Carregando suas cadernetas...</div>
       </div>
     </div>
 
@@ -148,47 +203,47 @@
     <div id="viewDetalheAlbum">
       <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0;">
         <div class="nav-links">
-          <button class="btn-voltar" onclick="voltarParaLista()">&larr; Voltar para minhas cadernetas</button>
+          <button class="btn-voltar" onclick="voltarParaLista()" data-i18n="btn_voltar_lista">&larr; Voltar para minhas cadernetas</button>
         </div>
         <div>
-          <button class="btn-danger-outline" onclick="excluirAlbumAtual()" style="font-size: 0.75rem; padding: 6px 12px;">🗑️ Excluir este Álbum</button>
+          <button class="btn-danger-outline" onclick="excluirAlbumAtual()" style="font-size: 0.75rem; padding: 6px 12px;" data-i18n="btn_excluir_album">🗑️ Excluir este Álbum</button>
         </div>
       </div>
 
       <div class="stats-panel">
         <div class="stats-info">
           <h2 id="tituloCardenetaPagina">📖 Título da Caderneta</h2>
-          <p style="font-size: 0.8rem; color: #94a3b8;">Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="sub_instrucao_clique">Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.</p>
         </div>
         <div class="stats-numbers">
-          <div class="stat-box"><span>Total Álbum</span><strong id="statTotal">0</strong></div>
-          <div class="stat-box"><span>Tenho</span><strong id="statTenho" style="color: #34d399;">0</strong></div>
-          <div class="stat-box"><span>Faltam</span><strong id="statFaltam" style="color: #f8fafc;">0</strong></div>
-          <div class="stat-box"><span>Repetidas</span><strong id="statRepetidas" style="color: var(--gold);">0</strong></div>
-          <div class="stat-box"><span>Progresso</span><strong id="statPorcentagem" style="color: var(--gold);">0%</strong></div>
+          <div class="stat-box"><span data-i18n="stat_total">Total Álbum</span><strong id="statTotal">0</strong></div>
+          <div class="stat-box"><span data-i18n="stat_tenho">Tenho</span><strong id="statTenho" style="color: #34d399;">0</strong></div>
+          <div class="stat-box"><span data-i18n="stat_faltam">Faltam</span><strong id="statFaltam" style="color: var(--text-main);">0</strong></div>
+          <div class="stat-box"><span data-i18n="stat_repetidas">Repetidas</span><strong id="statRepetidas" style="color: var(--gold);">0</strong></div>
+          <div class="stat-box"><span data-i18n="stat_progresso">Progresso</span><strong id="statPorcentagem" style="color: var(--gold);">0%</strong></div>
         </div>
       </div>
 
       <div class="controls-bar">
         <select id="selectFiltroTipo" class="filter-field" onchange="renderizarGrid()">
-          <option value="todos">📂 Todas as Categorias / Tipos</option>
+          <option value="todos" data-i18n="filtro_todas_cat">📂 Todas as Categorias / Tipos</option>
         </select>
         <select id="selectFiltroStatus" class="filter-field" onchange="renderizarGrid()">
-          <option value="todos">👁️ Mostrar Todas</option>
-          <option value="faltam">❌ Mostrar Apenas o que Faltam</option>
-          <option value="possui">✅ Mostrar Apenas o que Possui</option>
-          <option value="repetidas">🔁 Mostrar Apenas Repetidas</option>
+          <option value="todos" data-i18n="filtro_mostrar_todas">👁️ Mostrar Todas</option>
+          <option value="faltam" data-i18n="filtro_mostrar_faltam">❌ Mostrar Apenas o que Faltam</option>
+          <option value="possui" data-i18n="filtro_mostrar_possui">✅ Mostrar Apenas o que Possui</option>
+          <option value="repetidas" data-i18n="filtro_mostrar_repetidas">🔁 Mostrar Apenas Repetidas</option>
         </select>
         
-        <button class="btn-success-outline" onclick="confirmarMarcarTodas()">✅ Marcar Todas</button>
-        <button class="btn-danger-outline" onclick="confirmarLimparColecao()">🔄 Desmarcar Todas</button>
+        <button class="btn-success-outline" onclick="confirmarMarcarTodas()" data-i18n="btn_marcar_todas">✅ Marcar Todas</button>
+        <button class="btn-danger-outline" onclick="confirmarLimparColecao()" data-i18n="btn_desmarcar_todas">🔄 Desmarcar Todas</button>
 
         <div class="share-dropdown" id="shareDropdownContainer">
-          <button class="btn-gold" onclick="toggleShareMenu()">📤 Compartilhar WhatsApp ▾</button>
+          <button class="btn-gold" onclick="toggleShareMenu()" data-i18n="btn_compartilhar">📤 Compartilhar WhatsApp ▾</button>
           <div class="share-menu-content">
-            <button onclick="enviarWhatsApp('ambos')">📋 Faltantes e Repetidas</button>
-            <button onclick="enviarWhatsApp('faltantes')">❌ Apenas Faltantes</button>
-            <button onclick="enviarWhatsApp('repetidas')">🔁 Apenas Repetidas</button>
+            <button onclick="enviarWhatsApp('ambos')" data-i18n="share_ambos">📋 Faltantes e Repetidas</button>
+            <button onclick="enviarWhatsApp('faltantes')" data-i18n="share_faltantes">❌ Apenas Faltantes</button>
+            <button onclick="enviarWhatsApp('repetidas')" data-i18n="share_repetidas">🔁 Apenas Repetidas</button>
           </div>
         </div>
       </div>
@@ -200,14 +255,14 @@
   <!-- MODAL -->
   <div id="modalCriarCardeneta" class="modal-overlay">
     <div class="modal-box">
-      <h3>Adicionar Nova Caderneta</h3>
-      <label>Escolha o Álbum Base:</label>
+      <h3 data-i18n="modal_criar_titulo">Adicionar Nova Caderneta</h3>
+      <label data-i18n="modal_lbl_base">Escolha o Álbum Base:</label>
       <select id="selectAlbumBaseModal"></select>
-      <label>Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):</label>
+      <label data-i18n="modal_lbl_apelido">Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):</label>
       <input type="text" id="inputApelidoCardeneta" placeholder="Opcional">
       <div class="modal-actions">
-        <button class="btn-danger-outline" onclick="fecharModalCriar()">Cancelar</button>
-        <button class="btn-gold" onclick="salvarNovaCaderneta()">Criar Caderneta</button>
+        <button class="btn-outline" onclick="fecharModalCriar()" data-i18n="btn_cancelar">Cancelar</button>
+        <button class="btn-gold" onclick="salvarNovaCaderneta()" data-i18n="btn_criar_cardeneta">Criar Caderneta</button>
       </div>
     </div>
   </div>
@@ -225,6 +280,217 @@
     let mapaCadernetaUsuario = {};
     let ordemCategoriasDinamica = [];
     let mapaIconesCategorias = {};
+    let idiomaAtual = 'pt-PT';
+
+    const dicionarios = {
+      'pt-PT': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine",
+        msg_carregando: "Carregando...",
+        painel_tit_albuns: "📖 Minhas Cadernetas",
+        btn_add_cardeneta: "+ Adicionar Nova Caderneta",
+        msg_carregando_cardenetas: "Carregando suas cadernetas...",
+        btn_voltar_lista: "← Voltar para minhas cadernetas",
+        btn_excluir_album: "🗑️ Excluir este Álbum",
+        sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
+        stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
+        filtro_todas_cat: "📂 Todas as Categorias / Tipos",
+        filtro_mostrar_todas: "👁️ Mostrar Todas",
+        filtro_mostrar_faltam: "❌ Mostrar Apenas o que Faltam",
+        filtro_mostrar_possui: "✅ Mostrar Apenas o que Possui",
+        filtro_mostrar_repetidas: "🔁 Mostrar Apenas Repetidas",
+        btn_marcar_todas: "✅ Marcar Todas",
+        btn_desmarcar_todas: "🔄 Desmarcar Todas",
+        btn_compartilhar: "📤 Compartilhar WhatsApp ▾",
+        share_ambos: "📋 Faltantes e Repetidas",
+        share_faltantes: "❌ Apenas Faltantes",
+        share_repetidas: "🔁 Apenas Repetidas",
+        modal_criar_titulo: "Adicionar Nova Caderneta",
+        modal_lbl_base: "Escolha o Álbum Base:",
+        modal_lbl_apelido: "Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):",
+        btn_cancelar: "Cancelar",
+        btn_criar_cardeneta: "Criar Caderneta"
+      },
+      'pt-BR': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine",
+        msg_carregando: "Carregando...",
+        painel_tit_albuns: "📖 Minhas Cadernetas",
+        btn_add_cardeneta: "+ Adicionar Nova Caderneta",
+        msg_carregando_cardenetas: "Carregando suas cadernetas...",
+        btn_voltar_lista: "← Voltar para minhas cadernetas",
+        btn_excluir_album: "🗑️ Excluir este Álbum",
+        sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
+        stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
+        filtro_todas_cat: "📂 Todas as Categorias / Tipos",
+        filtro_mostrar_todas: "👁️ Mostrar Todas",
+        filtro_mostrar_faltam: "❌ Mostrar Apenas o que Faltam",
+        filtro_mostrar_possui: "✅ Mostrar Apenas o que Possui",
+        filtro_mostrar_repetidas: "🔁 Mostrar Apenas Repetidas",
+        btn_marcar_todas: "✅ Marcar Todas",
+        btn_desmarcar_todas: "🔄 Desmarcar Todas",
+        btn_compartilhar: "📤 Compartilhar WhatsApp ▾",
+        share_ambos: "📋 Faltantes e Repetidas",
+        share_faltantes: "❌ Apenas Faltantes",
+        share_repetidas: "🔁 Apenas Repetidas",
+        modal_criar_titulo: "Adicionar Nova Caderneta",
+        modal_lbl_base: "Escolha o Álbum Base:",
+        modal_lbl_apelido: "Apelido / Identificação (Ex: Cópia 2, Álbum do Filho):",
+        btn_cancelar: "Cancelar",
+        btn_criar_cardeneta: "Criar Caderneta"
+      },
+      'en': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase",
+        msg_carregando: "Loading...",
+        painel_tit_albuns: "📖 My Albums",
+        btn_add_cardeneta: "+ Add New Album",
+        msg_carregando_cardenetas: "Loading your albums...",
+        btn_voltar_lista: "← Back to albums",
+        btn_excluir_album: "🗑️ Delete Album",
+        sub_instrucao_clique: "Click image to check/uncheck or use buttons to control quantities.",
+        stat_total: "Total", stat_tenho: "Have", stat_faltam: "Missing", stat_repetidas: "Duplicates", stat_progresso: "Progress",
+        filtro_todas_cat: "📂 All Categories",
+        filtro_mostrar_todas: "👁️ Show All",
+        filtro_mostrar_faltam: "❌ Show Missing Only",
+        filtro_mostrar_possui: "✅ Show Owned Only",
+        filtro_mostrar_repetidas: "🔁 Show Duplicates Only",
+        btn_marcar_todas: "✅ Check All",
+        btn_desmarcar_todas: "🔄 Uncheck All",
+        btn_compartilhar: "📤 Share WhatsApp ▾",
+        share_ambos: "📋 Missing & Duplicates",
+        share_faltantes: "❌ Missing Only",
+        share_repetidas: "🔁 Duplicates Only",
+        modal_criar_titulo: "Add New Album",
+        modal_lbl_base: "Choose Base Album:",
+        modal_lbl_apelido: "Nickname / ID (Optional):",
+        btn_cancelar: "Cancel",
+        btn_criar_cardeneta: "Create Album"
+      },
+      'it': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina",
+        msg_carregando: "Caricamento...",
+        painel_tit_albuns: "📖 I Miei Album",
+        btn_add_cardeneta: "+ Aggiungi Nuovo Album",
+        msg_carregando_cardenetas: "Caricamento album...",
+        btn_voltar_lista: "← Torna agli album",
+        btn_excluir_album: "🗑️ Elimina Album",
+        sub_instrucao_clique: "Clicca sull'immagine per selezionare o usa i pulsanti.",
+        stat_total: "Totale", stat_tenho: "Possiedo", stat_faltam: "Mancanti", stat_repetidas: "Doppie", stat_progresso: "Progresso",
+        filtro_todas_cat: "📂 Tutte le Categorie",
+        filtro_mostrar_todas: "👁️ Mostra Tutti",
+        filtro_mostrar_faltam: "❌ Mostra Mancanti",
+        filtro_mostrar_possui: "✅ Mostra Posseduti",
+        filtro_mostrar_repetidas: "🔁 Mostra Doppie",
+        btn_marcar_todas: "✅ Seleziona Tutti",
+        btn_desmarcar_todas: "🔄 Deseleziona Tutti",
+        btn_compartilhar: "📤 Condividi WhatsApp ▾",
+        share_ambos: "📋 Mancanti e Doppie",
+        share_faltantes: "❌ Solo Mancanti",
+        share_repetidas: "🔁 Solo Doppie",
+        modal_criar_titulo: "Aggiungi Nuovo Album",
+        modal_lbl_base: "Scegli Album Base:",
+        modal_lbl_apelido: "Soprannome / ID (Opzionale):",
+        btn_cancelar: "Annulla",
+        btn_criar_cardeneta: "Crea Album"
+      },
+      'es': {
+        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina",
+        msg_carregando: "Cargando...",
+        painel_tit_albuns: "📖 Mis Álbumes",
+        btn_add_cardeneta: "+ Agregar Nuevo Álbum",
+        msg_carregando_cardenetas: "Cargando tus álbumes...",
+        btn_voltar_lista: "← Volver a álbumes",
+        btn_excluir_album: "🗑️ Eliminar Álbum",
+        sub_instrucao_clique: "Haz clic en la imagen para marcar o usa los botones.",
+        stat_total: "Total", stat_tenho: "Tengo", stat_faltam: "Faltan", stat_repetidas: "Repetidas", stat_progresso: "Progreso",
+        filtro_todas_cat: "📂 Todas las Categorías",
+        filtro_mostrar_todas: "👁️ Mostrar Todas",
+        filtro_mostrar_faltam: "❌ Mostrar Faltantes",
+        filtro_mostrar_possui: "✅ Mostrar Tenidas",
+        filtro_mostrar_repetidas: "🔁 Mostrar Repetidas",
+        btn_marcar_todas: "✅ Marcar Todas",
+        btn_desmarcar_todas: "🔄 Desmarcar Todas",
+        btn_compartilhar: "📤 Compartir WhatsApp ▾",
+        share_ambos: "📋 Faltantes y Repetidas",
+        share_faltantes: "❌ Solo Faltantes",
+        share_repetidas: "🔁 Solo Repetidas",
+        modal_criar_titulo: "Agregar Nuevo Álbum",
+        modal_lbl_base: "Elige Álbum Base:",
+        modal_lbl_apelido: "Apodo / ID (Opcional):",
+        btn_cancelar: "Cancelar",
+        btn_criar_cardeneta: "Crear Álbum"
+      },
+      'fr': {
+        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine",
+        msg_carregando: "Chargement...",
+        painel_tit_albuns: "📖 Mes Albums",
+        btn_add_cardeneta: "+ Ajouter un Album",
+        msg_carregando_cardenetas: "Chargement de vos albums...",
+        btn_voltar_lista: "← Retour aux albums",
+        btn_excluir_album: "🗑️ Supprimer l'album",
+        sub_instrucao_clique: "Cliquez sur l'image pour marquer ou utilisez les boutons.",
+        stat_total: "Total", stat_tenho: "Possédé", stat_faltam: "Manquant", stat_repetidas: "Doubles", stat_progresso: "Progrès",
+        filtro_todas_cat: "📂 Toutes les Catégories",
+        filtro_mostrar_todas: "👁️ Afficher Tout",
+        filtro_mostrar_faltam: "❌ Afficher Manquants",
+        filtro_mostrar_possui: "✅ Afficher Possédés",
+        filtro_mostrar_repetidas: "🔁 Afficher Doubles",
+        btn_marcar_todas: "✅ Tout Marquer",
+        btn_desmarcar_todas: "🔄 Tout Démarquer",
+        btn_compartilhar: "📤 Partager WhatsApp ▾",
+        share_ambos: "📋 Manquants & Doubles",
+        share_faltantes: "❌ Uniquement Manquants",
+        share_repetidas: "🔁 Uniquement Doubles",
+        modal_criar_titulo: "Ajouter un Album",
+        modal_lbl_base: "Choisir l'album de base :",
+        modal_lbl_apelido: "Surnom / ID (Optionnel) :",
+        btn_cancelar: "Annuler",
+        btn_criar_cardeneta: "Créer l'album"
+      }
+    };
+
+    function aplicarTraducao() {
+      const dic = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const chave = el.getAttribute('data-i18n');
+        if (dic[chave]) el.innerText = dic[chave];
+      });
+      document.querySelectorAll('.flag-option').forEach(btn => {
+        if (btn.getAttribute('data-lang') === idiomaAtual) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    async function mudarIdiomaGlobal(valor) {
+      idiomaAtual = valor;
+      localStorage.setItem('idioma_app', valor);
+      if (usuarioAtual) {
+        await _supabase.from('usuarios_cadastrados').update({ idioma_preferido: valor }).eq('id', usuarioAtual.id);
+      }
+      aplicarTraducao();
+    }
+
+    function alternarTema() {
+      const atual = document.documentElement.getAttribute('data-theme');
+      const novo = atual === 'light' ? 'dark' : 'light';
+      if (novo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('tema_app', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('tema_app', 'dark');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaSalvo = localStorage.getItem('tema_app');
+      if (temaSalvo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
+      aplicarTraducao();
+    });
 
     async function init() {
       const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
@@ -242,14 +508,17 @@
         .maybeSingle();
         
       dadosPerfilUsuario = perfil || { funcao: 'gratis' };
+      if (dadosPerfilUsuario.idioma_preferido) {
+        idiomaAtual = dadosPerfilUsuario.idioma_preferido;
+        aplicarTraducao();
+      }
       
-      // Carrega o nome cadastrado na tabela ou faz fallback para o e-mail/colecionador
       const nomeUsuario = dadosPerfilUsuario.nome || (usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador');
       const avatarUrl = usuarioAtual.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
       
       document.getElementById('userInfoHeader').innerHTML = `
         <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-        <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
+        <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
       await carregarMinhasCadernetas();
