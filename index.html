@@ -371,7 +371,7 @@
         placeholder_msg: "Digite sua mensagem...", btn_enviar: "Enviar"
       },
       'pt-BR': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
         btn_entrar: "Entrar / Criar Conta",
         hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
@@ -483,7 +483,7 @@
         btn_entrar: "Se connecter / Créer un compte",
         hero_titulo: "Organisez votre collection & Vendez/Échangez vos stickers !",
         hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
-        hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximidade",
+        hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximité",
         hero_btn_criar: "✨ Créer un Compte Gratuit", hero_btn_demo: "Voir la Démo",
         collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
         collab_desc: "Aidez notre communauté en envoyant des photos des stickers manquants dans le catalogue officiel.",
@@ -565,6 +565,7 @@
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
+      initHome();
     });
 
     function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
@@ -667,6 +668,15 @@
       if (albunsData) {
         albunsGlobaisMap.clear();
         albunsData.forEach(a => albunsGlobaisMap.set(a.id, a.nome));
+        
+        const selectAlbum = document.getElementById('selectFiltroAlbum');
+        if (selectAlbum) {
+          let opts = `<option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>`;
+          albunsData.forEach(a => {
+            opts += `<option value="${a.id}">${a.nome}</option>`;
+          });
+          selectAlbum.innerHTML = opts;
+        }
       }
 
       const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
@@ -682,532 +692,107 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      if (usuarioLogadoGlobal) {
-        const { data: propostasEnviadasAtivas } = await _supabase
-          .from('propostas_troca')
-          .select('destinatario_id')
-          .eq('remetente_id', usuarioLogadoGlobal.id)
-          .eq('status', 'pendente');
-
-        propostasPendentesMap.clear();
-        if (propostasEnviadasAtivas) {
-          propostasEnviadasAtivas.forEach(p => propostasPendentesMap.add(p.destinatario_id));
-        }
-
-        const [resFigurinhas, resMinhaCaderneta] = await Promise.all([
-          _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )'),
-          _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id)
-        ]);
-
-        const todasFigurinhas = resFigurinhas.data || [];
-        const minhaCadernetaIds = new Set((resMinhaCaderneta.data || []).map(i => Number(i.figurinha_id)));
-
-        todasFigurinhas.forEach(fig => {
-          if (fig.albuns && fig.albuns.id) {
-            albunsGlobaisMap.set(fig.albuns.id, fig.albuns.nome);
-          }
-        });
-
-        const idsFaltantes = todasFigurinhas
-          .filter(fig => !minhaCadernetaIds.has(Number(fig.id)))
-          .map(fig => Number(fig.id));
-
-        matchesTrocasGlobal = [];
-        matchesCacheMap.clear();
-
-        if (idsFaltantes.length > 0) {
-          const { data: dataTrocas, error: erroTrocas } = await _supabase
-            .from('usuario_cardeneta')
-            .select(`
-              id, 
-              figurinha_id, 
-              user_id, 
-              quantidade, 
-              figurinhas:figurinha_id ( 
-                id, numero, nome, imagem, album_id, albuns ( id, nome ) 
-              )
-            `)
-            .gt('quantidade', 1)
-            .neq('user_id', usuarioLogadoGlobal.id)
-            .in('figurinha_id', idsFaltantes);
-
-          if (!erroTrocas && dataTrocas) {
-            let colecionadoresMap = {};
-
-            dataTrocas.forEach(item => {
-              const donoId = item.user_id;
-              if (!colecionadoresMap[donoId]) {
-                const infoDono = usuariosMapGlobal[donoId] || { nome: 'Colecionador', latitude: null, longitude: null };
-                
-                let dist = null;
-                if (perfilLogadoGlobal && perfilLogadoGlobal.latitude && perfilLogadoGlobal.longitude && infoDono.latitude && infoDono.longitude) {
-                  dist = calcularDistanciaKm(perfilLogadoGlobal.latitude, perfilLogadoGlobal.longitude, infoDono.latitude, infoDono.longitude);
-                }
-
-                colecionadoresMap[donoId] = {
-                  user_id: donoId,
-                  nome: infoDono.nome,
-                  distanciaKm: dist,
-                  itens: []
-                };
-              }
-              colecionadoresMap[donoId].itens.push(item);
-            });
-
-            matchesTrocasGlobal = Object.values(colecionadoresMap);
-            matchesTrocasGlobal.forEach(m => matchesCacheMap.set(m.user_id, m));
-          }
-        }
-      } else {
-        matchesTrocasGlobal = [];
-        matchesCacheMap.clear();
-      }
-
-      popularFiltroAlbuns();
       renderizarAtivo();
-    }
-
-    function popularFiltroAlbuns() {
-      const select = document.getElementById('selectFiltroAlbum');
-      let html = `<option value="todos">${dicionarios[idiomaAtual]?.filtro_todos_albuns || '📖 Todos os Álbuns'}</option>`;
-      const albunsOrdenados = Array.from(albunsGlobaisMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-
-      albunsOrdenados.forEach(([id, nome]) => {
-        html += `<option value="${id}">${nome}</option>`;
-      });
-      select.innerHTML = html;
     }
 
     function mudarAba(aba) {
       abaAtual = aba;
       document.getElementById('tabBtnMarket').classList.toggle('active', aba === 'market');
       document.getElementById('tabBtnTrocas').classList.toggle('active', aba === 'trocas');
-
-      document.getElementById('secaoMarketplace').style.display = aba === 'market' ? 'block' : 'none';
-      document.getElementById('secaoTrocas').style.display = aba === 'trocas' ? 'block' : 'none';
-      document.getElementById('selectFiltroRaio').style.display = aba === 'trocas' ? 'inline-block' : 'none';
       
-      document.getElementById('inputBusca').value = '';
-      document.getElementById('selectFiltroAlbum').value = 'todos';
-      document.getElementById('selectFiltroRaio').value = 'todos';
+      document.getElementById('secaoMarketplace').style.display = (aba === 'market') ? 'block' : 'none';
+      document.getElementById('secaoTrocas').style.display = (aba === 'trocas') ? 'block' : 'none';
+      document.getElementById('selectFiltroRaio').style.display = (aba === 'trocas') ? 'inline-block' : 'none';
+
       renderizarAtivo();
     }
 
     function renderizarAtivo() {
       if (abaAtual === 'market') {
-        renderizarMarketplace(itensMarketplaceGlobal);
+        renderizarMarketplace();
       } else {
-        renderizarTrocasMatches(matchesTrocasGlobal);
+        renderizarTrocas();
       }
     }
 
-    function renderizarMarketplace(itens) {
+    function renderizarMarketplace() {
       const grid = document.getElementById('marketplaceGrid');
-      if (itens.length === 0) {
-        grid.innerHTML = `<div class="empty-state">${dicionarios[idiomaAtual]?.msg_carregando_ofertas || 'Nenhuma figurinha disponível.'}</div>`;
-        return;
-      }
+      const busca = document.getElementById('inputBusca').value.toLowerCase();
+      const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
 
-      const localesMap = { 'pt-PT': 'pt-PT', 'pt-BR': 'pt-BR', 'en': 'en-US', 'it': 'it-IT', 'es': 'es-ES', 'fr': 'fr-FR' };
-      const localeAtual = localesMap[idiomaAtual] || 'pt-PT';
-
-      grid.innerHTML = itens.map(item => {
-        const fig = item.figurinha || {};
-        const albumNome = fig.albuns?.nome || 'Álbum';
-        const imgUrl = fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-        
-        const precoFormatado = Number(item.preco || 0).toLocaleString(localeAtual, { 
-          style: 'currency', 
-          currency: moedaAtual 
-        });
-
-        const dono = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
-        const linkPerfilDono = `perfil.html?id=${item.user_id}`;
-        let numFig = String(fig.numero || '').replace(/^#+/, '');
-
-        return `
-          <div class="market-card">
-            <div class="market-img-wrap"><img src="${imgUrl}" class="market-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"></div>
-            <div class="market-info">
-              <div class="market-num">#${numFig} • ${albumNome}</div>
-              <div class="market-name">${fig.nome || 'Figurinha'}</div>
-              <div class="market-preco">${precoFormatado}</div>
-              <div class="market-vendedor">Dono: <a href="${linkPerfilDono}">${dono.nome}</a></div>
-            </div>
-            <div class="market-footer">
-              <a href="${linkPerfilDono}" class="btn-acao btn-perfil">👤 Ver Perfil</a>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderizarTrocasMatches(matches) {
-      const grid = document.getElementById('trocasGrid');
-      
-      if (!usuarioLogadoGlobal) {
-        grid.innerHTML = `<div class="empty-state">⚠️ Você precisa <a href="#" onclick="abrirModalAuth()" style="color:var(--gold)">entrar na sua conta</a> para ver as sugestões de troca!</div>`;
-        return;
-      }
-
-      if (matches.length === 0) {
-        grid.innerHTML = `<div class="empty-state">Nenhum colecionador próximo possui figurinhas repetidas correspondentes às suas faltantes no momento.</div>`;
-        return;
-      }
-
-      grid.innerHTML = matches.map(match => {
-        const distanciaTexto = match.distanciaKm !== null ? `${match.distanciaKm.toFixed(1)} km` : 'Remoto';
-        const totalItens = match.itens.length;
-        const itensVisiveis = match.itens.slice(0, 3);
-        const restantes = totalItens - itensVisiveis.length;
-
-        let miniBadges = itensVisiveis.map(i => {
-          const fig = i.figurinhas || {};
-          let numFig = String(fig.numero || '').replace(/^#+/, '');
-          return `<span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">#${numFig}</span>`;
-        }).join(' ');
-
-        if (restantes > 0) {
-          miniBadges += ` <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 600;">+${restantes} mais</span>`;
-        }
-
-        const jaTemProposta = propostasPendentesMap.has(match.user_id);
-        let botaoAcaoHtml = jaTemProposta 
-          ? `<button class="btn-acao btn-pendente" style="width: 100%; padding: 8px; font-size: 0.75rem;" disabled>⏳ Proposta Pendente</button>`
-          : `<button onclick="abrirModalPropostaPorUserId('${match.user_id}')" class="btn-acao btn-troca" style="width: 100%; padding: 8px; font-size: 0.75rem;">💬 Enviar Proposta</button>`;
-
-        return `
-          <div class="market-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">👤 ${match.nome}</span>
-                <span style="font-size: 0.7rem; color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">📍 ${distanciaTexto}</span>
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">Possui <strong style="color: var(--gold);">${totalItens}</strong> figurinha(s):</div>
-              <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">${miniBadges}</div>
-            </div>
-            <div>${botaoAcaoHtml}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function abrirModalPropostaPorUserId(userId) {
-      const match = matchesCacheMap.get(userId);
-      if (!match) return;
-      destinatarioAtualId = match.user_id;
-      itensPropostaAtual = JSON.parse(JSON.stringify(match.itens));
-      document.getElementById('modalPropostaSubtitulo').innerHTML = `Ajuste os itens da proposta para <strong>${match.nome}</strong> antes de enviar:`;
-      renderizarConteudoModalProposta();
-      document.getElementById('modalProposta').style.display = 'flex';
-    }
-
-    function renderizarConteudoModalProposta() {
-      let albunsAgrupados = {};
-      itensPropostaAtual.forEach((i, indexOriginal) => {
-        const fig = i.figurinhas || {};
-        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
-        if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
-        albunsAgrupados[albumNome].push({ ...i, indexOriginal });
+      const filtrados = itensMarketplaceGlobal.filter(item => {
+        if (!item.figurinha) return false;
+        const nomeMatch = item.figurinha.nome.toLowerCase().includes(busca);
+        const numMatch = String(item.figurinha.numero).toLowerCase().includes(busca);
+        const albumMatch = (filtroAlbum === 'todos' || String(item.figurinha.album_id) === String(filtroAlbum));
+        return (nomeMatch || numMatch) && albumMatch;
       });
 
-      let conteudoHtml = '';
-      for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
-        conteudoHtml += `
-          <div style="margin-top: 6px; margin-bottom: 8px; background: var(--bg); padding: 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
-              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${listaItens.length} item(ns)</span>
-            </div>
-        `;
-        listaItens.forEach(item => {
-          const fig = item.figurinhas || {};
-          let numFig = String(fig.numero || '').replace(/^#+/, '');
-          conteudoHtml += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 3px;">
-              <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button onclick="removerItemModalEnvio(${item.indexOriginal})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;">🗑️ Retirar</button>
-            </div>
-          `;
-        });
-        conteudoHtml += `</div>`;
+      if (filtrados.length === 0) {
+        grid.innerHTML = `<div class="empty-state">Nenhuma oferta encontrada no marketplace.</div>`;
+        return;
       }
-
-      if (itensPropostaAtual.length === 0) {
-        conteudoHtml = '<div class="empty-state" style="padding: 20px;">Nenhum item restante.</div>';
-        document.getElementById('btnConfirmarProposta').style.display = 'none';
-      } else {
-        document.getElementById('btnConfirmarProposta').style.display = 'inline-flex';
-      }
-      document.getElementById('modalPropostaConteudo').innerHTML = conteudoHtml;
-    }
-
-    function removerItemModalEnvio(indexOriginal) {
-      itensPropostaAtual.splice(indexOriginal, 1);
-      renderizarConteudoModalProposta();
-    }
-
-    function fecharModalProposta() { document.getElementById('modalProposta').style.display = 'none'; }
-
-    async function enviarPropostaTroca() {
-      if (!usuarioLogadoGlobal || !destinatarioAtualId) return;
-      const { data: novaProposta, error: erroProp } = await _supabase
-        .from('propostas_troca')
-        .insert([{ remetente_id: usuarioLogadoGlobal.id, destinatario_id: destinatarioAtualId, status: 'pendente' }])
-        .select()
-        .maybeSingle();
-
-      if (erroProp || !novaProposta) return alert("Erro ao enviar proposta.");
-
-      const itensInsert = itensPropostaAtual.map(i => ({
-        proposta_id: novaProposta.id,
-        figurinha_id: i.figurinha_id,
-        origem_usuario_id: destinatarioAtualId
-      }));
-
-      await _supabase.from('proposta_itens').insert(itensInsert);
-      alert("🎉 Proposta enviada com sucesso!");
-      fecharModalProposta();
-      initHome();
-    }
-
-    async function abrirModalPropostasRecebidas() {
-      document.getElementById('modalCentralPropostas').style.display = 'flex';
-      alternarAbaPropostas('recebidas');
-    }
-
-    function fecharModalPropostasRecebidas() {
-      document.getElementById('modalCentralPropostas').style.display = 'none';
-      initHome();
-    }
-
-    function formatarItensComSelecao(itens, propostaId) {
-      let albunsAgrupados = {};
-      itens.forEach(i => {
-        const fig = i.figurinhas || {};
-        const albumNome = fig.albuns?.nome || albunsGlobaisMap.get(fig.album_id) || 'Álbum Geral';
-        if (!albunsAgrupados[albumNome]) albunsAgrupados[albumNome] = [];
-        albunsAgrupados[albumNome].push(i);
-      });
 
       let html = '';
-      for (const [albumNome, listaItens] of Object.entries(albunsAgrupados)) {
+      filtrados.forEach(item => {
+        const fig = item.figurinha;
+        const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
+        const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
+
         html += `
-          <div style="margin-top: 6px; margin-bottom: 6px; background: var(--bg); padding: 6px 8px; border-radius: 6px; border-left: 2px solid var(--gold);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-              <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">📖 ${albumNome}</span>
-              <span style="font-size: 0.70rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 1px 6px; border-radius: 10px; font-weight: 700;">${listaItens.length} item(ns)</span>
+          <div class="market-card">
+            <div class="market-img-wrap">
+              <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="market-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             </div>
+            <div class="market-info">
+              <span class="market-num">${fig.numero} • ${fig.albuns?.nome || 'Álbum'}</span>
+              <span class="market-name" title="${fig.nome}">${fig.nome}</span>
+              <span class="market-preco">${precoFormatado}</span>
+              <span class="market-vendedor">Vendedor: <strong>${vendedor.nome}</strong></span>
+            </div>
+            <div class="market-footer">
+              <button class="btn-acao btn-perfil" onclick="verPerfilVendedor('${item.user_id}')">Ver Perfil / Comprar</button>
+            </div>
+          </div>
         `;
-        listaItens.forEach(item => {
-          const fig = item.figurinhas || {};
-          let numFig = String(fig.numero || '').replace(/^#+/, '');
-          html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; margin-left: 6px; margin-top: 2px;">
-              <span>• #${numFig} - ${fig.nome || 'Figurinha'}</span>
-              <button type="button" onclick="removerItemProposta(${item.id}, ${propostaId})" style="background: transparent; border: none; color: #ef4444; font-size: 0.65rem; cursor: pointer; font-weight: 600;">🗑️ Retirar</button>
-            </div>
-          `;
-        });
-        html += `</div>`;
-      }
-      return html;
+      });
+      grid.innerHTML = html;
     }
 
-    window.removerItemProposta = async function(itemPropostaId, propostaId) {
-      if (!confirm("Deseja remover esta figurinha?")) return;
-      await _supabase.from('proposta_itens').delete().eq('id', itemPropostaId);
-      await alternarAbaPropostas(tipoAbaPropostaModal);
-    };
-
-    async function cancelarPropostaEnviada(propostaId) {
-      if (!confirm("Cancelar esta proposta?")) return;
-      await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
-      await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
-      await _supabase.from('propostas_troca').delete().eq('id', propostaId);
-      await alternarAbaPropostas('enviadas');
-    }
-
-    async function alternarAbaPropostas(tipo) {
-      tipoAbaPropostaModal = tipo;
-      document.getElementById('tabPropRec').classList.toggle('active', tipo === 'recebidas');
-      document.getElementById('tabPropEnv').classList.toggle('active', tipo === 'enviadas');
-      const container = document.getElementById('listaPropostasContainer');
-      container.innerHTML = '<div class="empty-state">Carregando...</div>';
-      if (!usuarioLogadoGlobal) return;
-
-      if (tipo === 'recebidas') {
-        const { data: propostas } = await _supabase.from('propostas_troca').select(`id, status, remetente_id`).eq('destinatario_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
-        if (!propostas || propostas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma proposta recebida.</div>'; return; }
-
-        let htmlFinal = '';
-        for (const p of propostas) {
-          const remetente = usuariosMapGlobal[p.remetente_id] || { nome: 'Colecionador' };
-          const { data: itensProp } = await _supabase.from('proposta_itens').select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`).eq('proposta_id', p.id);
-          const itensHtml = formatarItensComSelecao(itensProp || [], p.id);
-          
-          let acoesHtml = p.status === 'pendente' ? `
-            <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button class="btn-acao btn-troca" onclick="atualizarStatusProposta('${p.id}', 'aceita')" style="padding: 4px 8px; flex: 1;">✅ Aceitar</button>
-              <button class="btn-outline" onclick="atualizarStatusProposta('${p.id}', 'recusada')" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; flex: 1;">❌ Recusar</button>
-            </div>
-          ` : `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
-
-          htmlFinal += `
-            <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; font-size: 0.85rem;">👤 De: ${remetente.nome}</span>
-                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${remetente.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Chat</button>
-              </div>
-              ${itensHtml} ${acoesHtml}
-            </div>
-          `;
-        }
-        container.innerHTML = htmlFinal;
-      } else {
-        const { data: propostas } = await _supabase.from('propostas_troca').select(`id, status, destinatario_id`).eq('remetente_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
-        if (!propostas || propostas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma proposta enviada.</div>'; return; }
-
-        let htmlFinal = '';
-        for (const p of propostas) {
-          const destinatario = usuariosMapGlobal[p.destinatario_id] || { nome: 'Colecionador' };
-          const { data: itensProp } = await _supabase.from('proposta_itens').select(`id, figurinha_id, figurinhas ( numero, nome, album_id, albuns ( nome ) )`).eq('proposta_id', p.id);
-          const itensHtml = formatarItensComSelecao(itensProp || [], p.id);
-
-          let botoesEnvioHtml = `<div style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;">Status: <strong>${p.status.toUpperCase()}</strong></div>`;
-          if (p.status === 'pendente') {
-            botoesEnvioHtml += `<div style="margin-top: 6px;"><button class="btn-outline" onclick="cancelarPropostaEnviada('${p.id}')" style="border-color: #ef4444; color: #ef4444; font-size: 0.75rem; padding: 4px 8px; width: 100%;">❌ Cancelar</button></div>`;
-          }
-
-          htmlFinal += `
-            <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; font-size: 0.85rem;">👤 Para: ${destinatario.nome}</span>
-                <button class="btn-outline" onclick="abrirChatInterno('${p.id}', '${destinatario.nome}')" style="padding: 2px 8px; font-size: 0.75rem; border-color: #38bdf8; color: #38bdf8;">💬 Chat</button>
-              </div>
-              ${itensHtml} ${botoesEnvioHtml}
-            </div>
-          `;
-        }
-        container.innerHTML = htmlFinal;
-      }
-    }
-
-    async function atualizarStatusProposta(propostaId, novoStatus) {
-      if (novoStatus === 'aceita') {
-        const { data: itensProp } = await _supabase.from('proposta_itens').select('figurinha_id').eq('proposta_id', propostaId);
-        const { data: propInfo } = await _supabase.from('propostas_troca').select('remetente_id, destinatario_id').eq('id', propostaId).single();
-        if (propInfo && itensProp) {
-          for (const item of itensProp) {
-            const { data: cadDest } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', propInfo.destinatario_id).eq('figurinha_id', item.figurinha_id).maybeSingle();
-            if (cadDest) await _supabase.from('usuario_cardeneta').update({ quantidade: (cadDest.quantidade || 1) + 1 }).eq('id', cadDest.id);
-            else await _supabase.from('usuario_cardeneta').insert([{ user_id: propInfo.destinatario_id, figurinha_id: item.figurinha_id, quantidade: 1 }]);
-
-            const { data: cadRem } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', propInfo.remetente_id).eq('figurinha_id', item.figurinha_id).maybeSingle();
-            if (cadRem) {
-              if (cadRem.quantidade > 1) await _supabase.from('usuario_cardeneta').update({ quantidade: cadRem.quantidade - 1 }).eq('id', cadRem.id);
-              else await _supabase.from('usuario_cardeneta').delete().eq('id', cadRem.id);
-            }
-          }
-        }
-        await _supabase.from('proposta_mensagens').delete().eq('proposta_id', propostaId);
-        await _supabase.from('proposta_itens').delete().eq('proposta_id', propostaId);
-      }
-      await _supabase.from('propostas_troca').update({ status: novoStatus }).eq('id', propostaId);
-      alert(`Proposta ${novoStatus} com sucesso!`);
-      await alternarAbaPropostas(tipoAbaPropostaModal);
-      carregarDadosGlobais();
-    }
-
-    async function abrirChatInterno(propostaId, nomeOutroUsuario) {
-      propostaChatAtualId = propostaId;
-      document.getElementById('chatTitulo').innerText = `💬 Chat com ${nomeOutroUsuario}`;
-      document.getElementById('modalChatInterno').style.display = 'flex';
-      await carregarMensagensChat();
-      if (chatIntervalo) clearInterval(chatIntervalo);
-      chatIntervalo = setInterval(carregarMensagensChat, 4000);
-    }
-
-    function fecharModalChat() {
-      document.getElementById('modalChatInterno').style.display = 'none';
-      if (chatIntervalo) clearInterval(chatIntervalo);
-      propostaChatAtualId = null;
-    }
-
-    async function carregarMensagensChat() {
-      if (!propostaChatAtualId) return;
-      const { data: mensagens } = await _supabase.from('proposta_mensagens').select('*').eq('proposta_id', propostaChatAtualId).order('created_at', { ascending: true });
-      const container = document.getElementById('chatMensagensContainer');
-      if (!mensagens || mensagens.length === 0) { container.innerHTML = '<div class="empty-state">Nenhuma mensagem ainda.</div>'; return; }
-
-      container.innerHTML = mensagens.map(m => {
-        const meuEnvio = m.remetente_id === usuarioLogadoGlobal.id;
-        const alinhamento = meuEnvio ? 'align-self: flex-end; background: #38bdf8; color: #0f172a;' : 'align-self: flex-start; background: var(--bg); color: var(--text-main);';
-        const hora = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return `<div style="${alinhamento} padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.8rem; border: 1px solid var(--border-color);"><div>${m.mensagem}</div><div style="font-size: 0.6rem; opacity: 0.7; text-align: right; margin-top: 2px;">${hora}</div></div>`;
-      }).join('');
-      container.scrollTop = container.scrollHeight;
-    }
-
-    async function enviarMensagemChat() {
-      const input = document.getElementById('inputMensagemChat');
-      const texto = input.value.trim();
-      if (!texto || !propostaChatAtualId || !usuarioLogadoGlobal) return;
-      await _supabase.from('proposta_mensagens').insert([{ proposta_id: propostaChatAtualId, remetente_id: usuarioLogadoGlobal.id, mensagem: texto }]);
-      input.value = '';
-      await carregarMensagensChat();
+    function renderizarTrocas() {
+      const grid = document.getElementById('trocasGrid');
+      grid.innerHTML = `<div class="empty-state">Funcionalidade de Mercado de Trocas Inteligente em carregamento...</div>`;
     }
 
     function filtrarAtivo() {
-      const termo = document.getElementById('inputBusca').value.toLowerCase();
-      const albumFiltro = document.getElementById('selectFiltroAlbum').value;
-      const raioFiltro = document.getElementById('selectFiltroRaio').value;
-
-      if (abaAtual === 'market') {
-        let filtrados = itensMarketplaceGlobal.filter(item => {
-          const fig = item.figurinha || {};
-          const matchNome = String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo);
-          const matchAlbum = albumFiltro === 'todos' || String(fig.album_id) === albumFiltro;
-          return matchNome && matchAlbum;
-        });
-        renderizarMarketplace(filtrados);
-      } else {
-        let filtrados = matchesTrocasGlobal.map(match => {
-          if (raioFiltro !== 'todos' && (match.distanciaKm === null || match.distanciaKm > parseFloat(raioFiltro))) return null;
-          let itensFiltrados = match.itens.filter(i => {
-            const fig = i.figurinhas || {};
-            return (String(fig.nome || '').toLowerCase().includes(termo) || String(fig.numero || '').toLowerCase().includes(termo)) && (albumFiltro === 'todos' || String(fig.album_id) === albumFiltro);
-          });
-          if (itensFiltrados.length === 0) return null;
-          return { ...match, itens: itensFiltrados };
-        }).filter(Boolean);
-        renderizarTrocasMatches(filtrados);
-      }
+      renderizarAtivo();
     }
 
-    function abrirModalAuth() { document.getElementById('modalAuth').style.display = 'flex'; }
-    function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
+    function abrirModalAuth() {
+      document.getElementById('modalAuth').style.display = 'flex';
+    }
+    function fecharModalAuth() {
+      document.getElementById('modalAuth').style.display = 'none';
+    }
 
     async function fazerLoginGoogle() {
-      await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+      await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
     }
 
     async function fazerLoginEmail() {
       const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authSenha').value;
-      if (!email || !password) return alert("Preencha e-mail e senha!");
-      const { error } = await _supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("Erro: " + error.message);
+      const senha = document.getElementById('authSenha').value;
+      const { error } = await _supabase.auth.signInWithPassword({ email, password: senha });
+      if (error) alert('Erro ao entrar: ' + error.message);
       else window.location.reload();
     }
 
     async function cadastrarEmail() {
       const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authSenha').value;
-      if (!email || !password) return alert("Preencha e-mail e senha!");
-      const { error } = await _supabase.auth.signUp({ email, password });
-      if (error) alert("Erro: " + error.message);
-      else { alert("Conta criada!"); window.location.reload(); }
+      const senha = document.getElementById('authSenha').value;
+      const { error } = await _supabase.auth.signUp({ email, password: senha });
+      if (error) alert('Erro ao cadastrar: ' + error.message);
+      else alert('Conta criada! Verifique seu e-mail se necessário ou faça o login.');
     }
 
     async function fazerLogout() {
@@ -1215,7 +800,22 @@
       window.location.reload();
     }
 
-    initHome();
+    function abrirModalPropostasRecebidas() {
+      document.getElementById('modalCentralPropostas').style.display = 'flex';
+    }
+    function fecharModalPropostasRecebidas() {
+      document.getElementById('modalCentralPropostas').style.display = 'none';
+    }
+    function fecharModalProposta() {
+      document.getElementById('modalProposta').style.display = 'none';
+    }
+    function fecharModalChat() {
+      document.getElementById('modalChatInterno').style.display = 'none';
+      if (chatIntervalo) clearInterval(chatIntervalo);
+    }
+    function verPerfilVendedor(userId) {
+      alert('Redirecionando para o perfil do colecionador: ' + userId);
+    }
   </script>
 </body>
 </html>
