@@ -158,7 +158,7 @@
         <a href="vitrine.html" data-i18n="nav_vitrine">📦 Vitrine</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Seletor de bandeiras por idioma (igual ao index, sem o select antigo de moedas visível diretamente) -->
+        <!-- Seletor de bandeiras por idioma -->
         <div class="language-selector-flags">
           <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
             <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
@@ -581,77 +581,71 @@
       document.getElementById('modalCriarCardeneta').style.display = 'none';
     }
 
- async function salvarNovaCaderneta() {
-  const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
-  const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
-  
-  if (!albumBaseId) return alert("Selecione um álbum.");
+    async function salvarNovaCaderneta() {
+      const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
+      const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
+      
+      if (!albumBaseId) return alert("Selecione um álbum.");
 
-  // 1. Descobrir qual é o plano atual do usuário na tabela usuarios_cadastrados
-  const { data: dadosUsuario, error: erroUsuario } = await _supabase
-    .from('usuarios_cadastrados')
-    .select('plano')
-    .eq('id', usuarioAtual.id)
-    .maybeSingle();
+      const { data: dadosUsuario, error: erroUsuario } = await _supabase
+        .from('usuarios_cadastrados')
+        .select('plano')
+        .eq('id', usuarioAtual.id)
+        .maybeSingle();
 
-  // Se não encontrar o perfil ou houver erro, assumimos 'gratis' por segurança
-  const nomePlanoUsuario = (dadosUsuario && dadosUsuario.plano) ? dadosUsuario.plano : 'gratis';
+      const nomePlanoUsuario = (dadosUsuario && dadosUsuario.plano) ? dadosUsuario.plano : 'gratis';
 
-  // 2. Buscar o limite de cadernetas permitido para este plano na tabela configuracoes_planos
-  let limitePermitido = 1; // Padrão de segurança para o plano grátis se falhar
-  
-  const { data: dadosConfigPlano, error: erroConfig } = await _supabase
-    .from('configuracoes_planos')
-    .select('limite_cardenetas')
-    .eq('plano', nomePlanoUsuario)
-    .maybeSingle();
+      let limitePermitido = 1; 
+      
+      const { data: dadosConfigPlano, error: erroConfig } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_cardenetas')
+        .eq('plano', nomePlanoUsuario)
+        .maybeSingle();
 
-  if (!erroConfig && dadosConfigPlano) {
-    limitePermitido = dadosConfigPlano.limite_cardenetas;
-  } else {
-    // Fallback caso a tabela de configurações use outro nome de coluna (ex: 'nome' ou 'id')
-    // ou se o plano for explicitamente 'gratis'
-    if (nomePlanoUsuario === 'gratis') {
-      limitePermitido = 1;
-    } else {
-      limitePermitido = 999; // Se for um plano pago e der erro na tabela, libera por precaução
+      if (!erroConfig && dadosConfigPlano) {
+        limitePermitido = dadosConfigPlano.limite_cardenetas;
+      } else {
+        if (nomePlanoUsuario === 'gratis') {
+          limitePermitido = 1;
+        } else {
+          limitePermitido = 999; 
+        }
+      }
+
+      const { count, error: countError } = await _supabase
+        .from('usuario_albuns')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', usuarioAtual.id);
+
+      if (countError) {
+        alert("Erro ao verificar quantidade de cadernetas cadastradas.");
+        return;
+      }
+
+      const totalCadernetasAtuais = count || 0;
+
+      if (totalCadernetasAtuais >= limitePermitido) {
+        alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso Plano Premium ou Anual para desbloquear álbuns ilimitados!`);
+        window.location.href = "plano.html";
+        return;
+      }
+
+      const { error } = await _supabase.from('usuario_albuns').insert([{
+        user_id: usuarioAtual.id,
+        album_base_id: albumBaseId,
+        apelido_personalizado: apelido || null
+      }]);
+
+      if (error) {
+        alert("Erro ao criar caderneta: " + error.message);
+        return;
+      }
+
+      fecharModalCriar();
+      await carregarMinhasCadernetas();
     }
-  }
 
-  // 3. Contar quantos álbuns o usuário já cadastrou na tabela usuario_albuns
-  const { count, error: countError } = await _supabase
-    .from('usuario_albuns')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', usuarioAtual.id);
-
-  if (countError) {
-    alert("Erro ao verificar quantidade de cadernetas cadastradas.");
-    return;
-  }
-
-  const totalCadernetasAtuais = count || 0;
-
-  // 4. Validação: Se a quantidade atual atingiu ou passou do limite do plano
-  if (totalCadernetasAtuais >= limitePermitido) {
-    alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso **Plano Premium ou Anual** para desbloquear álbuns ilimitados!`);
-    return;
-  }
-
-  // 5. Se passou da validação, insere o novo álbum
-  const { error } = await _supabase.from('usuario_albuns').insert([{
-    user_id: usuarioAtual.id,
-    album_base_id: albumBaseId,
-    apelido_personalizado: apelido || null
-  }]);
-
-  if (error) {
-    alert("Erro ao criar caderneta: " + error.message);
-    return;
-  }
-
-  fecharModalCriar();
-  await carregarMinhasCadernetas();
-}
     async function excluirAlbumAtual() {
       if (!cadernetaAtiva) return;
       
