@@ -52,12 +52,12 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; width: 100%; }
     .filter-field:focus { border-color: var(--gold); }
 
-    /* Grelha ajustada para até 6 itens por linha (minmax menor) */
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    /* Exatamente 6 cards por linha em telas grandes */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
     .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .card:hover { transform: translateY(-2px); border-color: var(--gold); }
     
-    .card-img-wrap { width: 85px; height: 110px; background: var(--bg); border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
+    .card-img-wrap { width: 80px; height: 105px; background: var(--bg); border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
     .card img { width: 100%; height: 100%; object-fit: contain; }
     
     .card-title { font-size: 0.8rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
@@ -93,7 +93,6 @@
 <body>
 
   <div class="container">
-    <!-- Menu Superior -->
     <div class="top-nav">
       <div class="nav-links">
         <a href="index.html">🏠 Início</a>
@@ -137,7 +136,6 @@
       <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
     </div>
 
-    <!-- Painel de Filtros -->
     <div class="controls-panel">
       <div class="filter-group">
         <label>Filtrar por Álbum:</label>
@@ -151,12 +149,10 @@
       </div>
     </div>
 
-    <!-- Grelha de Cards -->
     <div class="cards-grid" id="vitrineGrid">
       <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">Carregando figurinhas...</div>
     </div>
 
-    <!-- Paginação -->
     <div class="pagination-nav" id="paginationNav"></div>
   </div>
 
@@ -168,7 +164,7 @@
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 24;
+    const ITENS_POR_PAGINA = 24; // Exatamente 24 cards por página
 
     let authUserId = null;
     let perfilLogado = null;
@@ -269,8 +265,13 @@
         }
         
         if (termo !== "") {
-          const t = termo.replace('#', '');
-          query = (!isNaN(t) && t !== "") ? query.or(`numero.eq.${t},nome.ilike.%${termo}%`) : query.ilike('nome', `%${termo}%`);
+          const termoLimpo = termo.replace('#', '').trim();
+          if (!isNaN(termoLimpo) && termoLimpo !== "") {
+            // Busca por número exato ou nome contendo o termo
+            query = query.or(`numero.eq.${termoLimpo},nome.ilike.%${termo}%`);
+          } else {
+            query = query.ilike('nome', `%${termo}%`);
+          }
         }
 
         const { data, count, error } = await query.range(inicio, inicio + ITENS_POR_PAGINA - 1);
@@ -343,26 +344,28 @@
 
       const estoqueAnterior = meusPrecosQtd[fId]?.estoque || 0;
 
+      // Verificação rigorosa do limite do plano se for um novo anúncio ativo (estoque > 0 e antes era 0)
       if (estoque > 0 && estoqueAnterior === 0) {
-        const planoUsuario = perfilLogado?.plano || 'gratis';
+        const planoUsuario = (perfilLogado?.plano || 'gratis').toLowerCase().trim();
         
-        const { data: config } = await _supabase
+        const { data: config, error: errConfig } = await _supabase
           .from('configuracoes_planos')
           .select('limite_anuncios')
-          .eq('plano', planoUsuario)
+          .ilike('plano', planoUsuario)
           .maybeSingle();
 
         const limiteMaximo = config ? config.limite_anuncios : 10;
 
         if (limiteMaximo !== -1) {
-          const { count } = await _supabase
+          // Conta quantos anúncios ativos reais o usuário tem na tabela vitrine_ofertas
+          const { count, error: errCount } = await _supabase
             .from('vitrine_ofertas')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', authUserId)
             .gt('estoque', 0);
 
-          if ((count || 0) >= limiteMaximo) {
-            alert(`Atenção: Atingiu o limite máximo de ${limiteMaximo} anúncios ativos do plano ${planoUsuario.toUpperCase()}! Será redirecionado para a página de planos.`);
+          if (!errCount && (count || 0) >= limiteMaximo) {
+            alert(`Atenção: Atingiu o limite máximo de ${limiteMaximo} anúncios ativos do seu plano (${planoUsuario.toUpperCase()}). Será redirecionado para gerir o seu plano.`);
             window.location.href = "plano.html";
             return;
           }
