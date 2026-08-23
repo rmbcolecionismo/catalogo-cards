@@ -581,34 +581,37 @@
       document.getElementById('modalCriarCardeneta').style.display = 'none';
     }
 
-    async function salvarNovaCaderneta() {
-      const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
-      const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
-      
-      if (!albumBaseId) return alert("Selecione um álbum.");
+   async function salvarNovaCaderneta() {
+  const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
+  const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
+  
+  if (!albumBaseId) return alert("Selecione um álbum.");
 
-      const funcaoUsuario = dadosPerfilUsuario.funcao || 'gratis';
-      
-      if (funcaoUsuario === 'gratis' && minhasCadernetas.length >= 2) {
-        alert("Você atingiu o limite de 2 cadernetas do plano gratuito! Torne-se Premium ou Vitalício para criar álbuns ilimitados.");
-        return;
-      }
+  const funcaoUsuario = dadosPerfilUsuario.funcao || 'gratis';
+  
+  // REGRA DO PLANO: Se for grátis e já possuir 1 caderneta, bloqueia e oferta o plano Premium Anual
+  if (funcaoUsuario === 'gratis' && minhasCadernetas.length >= 1) {
+    alert("🌟 Limite do Plano Gratuito Atingido!\n\nNo plano gratuito, você pode cadastrar apenas 1 caderneta. Desbloqueie álbuns ilimitados agora mesmo fazendo um upgrade para o nosso **Plano Premium Anual**!");
+    
+    // Aqui você pode redirecionar para a página de planos ou checkout, ex:
+    // window.location.href = "planos.html";
+    return;
+  }
 
-      const { error } = await _supabase.from('usuario_albuns').insert([{
-        user_id: usuarioAtual.id,
-        album_base_id: albumBaseId,
-        apelido_personalizado: apelido || null
-      }]);
+  const { error } = await _supabase.from('usuario_albuns').insert([{
+    user_id: usuarioAtual.id,
+    album_base_id: albumBaseId,
+    apelido_personalizado: apelido || null
+  }]);
 
-      if (error) {
-        alert("Erro ao criar caderneta: " + error.message);
-        return;
-      }
+  if (error) {
+    alert("Erro ao criar caderneta: " + error.message);
+    return;
+  }
 
-      fecharModalCriar();
-      await carregarMinhasCadernetas();
-    }
-
+  fecharModalCriar();
+  await carregarMinhasCadernetas();
+}
     async function excluirAlbumAtual() {
       if (!cadernetaAtiva) return;
       
