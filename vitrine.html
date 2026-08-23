@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Para atualizar a paginação de 24 para 30 figurinhas por página (mantendo exatamente 6 cards por linha e 5 linhas no total), alterámos a constante ITENS_POR_PAGINA de 24 para 30.Aqui está o código completo e atualizado do seu ficheiro vitrine.html:  HTML<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -160,14 +160,14 @@
   </div>
 
   <footer>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong>[cite: 9]</p>
+    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 24;
+    const ITENS_POR_PAGINA = 30; // 6 cards por linha * 5 linhas = 30 por página
 
     let authUserId = null;
     let perfilLogado = null;
