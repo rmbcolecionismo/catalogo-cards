@@ -73,7 +73,6 @@
     .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
 
-    /* Estilos Específicos da Página de Planos */
     .pricing-hero { text-align: center; max-width: 800px; margin: 40px auto; padding: 0 20px; }
     .pricing-hero h1 { font-size: 2.2rem; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
     .pricing-hero p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
@@ -86,7 +85,7 @@
     .pricing-card.featured { border: 2px solid var(--gold); }
     .pricing-card.vip { background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%); border: 2px solid var(--gold); }
 
-    .badge-plan { position: absolute; top: -12px; left: 50%; transform: translateX(-1px); background: var(--gold); color: #0f172a; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
+    .badge-plan { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #0f172a; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
 
     .plan-header { margin-bottom: 20px; }
     .plan-tag { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--gold); background: rgba(245, 158, 11, 0.1); padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
@@ -110,13 +109,12 @@
 <body>
 
   <div class="container">
-    <!-- Top Nav Padronizada -->
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Início</a>
-        <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Vitrine</a>
-        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Perfil</a>
+        <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
+        <a href="cardeneta.html" id="linkCardeneta" style="display:none;" data-i18n="nav_cadernetas">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" style="display:none;" data-i18n="nav_vitrine">📦 Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" style="display:none;" data-i18n="nav_perfil">⚙️ Perfil</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <div class="language-selector-flags">
@@ -142,89 +140,209 @@
         
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
-          <a href="index.html" class="btn-gold" style="padding: 6px 14px; font-size: 0.8rem;">Entrar / Criar Conta</a>
+          <a href="index.html" class="btn-gold" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</a>
         </div>
       </div>
     </div>
 
     <!-- Seção Hero dos Planos -->
     <div class="pricing-hero">
-      <h1>Eleve sua Coleção ao Próximo Nível</h1>
-      <p>Gerencie sua <strong>limite_cadernetas</strong> digital com eficiência, anuncie no marketplace e faça trocas sem limitações. Escolha o plano perfeito para você!</p>
+      <h1 data-i18n="hero_planos_titulo">Eleve sua Coleção ao Próximo Nível</h1>
+      <p data-i18n="hero_planos_desc">Gerencie suas cadernetas digitais com eficiência, anuncie no marketplace e faça trocas sem limitações. Escolha o plano perfeito para você!</p>
     </div>
 
-    <!-- Grid de Planos com Valores em Euro (€) -->
+    <!-- Grid de Planos -->
     <div class="pricing-grid">
       
       <!-- Plano Grátis -->
       <div class="pricing-card">
         <div class="plan-header">
-          <span class="plan-tag">Iniciante</span>
-          <h3 class="plan-title">Plano Grátis</h3>
-          <p class="plan-desc">Para quem está começando a organizar os primeiros álbuns.</p>
+          <span class="plan-tag" data-i18n="tag_iniciante">Iniciante</span>
+          <h3 class="plan-title" data-i18n="titulo_plano_gratis">Plano Grátis</h3>
+          <p class="plan-desc" data-i18n="desc_plano_gratis">Para quem está começando a organizar os primeiros álbuns.</p>
         </div>
-        <div class="plan-price">€0,00 <span>/ sempre</span></div>
+        <div class="plan-price" id="precoGratis">€0,00 <span data-i18n="freq_sempre">/ sempre</span></div>
         <ul class="plan-features">
-          <li><i class="fa-solid fa-check"></i> <strong>1 Caderneta</strong> digital</li>
-          <li><i class="fa-solid fa-check"></i> Até <strong>10 anúncios</strong> no Marketplace</li>
-          <li><i class="fa-solid fa-check"></i> <strong>3 propostas diárias</strong> no Mercado da Troca</li>
+          <li data-i18n="feat_gratis_1"><i class="fa-solid fa-check"></i> <strong>1 Caderneta</strong> digital</li>
+          <li data-i18n="feat_gratis_2"><i class="fa-solid fa-check"></i> Até <strong>10 anúncios</strong> no Marketplace</li>
+          <li data-i18n="feat_gratis_3"><i class="fa-solid fa-check"></i> <strong>3 propostas diárias</strong> no Mercado da Troca</li>
         </ul>
-        <button disabled class="btn-outline" style="opacity: 0.6; cursor: not-allowed; width: 100%;">Plano Atual</button>
+        <button disabled class="btn-outline" style="opacity: 0.6; cursor: not-allowed; width: 100%;" data-i18n="btn_plano_atual">Plano Atual</button>
       </div>
 
       <!-- Plano Premium (Mensal) -->
       <div class="pricing-card featured">
-        <div class="badge-plan">Mais Popular</div>
+        <div class="badge-plan" data-i18n="badge_popular">Mais Popular</div>
         <div class="plan-header">
-          <span class="plan-tag">Profissional</span>
-          <h3 class="plan-title">Plano Premium</h3>
-          <p class="plan-desc">Para colecionadores ativos que querem flexibilidade mensal.</p>
+          <span class="plan-tag" data-i18n="tag_profissional">Profissional</span>
+          <h3 class="plan-title" data-i18n="titulo_plano_premium">Plano Premium</h3>
+          <p class="plan-desc" data-i18n="desc_plano_premium">Para colecionadores ativos que querem flexibilidade mensal.</p>
         </div>
-        <div class="plan-price">€4,99 <span>/ mês</span></div>
+        <div class="plan-price" id="precoPremium">€4,99 <span data-i18n="freq_mes">/ mês</span></div>
         <ul class="plan-features">
-          <li><i class="fa-solid fa-check"></i> <strong>Cadernetas ilimitadas</strong> (limite_cadernetas)</li>
-          <li><i class="fa-solid fa-check"></i> Até <strong>80 anúncios</strong> no Marketplace</li>
-          <li><i class="fa-solid fa-check"></i> <strong>10 propostas diárias</strong> no Mercado da Troca</li>
+          <li data-i18n="feat_prem_1"><i class="fa-solid fa-check"></i> <strong>Cadernetas ilimitadas</strong></li>
+          <li data-i18n="feat_prem_2"><i class="fa-solid fa-check"></i> Até <strong>80 anúncios</strong> no Marketplace</li>
+          <li data-i18n="feat_prem_3"><i class="fa-solid fa-check"></i> <strong>10 propostas diárias</strong> no Mercado da Troca</li>
         </ul>
-        <button onclick="assinarPlano('premium')" class="btn-gold" style="width: 100%; justify-content: center;">Assinar Premium Mensal</button>
+        <button onclick="assinarPlano('premium')" class="btn-gold" style="width: 100%; justify-content: center;" data-i18n="btn_assinar_mensal">Assinar Premium Mensal</button>
       </div>
 
       <!-- Plano Premium Anual -->
       <div class="pricing-card vip">
-        <div class="badge-plan" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">Melhor Valor</div>
+        <div class="badge-plan" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;" data-i18n="badge_melhor_valor">Melhor Valor</div>
         <div class="plan-header">
-          <span class="plan-tag" style="background: rgba(245, 158, 11, 0.2);">VIP Ilimitado</span>
-          <h3 class="plan-title">Plano Premium Anual</h3>
-          <p class="plan-desc">A experiência máxima para colecionadores dedicados.</p>
+          <span class="plan-tag" style="background: rgba(245, 158, 11, 0.2);" data-i18n="tag_vip">VIP Ilimitado</span>
+          <h3 class="plan-title" data-i18n="titulo_plano_anual">Plano Premium Anual</h3>
+          <p class="plan-desc" data-i18n="desc_plano_anual">A experiência máxima para colecionadores dedicados.</p>
         </div>
-        <div class="plan-price">€39,99 <span>/ ano</span></div>
+        <div class="plan-price" id="precoAnual">€39,99 <span data-i18n="freq_ano">/ ano</span></div>
         <ul class="plan-features">
-          <li><i class="fa-solid fa-check"></i> <strong>Cadernetas ilimitadas</strong></li>
-          <li><i class="fa-solid fa-check"></i> Anúncios <strong>ilimitados</strong> no Marketplace</li>
-          <li><i class="fa-solid fa-check"></i> <strong>20 propostas diárias</strong> no Mercado da Troca</li>
+          <li data-i18n="feat_anual_1"><i class="fa-solid fa-check"></i> <strong>Cadernetas ilimitadas</strong></li>
+          <li data-i18n="feat_anual_2"><i class="fa-solid fa-check"></i> Anúncios <strong>ilimitados</strong> no Marketplace</li>
+          <li data-i18n="feat_anual_3"><i class="fa-solid fa-check"></i> <strong>20 propostas diárias</strong> no Mercado da Troca</li>
         </ul>
-        <button onclick="assinarPlano('premium_anual')" class="btn-gold" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">Assinar Premium Anual</button>
+        <button onclick="assinarPlano('premium_anual')" class="btn-gold" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;" data-i18n="btn_assinar_anual">Assinar Premium Anual</button>
       </div>
 
     </div>
   </div>
 
-  <!-- Rodapé Padronizado -->
   <footer>
     <div class="footer-links">
-      <a href="ajudar.html">📸 Ajudar o Catálogo</a>
-      <a href="contato.html">✉️ Fale Conosco</a>
+      <a href="ajudar.html" data-i18n="footer_ajudar">📸 Ajudar o Catálogo</a>
+      <a href="contato.html" data-i18n="footer_contato">✉️ Fale Conosco</a>
     </div>
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <!-- Script de Integração -->
   <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const stripe = Stripe('pk_test_SUA_CHAVE_PUBLICA_DO_STRIPE');
+
+    let idiomaAtual = 'pt-PT';
+    let moedaAtual = 'EUR';
+
+    // Tabela de taxas de câmbio base em relação ao Euro (€)
+    const taxasCambio = {
+      'EUR': { mensal: 4.99, anual: 39.99, simbolo: 'EUR' },
+      'BRL': { mensal: 29.90, anual: 249.90, simbolo: 'BRL' }, // Exemplo ajustado para Real
+      'USD': { mensal: 5.49, anual: 44.99, simbolo: 'USD' }, // Exemplo ajustado para Dólar
+      'GBP': { mensal: 4.29, anual: 34.99, simbolo: 'GBP' }  // Exemplo ajustado para Libra
+    };
+
+    const dicionarios = {
+      'pt-PT': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil",
+        btn_entrar: "Entrar / Criar Conta",
+        hero_planos_titulo: "Eleve sua Coleção ao Próximo Nível",
+        hero_planos_desc: "Gerencie suas cadernetas digitais com eficiência, anuncie no marketplace e faça trocas sem limitações. Escolha o plano perfeito para você!",
+        tag_iniciante: "Iniciante", titulo_plano_gratis: "Plano Grátis", desc_plano_gratis: "Para quem está começando a organizar os primeiros álbuns.",
+        freq_sempre: "/ sempre", feat_gratis_1: "<strong>1 Caderneta</strong> digital", feat_gratis_2: "Até <strong>10 anúncios</strong> no Marketplace", feat_gratis_3: "<strong>3 propostas diárias</strong> no Mercado da Troca", btn_plano_atual: "Plano Atual",
+        badge_popular: "Mais Popular", tag_profissional: "Profissional", titulo_plano_premium: "Plano Premium", desc_plano_premium: "Para colecionadores ativos que querem flexibilidade mensal.",
+        freq_mes: "/ mês", feat_prem_1: "<strong>Cadernetas ilimitadas</strong>", feat_prem_2: "Até <strong>80 anúncios</strong> no Marketplace", feat_prem_3: "<strong>10 propostas diárias</strong> no Mercado da Troca", btn_assinar_mensal: "Assinar Premium Mensal",
+        badge_melhor_valor: "Melhor Valor", tag_vip: "VIP Ilimitado", titulo_plano_anual: "Plano Premium Anual", desc_plano_anual: "A experiência máxima para colecionadores dedicados.",
+        freq_ano: "/ ano", feat_anual_1: "<strong>Cadernetas ilimitadas</strong>", feat_anual_2: "Anúncios <strong>ilimitados</strong> no Marketplace", feat_anual_3: "<strong>20 propostas diárias</strong> no Mercado da Troca", btn_assinar_anual: "Assinar Premium Anual",
+        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco"
+      },
+      'pt-BR': {
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil",
+        btn_entrar: "Entrar / Criar Conta",
+        hero_planos_titulo: "Eleve sua Coleção ao Próximo Nível",
+        hero_planos_desc: "Gerencie suas cadernetas digitais com eficiência, anuncie no marketplace e faça trocas sem limitações. Escolha o plano perfeito para você!",
+        tag_iniciante: "Iniciante", titulo_plano_gratis: "Plano Grátis", desc_plano_gratis: "Para quem está começando a organizar os primeiros álbuns.",
+        freq_sempre: "/ sempre", feat_gratis_1: "<strong>1 Caderneta</strong> digital", feat_gratis_2: "Até <strong>10 anúncios</strong> no Marketplace", feat_gratis_3: "<strong>3 propostas diárias</strong> no Mercado da Troca", btn_plano_atual: "Plano Atual",
+        badge_popular: "Mais Popular", tag_profissional: "Profissional", titulo_plano_premium: "Plano Premium", desc_plano_premium: "Para colecionadores ativos que querem flexibilidade mensal.",
+        freq_mes: "/ mês", feat_prem_1: "<strong>Cadernetas ilimitadas</strong>", feat_prem_2: "Até <strong>80 anúncios</strong> no Marketplace", feat_prem_3: "<strong>10 propostas diárias</strong> no Mercado da Troca", btn_assinar_mensal: "Assinar Premium Mensal",
+        badge_melhor_valor: "Melhor Valor", tag_vip: "VIP Ilimitado", titulo_plano_anual: "Plano Premium Anual", desc_plano_anual: "A experiência máxima para colecionadores dedicados.",
+        freq_ano: "/ ano", feat_anual_1: "<strong>Cadernetas ilimitadas</strong>", feat_anual_2: "Anúncios <strong>ilimitados</strong> no Marketplace", feat_anual_3: "<strong>20 propostas diárias</strong> no Mercado da Troca", btn_assinar_anual: "Assinar Premium Anual",
+        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco"
+      },
+      'en': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_perfil: "⚙️ Profile",
+        btn_entrar: "Sign In / Register",
+        hero_planos_titulo: "Take Your Collection to the Next Level",
+        hero_planos_desc: "Manage your digital albums efficiently, advertise in the marketplace, and trade without limits. Choose the perfect plan for you!",
+        tag_iniciante: "Starter", titulo_plano_gratis: "Free Plan", desc_plano_gratis: "For those starting to organize their first albums.",
+        freq_sempre: "/ forever", feat_gratis_1: "<strong>1 Digital Album</strong>", feat_gratis_2: "Up to <strong>10 ads</strong> in the Marketplace", feat_gratis_3: "<strong>3 daily trade proposals</strong>", btn_plano_atual: "Current Plan",
+        badge_popular: "Most Popular", tag_profissional: "Professional", titulo_plano_premium: "Premium Plan", desc_plano_premium: "For active collectors looking for monthly flexibility.",
+        freq_mes: "/ month", feat_prem_1: "<strong>Unlimited albums</strong>", feat_prem_2: "Up to <strong>80 ads</strong> in the Marketplace", feat_prem_3: "<strong>10 daily trade proposals</strong>", btn_assinar_mensal: "Subscribe Monthly",
+        badge_melhor_valor: "Best Value", tag_vip: "VIP Unlimited", titulo_plano_anual: "Annual Premium Plan", desc_plano_anual: "The ultimate experience for dedicated collectors.",
+        freq_ano: "/ year", feat_anual_1: "<strong>Unlimited albums</strong>", feat_anual_2: "<strong>Unlimited ads</strong> in the Marketplace", feat_anual_3: "<strong>20 daily trade proposals</strong>", btn_assinar_anual: "Subscribe Annually",
+        footer_ajudar: "📸 Help Catalog", footer_contato: "✉️ Contact Us"
+      },
+      'it': {
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_perfil: "⚙️ Profilo",
+        btn_entrar: "Accedi / Registrati",
+        hero_planos_titulo: "Porta la tua collezione al livello successivo",
+        hero_planos_desc: "Gestisci i tuoi album digitali, fai annunci e scambia senza limiti. Scegli il piano perfetto!",
+        tag_iniciante: "Principiante", titulo_plano_gratis: "Piano Gratuito", desc_plano_gratis: "Per iniziare a organizzare i primi album.",
+        freq_sempre: "/ sempre", feat_gratis_1: "<strong>1 Album</strong> digitale", feat_gratis_2: "Fino a <strong>10 annunci</strong> nel Marketplace", feat_gratis_3: "<strong>3 proposte giornaliere</strong>", btn_plano_atual: "Piano Attuale",
+        badge_popular: "Più Popolare", tag_profissional: "Professionale", titulo_plano_premium: "Piano Premium", desc_plano_premium: "Per collezionisti attivi con flessibilità mensile.",
+        freq_mes: "/ mese", feat_prem_1: "<strong>Album illimitati</strong>", feat_prem_2: "Fino a <strong>80 annunci</strong> nel Marketplace", feat_prem_3: "<strong>10 proposte giornaliere</strong>", btn_assinar_mensal: "Abbonati Mensile",
+        badge_melhor_valor: "Miglior Valore", tag_vip: "VIP Illimitato", titulo_plano_anual: "Piano Premium Annuale", desc_plano_anual: "L'esperienza definitiva per collezionisti.",
+        freq_ano: "/ anno", feat_anual_1: "<strong>Album illimitati</strong>", feat_anual_2: "Annunci <strong>illimitati</strong> nel Marketplace", feat_anual_3: "<strong>20 proposte giornaliere</strong>", btn_assinar_anual: "Abbonati Annuale",
+        footer_ajudar: "📸 Aiuta Catalogo", footer_contato: "✉️ Contattaci"
+      },
+      'es': {
+        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_perfil: "⚙️ Perfil",
+        btn_entrar: "Entrar / Crear Cuenta",
+        hero_planos_titulo: "Lleva tu Colección al Siguiente Nivel",
+        hero_planos_desc: "Gestiona tus álbumes digitales de forma eficiente y haz intercambios sin límites.",
+        tag_iniciante: "Iniciante", titulo_plano_gratis: "Plan Gratuito", desc_plano_gratis: "Para empezar a organizar los primeros álbumes.",
+        freq_sempre: "/ siempre", feat_gratis_1: "<strong>1 Álbum</strong> digital", feat_gratis_2: "Hasta <strong>10 anuncios</strong>", feat_gratis_3: "<strong>3 propuestas diarias</strong>", btn_plano_atual: "Plan Actual",
+        badge_popular: "Más Popular", tag_profissional: "Profesional", titulo_plano_premium: "Plan Premium", desc_plano_premium: "Para coleccionistas activos.",
+        freq_mes: "/ mes", feat_prem_1: "<strong>Álbumes ilimitados</strong>", feat_prem_2: "Hasta <strong>80 anuncios</strong>", feat_prem_3: "<strong>10 propuestas diarias</strong>", btn_assinar_mensal: "Suscribirse Mensual",
+        badge_melhor_valor: "Mejor Valor", tag_vip: "VIP Ilimitado", titulo_plano_anual: "Plan Premium Anual", desc_plano_anual: "La experiencia máxima.",
+        freq_ano: "/ año", feat_anual_1: "<strong>Álbumes ilimitados</strong>", feat_anual_2: "Anuncios <strong>ilimitados</strong>", feat_anual_3: "<strong>20 propuestas diarias</strong>", btn_assinar_anual: "Suscribirse Anual",
+        footer_ajudar: "📸 Ayudar al Catalogo", footer_contato: "✉️ Contáctanos"
+      },
+      'fr': {
+        nav_inicio: "🏠 Accueil", nav_cadernetas: "📦 Albums", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Profil",
+        btn_entrar: "Se connecter",
+        hero_planos_titulo: "Élevez votre collection au niveau supérieur",
+        hero_planos_desc: "Gérez vos albums numériques efficacement et échangez sans limites.",
+        tag_iniciante: "Débutant", titulo_plano_gratis: "Plan Gratuit", desc_plano_gratis: "Pour commencer.",
+        freq_sempre: "/ toujours", feat_gratis_1: "<strong>1 Album</strong> numérique", feat_gratis_2: "Jusqu'à <strong>10 annonces</strong>", feat_gratis_3: "<strong>3 propositions quotidiennes</strong>", btn_plano_atual: "Plan Actuel",
+        badge_popular: "Plus Populaire", tag_profissional: "Professionnel", titulo_plano_premium: "Plan Premium", desc_plano_premium: "Pour collectionneurs actifs.",
+        freq_mes: "/ mois", feat_prem_1: "<strong>Albums illimités</strong>", feat_prem_2: "Jusqu'à <strong>80 annonces</strong>", feat_prem_3: "<strong>10 propositions quotidiennes</strong>", btn_assinar_mensal: "S'abonner Mensuel",
+        badge_melhor_valor: "Meilleure Valeur", tag_vip: "VIP Illimité", titulo_plano_anual: "Plan Premium Annuel", desc_plano_anual: "L'expérience ultime.",
+        freq_ano: "/ an", feat_anual_1: "<strong>Albums illimités</strong>", feat_anual_2: "Annonces <strong>illimitées</strong>", feat_anual_3: "<strong>20 propositions quotidiennes</strong>", btn_assinar_anual: "S'abonner Annuel",
+        footer_ajudar: "📸 Aide au Catalogue", footer_contato: "✉️ Contactez-nous"
+      }
+    };
+
+    function aplicarTraducaoEValores() {
+      const dic = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const chave = el.getAttribute('data-i18n');
+        if (dic[chave]) el.innerHTML = dic[chave];
+      });
+
+      document.querySelectorAll('.flag-option').forEach(btn => {
+        if (btn.getAttribute('data-lang') === idiomaAtual) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Atualiza valores baseado na moeda correspondente
+      const cambio = taxasCambio[moedaAtual] || taxasCambio['EUR'];
+      const formatoMensal = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(cambio.mensal);
+      const formatoAnual = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(cambio.anual);
+      const formatoGratis = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(0);
+
+      const freqMesText = dic['freq_mes'] || '/ mês';
+      const freqAnoText = dic['freq_ano'] || '/ ano';
+      const freqSempreText = dic['freq_sempre'] || '/ sempre';
+
+      document.getElementById('precoGratis').innerHTML = `${formatoGratis} <span>${freqSempreText}</span>`;
+      document.getElementById('precoPremium').innerHTML = `${formatoMensal} <span>${freqMesText}</span>`;
+      document.getElementById('precoAnual').innerHTML = `${formatoAnual} <span>${freqAnoText}</span>`;
+    }
 
     async function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
@@ -239,8 +357,26 @@
     }
 
     async function mudarIdiomaGlobal(valor) {
+      idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
-      window.location.reload();
+
+      if (valor === 'pt-BR') moedaAtual = 'BRL';
+      else if (valor === 'en') moedaAtual = 'USD';
+      else if (valor === 'it') moedaAtual = 'EUR'; // Itália usa Euro
+      else if (valor === 'es') moedaAtual = 'EUR'; // Espanha usa Euro
+      else if (valor === 'fr') moedaAtual = 'EUR'; // França usa Euro
+      else if (valor === 'pt-PT') moedaAtual = 'EUR';
+
+      localStorage.setItem('moeda_app', moedaAtual);
+
+      if (window.usuarioLogadoGlobal) {
+        await _supabase
+          .from('usuarios_cadastrados')
+          .update({ idioma_preferido: valor, moeda_preferida: moedaAtual })
+          .eq('id', window.usuarioLogadoGlobal.id);
+      }
+
+      aplicarTraducaoEValores();
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -249,12 +385,27 @@
         document.documentElement.setAttribute('data-theme', 'light');
       }
 
+      idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
+      moedaAtual = localStorage.getItem('moeda_app') || 'EUR';
+
       const { data: { session } } = await _supabase.auth.getSession();
       if (session && session.user) {
+        window.usuarioLogadoGlobal = session.user;
         document.getElementById('linkCardeneta').style.display = 'inline';
         document.getElementById('linkVitrine').style.display = 'inline';
         document.getElementById('linkPerfil').style.display = 'inline';
         
+        let { data: perfil } = await _supabase
+          .from('usuarios_cadastrados')
+          .select('nome, idioma_preferido, moeda_preferida')
+          .eq('email', session.user.email)
+          .maybeSingle();
+
+        if (perfil) {
+          if (perfil.idioma_preferido) idiomaAtual = perfil.idioma_preferido;
+          if (perfil.moeda_preferida) moedaAtual = perfil.moeda_preferida;
+        }
+
         const avatarUrl = session.user.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         const nomeUsuario = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
 
@@ -263,6 +414,8 @@
           <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
         `;
       }
+
+      aplicarTraducaoEValores();
     });
 
     async function assinarPlano(tipoPlano) {
@@ -275,7 +428,7 @@
       }
 
       try {
-        alert(`Redirecionando para o ambiente seguro do Stripe para o plano em Euros: ${tipoPlano.toUpperCase()}...`);
+        alert(`Redirecionando para o ambiente seguro do Stripe (${moedaAtual}) para o plano: ${tipoPlano.toUpperCase()}...`);
       } catch (error) {
         console.error("Erro ao iniciar pagamento:", error);
         alert("Não foi possível iniciar o pagamento. Tente novamente mais tarde.");
