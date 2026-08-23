@@ -89,6 +89,37 @@
     .btn-perfil { background: var(--gold); color: #0f172a; }
     .btn-pendente { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); cursor: default; }
 
+    /* Estilos do Seletor de Idioma via Bandeiras */
+    .language-selector-flags {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg);
+      border: 1px solid var(--border-color);
+      padding: 3px 6px;
+      border-radius: 8px;
+    }
+    .flag-option {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: 0.2s;
+      opacity: 0.6;
+    }
+    .flag-option:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+    .flag-option.active {
+      opacity: 1;
+      border-color: var(--gold);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
     @keyframes pulseGlow {
       0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
       70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
@@ -124,15 +155,16 @@
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Seletor de Idioma Atualizado com Bandeiras, EN e IT -->
-        <select id="selectIdiomaGlobal" class="filter-field" style="padding: 4px 8px; font-size: 0.75rem; min-width: 90px;" onchange="mudarIdiomaGlobal(this.value)">
-          <option value="pt-PT">🇵🇹 PT-PT</option>
-          <option value="pt-BR">🇧🇷 PT-BR</option>
-          <option value="en">🇬🇧 EN</option>
-          <option value="it">🇮🇹 IT</option>
-          <option value="es">🇪🇸 ES</option>
-          <option value="fr">🇫🇷 FR</option>
-        </select>
+        <!-- Seletor de Idioma Atualizado: Apenas Ícones de Bandeiras -->
+        <div class="language-selector-flags">
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">🇵🇹</button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">🇧🇷</button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">🇬🇧</button>
+          <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">🇮🇹</button>
+          <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">🇪🇸</button>
+          <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">🇫🇷</button>
+        </div>
+        
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
           <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</button>
@@ -244,7 +276,6 @@
     </div>
   </div>
 
-  <!-- Outros Modais (Propostas e Chat) mantidos simplificados -->
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
       <h3 data-i18n="modal_prop_titulo">🔄 Enviar Proposta de Troca</h3>
@@ -444,7 +475,7 @@
         placeholder_email: "Tu correo", placeholder_senha: "Tu contraseña",
         btn_entrar_modal: "Entrar", btn_criar_conta: "Crear Cuenta", btn_fechar: "Cerrar",
         modal_prop_titulo: "🔄 Enviar Propuesta de Intercambio", btn_enviar_prop: "🚀 Enviar Propuesta", btn_cancelar: "Cancelar",
-        modal_cent_titulo: "📬 Centro de Propuestas & Chat", modal_cent_desc: "Gestiona negociaciones y chatea con otros coleccionistas.",
+        modal_cent_titulo: "📬 Centro de Propuestas & Chat", modal_cent_desc: "Gestiona negociaciones y chatea con otros colecionistas.",
         tab_recebidas: "📥 Recibidas", tab_enviadas: "📤 Enviadas", msg_carregando: "Cargando...",
         placeholder_msg: "Escribe tu mensaje...", btn_enviar: "Enviar"
       },
@@ -453,7 +484,7 @@
         btn_entrar: "Se connecter / Créer un compte",
         hero_titulo: "Organisez votre collection & Vendez/Échangez vos stickers !",
         hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
-        hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximité",
+        hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximidade",
         hero_btn_criar: "✨ Créer un Compte Gratuit", hero_btn_demo: "Voir la Démo",
         collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
         collab_desc: "Aidez notre communauté en envoyant des photos des stickers manquants dans le catalogue officiel.",
@@ -487,6 +518,15 @@
         const chave = el.getAttribute('data-i18n-placeholder');
         if (dic[chave]) el.setAttribute('placeholder', dic[chave]);
       });
+
+      // Atualiza o destaque visual do botão de bandeira ativo
+      document.querySelectorAll('.flag-option').forEach(btn => {
+        if (btn.getAttribute('data-lang') === idiomaAtual) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
 
     async function alternarTema() {
@@ -505,7 +545,7 @@
       idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
 
-      // Define automaticamente a moeda com base no idioma selecionado[cite: 7]
+      // Define automaticamente a moeda com base no idioma selecionado
       if (valor === 'pt-BR') moedaAtual = 'BRL';
       else if (valor === 'en') moedaAtual = 'USD';
       else if (['pt-PT', 'es', 'fr', 'it'].includes(valor)) moedaAtual = 'EUR';
@@ -620,9 +660,6 @@
         idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
         moedaAtual = localStorage.getItem('moeda_app') || 'EUR';
       }
-
-      const selIdioma = document.getElementById('selectIdiomaGlobal');
-      if (selIdioma) selIdioma.value = idiomaAtual;
 
       aplicarTraducao();
       await carregarDadosGlobais();
