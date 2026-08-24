@@ -250,22 +250,22 @@
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <div class="language-selector-flags">
             <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-              <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
             </button>
             <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-              <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
             </button>
             <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-              <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
             </button>
             <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-              <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
             </button>
             <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-              <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
             </button>
             <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-              <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
+              <img src="https://flagcdn.com/w40/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
             </button>
           </div>
           
@@ -891,7 +891,6 @@
         gruposMap[cat].push(f);
       });
 
-      // Ordenar as chaves dos grupos conforme a ordem estrita da tabela album_categorias_ordem
       let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
         let indexA = ordemCategoriasDinamica.indexOf(a);
         let indexB = ordemCategoriasDinamica.indexOf(b);
@@ -915,7 +914,6 @@
                 const textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1}` : '✅ Já tenho') : '❌ Falta';
                 const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
                 
-                // Tratamento para garantir #001 sem duplicação de ##
                 let numFig = String(f.numero || '').trim();
                 if (numFig.startsWith('#')) {
                   numFig = numFig;
