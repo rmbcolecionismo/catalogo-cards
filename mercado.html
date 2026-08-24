@@ -65,7 +65,7 @@
     .btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; flex: 1; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-    .btn-danger { background: #ef4444; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
+    .btn-danger { background: #ef4444; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; cursor: pointer; flex: 1; text-align: center; }
     .btn-danger:hover { opacity: 0.9; }
 
     .language-selector-flags { display: flex; align-items: center; gap: 5px; background: var(--bg); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 8px; }
@@ -293,7 +293,6 @@
 
       const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
       
-      // 1. Minhas figurinhas na cardeneta
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
@@ -309,19 +308,16 @@
 
       minhasRepetidasGlobal = (minhasFig || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
 
-      // Carregar detalhes globais das minhas repetidas para usar nos modais
       if (minhasRepetidasGlobal.length > 0) {
         const { data: figsRepetidasInfo } = await _supabase.from('figurinhas').select('id, numero, nome, imagem').in('id', minhasRepetidasGlobal);
         detalhesMinhasRepetidasMap = new Map((figsRepetidasInfo || []).map(f => [f.id, f]));
       }
 
-      // 2. Buscar outros usuários cadastrados
       const { data: usuarios } = await _supabase.from('usuarios_cadastrados').select('*').neq('id', usuarioAtual.id);
       
       colecionadoresDisponiveis = [];
       if (usuarios) {
         for (let u of usuarios) {
-          // Cardeneta do outro usuário
           const { data: figColec } = await _supabase
             .from('usuario_cardeneta')
             .select('figurinha_id, quantidade')
@@ -330,17 +326,11 @@
           const colecCadastradasIds = new Set((figColec || []).map(f => f.figurinha_id));
           const colecRepetidasIds = new Set((figColec || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id));
 
-          // Forma 1: Figurinhas que EU tenho repetidas e que faltam para o outro usuário
           const matchEuTenhoParaEle = minhasRepetidasGlobal.filter(id => !colecCadastradasIds.has(id));
-
-          // Forma 2: Figurinhas que o OUTRO tem repetidas e que faltam para mim
           const matchEleTemParaMim = Array.from(colecRepetidasIds).filter(id => minhasFaltantesIds.has(id));
 
-          // Se houver match em qualquer uma das formas, o colecionador entra
           if (matchEuTenhoParaEle.length > 0 || matchEleTemParaMim.length > 0) {
             const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
-
-            // Juntar todos os álbuns envolvidos nesses matches para o filtro
             const idsEnvolvidos = [...matchEuTenhoParaEle, ...matchEleTemParaMim].map(id => albumPorFigurinha.get(id)).filter(Boolean);
 
             colecionadoresDisponiveis.push({
@@ -402,8 +392,7 @@
             </div>
 
             <div class="card-actions">
-              <button class="btn-gold" onclick="abrirModalProposta('${u.id}')">✨ Enviar Proposta</button>
-              <button class="btn-outline" onclick="verPerfilColecionador('${u.id}')">Ver Perfil</button>
+              <button class="btn-gold" style="width: 100%;" onclick="abrirModalProposta('${u.id}')">✨ Enviar Proposta</button>
             </div>
           </div>
         `;
@@ -497,8 +486,7 @@
           remetente_id: usuarioAtual.id,
           destinatario_id: usuarioAlvoTrocaId,
           status: 'pendente',
-          figurinhas_oferecidas: Array.from(figurinhasSelecionadasParaTroca),
-          created_at: new Date()
+          figurinhas_oferecidas: Array.from(figurinhasSelecionadasParaTroca)
         }
       ]);
 
@@ -602,8 +590,7 @@
         {
           proposta_id: propostaSelecionadaId,
           remetente_id: usuarioAtual.id,
-          mensagem: texto,
-          created_at: new Date()
+          mensagem: texto
         }
       ]);
 
@@ -616,10 +603,6 @@
     function fecharModalChat() {
       if (chatInterval) clearInterval(chatInterval);
       document.getElementById('modalChat').style.display = 'none';
-    }
-
-    function verPerfilColecionador(userId) {
-      window.location.href = `perfil.html?id=${userId}`;
     }
   </script>
 </body>
