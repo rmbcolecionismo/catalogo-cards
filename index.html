@@ -57,18 +57,13 @@
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
     .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
 
-    .sections-tabs { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
-    .tab-group { display: flex; gap: 10px; }
-    .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
-    .tab-btn.active { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid var(--gold); }
-
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
     .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
     .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
     
@@ -148,6 +143,7 @@
         <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
         <a href="cardeneta.html" id="linkCardeneta" style="display:none;" data-i18n="nav_cadernetas">📖 Cadernetas</a>
         <a href="vitrine.html" id="linkVitrine" style="display:none;" data-i18n="nav_vitrine">📦 Vitrine</a>
+        <a href="#secaoTrocas" data-i18n="nav_mercado_trocas">🔄 Mercado de Trocas</a>
         <a href="perfil.html" id="linkPerfil" style="display:none;" data-i18n="nav_perfil">⚙️ Perfil</a>
         <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
@@ -205,16 +201,10 @@
       <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
     </div>
 
-    <div class="sections-tabs">
-      <div class="tab-group">
-        <button class="tab-btn active" id="tabBtnMarket" onclick="mudarAba('market')" data-i18n="tab_market">📦 Marketplace (Vendas)</button>
-        <button class="tab-btn" id="tabBtnTrocas" onclick="mudarAba('trocas')" data-i18n="tab_trocas">🔄 Mercado de Trocas (Match)</button>
-      </div>
-      <div>
-        <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;">
-          <span data-i18n="btn_propostas">📬 Minhas Propostas</span> <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
-        </button>
-      </div>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+      <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;">
+        <span data-i18n="btn_propostas">📬 Minhas Propostas</span> <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+      </button>
     </div>
 
     <div class="controls-bar">
@@ -222,7 +212,7 @@
       <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
         <option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>
       </select>
-      <select id="selectFiltroRaio" class="filter-field" onchange="filtrarAtivo()" style="display:none;">
+      <select id="selectFiltroRaio" class="filter-field" onchange="filtrarAtivo()">
         <option value="todos" data-i18n="filtro_qualquer_dist">📍 Qualquer Distância</option>
         <option value="5">Até 5 km</option>
         <option value="10">Até 10 km</option>
@@ -238,7 +228,7 @@
       </div>
     </div>
 
-    <div id="secaoTrocas" style="display: none;">
+    <div id="secaoTrocas">
       <div class="section-title" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
       <div id="trocasGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_matches">Carregando matches de troca...</div>
@@ -339,7 +329,6 @@
     let usuariosMapGlobal = {};
     let albunsGlobaisMap = new Map();
     let propostasPendentesMap = new Set();
-    let abaAtual = 'market';
     let destinatarioAtualId = null;
     let itensPropostaAtual = [];
     let tipoAbaPropostaModal = 'recebidas';
@@ -352,7 +341,7 @@
 
     const dicionarios = {
       'pt-PT': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
         btn_entrar: "Entrar / Criar Conta",
         hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
@@ -361,7 +350,6 @@
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
         collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
         collab_btn: "Contribuir com Fotos",
-        tab_market: "📦 Marketplace (Vendas)", tab_trocas: "🔄 Mercado de Trocas (Match)",
         btn_propostas: "📬 Minhas Propostas",
         busca_placeholder: "🔍 Pesquisar por nome ou número...",
         filtro_todos_albuns: "📖 Todos os Álbuns", filtro_qualquer_dist: "📍 Qualquer Distância",
@@ -379,7 +367,7 @@
         placeholder_msg: "Digite sua mensagem...", btn_enviar: "Enviar"
       },
       'pt-BR': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
         btn_entrar: "Entrar / Criar Conta",
         hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
@@ -388,7 +376,6 @@
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
         collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
         collab_btn: "Contribuir com Fotos",
-        tab_market: "📦 Marketplace (Vendas)", tab_trocas: "🔄 Mercado de Trocas (Match)",
         btn_propostas: "📬 Minhas Propostas",
         busca_placeholder: "🔍 Pesquisar por nome ou número...",
         filtro_todos_albuns: "📖 Todos os Álbuns", filtro_qualquer_dist: "📍 Qualquer Distância",
@@ -406,7 +393,7 @@
         placeholder_msg: "Digite sua mensagem...", btn_enviar: "Enviar"
       },
       'en': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_mercado_trocas: "🔄 Trade Market", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
         btn_entrar: "Sign In / Register",
         hero_titulo: "Organize Your Collection & Buy/Trade Stickers!",
         hero_desc: "Create your free account right now. Get full control of your digital album, manage missing and duplicates, and trade directly in the marketplace.",
@@ -415,7 +402,6 @@
         collab_titulo: "📸 Spotted a missing or low-quality sticker?",
         collab_desc: "Help our community by submitting photos of missing stickers or cards for the official catalog.",
         collab_btn: "Contribute Photos",
-        tab_market: "📦 Marketplace (Sales)", tab_trocas: "🔄 Trade Market (Match)",
         btn_propostas: "📬 My Proposals",
         busca_placeholder: "🔍 Search by name or number...",
         filtro_todos_albuns: "📖 All Albums", filtro_qualquer_dist: "📍 Any Distance",
@@ -433,7 +419,7 @@
         placeholder_msg: "Type your message...", btn_enviar: "Send"
       },
       'it': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_mercado_trocas: "🔄 Mercato Scambi", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Accedi / Registrati",
         hero_titulo: "Organizza la tua collezione e Vendi/Scambia figurine!",
         hero_desc: "Crea il tuo account gratuito adesso. Gestisci il tuo album digitale, le figurine mancanti e doppie, e negozia direttamente nel marketplace.",
@@ -442,7 +428,6 @@
         collab_titulo: "📸 Hai notato una figurina mancante o di bassa qualità?",
         collab_desc: "Aiuta la nostra comunità inviando foto delle figurine mancanti nel catalogo ufficiale.",
         collab_btn: "Contribuisci con Foto",
-        tab_market: "📦 Marketplace (Vendite)", tab_trocas: "🔄 Mercato Scambi (Match)",
         btn_propostas: "📬 Le Mie Proposte",
         busca_placeholder: "🔍 Cerca per nome o numero...",
         filtro_todos_albuns: "📖 Tutti gli Album", filtro_qualquer_dist: "📍 Qualsiasi Distanza",
@@ -460,7 +445,7 @@
         placeholder_msg: "Scrivi un messaggio...", btn_enviar: "Invia"
       },
       'es': {
-        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Entrar / Crear Cuenta",
         hero_titulo: "¡Organiza tu Colección & Vende/Intercambia Figus!",
         hero_desc: "Crea tu cuenta gratuita ahora mismo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
@@ -469,7 +454,6 @@
         collab_titulo: "📸 ¿Viste alguna figurita faltante o de baja calidad?",
         collab_desc: "Ayuda a nuestra comunidad enviando fotos de las figuritas o cards faltantes en el catálogo oficial.",
         collab_btn: "Contribuir con Fotos",
-        tab_market: "📦 Marketplace (Ventas)", tab_trocas: "🔄 Mercado de Intercambios (Match)",
         btn_propostas: "📬 Mis Propuestas",
         busca_placeholder: "🔍 Buscar por nombre o número...",
         filtro_todos_albuns: "📖 Todos los Álbumes", filtro_qualquer_dist: "📍 Cualquier Distancia",
@@ -487,7 +471,7 @@
         placeholder_msg: "Escribe tu mensaje...", btn_enviar: "Enviar"
       },
       'fr': {
-        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Marché d'Échanges", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Se connecter / Créer un compte",
         hero_titulo: "Organisez votre collection & Vendez/Échangez vos stickers !",
         hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
@@ -496,7 +480,6 @@
         collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
         collab_desc: "Aidez notre communauté en envoyant des photos des stickers manquants dans le catalogue officiel.",
         collab_btn: "Contribuer avec des Photos",
-        tab_market: "📦 Marketplace (Ventes)", tab_trocas: "🔄 Marché des Échanges (Match)",
         btn_propostas: "📬 Mes Propositions",
         busca_placeholder: "🔍 Rechercher par nom ou numéro...",
         filtro_todos_albuns: "📖 Tous les Albums", filtro_qualquer_dist: "📍 N'importe Quelle Distance",
@@ -703,24 +686,9 @@
       renderizarAtivo();
     }
 
-    function mudarAba(aba) {
-      abaAtual = aba;
-      document.getElementById('tabBtnMarket').classList.toggle('active', aba === 'market');
-      document.getElementById('tabBtnTrocas').classList.toggle('active', aba === 'trocas');
-      
-      document.getElementById('secaoMarketplace').style.display = (aba === 'market') ? 'block' : 'none';
-      document.getElementById('secaoTrocas').style.display = (aba === 'trocas') ? 'block' : 'none';
-      document.getElementById('selectFiltroRaio').style.display = (aba === 'trocas') ? 'inline-block' : 'none';
-
-      renderizarAtivo();
-    }
-
     function renderizarAtivo() {
-      if (abaAtual === 'market') {
-        renderizarMarketplace();
-      } else {
-        renderizarTrocas();
-      }
+      renderizarMarketplace();
+      renderizarTrocas();
     }
 
     function renderizarMarketplace() {
@@ -759,7 +727,7 @@
               <span class="market-vendedor">Vendedor: <strong>${vendedor.nome}</strong></span>
             </div>
             <div class="market-footer">
-              <button class="btn-acao btn-perfil" onclick="verPerfilVendedor('${item.user_id}')">Ver Perfil / Comprar</button>
+              <button class="btn-acao btn-perfil" onclick="verPerfilVendedor('${item.user_id}')">Ver Perfil Vendedor</button>
             </div>
           </div>
         `;
@@ -780,14 +748,12 @@
       try {
         const raioFiltro = document.getElementById('selectFiltroRaio').value;
 
-        // 1. Pega o perfil do usuário logado para saber a localização
         const { data: meuPerfil } = await _supabase
           .from('usuarios_cadastrados')
           .select('latitude, longitude, nome')
           .eq('id', usuarioLogadoGlobal.id)
           .single();
 
-        // 2. Busca o que o usuário logado possui na cardeneta
         const { data: minhaCardeneta } = await _supabase
           .from('usuario_cardeneta')
           .select('figurinha_id, quantidade')
@@ -795,7 +761,6 @@
 
         const idsPossuidosSet = new Set((minhaCardeneta || []).map(item => item.figurinha_id));
 
-        // 3. Busca TODAS as figurinhas cadastradas no sistema geral com dados do álbum[cite: 4]
         const { data: todasFigurinhas } = await _supabase
           .from('figurinhas')
           .select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
@@ -805,12 +770,10 @@
           return;
         }
 
-        // Descobre as FALTANTES do usuário logado (tudo na tabela geral que NÃO está na cardeneta dele)[cite: 4]
         const minhasFaltantesSet = new Set(
           todasFigurinhas.filter(f => !idsPossuidosSet.has(f.id)).map(f => f.id)
         );
 
-        // 4. Busca a cardeneta de TODOS os outros usuários
         const { data: cardenetaOutros } = await _supabase
           .from('usuario_cardeneta')
           .select('user_id, figurinha_id, quantidade')
@@ -821,7 +784,6 @@
           return;
         }
 
-        // Mapeia o que cada usuário possui
         const usuariosPossesMap = {};
         cardenetaOutros.forEach(item => {
           if (!usuariosPossesMap[item.user_id]) {
@@ -832,7 +794,6 @@
           usuariosPossesMap[item.user_id].possuidos.add(item.figurinha_id);
         });
 
-        // 5. Cruzamento de Matches (O outro tem o que eu preciso)
         const matchesPorUsuario = {};
 
         for (const [outroId, dados] of Object.entries(usuariosPossesMap)) {
@@ -947,8 +908,13 @@
       document.getElementById('modalChatInterno').style.display = 'none';
       if (chatIntervalo) clearInterval(chatIntervalo);
     }
+    
     function verPerfilVendedor(userId) {
-      alert('Redirecionando para o perfil do colecionador: ' + userId);
+      if (!userId) {
+        alert('ID do vendedor não encontrado.');
+        return;
+      }
+      window.location.href = `perfil.html?id=${userId}`;
     }
   </script>
 </body>
