@@ -172,7 +172,8 @@
         <a href="index.html" class="active" data-i18n="nav_inicio">🏠 Início</a>
         <a href="cardeneta.html" id="linkCardeneta" style="display:none;" data-i18n="nav_cadernetas">📖 Cadernetas</a>
         <a href="vitrine.html" id="linkVitrine" style="display:none;" data-i18n="nav_vitrine">📦 Vitrine</a>
-        <a href="mercado.html" data-i18n="nav_mercado_trocas">🔄 Mercado de Trocas</a>
+        <a href="mercado.html" id="linkMercado" style="display:none;" data-i18n="nav_mercado">🔄 Mercado de Trocas</a>
+        <a href="mercado.html" data-i18n="nav_mercado_trocas">🔄 Mercadoteste</a>
         <a href="perfil.html" id="linkPerfil" style="display:none;" data-i18n="nav_perfil">⚙️ Perfil</a>
         <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
@@ -495,6 +496,7 @@
         document.getElementById('linkCardeneta').style.display = 'inline-block';
         document.getElementById('linkVitrine').style.display = 'inline-block';
         document.getElementById('linkPerfil').style.display = 'inline-block';
+        document.getElementById('linkMercado').style.display = 'inline-block';
 
         const funcaoUsuario = String(perfil?.funcao || '').toLowerCase().trim();
         if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
