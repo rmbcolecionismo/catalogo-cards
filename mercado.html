@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mercado de Trocas de Figurinhas</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+      --gold: #f59e0b; 
+      --bg: #0f172a; 
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255,255,255,0.1);
+      --modal-bg: #1e293b;
+    }
+
+    [data-theme="light"] {
+      --gold: #d97706;
+      --bg: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: rgba(0,0,0,0.1);
+      --modal-bg: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
+    
+    .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1250px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+    
+    .user-profile-header { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
+    
+    .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
+
+    .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
+    .filter-field:focus { border-color: var(--gold); }
+
+    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+    .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    
+    .market-info { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .market-num { font-size: 0.75rem; color: #38bdf8; font-weight: 700; }
+    .market-name { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+    .market-vendedor { font-size: 0.8rem; color: var(--text-muted); }
+
+    .market-footer { padding: 12px; background: var(--bg); border-top: 1px solid var(--border-color); text-align: center; }
+    .btn-acao { background: #38bdf8; color: #0f172a; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
+    .btn-acao:hover { opacity: 0.9; }
+
+    .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; transition: 0.2s; }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    .language-selector-flags { display: flex; align-items: center; gap: 5px; background: var(--bg); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 8px; }
+    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; opacity: 0.6; transition: 0.2s; }
+    .flag-option:hover { opacity: 0.9; }
+    .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+    .btn-propostas-animado { position: relative; border-color: #38bdf8; color: #38bdf8; animation: pulseGlow 2s infinite; }
+    .badge-contador { background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 10px; margin-left: 6px; display: inline-block; vertical-align: middle; }
+
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
+
+    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; }
+    .footer-links a:hover { color: var(--gold); }
+    footer strong { color: var(--gold); }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
+    .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
+    .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Topo Padrão Igual à Index -->
+    <div class="top-nav">
+      <div class="nav-links">
+        <a href="index.html">🏠 Início (Vendas)</a>
+        <a href="mercado.html" class="active" style="color: var(--gold);">🔄 Mercado de Trocas</a>
+        <a href="cardeneta.html" id="linkCardeneta" style="display:none;">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" style="display:none;">📦 Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" style="display:none;">⚙️ Perfil</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div class="language-selector-flags">
+          <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)"><img src="https://flagcdn.com/24x18/pt.png" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)"><img src="https://flagcdn.com/24x18/br.png" style="width: 20px; height: 15px; display: block;"></button>
+          <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English"><img src="https://flagcdn.com/24x18/gb.png" style="width: 20px; height: 15px; display: block;"></button>
+        </div>
+        
+        <button class="btn-outline" onclick="alternarTema()" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
+        
+        <div>
+          <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;">
+            📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+          </button>
+        </div>
+
+        <div id="userInfoHeader" class="user-profile-header">
+          <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;">Entrar / Criar Conta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros de Busca e Raio -->
+    <div class="controls-bar">
+      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou colecionador..." oninput="filtrarTrocas()">
+      <select id="selectFiltroRaio" class="filter-field" onchange="filtrarTrocas()">
+        <option value="todos">📍 Qualquer Distância</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
+      </select>
+    </div>
+
+    <!-- Seção do Mercado de Trocas -->
+    <div id="secaoTrocas">
+      <div class="section-title">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
+      <div id="trocasGrid" class="marketplace-grid">
+        <div class="empty-state">Carregando matches de troca...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a href="ajudar.html">📸 Ajudar o Catálogo</a>
+      <a href="contato.html">✉️ Fale Conosco</a>
+    </div>
+    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+  </footer>
+
+  <!-- Modais Auxiliares (Autenticação, Propostas e Chat) -->
+  <div id="modalAuth" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Acesse sua Conta</h3>
+      <p>Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn-outline" onclick="fazerLoginGoogle()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #0f172a; border: none; font-weight: 600;">Continuar com Google</button>
+        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted);">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let usuarioLogadoGlobal = null;
+    let usuariosMapGlobal = {};
+    let matchesCacheGlobal = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaSalvo = localStorage.getItem('tema_app');
+      if (temaSalvo === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      initMercado();
+    });
+
+    async function alternarTema() {
+      const atual = document.documentElement.getAttribute('data-theme');
+      const novo = atual === 'light' ? 'dark' : 'light';
+      if (novo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('tema_app', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('tema_app', 'dark');
+      }
+    }
+
+    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    async function initMercado() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      
+      if (session && session.user) {
+        usuarioLogadoGlobal = session.user;
+        document.getElementById('linkCardeneta').style.display = 'inline';
+        document.getElementById('linkVitrine').style.display = 'inline';
+        document.getElementById('linkPerfil').style.display = 'inline';
+        document.getElementById('btnMinhasPropostas').style.display = 'inline-block';
+
+        const { data: perfil } = await _supabase.from('usuarios_cadastrados').select('nome, funcao').eq('email', usuarioLogadoGlobal.email).maybeSingle();
+        if (perfil && (perfil.funcao === 'administrador' || perfil.funcao === 'master')) {
+          document.getElementById('linkAdmin').style.display = 'inline';
+        }
+
+        document.getElementById('userInfoHeader').innerHTML = `
+          <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${perfil?.nome || 'Colecionador'}</strong></span>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem;">Sair</button>
+        `;
+      }
+
+      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
+      if (usuariosData) {
+        usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
+      }
+
+      await carregarMatchesTrocas();
+    }
+
+    async function carregarMatchesTrocas() {
+      const grid = document.getElementById('trocasGrid');
+      if (!usuarioLogadoGlobal) {
+        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente. <br><br> <button class="btn-gold" onclick="abrirModalAuth()">Entrar Agora</button></div>`;
+        return;
+      }
+
+      try {
+        const { data: meuPerfil } = await _supabase.from('usuarios_cadastrados').select('latitude, longitude').eq('id', usuarioLogadoGlobal.id).single();
+        const { data: minhaCardeneta } = await _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id);
+        const idsPossuidosSet = new Set((minhaCardeneta || []).map(item => item.figurinha_id));
+
+        const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+        if (!todasFigurinhas) return;
+
+        const minhasFaltantesSet = new Set(todasFigurinhas.filter(f => !idsPossuidosSet.has(f.id)).map(f => f.id));
+
+        const { data: cardenetaOutros } = await _supabase.from('usuario_cardeneta').select('user_id, figurinha_id').neq('user_id', usuarioLogadoGlobal.id);
+        if (!cardenetaOutros) {
+          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui itens cadastrados.</div>`;
+          return;
+        }
+
+        const usuariosPossesMap = {};
+        cardenetaOutros.forEach(item => {
+          if (!usuariosPossesMap[item.user_id]) usuariosPossesMap[item.user_id] = new Set();
+          usuariosPossesMap[item.user_id].add(item.figurinha_id);
+        });
+
+        matchesCacheGlobal = [];
+        for (const [outroId, possuidos] of Object.entries(usuariosPossesMap)) {
+          const ofereceParaMimIds = [...possuidos].filter(figId => minhasFaltantesSet.has(figId));
+          if (ofereceParaMimIds.length > 0) {
+            const usuarioObj = usuariosMapGlobal[outroId] || { nome: 'Colecionador' };
+            let distanciaKm = null;
+            if (meuPerfil?.latitude && meuPerfil?.longitude && usuarioObj.latitude && usuarioObj.longitude) {
+              distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, usuarioObj.latitude, usuarioObj.longitude);
+            }
+            matchesCacheGlobal.push({
+              usuario: usuarioObj,
+              distancia: distanciaKm,
+              ofereceParaMim: todasFigurinhas.filter(f => ofereceParaMimIds.includes(f.id))
+            });
+          }
+        }
+
+        renderizarGridMatches(matchesCacheGlobal);
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="empty-state">Erro ao carregar o mercado de trocas.</div>`;
+      }
+    }
+
+    function renderizarGridMatches(lista) {
+      const grid = document.getElementById('trocasGrid');
+      const busca = document.getElementById('inputBusca').value.toLowerCase();
+      const raioFiltro = document.getElementById('selectFiltroRaio').value;
+
+      const filtrados = lista.filter(m => {
+        const matchNome = m.usuario.nome.toLowerCase().includes(busca);
+        const matchDistancia = (raioFiltro === 'todos' || (m.distancia !== null && m.distancia <= parseFloat(raioFiltro)));
+        return matchNome && matchDistancia;
+      });
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = `<div class="empty-state">Nenhum match encontrado com os filtros selecionados.</div>`;
+        return;
+      }
+
+      let html = '';
+      filtrados.forEach(m => {
+        const distTexto = m.distancia !== null ? `📍 Aprox. ${m.distancia.toFixed(1)} km` : '';
+        const whatsAppNum = m.usuario.telefone_whats;
+        const botaoContato = whatsAppNum 
+          ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(m.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao">💬 Negociar via WhatsApp</a>`
+          : `<button class="btn-acao" onclick="alert('Funcionalidade de proposta interna')">🔄 Enviar Proposta</button>`;
+
+        html += `
+          <div class="market-card">
+            <div class="market-info">
+              <span class="market-num">🔄 Match de Troca</span>
+              <span class="market-name">${m.usuario.nome}</span>
+              <span class="market-vendedor">${distTexto}</span>
+              <hr style="border-color: var(--border-color); margin: 8px 0;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
+                ${m.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+              </div>
+            </div>
+            <div class="market-footer">
+              ${botaoContato}
+            </div>
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+    }
+
+    function filtrarTrocas() {
+      renderizarGridMatches(matchesCacheGlobal);
+    }
+
+    function abrirModalAuth() { document.getElementById('modalAuth').style.display = 'flex'; }
+    function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
+    async function fazerLoginGoogle() { await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } }); }
+    async function fazerLogout() { await _supabase.auth.signOut(); window.location.reload(); }
+  </script>
+</body>
+</html>
