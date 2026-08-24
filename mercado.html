@@ -285,8 +285,9 @@
         document.getElementById('selectFiltroAlbum').innerHTML = opts;
       }
 
-      // 1. Buscar todas as figurinhas do sistema e as minhas da cardeneta
       const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
+      
+      // Ajustado para o nome correto da tabela: usuario_cardeneta
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
@@ -295,7 +296,6 @@
 
       (todasFigurinhas || []).forEach(f => {
         albumPorFigurinha.set(f.id, f.album_id);
-        // Se não está na minha tabela cardeneta_usuario, é considerada FALTANTE para mim
         if (!minhasCadastradasIds.has(f.id)) {
           minhasFaltantesIds.add(f.id);
         }
@@ -303,15 +303,14 @@
 
       minhasRepetidasGlobal = (minhasFig || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
 
-      // 2. Buscar outros usuários cadastrados
       const { data: usuarios } = await _supabase.from('usuarios_cadastrados').select('*').neq('id', usuarioAtual.id);
       
       colecionadoresDisponiveis = [];
       if (usuarios) {
         for (let u of usuarios) {
-          // Buscar figurinhas da tabela cardeneta_usuario do outro colecionador onde quantidade > 1
+          // Ajustado para o nome correto da tabela: usuario_cardeneta
           const { data: figColec } = await _supabase
-            .from('cardeneta_usuario')
+            .from('usuario_cardeneta')
             .select('figurinha_id, quantidade')
             .eq('user_id', u.id)
             .gt('quantidade', 1);
@@ -319,12 +318,9 @@
           if (!figColec || figColec.length === 0) continue;
 
           const repetidasDelesIds = figColec.map(f => f.figurinha_id);
-
-          // Verificar quais dessas repetidas deles batem com as minhas FALTANTES
           const matchFaltantes = repetidasDelesIds.filter(id => minhasFaltantesIds.has(id));
           const albunsEnvolvidos = matchFaltantes.map(id => albumPorFigurinha.get(id)).filter(Boolean);
 
-          // Se o colecionador tiver ao menos uma repetida que falta para mim
           if (matchFaltantes.length > 0) {
             const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
 
