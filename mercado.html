@@ -287,7 +287,7 @@
 
       // 1. Buscar todas as figurinhas do sistema e as minhas da cardeneta
       const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
-      const { data: minhasFig } = await _supabase.from('cardeneta_usuario').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
+      const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
       const minhasFaltantesIds = new Set();
