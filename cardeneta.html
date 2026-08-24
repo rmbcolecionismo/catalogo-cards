@@ -900,8 +900,21 @@
       });
 
       container.innerHTML = chavesOrdenadas.map(cat => {
-        const iconeVal = mapaIconesCategorias[cat] || '';
-        const htmlIcone = iconeVal ? `<span style="margin-right: 6px;">${iconeVal}</span>` : '';
+        let iconeVal = mapaIconesCategorias[cat] || '';
+let htmlIcone = '';
+
+if (iconeVal) {
+  // Limpa prefixos indesejados caso existam (como "img=", "img:", etc.)
+  iconeVal = iconeVal.replace(/^img[:=]+/i, '').trim();
+
+  // Se começar com http ou https, tratamos como um link de imagem
+  if (iconeVal.startsWith('http')) {
+    htmlIcone = `<img src="${iconeVal}" alt="${cat}" style="width: 20px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px;">`;
+  } else {
+    // Caso seja um emoji ou texto normal
+    htmlIcone = `<span style="margin-right: 6px;">${iconeVal}</span>`;
+  }
+}
 
         return `
           <div class="secao-grupo">
