@@ -492,7 +492,7 @@
       carregarMinhasPropostas();
     }
 
-   async function carregarMinhasPropostas() {
+    async function carregarMinhasPropostas() {
       const grid = document.getElementById('propostasGrid');
       const { data: propostas } = await _supabase.from('propostas_troca').select('*').or(`remetente_id.eq.${usuarioAtual.id},destinatario_id.eq.${usuarioAtual.id}`).order('id', { ascending: false });
 
@@ -500,108 +500,6 @@
         grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">Nenhuma proposta ativa.</div>`;
         return;
       }
-
-      let html = '';
-      for (let p of propostas) {
-        const souRemetente = p.remetente_id === usuarioAtual.id;
-        const outroId = souRemetente ? p.destinatario_id : p.remetente_id;
-        const { data: outroUser } = await _supabase.from('usuarios_cadastrados').select('nome, avatar_url').eq('id', outroId).maybeSingle();
-
-        // Converte sempre os IDs para String para garantir o match exato com o Map global
-        const converterIds = (arr) => (arr || []).map(id => String(id));
-        const minhasFigIds = converterIds(souRemetente ? p.figurinhas_remetente : p.figurinhas_destinatario);
-        const deleFigIds = converterIds(souRemetente ? p.figurinhas_destinatario : p.figurinhas_remetente);
-
-        let miniMinhasHtml = '';
-        minhasFigIds.forEach(id => {
-          const f = figurinhasGlobalMap.get(id) || figurinhasGlobalMap.get(Number(id));
-          if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
-        });
-
-        let miniDeleHtml = '';
-        deleFigIds.forEach(id => {
-          const f = figurinhasGlobalMap.get(id) || figurinhasGlobalMap.get(Number(id));
-          if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
-        });
-
-        html += `
-          <div class="colecionador-card">
-            <div class="colecionador-header">
-              <img src="${outroUser?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-              <div class="colecionador-info">
-                <h3>Troca com ${outroUser?.nome || 'Colecionador'}</h3>
-                <p>Status: <strong style="color: var(--gold); text-transform:uppercase;">${p.status}</strong></p>
-              </div>
-            </div>
-
-            <div class="proposta-detalhe-box">
-              <div style="font-weight: 600; color: var(--gold);">📤 Você vai separar para enviar:</div>
-              <div class="mini-figs-row">${miniMinhasHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
-              
-              <div style="font-weight: 600; color: #34d399; margin-top: 4px;">📥 Você vai receber dele(a):</div>
-              <div class="mini-figs-row">${miniDeleHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
-            </div>
-
-            <div class="card-actions">
-              <button class="btn-gold" onclick="abrirChat('${p.id}', '${outroUser?.nome || 'Colecionador'}')">💬 Chat & Negociar</button>
-              <button class="btn-danger" onclick="excluirProposta('${p.id}')">Excluir</button>
-            </div>
-          </div>
-        `;
-      }
-      grid.innerHTML = html;
-    }
-
-      let html = '';
-      for (let p of propostas) {
-        const souRemetente = p.remetente_id === usuarioAtual.id;
-        const outroId = souRemetente ? p.destinatario_id : p.remetente_id;
-        const { data: outroUser } = await _supabase.from('usuarios_cadastrados').select('nome, avatar_url').eq('id', outroId).maybeSingle();
-
-        // Converte sempre os IDs para String para garantir o match exato com o Map global
-        const converterIds = (arr) => (arr || []).map(id => String(id));
-        const minhasFigIds = converterIds(souRemetente ? p.figurinhas_remetente : p.figurinhas_destinatario);
-        const deleFigIds = converterIds(souRemetente ? p.figurinhas_destinatario : p.figurinhas_remetente);
-
-        let miniMinhasHtml = '';
-        minhasFigIds.forEach(id => {
-          const f = figurinhasGlobalMap.get(id) || figurinhasGlobalMap.get(Number(id));
-          if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
-        });
-
-        let miniDeleHtml = '';
-        deleFigIds.forEach(id => {
-          const f = figurinhasGlobalMap.get(id) || figurinhasGlobalMap.get(Number(id));
-          if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
-        });
-
-        html += `
-          <div class="colecionador-card">
-            <div class="colecionador-header">
-              <img src="${outroUser?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-              <div class="colecionador-info">
-                <h3>Troca com ${outroUser?.nome || 'Colecionador'}</h3>
-                <p>Status: <strong style="color: var(--gold); text-transform:uppercase;">${p.status}</strong></p>
-              </div>
-            </div>
-
-            <div class="proposta-detalhe-box">
-              <div style="font-weight: 600; color: var(--gold);">📤 Você vai separar para enviar:</div>
-              <div class="mini-figs-row">${miniMinhasHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
-              
-              <div style="font-weight: 600; color: #34d399; margin-top: 4px;">📥 Você vai receber dele(a):</div>
-              <div class="mini-figs-row">${miniDeleHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
-            </div>
-
-            <div class="card-actions">
-              <button class="btn-gold" onclick="abrirChat('${p.id}', '${outroUser?.nome || 'Colecionador'}')">💬 Chat & Negociar</button>
-              <button class="btn-danger" onclick="excluirProposta('${p.id}')">Excluir</button>
-            </div>
-          </div>
-        `;
-      }
-      grid.innerHTML = html;
-    }
 
       let html = '';
       for (let p of propostas) {
