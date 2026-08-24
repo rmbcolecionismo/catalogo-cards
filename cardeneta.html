@@ -1015,7 +1015,7 @@ if (iconeVal) {
 
     function toggleShareMenu() { document.getElementById('shareDropdownContainer').classList.toggle('active'); }
 
-   async function enviarWhatsApp(tipo) {
+  async function enviarWhatsApp(tipo) {
   // Fecha o menu dropdown de partilha
   toggleShareMenu();
 
@@ -1027,25 +1027,19 @@ if (iconeVal) {
 
   let texto = `🏁 ${nomeAlbum}\n`;
 
-  // 2. Agrupar figurinhas por categoria e buscar os ícones (ex: bandeiras)
-  // Certifique-se de que cada item em `figurinhasDoAlbum` possui a referência à categoria (ex: f.categoria_id, f.categoria, etc.)
-  // Vamos assumir que existe um objeto ou mapa de categorias vindo da tabela album_categorias_ordem ou mapeado na própria figurinha.
-  
-  let categoriasMap = {}; // Exemplo: { idCategoria: { nome: 'Brasil', icone: '🇧🇷' } }
-  
-  // Se tiver as categorias guardadas globalmente ou puder obtê-las, preencha o categoriasMap.
-  // Caso a própria figurinha traga o icone e o nome da categoria embutidos (ex: f.categoria_icone e f.categoria_nome), facilita bastante:
-  
   let faltantesPorCat = {};
   let repetidasPorCat = {};
 
-  figurinhasDoAlbum.fhir || figurinhasDoAlbum.forEach(f => {
+  // 2. Percorrer as figurinhas do álbum
+  figurinhasDoAlbum.forEach(f => {
     let q = mapaCadernetaUsuario[f.id] || 0;
     
-    // Identificar categoria, nome e ícone (ajuste conforme os campos reais do seu objeto de figurinha/categoria)
-    let catId = f.categoria_id || f.id_categoria || 'geral';
-    let catNome = f.categoria_nome || f.nome_categoria || 'Outros';
-    let catIcone = f.icone || f.categoria_icone || '📌'; // Pega o ícone da tabela album_categorias_ordem se estiver associado
+    // Identificadores (Ajuste os nomes das chaves caso no seu código sejam diferentes, ex: f.categoria?.nome)
+    let catId = f.categoria_id || f.id_categoria || f.grupo_id || 'geral';
+    let catNome = f.categoria_nome || f.nome_categoria || f.categoria || 'Outros';
+    
+    // O ícone que vem da tabela album_categorias_ordem > icone
+    let catIcone = f.icone || f.categoria_icone || '📌'; 
 
     if (q === 0) {
       if (!faltantesPorCat[catId]) {
@@ -1062,35 +1056,39 @@ if (iconeVal) {
     }
   });
 
-  // 3. Montar a seção de Faltantes agrupada por categoria
+  // 3. Montar a seção de Faltantes no padrão: Ícone + Nome: Numeros
   if ((tipo === 'ambos' || tipo === 'faltantes') && Object.keys(faltantesPorCat).length > 0) {
     texto += `\nFaltantes`;
     for (let catId in faltantesPorCat) {
       let cat = faltantesPorCat[catId];
-      // Formato: Ícone + Nome da Categoria: Lista de números ordenados
+      
+      // Ordenar os números de forma limpa
       let numerosOrdenados = cat.numeros.sort((a, b) => {
-        // Tenta ordenar numericamente se forem números, senão alfabético
         return parseInt(a) - parseInt(b) || a.localeCompare(b);
       });
-      texto += `\n${cat.icone || '📌'} ${cat.nome}: ${numerosOrdenados.join(', ')}`;
+
+      // Formato estrito: ⭐ Golden Ballers: 004, 006...
+      texto += `\n${cat.icone} ${cat.nome}: ${numerosOrdenados.join(', ')}`;
     }
   }
 
-  // 4. Montar a seção de Repetidas agrupada por categoria
+  // 4. Montar a seção de Repetidas no mesmo padrão
   if ((tipo === 'ambos' || tipo === 'repetidas') && Object.keys(repetidasPorCat).length > 0) {
     texto += `\n\nRepetidas`;
     for (let catId in repetidasPorCat) {
       let cat = repetidasPorCat[catId];
+      
       let itensOrdenados = cat.itens.sort((a, b) => {
         let numA = parseInt(a.split(' ')[0]);
         let numB = parseInt(b.split(' ')[0]);
         return numA - numB || a.localeCompare(b);
       });
-      texto += `\n${cat.icone || '📌'} ${cat.nome}: ${itensOrdenados.join(', ')}`;
+
+      texto += `\n${cat.icone} ${cat.nome}: ${itensOrdenados.join(', ')}`;
     }
   }
 
-  // 5. Abrir o WhatsApp com o texto formatado por categorias e bandeiras
+  // 5. Disparar para o WhatsApp
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
