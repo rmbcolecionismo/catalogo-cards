@@ -1015,20 +1015,72 @@ if (iconeVal) {
 
     function toggleShareMenu() { document.getElementById('shareDropdownContainer').classList.toggle('active'); }
 
-    function enviarWhatsApp(tipo) {
-      let texto = `*Minha Coleção*\n`;
-      let faltantes = [], repetidas = [];
-      figurinhasDoAlbum.forEach(f => {
-        let q = mapaCadernetaUsuario[f.id] || 0;
-        if (q === 0) faltantes.push(f.numero);
-        if (q > 1) repetidas.push(`${f.numero} (${q-1})`);
-      });
+    async function enviarWhatsApp(tipo) {
+  // Fecha o menu dropdown de partilha
+  toggleShareMenu();
 
-      if (tipo === 'ambos' || tipo === 'faltantes') texto += `\n❌ Faltam: ${faltantes.join(', ')}`;
-      if (tipo === 'ambos' || tipo === 'repetidas') texto += `\n🔁 Repetidas: ${repetidas.join(', ')}`;
+  // 1. Buscar o valor correspondente à chave 'texto_whatsapp_cardeneta' na tabela configuracoes_sistema
+  let templateConfig = null;
+  try {
+    const { data, error } = await _supabase
+      .from('configuracoes_sistema')
+      .select('valor')
+      .eq('chave', 'texto_whatsapp_cardeneta')
+      .maybeSingle();
       
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+    if (!error && data && data.valor) {
+      templateConfig = data.valor;
     }
+  } catch (e) {
+    console.warn("Não foi possível carregar a config do WhatsApp da base de dados, usando fallback.", e);
+  }
+
+  // Fallback padrão caso a chave não seja encontrada na BD
+  const formatoPadrao = {
+    cabecalho: "*Minha Coleção*\n",
+    faltantes: "\n❌ Faltam: {lista}",
+    repetidas: "\n🔁 Repetidas: {lista}"
+  };
+
+  // Se o valor guardado for um JSON, fazemos parse; caso contrário, tratamos como texto simples ou usamos o padrão
+  let config = formatoPadrao;
+  if (templateConfig) {
+    try {
+      config = typeof templateConfig === 'string' ? JSON.parse(templateConfig) : templateConfig;
+    } catch (err) {
+      // Se não for JSON válido mas sim texto livre, usamos como template de faltantes por segurança
+      config.faltantes = templateConfig; 
+    }
+  }
+
+  // 2. Obter nome do álbum atual para preencher variáveis se necessário
+  const albumBase = cadernetaAtiva && (Array.isArray(cadernetaAtiva.albuns) ? cadernetaAtiva.albuns[0] : cadernetaAtiva.albuns);
+  const nomeAlbum = cadernetaAtiva?.apelido_personalizado 
+    ? `${albumBase?.nome || 'Álbum'} - ${cadernetaAtiva.apelido_personalizado}` 
+    : (albumBase?.nome || 'Minha Coleção');
+
+  let texto = (config.cabecalho || "*Minha Coleção*\n").replace('{nome_album}', nomeAlbum);
+  
+  let faltantes = [], repetidas = [];
+  figurinhasDoAlbum.forEach(f => {
+    let q = mapaCadernetaUsuario[f.id] || 0;
+    if (q === 0) faltantes.push(f.numero);
+    if (q > 1) repetidas.push(`${f.numero} (${q-1})`);
+  });
+
+  if (tipo === 'ambos' || tipo === 'faltantes') {
+    let blocoFalta = (config.faltantes || "\n❌ Faltam: {lista}").replace('{lista}', faltantes.join(', '));
+    texto += blocoFalta;
+  }
+  
+  if (tipo === 'ambos' || tipo === 'repetidas') {
+    let blocoRep = (config.repetidas || "\n🔁 Repetidas: {lista}").replace('{lista}', repetidas.join(', '));
+    texto += blocoRep;
+  }
+  
+  // 3. Abrir o WhatsApp com o texto gerado dinamicamente
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+}
 
     init();
   </script>
