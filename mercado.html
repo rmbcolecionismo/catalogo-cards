@@ -292,7 +292,6 @@
       }
 
       const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
-      
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
@@ -481,22 +480,35 @@
         return;
       }
 
-      const { error } = await _supabase.from('propostas_troca').insert([
-        {
-          remetente_id: usuarioAtual.id,
-          destinatario_id: usuarioAlvoTrocaId,
-          status: 'pendente',
-          figurinhas_oferecidas: Array.from(figurinhasSelecionadasParaTroca)
-        }
-      ]);
+      const { data: propostaCriada, error } = await _supabase
+        .from('propostas_troca')
+        .insert([
+          {
+            remetente_id: usuarioAtual.id,
+            destinatario_id: usuarioAlvoTrocaId,
+            status: 'pendente'
+          }
+        ])
+        .select()
+        .single();
 
       if (error) {
         alert('Erro ao enviar proposta: ' + error.message);
-      } else {
-        alert('Proposta enviada com sucesso!');
-        fecharModalProposta();
-        carregarMinhasPropostas();
+        return;
       }
+
+      const listaIds = Array.from(figurinhasSelecionadasParaTroca).join(', ');
+      await _supabase.from('mensagens_troca').insert([
+        {
+          proposta_id: propostaCriada.id,
+          remetente_id: usuarioAtual.id,
+          mensagem: `🎁 Proposta enviada com as figurinhas IDs: ${listaIds}`
+        }
+      ]);
+
+      alert('Proposta enviada com sucesso!');
+      fecharModalProposta();
+      carregarMinhasPropostas();
     }
 
     async function carregarMinhasPropostas() {
@@ -564,7 +576,7 @@
         .from('mensagens_troca')
         .select('*')
         .eq('proposta_id', propostaSelecionadaId)
-        .order('created_at', { ascending: true });
+        .order('id', { ascending: true });
 
       const container = document.getElementById('chatMensagens');
       if (!msgs || msgs.length === 0) {
