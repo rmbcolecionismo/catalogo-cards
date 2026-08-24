@@ -577,7 +577,6 @@ async function abrirChat(propostaId, nomeOutro) {
 
     async function carregarMensagensChat() {
       if (!propostaSelecionadaId) return;
-      // Atualizado para usar 'proposta_mensagens'
       const { data: msgs } = await _supabase.from('proposta_mensagens').select('*').eq('proposta_id', propostaSelecionadaId).order('id', { ascending: true });
 
       const container = document.getElementById('chatMensagens');
@@ -592,12 +591,20 @@ async function abrirChat(propostaId, nomeOutro) {
         html += `
           <div class="msg-bubble ${eu ? 'eu' : 'outro'}">
             <span>${m.mensagem}</span>
-            ${eu ? `<div class="msg-actions"><button onclick="iniciarEdicaoMensagem('${m.id}', \`${m.mensagem}\`)">Editar</button><button onclick="excluirMensagem('${m.id}')">Excluir</button></div>` : ''}
+            ${eu ? `<div class="msg-actions"><button type="button" onclick="iniciarEdicaoMensagem('${m.id}', \`${m.mensagem.replace(/`/g, '\\`')}\`)">Editar</button><button type="button" onclick="excluirMensagem('${m.id}')">Excluir</button></div>` : ''}
           </div>
         `;
       });
       container.innerHTML = html;
       container.scrollTop = container.scrollHeight;
+    }
+
+    function iniciarEdicaoMensagem(id, textoAtual) {
+      mensagemEditandoId = id;
+      const input = document.getElementById('inputMsgChat');
+      input.value = textoAtual;
+      input.focus();
+      document.getElementById('btnEnviarMsg').innerText = 'Salvar';
     }
 
     async function enviarOuEditarMensagemChat() {
