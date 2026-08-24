@@ -481,7 +481,7 @@
 
       if (error) { alert('Erro ao criar proposta: ' + error.message); return; }
 
-      await _supabase.from('mensagens_troca').insert([{
+      await _supabase.from('proposta_mensagens').insert([{
         proposta_id: data.id,
         remetente_id: usuarioAtual.id,
         mensagem: '✨ Proposta de troca enviada com os itens selecionados!'
@@ -505,7 +505,19 @@
       for (let p of propostas) {
         const souRemetente = p.remetente_id === usuarioAtual.id;
         const outroId = souRemetente ? p.destinatario_id : p.remetente_id;
-        const { data: outroUser } = await _supabase.from('usuarios_cadastrados').select('nome, avatar_url').eq('id', outroId).maybeSingle();
+        
+        const outroIdStr = String(outroId || '').trim();
+        let outroUser = null;
+        
+        if (outroIdStr) {
+          const resUser = await _supabase
+            .from('usuarios_cadastrados')
+            .select('nome, avatar_url')
+            .eq('id', outroIdStr)
+            .maybeSingle();
+            
+          outroUser = resUser.data;
+        }
 
         const converterIds = (arr) => (arr || []).map(id => String(id));
         const minhasFigIds = converterIds(souRemetente ? p.figurinhas_remetente : p.figurinhas_destinatario);
@@ -557,7 +569,7 @@
       carregarMinhasPropostas();
     }
 
-async function abrirChat(propostaId, nomeOutro) {
+    async function abrirChat(propostaId, nomeOutro) {
       propostaSelecionadaId = propostaId;
       document.getElementById('chatTitulo').innerText = `💬 Negociação com ${nomeOutro}`;
       
@@ -629,6 +641,7 @@ async function abrirChat(propostaId, nomeOutro) {
       await _supabase.from('proposta_mensagens').delete().eq('id', id);
       await carregarMensagensChat();
     }
+
     async function mudarStatusProposta(novoStatus) {
       const { error } = await _supabase.from('propostas_troca').update({ status: novoStatus }).eq('id', propostaSelecionadaId);
       if (error) { alert('Erro ao atualizar status: ' + error.message); return; }
