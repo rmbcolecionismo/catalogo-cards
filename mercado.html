@@ -44,7 +44,7 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 40px; }
     .colecionador-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; }
     .colecionador-card:hover { border-color: var(--gold); transform: translateY(-3px); }
     
@@ -58,6 +58,13 @@
     .stat-label { color: var(--text-muted); }
     .stat-value { font-weight: 700; color: #34d399; }
     .stat-value.gold { color: var(--gold); }
+
+    /* Caixa de Miniaturas nas Propostas */
+    .proposta-detalhe-box { background: var(--bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem; }
+    .mini-figs-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+    .mini-fig-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; text-align: center; width: 60px; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .mini-fig-card img { width: 35px; height: 45px; object-fit: contain; }
+    .mini-fig-card span { font-size: 0.6rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
     .card-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; text-align: center; text-decoration: none; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
@@ -89,8 +96,8 @@
     .chip-item { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--gold); color: var(--text-main); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
     .chip-item button { background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
 
-    /* Chat Estilo com Ações de Mensagem */
-    .chat-container { display: flex; flex-direction: column; height: 350px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg); overflow: hidden; }
+    /* Chat Estilo */
+    .chat-container { display: flex; flex-direction: column; height: 320px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg); overflow: hidden; }
     .chat-mensagens { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
     .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; display: flex; flex-direction: column; gap: 4px; position: relative; }
     .msg-bubble.eu { background: var(--gold); color: #0f172a; align-self: flex-end; border-bottom-right-radius: 2px; }
@@ -136,7 +143,7 @@
       </div>
     </div>
 
-    <!-- CONTROLES DE FILTRO -->
+    <!-- CONTROLES DE FILTRO POR ÁLBUM E DISTÂNCIA -->
     <div class="controls-bar">
       <select id="selectFiltroAlbum" class="filter-field" onchange="renderizarColecionadores()">
         <option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>
@@ -150,7 +157,7 @@
       </select>
     </div>
 
-    <div class="section-title">🔄 Colecionadores Próximos & Matches de Troca</div>
+    <div class="section-title">🔄 Colecionadores Próximos & Matches por Álbum</div>
     <div id="mercadoGrid" class="market-grid">
       <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Carregando matches de troca...</div>
     </div>
@@ -161,17 +168,17 @@
     </div>
   </div>
 
-  <!-- MODAL ENVIAR PROPOSTA COM SELEÇÃO JUSTA -->
+  <!-- MODAL ENVIAR PROPOSTA COM SELEÇÃO POR ÁLBUM -->
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box">
-      <h3>✨ Criar Proposta de Troca Justa</h3>
-      <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione o que você oferece e o que deseja receber deste colecionador:</p>
+      <h3 id="modalPropostaTitulo">✨ Criar Proposta de Troca Justa</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione figurinhas correspondentes do mesmo álbum para realizar uma troca justa:</p>
       
       <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold);">1. Suas Figurinhas Repetidas para Oferecer:</div>
       <div id="gridMinhasRepetidas" class="proposta-grid"></div>
       <div id="chipsOferecidas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma selecionada.</span></div>
 
-      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold); margin-top: 10px;">2. Figurinhas do Colega que Você Deseja (Faltantes dele):</div>
+      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold); margin-top: 10px;">2. Figurinhas do Colega que Você Deseja (Faltantes):</div>
       <div id="gridColegaRepetidas" class="proposta-grid"></div>
       <div id="chipsDesejadas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma selecionada.</span></div>
 
@@ -221,6 +228,7 @@
     let minhasRepetidasMap = new Map();
     let colegaRepetidasMap = new Map();
     let figurinhasGlobalMap = new Map();
+    let albumPorFigurinhaMap = new Map();
     
     let selecionadasOferecidas = new Set();
     let selecionadasDesejadas = new Set();
@@ -252,9 +260,10 @@
         `;
       }
 
-      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, numero, nome, imagem');
+      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_id, numero, nome, imagem');
       if (figsGerais) {
         figurinhasGlobalMap = new Map(figsGerais.map(f => [f.id, f]));
+        albumPorFigurinhaMap = new Map(figsGerais.map(f => [f.id, f.album_id]));
       }
 
       await carregarAlbunsEColecionadores();
@@ -298,16 +307,12 @@
         document.getElementById('selectFiltroAlbum').innerHTML = opts;
       }
 
-      const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
-      
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
       const minhasFaltantesIds = new Set();
-      const albumPorFigurinha = new Map();
 
-      (todasFigurinhas || []).forEach(f => {
-        albumPorFigurinha.set(f.id, f.album_id);
-        if (!minhasCadastradasIds.has(f.id)) minhasFaltantesIds.add(f.id);
+      figurinhasGlobalMap.forEach((f, id) => {
+        if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
       });
 
       const minhasRepetidasIds = (minhasFig || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
@@ -328,14 +333,16 @@
 
           if (matchEuTenhoParaEle.length > 0 || matchEleTemParaMim.length > 0) {
             const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
-            const idsEnvolvidos = [...matchEuTenhoParaEle, ...matchEleTemParaMim].map(id => albumPorFigurinha.get(id)).filter(Boolean);
+            const albunsEnvolvidos = new Set();
+            matchEuTenhoParaEle.forEach(id => { if(albumPorFigurinhaMap.has(id)) albunsEnvolvidos.add(albumPorFigurinhaMap.get(id)); });
+            matchEleTemParaMim.forEach(id => { if(albumPorFigurinhaMap.has(id)) albunsEnvolvidos.add(albumPorFigurinhaMap.get(id)); });
 
             colecionadoresDisponiveis.push({
               usuario: u,
               distanciaKm: distancia,
               matchEuTenhoParaEle: matchEuTenhoParaEle.length,
               matchEleTemParaMim: matchEleTemParaMim.length,
-              albunsIds: [...new Set(idsEnvolvidos)]
+              albunsIds: Array.from(albunsEnvolvidos)
             });
           }
         }
@@ -355,7 +362,7 @@
       });
 
       if (filtrados.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Nenhum colecionador encontrado.</div>`;
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Nenhum colecionador encontrado para este álbum/filtros.</div>`;
         return;
       }
 
@@ -390,26 +397,35 @@
       selecionadasOferecidas.clear();
       selecionadasDesejadas.clear();
 
-      // Carregar repetidas do alvo
+      const filtroAlbumAtual = document.getElementById('selectFiltroAlbum').value;
+
       const { data: figColec } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', alvoId);
       const colecRepetidasIds = (figColec || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
       
       colegaRepetidasMap.clear();
-      colecRepetidasIds.forEach(id => { if(figurinhasGlobalMap.has(id)) colegaRepetidasMap.set(id, figurinhasGlobalMap.get(id)); });
+      colecRepetidasIds.forEach(id => {
+        if(figurinhasGlobalMap.has(id)) {
+          const albumId = albumPorFigurinhaMap.get(id);
+          if (filtroAlbumAtual === 'todos' || albumId === filtroAlbumAtual) {
+            colegaRepetidasMap.set(id, figurinhasGlobalMap.get(id));
+          }
+        }
+      });
 
-      // Renderizar grid minhas repetidas
       let htmlMinhas = '';
       minhasRepetidasMap.forEach((f, id) => {
-        htmlMinhas += `<div class="fig-select-card" id="fig-oferecer-${id}" onclick="alternarOferecida('${id}')"><img src="${f.imagem || ''}"><span>${f.numero} - ${f.nome}</span></div>`;
+        const albumId = albumPorFigurinhaMap.get(id);
+        if (filtroAlbumAtual === 'todos' || albumId === filtroAlbumAtual) {
+          htmlMinhas += `<div class="fig-select-card" id="fig-oferecer-${id}" onclick="alternarOferecida('${id}')"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero} - ${f.nome}</span></div>`;
+        }
       });
-      document.getElementById('gridMinhasRepetidas').innerHTML = htmlMinhas || '<span style="color:var(--text-muted); font-size:0.75rem;">Sem repetidas.</span>';
+      document.getElementById('gridMinhasRepetidas').innerHTML = htmlMinhas || '<span style="color:var(--text-muted); font-size:0.75rem;">Sem repetidas para o álbum selecionado.</span>';
 
-      // Renderizar grid colega
       let htmlColega = '';
       colegaRepetidasMap.forEach((f, id) => {
-        htmlColega += `<div class="fig-select-card" id="fig-desejar-${id}" onclick="alternarDesejada('${id}')"><img src="${f.imagem || ''}"><span>${f.numero} - ${f.nome}</span></div>`;
+        htmlColega += `<div class="fig-select-card" id="fig-desejar-${id}" onclick="alternarDesejada('${id}')"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero} - ${f.nome}</span></div>`;
       });
-      document.getElementById('gridColegaRepetidas').innerHTML = htmlColega || '<span style="color:var(--text-muted); font-size:0.75rem;">Colega sem repetidas disponíveis.</span>';
+      document.getElementById('gridColegaRepetidas').innerHTML = htmlColega || '<span style="color:var(--text-muted); font-size:0.75rem;">Colega sem repetidas para este álbum.</span>';
 
       atualizarChips();
       document.getElementById('modalProposta').style.display = 'flex';
@@ -449,7 +465,7 @@
 
     async function enviarPropostaConfirmada() {
       if (selecionadasOferecidas.size === 0 && selecionadasDesejadas.size === 0) {
-        alert('Selecione ao menos uma figurinha para realizar a troca.');
+        alert('Selecione ao menos uma figurinha.');
         return;
       }
 
@@ -465,11 +481,10 @@
 
       if (error) { alert('Erro ao criar proposta: ' + error.message); return; }
 
-      // Enviar mensagem inicial automática no chat
       await _supabase.from('mensagens_troca').insert([{
         proposta_id: data.id,
         remetente_id: usuarioAtual.id,
-        mensagem: '✨ Proposta de troca enviada! Confira os itens selecionados.'
+        mensagem: '✨ Proposta de troca enviada com os itens selecionados!'
       }]);
 
       alert('Proposta enviada com sucesso!');
@@ -491,18 +506,44 @@
         const souRemetente = p.remetente_id === usuarioAtual.id;
         const outroId = souRemetente ? p.destinatario_id : p.remetente_id;
         const { data: outroUser } = await _supabase.from('usuarios_cadastrados').select('nome, avatar_url').eq('id', outroId).maybeSingle();
-        
+
+        // Se eu sou remetente: Ofereço figurinhas_remetente, recebo figurinhas_destinatario
+        // Se eu sou destinatário: Ofereço figurinhas_destinatario, recebo figurinhas_remetente
+        const minhasFigIds = souRemetente ? (p.figurinhas_remetente || []) : (p.figurinhas_destinatario || []);
+        const deleFigIds = souRemetente ? (p.figurinhas_destinatario || []) : (p.figurinhas_remetente || []);
+
+        let miniMinhasHtml = '';
+        minhasFigIds.forEach(id => {
+          const f = figurinhasGlobalMap.get(id);
+          if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
+        });
+
+        let miniDeleHtml = '';
+        deleFigIds.forEach(id => {
+          const f = figurinhasGlobalMap.get(id);
+          if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
+        });
+
         html += `
           <div class="colecionador-card">
             <div class="colecionador-header">
-              <img src="${outroUser?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar">
+              <img src="${outroUser?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
               <div class="colecionador-info">
                 <h3>Troca com ${outroUser?.nome || 'Colecionador'}</h3>
                 <p>Status: <strong style="color: var(--gold); text-transform:uppercase;">${p.status}</strong></p>
               </div>
             </div>
+
+            <div class="proposta-detalhe-box">
+              <div style="font-weight: 600; color: var(--gold);">📤 Você vai separar para enviar:</div>
+              <div class="mini-figs-row">${miniMinhasHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
+              
+              <div style="font-weight: 600; color: #34d399; margin-top: 4px;">📥 Você vai receber dele(a):</div>
+              <div class="mini-figs-row">${miniDeleHtml || '<span style="color:var(--text-muted)">Nenhuma</span>'}</div>
+            </div>
+
             <div class="card-actions">
-              <button class="btn-gold" onclick="abrirChat('${p.id}', '${outroUser?.nome || 'Colecionador'}')">💬 Negociar / Chat</button>
+              <button class="btn-gold" onclick="abrirChat('${p.id}', '${outroUser?.nome || 'Colecionador'}')">💬 Chat & Negociar</button>
               <button class="btn-danger" onclick="excluirProposta('${p.id}')">Excluir</button>
             </div>
           </div>
@@ -523,9 +564,10 @@
       
       const { data: prop } = await _supabase.from('propostas_troca').select('*').eq('id', propostaId).single();
       if (prop) {
-        let ofs = (prop.figurinhas_remetente || []).length;
-        let des = (prop.figurinhas_destinatario || []).length;
-        document.getElementById('detalhesPropostaResumo').innerHTML = `📦 Itens em negociação: Você oferece <b>${ofs}</b> figurinha(s) | Você recebe <b>${des}</b> figurinha(s).`;
+        const souRem = prop.remetente_id === usuarioAtual.id;
+        const minhas = souRem ? (prop.figurinhas_remetente || []).length : (prop.figurinhas_destinatario || []).length;
+        const dele = souRem ? (prop.figurinhas_destinatario || []).length : (prop.figurinhas_remetente || []).length;
+        document.getElementById('detalhesPropostaResumo').innerHTML = `📦 <b>Resumo do Acordo:</b> Você separa <b>${minhas}</b> fig(s) | Você recebe <b>${dele}</b> fig(s).`;
       }
 
       document.getElementById('modalChat').style.display = 'flex';
