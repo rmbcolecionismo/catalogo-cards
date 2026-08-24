@@ -127,8 +127,6 @@
     .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
     .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
 
-    .container { max-width: 1250px; margin: 0 auto; }
-    
     #viewMeusAlbuns { display: block; }
     #viewDetalheAlbum { display: none; }
 
@@ -161,7 +159,7 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; transition: border-color 0.2s; }
     .filter-field:focus { border-color: var(--gold); }
     
-.btn-gold { background: var(--gold); color: #090d16; border: none; padding: 10px 18px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+    .btn-gold { background: var(--gold); color: #090d16; border: none; padding: 10px 18px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
     .btn-gold:hover { opacity: 0.92; transform: translateY(-1px); }
 
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 0.82rem; text-decoration: none; transition: 0.2s; }
@@ -242,9 +240,9 @@
 <body>
 
   <div class="container">
-    <!-- TOP CONTAINER EM DUAS CAMADAS (OPÇÃO 3) -->
+    <!-- TOP CONTAINER EM DUAS CAMADAS -->
     <div class="top-container">
-      <!-- Camada 1: Utilitários Globais (Bandeiras, Tema, Login/Perfil) -->
+      <!-- Camada 1: Utilitários Globais -->
       <div class="top-utils-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-weight: 800; color: var(--gold); font-size: 1rem;">📦 RMB Colecionismo</span>
@@ -288,6 +286,7 @@
         <a href="admin.html" id="linkAdmin" style="color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
         <a href="estoque.html" id="linkEstoque" style="color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
+    </div>
 
     <!-- TELA 1 -->
     <div id="viewMeusAlbuns">
@@ -302,7 +301,7 @@
 
     <!-- TELA 2 -->
     <div id="viewDetalheAlbum">
-      <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0; box-shadow: none;">
+      <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0; box-shadow: none; display: flex; justify-content: space-between; align-items: center;">
         <div class="nav-links">
           <button class="btn-voltar" onclick="voltarParaLista()" data-i18n="btn_voltar_lista">&larr; Voltar para minhas cadernetas</button>
         </div>
@@ -415,9 +414,9 @@
         nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine",
         msg_carregando: "Carregando...",
         painel_tit_albuns: "📖 Meus Álbuns",
-        btn_add_cardeneta: "+ Adicionar Novo Álbun",
+        btn_add_cardeneta: "+ Adicionar Novo Álbum",
         msg_carregando_cardenetas: "Carregando seus álbuns...",
-        btn_voltar_lista: "← Voltar para minhas álbuns",
+        btn_voltar_lista: "← Voltar para meus álbuns",
         btn_excluir_album: "🗑️ Excluir este Álbum",
         sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
         stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
@@ -799,8 +798,11 @@
         ordemCategoriasDinamica = [];
         mapaIconesCategorias = {};
         (ordemData || []).forEach(item => {
-          ordemCategoriasDinamica.push(String(item.nome_categoria).trim());
-          if (item.icone) mapaIconesCategorias[String(item.nome_categoria).trim()] = item.icone;
+          const nomeCat = String(item.nome_categoria || '').trim();
+          if (nomeCat) {
+            ordemCategoriasDinamica.push(nomeCat);
+            if (item.icone) mapaIconesCategorias[nomeCat] = item.icone;
+          }
         });
 
         const { data: figs } = await _supabase
@@ -889,39 +891,61 @@
         gruposMap[cat].push(f);
       });
 
-      container.innerHTML = Object.keys(gruposMap).map(cat => `
-        <div class="secao-grupo">
-          <div class="secao-titulo">${cat}</div>
-          <div class="cardeneta-grid">
-            ${gruposMap[cat].map(f => {
-              const qtd = mapaCadernetaUsuario[f.id] || 0;
-              const possui = qtd > 0;
-              const classeCard = possui ? 'fig-card possui' : 'fig-card';
-              const textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1}` : '✅ Já tenho') : '❌ Falta';
-              const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-              
-              return `
-                <div class="${classeCard}" id="card-${f.id}">
-                  <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
-                    <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
-                    <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+      // Ordenar as chaves dos grupos conforme a ordem estrita da tabela album_categorias_ordem
+      let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
+        let indexA = ordemCategoriasDinamica.indexOf(a);
+        let indexB = ordemCategoriasDinamica.indexOf(b);
+        if (indexA === -1) indexA = 9999;
+        if (indexB === -1) indexB = 9999;
+        return indexA - indexB;
+      });
+
+      container.innerHTML = chavesOrdenadas.map(cat => {
+        const iconeVal = mapaIconesCategorias[cat] || '';
+        const htmlIcone = iconeVal ? `<span style="margin-right: 6px;">${iconeVal}</span>` : '';
+
+        return `
+          <div class="secao-grupo">
+            <div class="secao-titulo">${htmlIcone}${cat}</div>
+            <div class="cardeneta-grid">
+              ${gruposMap[cat].map(f => {
+                const qtd = mapaCadernetaUsuario[f.id] || 0;
+                const possui = qtd > 0;
+                const classeCard = possui ? 'fig-card possui' : 'fig-card';
+                const textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1}` : '✅ Já tenho') : '❌ Falta';
+                const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+                
+                // Tratamento para garantir #001 sem duplicação de ##
+                let numFig = String(f.numero || '').trim();
+                if (numFig.startsWith('#')) {
+                  numFig = numFig;
+                } else if (numFig) {
+                  numFig = '#' + numFig;
+                }
+
+                return `
+                  <div class="${classeCard}" id="card-${f.id}">
+                    <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
+                      <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                    </div>
+                    <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <div class="fig-numero">${numFig}</div>
+                      <div class="fig-nome">${f.nome || 'Sem Nome'}</div>
+                    </div>
+                    <div class="fig-actions-row">
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', -1)">-</button>
+                      <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', 1)">+</button>
+                    </div>
+                    <div class="fig-footer" id="footer-${f.id}">${possui && qtd > 1 ? `Repetidas: ${qtd-1}` : ''}</div>
                   </div>
-                  <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
-                    <div class="fig-numero">#${f.numero || ''}</div>
-                    <div class="fig-nome">${f.nome || 'Sem Nome'}</div>
-                  </div>
-                  <div class="fig-actions-row">
-                    <button class="qty-btn" onclick="alterarQtd('${f.id}', -1)">-</button>
-                    <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
-                    <button class="qty-btn" onclick="alterarQtd('${f.id}', 1)">+</button>
-                  </div>
-                  <div class="fig-footer" id="footer-${f.id}">${possui && qtd > 1 ? `Repetidas: ${qtd-1}` : ''}</div>
-                </div>
-              `;
-            }).join('')}
+                `;
+              }).join('')}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     async function clicarMarcar(figurinhaId) {
@@ -959,7 +983,6 @@
         upsertData.push({ user_id: usuarioAtual.id, figurinha_id: f.id, quantidade: 1 });
       });
       renderizarGrid();
-      await _supabase.from('usuario_c_ardeneta').upsert(upsertData, { onConflict: 'user_id, figurinha_id' }).catch(() => {});
       await _supabase.from('usuario_cardeneta').upsert(upsertData, { onConflict: 'user_id, figurinha_id' });
     }
 
@@ -1000,4 +1023,3 @@
   </script>
 </body>
 </html>
-
