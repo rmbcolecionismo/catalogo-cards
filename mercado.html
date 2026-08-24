@@ -41,23 +41,25 @@
     
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
 
-    .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .section-title { font-size: 1.2rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
-    .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    /* Layout Clean para o Mercado de Trocas */
+    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 15px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03); }
+    .market-card:hover { border-color: var(--gold); transform: translateY(-2px); }
     
-    .market-info { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .market-num { font-size: 0.75rem; color: #38bdf8; font-weight: 700; }
-    .market-name { font-size: 1rem; font-weight: 700; color: var(--text-main); }
-    .market-vendedor { font-size: 0.8rem; color: var(--text-muted); }
+    .market-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .market-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+    .market-vendedor { font-size: 0.75rem; color: var(--text-muted); }
+    
+    .figurinhas-mini-list { display: flex; gap: 4px; flex-wrap: wrap; max-height: 50px; overflow: hidden; margin: 6px 0 10px; }
+    .fig-pill { background: rgba(56, 189, 248, 0.12); color: #38bdf8; padding: 1px 5px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
 
-    .market-footer { padding: 12px; background: var(--bg); border-top: 1px solid var(--border-color); text-align: center; }
-    .btn-acao { background: #38bdf8; color: #0f172a; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
+    .btn-acao { background: var(--gold); color: #0f172a; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; width: 100%; transition: 0.2s; text-align: center; }
     .btn-acao:hover { opacity: 0.9; }
 
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
@@ -77,7 +79,7 @@
     .btn-propostas-animado { position: relative; border-color: #38bdf8; color: #38bdf8; animation: pulseGlow 2s infinite; }
     .badge-contador { background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 10px; margin-left: 6px; display: inline-block; vertical-align: middle; }
 
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); font-size: 0.9rem; }
 
     footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -85,47 +87,33 @@
     .footer-links a:hover { color: var(--gold); }
     footer strong { color: var(--gold); }
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
-    .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
-    .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+    /* Modais */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; width: 100%; max-width: 580px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .modal-box h3 { color: var(--gold); margin-bottom: 8px; font-size: 1.2rem; }
+    .modal-box p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.3; }
+
+    /* Painel Abas Propostas & Chat */
+    .prop-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px; }
+    .prop-tab-btn { background: none; border: none; padding: 8px 12px; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; cursor: pointer; border-bottom: 2px solid transparent; }
+    .prop-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Topo Padrão Igual à Index (Opção 3) -->
     <div class="top-container">
       <div class="top-utils-bar">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-weight: 800; color: var(--gold); font-size: 1rem;" data-i18n="marca_titulo">📦 RMB Colecionismo</span>
-        </div>
+        <span style="font-weight: 800; color: var(--gold); font-size: 1rem;" data-i18n="marca_titulo">📦 RMB Colecionismo</span>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <div class="language-selector-flags">
-            <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-              <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
-            </button>
-            <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-              <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
-            </button>
-            <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-              <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
-            </button>
-            <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-              <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
-            </button>
-            <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-              <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
-            </button>
-            <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-              <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
-            </button>
+            <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="PT">🇵🇹</button>
+            <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="BR">🇧🇷</button>
+            <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="EN">🇬🇧</button>
           </div>
-          
-          <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
-
+          <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️/🌙</button>
           <div id="userInfoHeader" class="user-profile-header">
-            <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</button>
+            <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar</button>
           </div>
         </div>
       </div>
@@ -136,69 +124,63 @@
         <a href="vitrine.html" id="linkVitrine" style="display:none;" data-i18n="nav_vitrine">📦 Vitrine</a>
         <a href="mercado.html" class="active" style="color: var(--gold);" data-i18n="nav_mercado_trocas">🔄 Mercado de Trocas</a>
         <a href="perfil.html" id="linkPerfil" style="display:none;" data-i18n="nav_perfil">⚙️ Perfil</a>
-        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
-        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Admin</a>
       </div>
     </div>
 
     <!-- Filtros de Busca e Raio -->
     <div class="controls-bar">
-      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou colecionador..." oninput="filtrarTrocas()" data-i18n-placeholder="busca_troca_placeholder">
+      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou colecionador..." oninput="filtrarTrocas()">
       <select id="selectFiltroRaio" class="filter-field" onchange="filtrarTrocas()">
-        <option value="todos" data-i18n="filtro_raio_todos">📍 Qualquer Distância</option>
-        <option value="5" data-i18n="filtro_raio_5">Até 5 km</option>
-        <option value="10" data-i18n="filtro_raio_10">Até 10 km</option>
-        <option value="25" data-i18n="filtro_raio_25">Até 25 km</option>
-        <option value="50" data-i18n="filtro_raio_50">Até 50 km</option>
+        <option value="todos">📍 Qualquer Distância</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
       </select>
     </div>
 
     <!-- Seção do Mercado de Trocas -->
     <div id="secaoTrocas">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <div class="section-title" style="margin-bottom: 0;" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
-        <div>
-          <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;" data-i18n="btn_minhas_propostas">
-            📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
-          </button>
-        </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <div class="section-title" style="margin-bottom: 0;" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente</div>
+        <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirPainelPropostas()" style="display:none; font-size: 0.75rem;">
+          📬 Propostas & Chat <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+        </button>
       </div>
       <div id="trocasGrid" class="marketplace-grid">
-        <div class="empty-state" data-i18n="msg_carregando_matches">Carregando matches de troca...</div>
+        <div class="empty-state">Carregando matches de troca...</div>
       </div>
     </div>
   </div>
 
   <footer>
-    <div class="footer-links">
-      <a href="ajudar.html" data-i18n="footer_ajudar">📸 Ajudar o Catálogo</a>
-      <a href="contato.html" data-i18n="footer_contato">✉️ Fale Conosco</a>
-    </div>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+    <p>Plataforma de Colecionadores &copy; 2026 — <strong>RMB</strong></p>
   </footer>
 
-  <!-- Modal Auth -->
-  <div id="modalAuth" class="modal-overlay">
-    <div class="modal-box">
-      <h3 data-i18n="modal_auth_titulo">Acesse sua Conta</h3>
-      <p data-i18n="modal_auth_desc">Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.</p>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="btn-outline" onclick="fazerLoginGoogle()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #0f172a; border: none; font-weight: 600; cursor: pointer;">Continuar com Google</button>
-        <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted); cursor: pointer;" data-i18n="btn_fechar">Fechar</button>
+  <!-- Modal Selecionar Proposta / Figurinhas -->
+  <div id="modalPropostaEnvio" class="modal-overlay">
+    <div class="modal-box" style="max-width: 620px;">
+      <h3 id="modalEnvioTitulo">📦 Montar Proposta de Troca</h3>
+      <p>Selecione ou remova as figurinhas que deseja solicitar deste colecionador (separadas por álbum):</p>
+      <div id="listaSelecaoFigurinhas" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 15px; display: flex; flexDirection: column; gap: 8px;"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-outline" onclick="fecharModalEnvio()">Cancelar</button>
+        <button class="btn-gold" onclick="enviarPropostaBanco()">Enviar Proposta</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Propostas Recebidas -->
-  <div id="modalPropostas" class="modal-overlay">
-    <div class="modal-box" style="max-width: 600px; text-align: left;">
-      <h3 style="text-align: center;" data-i18n="modal_prop_titulo">📬 Suas Propostas e Negociações</h3>
-      <p style="text-align: center;" data-i18n="modal_prop_desc">Gerencie propostas recebidas de outros colecionadores.</p>
-      <div id="listaPropostasModal" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-        <div style="text-align: center; color: var(--text-muted);">Carregando propostas...</div>
+  <!-- Painel Propostas (Enviadas / Recebidas / Chat) -->
+  <div id="modalPainelPropostas" class="modal-overlay">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="prop-tabs">
+        <button class="prop-tab-btn active" onclick="mudarAbaPainel('recebidas')">📥 Recebidas</button>
+        <button class="prop-tab-btn" onclick="mudarAbaPainel('enviadas')">📤 Enviadas</button>
+        <button class="prop-tab-btn" onclick="mudarAbaPainel('chat')" id="tabChatBtn" style="display:none;">💬 Chat da Proposta</button>
       </div>
-      <div style="text-align: center;">
-        <button class="btn-outline" onclick="fecharModalPropostasRecebidas()" data-i18n="btn_fechar">Fechar</button>
+      <div id="conteudoPainelPropostas" style="max-height: 350px; overflow-y: auto; margin-bottom: 15px;"></div>
+      <div style="text-align: right;">
+        <button class="btn-outline" onclick="fecharPainelPropostas()">Fechar</button>
       </div>
     </div>
   </div>
@@ -212,138 +194,24 @@
     let perfilLogadoGlobal = null;
     let usuariosMapGlobal = {};
     let matchesCacheGlobal = [];
-    let idiomaAtual = 'pt-PT';
+    let destinatarioAtualId = null;
+    let figurinhasSelecionadasProposta = [];
+    let propostaAtivaChatId = null;
 
-    const dicionarios = {
-      'pt-PT': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
-        btn_entrar: "Entrar / Criar Conta", btn_minhas_propostas: "📬 Minhas Propostas",
-        busca_troca_placeholder: "🔍 Pesquisar por nome ou colecionador...",
-        filtro_raio_todos: "📍 Qualquer Distância", filtro_raio_5: "Até 5 km", filtro_raio_10: "Até 10 km", filtro_raio_25: "Até 25 km", filtro_raio_50: "Até 50 km",
-        sec_trocas_titulo: "🔄 Mercado de Trocas Inteligente (Matches Próximos)",
-        msg_carregando_matches: "Carregando matches de troca...",
-        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
-        modal_auth_titulo: "Acesse sua Conta", modal_auth_desc: "Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.",
-        modal_prop_titulo: "📬 Suas Propostas e Negociações", modal_prop_desc: "Gerencie propostas recebidas de outros colecionadores.",
-        btn_fechar: "Fechar"
-      },
-      'pt-BR': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
-        btn_entrar: "Entrar / Criar Conta", btn_minhas_propostas: "📬 Minhas Propostas",
-        busca_troca_placeholder: "🔍 Pesquisar por nome ou colecionador...",
-        filtro_raio_todos: "📍 Qualquer Distância", filtro_raio_5: "Até 5 km", filtro_raio_10: "Até 10 km", filtro_raio_25: "Até 25 km", filtro_raio_50: "Até 50 km",
-        sec_trocas_titulo: "🔄 Mercado de Trocas Inteligente (Matches Próximos)",
-        msg_carregando_matches: "Carregando matches de troca...",
-        footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
-        modal_auth_titulo: "Acesse sua Conta", modal_auth_desc: "Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.",
-        modal_prop_titulo: "📬 Suas Propostas e Negociações", modal_prop_desc: "Gerencie propostas recebidas de outros colecionadores.",
-        btn_fechar: "Fechar"
-      },
-      'en': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_mercado_trocas: "🔄 Trade Market", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
-        btn_entrar: "Sign In / Register", btn_minhas_propostas: "📬 My Offers",
-        busca_troca_placeholder: "🔍 Search by name or collector...",
-        filtro_raio_todos: "📍 Any Distance", filtro_raio_5: "Up to 5 km", filtro_raio_10: "Up to 10 km", filtro_raio_25: "Up to 25 km", filtro_raio_50: "Up to 50 km",
-        sec_trocas_titulo: "🔄 Smart Trade Market (Nearby Matches)",
-        msg_carregando_matches: "Loading trade matches...",
-        footer_ajudar: "📸 Help Catalog", footer_contato: "✉️ Contact Us",
-        modal_auth_titulo: "Access Your Account", modal_auth_desc: "Sign in or create an account to manage your album and trade stickers.",
-        modal_prop_titulo: "📬 Your Proposals & Negotiations", modal_prop_desc: "Manage proposals received from other collectors.",
-        btn_fechar: "Close"
-      },
-      'it': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_mercado_trocas: "🔄 Mercato Scambi", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
-        btn_entrar: "Accedi / Registrati", btn_minhas_propostas: "📬 Le Mie Proposte",
-        busca_troca_placeholder: "🔍 Cerca per nome o collezionista...",
-        filtro_raio_todos: "📍 Qualsiasi Distanza", filtro_raio_5: "Fino a 5 km", filtro_raio_10: "Fino a 10 km", filtro_raio_25: "Fino a 25 km", filtro_raio_50: "Fino a 50 km",
-        sec_trocas_titulo: "🔄 Mercato Scambi Intelligente (Match Vicini)",
-        msg_carregando_matches: "Caricamento match di scambio...",
-        footer_ajudar: "📸 Aiuta Catalogo", footer_contato: "✉️ Contattaci",
-        modal_auth_titulo: "Accedi al tuo Account", modal_auth_desc: "Accedi o crea un account per gestire il tuo album e scambiare figurine.",
-        modal_prop_titulo: "📬 Le tue Proposte e Trattative", modal_prop_desc: "Gestisci le proposte ricevute da altri collezionisti.",
-        btn_fechar: "Chiudi"
-      },
-      'es': {
-        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
-        btn_entrar: "Entrar / Crear Cuenta", btn_minhas_propostas: "📬 Mis Ofertas",
-        busca_troca_placeholder: "🔍 Buscar por nombre o coleccionista...",
-        filtro_raio_todos: "📍 Cualquier Distancia", filtro_raio_5: "Hasta 5 km", filtro_raio_10: "Hasta 10 km", filtro_raio_25: "Hasta 25 km", filtro_raio_50: "Hasta 50 km",
-        sec_trocas_titulo: "🔄 Mercado de Intercambio Inteligente (Matches Cercanos)",
-        msg_carregando_matches: "Cargando matches de intercambio...",
-        footer_ajudar: "📸 Ayudar al Catalogo", footer_contato: "✉️ Contáctanos",
-        modal_auth_titulo: "Accede a tu Cuenta", modal_auth_desc: "Entra o crea tu cuenta para controlar tu álbum y negociar figuritas.",
-        modal_prop_titulo: "📬 Tus Propuestas y Negociaciones", modal_prop_desc: "Gestiona las propuestas recibidas de otros colecionistas.",
-        btn_fechar: "Cerrar"
-      },
-      'fr': {
-        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Marché d'Échanges", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
-        btn_entrar: "Se connecter / Créer un compte", btn_minhas_propostas: "📬 Mes Offres",
-        busca_troca_placeholder: "🔍 Rechercher par nom ou collectionneur...",
-        filtro_raio_todos: "📍 N'importe quelle distance", filtro_raio_5: "Jusqu'à 5 km", filtro_raio_10: "Jusqu'à 10 km", filtro_raio_25: "Jusqu'à 25 km", filtro_raio_50: "Jusqu'à 50 km",
-        sec_trocas_titulo: "🔄 Marché d'Échanges Intelligent (Matchs Proches)",
-        msg_carregando_matches: "Chargement des matchs d'échange...",
-        footer_ajudar: "📸 Aide au Catalogue", footer_contato: "✉️ Contactez-nous",
-        modal_auth_titulo: "Accédez à votre Compte", modal_auth_desc: "Connectez-vous ou créez un compte pour contrôler votre album et échanger des stickers.",
-        modal_prop_titulo: "📬 Vos Propositions et Négociations", modal_prop_desc: "Gérez les propositions reçues d'autres collectionneurs.",
-        btn_fechar: "Fermer"
-      }
-    };
-
-    function aplicarTraducao() {
-      const dic = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const chave = el.getAttribute('data-i18n');
-        if (dic[chave]) el.innerText = dic[chave];
-      });
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const chave = el.getAttribute('data-i18n-placeholder');
-        if (dic[chave]) el.setAttribute('placeholder', dic[chave]);
-      });
-      document.querySelectorAll('.flag-option').forEach(btn => {
-        if (btn.getAttribute('data-lang') === idiomaAtual) btn.classList.add('active');
-        else btn.classList.remove('active');
-      });
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('tema_app') === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      initMercado();
+    });
 
     async function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
       const novo = atual === 'light' ? 'dark' : 'light';
-      if (novo === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('tema_app', 'light');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('tema_app', 'dark');
-      }
+      if (novo === 'light') { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('tema_app', 'light'); }
+      else { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('tema_app', 'dark'); }
     }
-
-    async function mudarIdiomaGlobal(valor) {
-      idiomaAtual = valor;
-      localStorage.setItem('idioma_app', valor);
-      if (usuarioLogadoGlobal) {
-        await _supabase.from('usuarios_cadastrados').update({ idioma_preferido: valor }).eq('id', usuarioLogadoGlobal.id);
-      }
-      aplicarTraducao();
-    }
-
-    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
-      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const temaSalvo = localStorage.getItem('tema_app');
-      if (temaSalvo === 'light') document.documentElement.setAttribute('data-theme', 'light');
-      initMercado();
-    });
 
     async function initMercado() {
       const { data: { session } } = await _supabase.auth.getSession();
-      
       if (session && session.user) {
         usuarioLogadoGlobal = session.user;
         document.getElementById('linkCardeneta').style.display = 'inline-block';
@@ -351,37 +219,18 @@
         document.getElementById('linkPerfil').style.display = 'inline-block';
         document.getElementById('btnMinhasPropostas').style.display = 'inline-block';
 
-        let { data: perfil } = await _supabase.from('usuarios_cadastrados').select('id, nome, funcao, idioma_preferido').eq('email', usuarioLogadoGlobal.email).maybeSingle();
-        if (perfil) {
-          perfilLogadoGlobal = perfil;
-          idiomaAtual = perfil.idioma_preferido || 'pt-PT';
-          const funcaoUsuario = String(perfil.funcao || '').toLowerCase().trim();
-          if (funcaoUsuario === 'administrador' || funcaoUsuario === 'master') {
-            document.getElementById('linkAdmin').style.display = 'inline-block';
-          }
-          if (funcaoUsuario === 'master') {
-            document.getElementById('linkEstoque').style.display = 'inline-block';
-          }
-        }
+        let { data: perfil } = await _supabase.from('usuarios_cadastrados').select('*').eq('email', usuarioLogadoGlobal.email).maybeSingle();
+        if (perfil) perfilLogadoGlobal = perfil;
 
-        const nomeUsuario = perfil?.nome || usuarioLogadoGlobal.email.split('@')[0];
-        const avatarUrl = usuarioLogadoGlobal.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
-
+        const nome = perfil?.nome || usuarioLogadoGlobal.email.split('@')[0];
         document.getElementById('userInfoHeader').innerHTML = `
-          <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-          <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
-          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem;">Sair</button>
+          <span style="font-size: 0.8rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nome}</strong></span>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 3px 8px; font-size: 0.7rem;">Sair</button>
         `;
-      } else {
-        idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
       }
 
-      aplicarTraducao();
-
-      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, telefone_whats, latitude, longitude');
-      if (usuariosData) {
-        usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
-      }
+      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, latitude, longitude');
+      if (usuariosData) usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
 
       await carregarMatchesTrocas();
       await verificarPropostasPendentes();
@@ -390,28 +239,22 @@
     async function carregarMatchesTrocas() {
       const grid = document.getElementById('trocasGrid');
       if (!usuarioLogadoGlobal) {
-        grid.innerHTML = `<div class="empty-state">Faça login para ver os matches do Mercado de Trocas inteligente. <br><br> <button class="btn-gold" onclick="abrirModalAuth()">Entrar Agora</button></div>`;
+        grid.innerHTML = `<div class="empty-state">Faça login para visualizar o Mercado de Trocas inteligente.</div>`;
         return;
       }
 
       try {
-        const { data: meuPerfil } = await _supabase.from('usuarios_cadastrados').select('latitude, longitude').eq('id', usuarioLogadoGlobal.id).single();
         const { data: minhaCardeneta } = await _supabase.from('usuario_cardeneta').select('figurinha_id').eq('user_id', usuarioLogadoGlobal.id);
         const idsPossuidosSet = new Set((minhaCardeneta || []).map(item => item.figurinha_id));
 
-        const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, numero, nome, imagem, album_id, albuns ( id, nome )');
+        const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, numero, nome, album_id, albuns ( id, nome )');
         if (!todasFigurinhas) return;
 
         const minhasFaltantesSet = new Set(todasFigurinhas.filter(f => !idsPossuidosSet.has(f.id)).map(f => f.id));
 
         const { data: cardenetaOutros } = await _supabase.from('usuario_cardeneta').select('user_id, figurinha_id').neq('user_id', usuarioLogadoGlobal.id);
-        if (!cardenetaOutros) {
-          grid.innerHTML = `<div class="empty-state">Nenhum outro colecionador possui itens cadastrados.</div>`;
-          return;
-        }
-
         const usuariosPossesMap = {};
-        cardenetaOutros.forEach(item => {
+        (cardenetaOutros || []).forEach(item => {
           if (!usuariosPossesMap[item.user_id]) usuariosPossesMap[item.user_id] = new Set();
           usuariosPossesMap[item.user_id].add(item.figurinha_id);
         });
@@ -420,78 +263,160 @@
         for (const [outroId, possuidos] of Object.entries(usuariosPossesMap)) {
           const ofereceParaMimIds = [...possuidos].filter(figId => minhasFaltantesSet.has(figId));
           if (ofereceParaMimIds.length > 0) {
-            const usuarioObj = usuariosMapGlobal[outroId] || { nome: 'Colecionador' };
-            let distanciaKm = null;
-            if (meuPerfil?.latitude && meuPerfil?.longitude && usuarioObj.latitude && usuarioObj.longitude) {
-              distanciaKm = calcularDistanciaKm(meuPerfil.latitude, meuPerfil.longitude, usuarioObj.latitude, usuarioObj.longitude);
-            }
             matchesCacheGlobal.push({
-              usuario: usuarioObj,
-              distancia: distanciaKm,
+              usuario: usuariosMapGlobal[outroId] || { id: outroId, nome: 'Colecionador' },
               ofereceParaMim: todasFigurinhas.filter(f => ofereceParaMimIds.includes(f.id))
             });
           }
         }
-
         renderizarGridMatches(matchesCacheGlobal);
       } catch (err) {
         console.error(err);
-        grid.innerHTML = `<div class="empty-state">Erro ao carregar o mercado de trocas.</div>`;
+        grid.innerHTML = `<div class="empty-state">Erro ao carregar matches.</div>`;
       }
     }
 
     function renderizarGridMatches(lista) {
       const grid = document.getElementById('trocasGrid');
       const busca = document.getElementById('inputBusca').value.toLowerCase();
-      const raioFiltro = document.getElementById('selectFiltroRaio').value;
-
-      const filtrados = lista.filter(m => {
-        const matchNome = m.usuario.nome.toLowerCase().includes(busca);
-        const matchDistancia = (raioFiltro === 'todos' || (m.distancia !== null && m.distancia <= parseFloat(raioFiltro)));
-        return matchNome && matchDistancia;
-      });
+      const filtrados = lista.filter(m => m.usuario.nome.toLowerCase().includes(busca));
 
       if (filtrados.length === 0) {
-        grid.innerHTML = `<div class="empty-state">Nenhum match encontrado com os filtros selecionados.</div>`;
+        grid.innerHTML = `<div class="empty-state">Nenhum match encontrado.</div>`;
         return;
       }
 
       let html = '';
       filtrados.forEach(m => {
-        const distTexto = m.distancia !== null ? `📍 Aprox. ${m.distancia.toFixed(1)} km` : '';
-        const whatsAppNum = m.usuario.telefone_whats;
-        const botaoContato = whatsAppNum 
-          ? `<a href="https://wa.me/${whatsAppNum}?text=Olá%20${encodeURIComponent(m.usuario.nome)},%20vi%20no%20sistema%20que%20temos%20matches%20de%20troca!" target="_blank" class="btn-acao">💬 Negociar via WhatsApp</a>`
-          : `<button class="btn-acao" onclick="alert('Funcionalidade de proposta interna')">🔄 Enviar Proposta</button>`;
+        // Agrupando por álbum e contagem
+        const albunsContagem = {};
+        m.ofereceParaMim.forEach(f => {
+          const nomeAlb = f.albuns?.nome || 'Álbum Geral';
+          albunsContagem[nomeAlb] = (albunsContagem[nomeAlb] || 0) + 1;
+        });
+
+        const badgesAlbuns = Object.entries(albunsContagem).map(([ alb, qtd ]) => `<span class="fig-pill">${alb}: ${qtd}x</span>`).join('');
 
         html += `
           <div class="market-card">
-            <div class="market-info">
-              <span class="market-num">🔄 Match de Troca</span>
-              <span class="market-name">${m.usuario.nome}</span>
-              <span class="market-vendedor">${distTexto}</span>
-              <hr style="border-color: var(--border-color); margin: 8px 0;">
-              <span style="font-size: 0.75rem; color: var(--text-muted);">Figurinhas que ele(a) tem para você:</span>
-              <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
-                ${m.ofereceParaMim.map(f => `<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">#${f.numero}</span>`).join('')}
+            <div>
+              <div class="market-header-flex">
+                <span class="market-name">👤 ${m.usuario.nome}</span>
+                <span style="font-size: 0.7rem; color: var(--gold); font-weight: 700;">Match Disponível</span>
               </div>
+              <span class="market-vendedor">Figurinhas faltantes que ele(a) possui:</span>
+              <div class="figurinhas-mini-list">${badgesAlbuns}</div>
             </div>
-            <div class="market-footer">
-              ${botaoContato}
-            </div>
+            <button class="btn-acao" onclick="abrirModalEnvioProposta('${m.usuario.id}', '${m.usuario.nome}')">🔄 Enviar Proposta</button>
           </div>
         `;
       });
       grid.innerHTML = html;
     }
 
-    function filtrarTrocas() {
-      renderizarGridMatches(matchesCacheGlobal);
+    async function abrirModalEnvioProposta(destinatarioId, nomeDestinatario) {
+      destinatarioAtualId = destinatarioId;
+      document.getElementById('modalEnvioTitulo').innerText = `📦 Proposta para ${nomeDestinatario}`;
+      document.getElementById('modalPropostaEnvio').style.display = 'flex';
+
+      const matchObj = matchesCacheGlobal.find(m => m.usuario.id === destinatarioId);
+      figurinhasSelecionadasProposta = matchObj ? [...matchObj.ofereceParaMim] : [];
+      renderizarListaSelecaoProposta();
+    }
+
+    function renderizarListaSelecaoProposta() {
+      const container = document.getElementById('listaSelecaoFigurinhas');
+      if (figurinhasSelecionadasProposta.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Nenhuma figurinha na proposta.</div>`;
+        return;
+      }
+
+      // Agrupar por Álbum
+      const porAlbum = {};
+      figurinhasSelecionadasProposta.forEach(f => {
+        const alb = f.albuns?.nome || 'Álbum Geral';
+        if (!porAlbum[alb]) porAlbum[alb] = [];
+        porAlbum[alb].push(f);
+      });
+
+      let html = '';
+      for (const [albumNome, figs] of Object.entries(porAlbum)) {
+        html += `<div style="font-weight: 700; font-size: 0.8rem; color: var(--gold); margin-top: 5px;">📖 ${albumNome} (${figs.length}x)</div>`;
+        figs.forEach(f => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem;">
+              <span>#${f.numero} - ${f.nome || 'Figurinha'}</span>
+              <button class="btn-outline" onclick="removerFigurinhaProposta('${f.id}')" style="padding: 2px 6px; font-size: 0.65rem; color: #ef4444; border-color: #ef4444;">Excluir</button>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    function removerFigurinhaProposta(figurinhaId) {
+      figurinhasSelecionadasProposta = figurinhasSelecionadasProposta.filter(f => f.id !== figurinhaId);
+      renderizarListaSelecaoProposta();
+    }
+
+    function fecharModalEnvio() {
+      document.getElementById('modalPropostaEnvio').style.display = 'none';
+    }
+
+    async function enviarPropostaBanco() {
+      if (figurinhasSelecionadasProposta.length === 0) {
+        alert("Adicione pelo menos uma figurinha na proposta.");
+        return;
+      }
+
+      // Validação de Limite de Plano Diário via historico_propostas_enviadas e configuracoes_plano
+      const hoje = new Date().toISOString().split('T')[0];
+      let { data: hist } = await _supabase.from('historico_propostas_enviadas').select('*').eq('user_id', usuarioLogadoGlobal.id).eq('data', hoje).maybeSingle();
+      
+      const planoUser = perfilLogadoGlobal?.plano || 'gratis';
+      const { data: configPlano } = await _supabase.from('configuracoes_plano').select('*').eq('nome', planoUser).maybeSingle();
+      const limiteDiario = configPlano?.limite_propostas_dia || 5;
+
+      const qtdEnviadasHoje = hist ? hist.proposta_enviadas : 0;
+      if (qtdEnviadasHoje >= limiteDiario) {
+        alert(`Você atingiu o limite de ${limiteDiario} propostas diárias do seu plano (${planoUser}). Faça upgrade para enviar mais.`);
+        return;
+      }
+
+      // Inserir na tabela propostas_trocas
+      const { data: propNova, error: errProp } = await _supabase.from('propostas_trocas').insert([
+        { remetente_id: usuarioLogadoGlobal.id, destinatario_id: destinatarioAtualId, status: 'pendente' }
+      ]).select().single();
+
+      if (errProp || !propNova) {
+        alert("Erro ao criar proposta.");
+        return;
+      }
+
+      // Inserir itens na tabela propostas_itens
+      const itensInsert = figurinhasSelecionadasProposta.map(f => ({
+        proposta_id: propNova.id,
+        figurinha_id: f.id,
+        origem_usuario_id: destinatarioAtualId
+      }));
+
+      await _supabase.from('propostas_itens').insert(itensInsert);
+
+      // Atualizar historico_propostas_enviadas
+      if (hist) {
+        await _supabase.from('historico_propostas_enviadas').update({ proposta_enviadas: qtdEnviadasHoje + 1 }).eq('id', hist.id);
+      } else {
+        await _supabase.from('historico_propostas_enviadas').insert([{ user_id: usuarioLogadoGlobal.id, data: hoje, proposta_enviadas: 1 }]);
+      }
+
+      alert("Proposta enviada com sucesso!");
+      fecharModalEnvio();
+      verificarPropostasPendentes();
     }
 
     async function verificarPropostasPendentes() {
       if (!usuarioLogadoGlobal) return;
-      const { data } = await _supabase.from('propostas_troca').select('*').eq('vendedor_id', usuarioLogadoGlobal.id).eq('status', 'pendente');
+      const { data } = await _supabase.from('propostas_trocas').select('*').eq('destinatario_id', usuarioLogadoGlobal.id).eq('status', 'pendente');
       const badge = document.getElementById('badgePropostasPendentes');
       if (data && data.length > 0) {
         badge.innerText = data.length;
@@ -501,46 +426,133 @@
       }
     }
 
-    async function abrirModalPropostasRecebidas() {
-      document.getElementById('modalPropostas').style.display = 'flex';
-      const container = document.getElementById('listaPropostasModal');
-      container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Carregando propostas...</div>`;
+    function abrirPainelPropostas() {
+      document.getElementById('modalPainelPropostas').style.display = 'flex';
+      mudarAbaPainel('recebidas');
+    }
 
-      const { data, error } = await _supabase
-        .from('propostas_troca')
-        .select('*')
-        .eq('vendedor_id', usuarioLogadoGlobal.id)
-        .order('id', { ascending: false });
+    function fecharPainelPropostas() {
+      document.getElementById('modalPainelPropostas').style.display = 'none';
+    }
 
-      if (error || !data || data.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Nenhuma proposta recebida no momento.</div>`;
+    async function mudarAbaPainel(aba) {
+      document.querySelectorAll('.prop-tab-btn').forEach(b => b.classList.remove('active'));
+      if (aba === 'recebidas') {
+        document.querySelectorAll('.prop-tab-btn')[0].classList.add('active');
+        carregarPropostasRecebidasPainel();
+      } else if (aba === 'enviadas') {
+        document.querySelectorAll('.prop-tab-btn')[1].classList.add('active');
+        carregarPropostasEnviadasPainel();
+      } else if (aba === 'chat') {
+        document.getElementById('tabChatBtn').style.display = 'inline-block';
+        document.querySelectorAll('.prop-tab-btn')[2].classList.add('active');
+        carregarChatPainel(propostaAtivaChatId);
+      }
+    }
+
+    async function carregarPropostasRecebidasPainel() {
+      const container = document.getElementById('conteudoPainelPropostas');
+      container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Carregando propostas recebidas...</div>`;
+
+      const { data } = await _supabase.from('propostas_trocas').select('*').eq('destinatario_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Nenhuma proposta recebida.</div>`;
         return;
       }
 
       let html = '';
       data.forEach(p => {
-        const remetente = usuariosMapGlobal[p.comprador_id]?.nome || 'Colecionador';
+        const remetenteNome = usuariosMapGlobal[p.remetente_id]?.nome || 'Colecionador';
         html += `
-          <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+          <div style="background: var(--bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <strong style="color: var(--gold);">${remetente}</strong> propôs um acordo.<br>
+              <strong>De: ${remetenteNome}</strong><br>
               <span style="font-size: 0.75rem; color: var(--text-muted);">Status: ${p.status}</span>
             </div>
-            <span style="font-size: 0.8rem; font-weight: 600; color: #38bdf8;">${p.status.toUpperCase()}</span>
+            <div style="display: flex; gap: 5px;">
+              <button class="btn-gold" onclick="abrirChatProposta('${p.id}')" style="padding: 4px 8px; font-size: 0.7rem;">💬 Chat</button>
+            </div>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
-    function fecharModalPropostasRecebidas() {
-      document.getElementById('modalPropostas').style.display = 'none';
+    async function carregarPropostasEnviadasPainel() {
+      const container = document.getElementById('conteudoPainelPropostas');
+      const { data } = await _supabase.from('propostas_trocas').select('*').eq('remetente_id', usuarioLogadoGlobal.id).order('id', { ascending: false });
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">Nenhuma proposta enviada.</div>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach(p => {
+        const destNome = usuariosMapGlobal[p.destinatario_id]?.nome || 'Colecionador';
+        html += `
+          <div style="background: var(--bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>Para: ${destNome}</strong><br>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Status: ${p.status}</span>
+            </div>
+            <button class="btn-gold" onclick="abrirChatProposta('${p.id}')" style="padding: 4px 8px; font-size: 0.7rem;">💬 Chat</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
-    function abrirModalAuth() { document.getElementById('modalAuth').style.display = 'flex'; }
-    function fecharModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
-    async function fazerLoginGoogle() { await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } }); }
+    async function abrirChatProposta(propostaId) {
+      propostaAtivaChatId = propostaId;
+      document.getElementById('tabChatBtn').style.display = 'inline-block';
+      mudarAbaPainel('chat');
+    }
+
+    async function carregarChatPainel(propostaId) {
+      const container = document.getElementById('conteudoPainelPropostas');
+      container.innerHTML = `
+        <div id="mensagensChatList" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; padding: 5px;"></div>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="inputMensagemChat" class="filter-field" placeholder="Digite sua mensagem...">
+          <button class="btn-gold" onclick="enviarMensagemChat('${propostaId}')" style="padding: 6px 12px; font-size: 0.75rem;">Enviar</button>
+        </div>
+      `;
+
+      const { data } = await _supabase.from('proposta_mensagens').select('*').eq('proposta_id', propostaId).order('created_at', { ascending: true });
+      const listaMsg = document.getElementById('mensagensChatList');
+      if (!data || data.length === 0) {
+        listaMsg.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.75rem;">Nenhuma mensagem ainda. Inicie a conversa!</div>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach(m => {
+        const isEu = m.remetente_id === usuarioLogadoGlobal.id;
+        html += `
+          <div style="align-self: ${isEu ? 'flex-end' : 'flex-start'}; background: ${isEu ? 'rgba(245,158,11,0.15)' : 'var(--bg)'}; border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; max-width: 80%;">
+            ${m.mensagem}
+          </div>
+        `;
+      });
+      listaMsg.innerHTML = html;
+      listaMsg.scrollTop = listaMsg.scrollHeight;
+    }
+
+    async function enviarMensagemChat(propostaId) {
+      const input = document.getElementById('inputMensagemChat');
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      await _supabase.from('proposta_mensagens').insert([
+        { proposta_id: propostaId, remetente_id: usuarioLogadoGlobal.id, mensagem: texto }
+      ]);
+      input.value = '';
+      carregarChatPainel(propostaId);
+    }
+
+    function filtrarTrocas() { renderizarGridMatches(matchesCacheGlobal); }
     async function fazerLogout() { await _supabase.auth.signOut(); window.location.reload(); }
+    function abrirModalAuth() { alert("Use o fluxo de login padrão da index."); }
   </script>
 </body>
 </html>
