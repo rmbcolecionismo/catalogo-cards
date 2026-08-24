@@ -52,28 +52,43 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; width: 100%; }
     .filter-field:focus { border-color: var(--gold); }
 
-    /* Exatamente 6 cards por linha em telas grandes */
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .card:hover { transform: translateY(-2px); border-color: var(--gold); }
+    /* Exatamente 5 cards por linha usando grid layout */
+    .cards-grid { 
+      display: grid; 
+      grid-template-columns: repeat(5, minmax(0, 1fr)); 
+      gap: 16px; 
+    }
+
+    @media (max-width: 1200px) {
+      .cards-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; }
+    .card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 6px 16px rgba(245,158,11,0.12); }
     
-    .card-img-wrap { width: 80px; height: 105px; background: var(--bg); border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
+    .card-img-wrap { width: 90px; height: 120px; background: var(--bg); border-radius: 8px; padding: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
     .card img { width: 100%; height: 100%; object-fit: contain; }
     
-    .card-title { font-size: 0.8rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-    .card-subtitle { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .card-subtitle { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; margin-top: -4px; }
     
-    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 2px; text-align: left; }
+    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; text-align: left; }
     .input-row { display: flex; gap: 6px; width: 100%; }
     .input-wrapper { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); font-weight: 700; }
-    .input-wrapper select, .input-wrapper input { width: 100%; padding: 5px; font-size: 0.75rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; }
+    .input-wrapper label { font-size: 0.65rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-wrapper select, .input-wrapper input { width: 100%; padding: 6px 8px; font-size: 0.75rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; transition: 0.2s; }
     .input-wrapper select:focus, .input-wrapper input:focus { border-color: var(--gold); }
 
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 7px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 4px; font-size: 0.78rem; transition: 0.2s; box-shadow: 0 3px 8px rgba(245,158,11,0.2); }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 8px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 2px; font-size: 0.78rem; transition: 0.2s; box-shadow: 0 3px 8px rgba(245,158,11,0.2); }
     .btn-add-vitrine:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    .pagination-nav { text-align: center; margin: 30px 0; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .pagination-nav { text-align: center; margin: 35px 0; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
     .btn-page { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
     .btn-page.active { background: var(--gold); color: #0f172a; font-weight: 800; border-color: var(--gold); }
     .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -167,7 +182,9 @@
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITENS_POR_PAGINA = 30; // 6 cards por linha * 5 linhas = 30 por página
+    
+    // Configurado exatamente para 30 itens por página (5 cards por linha * 6 linhas)
+    const ITENS_POR_PAGINA = 30;
 
     let authUserId = null;
     let perfilLogado = null;
@@ -227,7 +244,6 @@
         }
       }
 
-      // Verificação do limite e anúncios ativos para exibir no cabeçalho
       const planoUsuario = (perfil?.plano || 'gratis').toLowerCase().trim();
       const { data: configPlano } = await _supabase
         .from('configuracoes_planos')
