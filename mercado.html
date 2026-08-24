@@ -37,7 +37,6 @@
     .nav-tabs-bar a:hover, .nav-tabs-bar a.active { color: var(--gold); border-color: var(--gold); background: rgba(245, 158, 11, 0.05); }
     
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
-    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
     
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
@@ -144,10 +143,17 @@
       </div>
     </div>
 
-    <!-- CONTROLES DE FILTRO -->
+    <!-- CONTROLES DE FILTRO COM DISTÂNCIA KM -->
     <div class="controls-bar">
       <select id="selectFiltroAlbum" class="filter-field" onchange="renderizarColecionadores()">
         <option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>
+      </select>
+      <select id="selectFiltroDistancia" class="filter-field" onchange="renderizarColecionadores()">
+        <option value="todos">📍 Distância: Qualquer distância</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
+        <option value="100">Até 100 km</option>
       </select>
     </div>
 
@@ -279,35 +285,56 @@
         document.getElementById('selectFiltroAlbum').innerHTML = opts;
       }
 
-      // Buscar usuários cadastrados exceto o atual
+      // 1. Descobrir quais são as minhas figurinhas cadastradas (para achar as minhas faltantes)
+      // Conforme regra: minhas faltantes são as figurinhas que NÃO aparecem na tabela usuario_cardeneta para mim.
+      const { data: todasFigurinhas } = await _supabase.from('figurinhas').select('id, album_id');
+      const { data: minhasFig } = await _supabase.from('cardeneta_usuario').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
+      
+      const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
+      const minhasFaltantesIds = new Set();
+      const albumPorFigurinha = new Map();
+
+      (todasFigurinhas || []).forEach(f => {
+        albumPorFigurinha.set(f.id, f.album_id);
+        if (!minhasCadastradasIds.has(f.id)) {
+          minhasFaltantesIds.add(f.id); // Não aparece na tabela de cardeneta_usuario, logo é faltante
+        }
+      });
+
+      minhasRepetidasGlobal = (minhasFig || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
+
+      // 2. Buscar outros usuários cadastrados
       const { data: usuarios } = await _supabase.from('usuarios_cadastrados').select('*').neq('id', usuarioAtual.id);
       
-      // Buscar minhas figurinhas (para calcular faltantes que o outro possui)
-      const { data: minhasFig } = await _supabase.from('cardeneta_usuario').select('figurinha_id, status').eq('user_id', usuarioAtual.id);
-      const minhasFaltantesIds = new Set((minhasFig || []).filter(f => f.status === 'faltante').map(f => f.figurinha_id));
-      
-      // Buscar minhas repetidas para propor troca
-      minhasRepetidasGlobal = (minhasFig || []).filter(f => f.status === 'repetida').map(f => f.figurinha_id);
-
       colecionadoresDisponiveis = [];
       if (usuarios) {
         for (let u of usuarios) {
-          // Buscar figurinhas do colecionador
-          const { data: figColec } = await _supabase.from('cardeneta_usuario').select('figurinha_id, status').eq('user_id', u.id);
-          const repetidasDeles = (figColec || []).filter(f => f.status === 'repetida').map(f => f.figurinha_id);
-          const faltantesDeles = (figColec || []).filter(f => f.status === 'faltante').map(f => f.figurinha_id);
+          // Buscar figurinhas da tabela cardeneta_usuario do outro colecionador onde quantidade > 1 (repetidas deles)
+          const { data: figColec } = await _supabase
+            .from('cardeneta_usuario')
+            .select('figurinha_id, quantidade')
+            .eq('user_id', u.id)
+            .gt('quantidade', 1);
 
-          // Figurinhas faltantes que ele possui (ele tem repetida o que me falta)
-          const matchFaltantes = repetidasDeles.filter(id => minhasFaltantesIds.has(id));
-          
-          const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
+          const repetidasDelesIds = (figColec || []).map(f => f.figurinha_id);
 
-          colecionadoresDisponiveis.push({
-            usuario: u,
-            distanciaKm: distancia,
-            qtdFaltantesPossui: matchFaltantes.length,
-            repetidasDeles: repetidasDeles
-          });
+          // Verificar quais dessas repetidas deles faltam para mim
+          const matchFaltantes = repetidasDelesIds.filter(id => minhasFaltantesIds.has(id));
+
+          // Mapear álbuns destas figurinhas para o filtro por álbum
+          const albunsEnvolvidos = matchFaltantes.map(id => albumPorFigurinha.get(id)).filter(Boolean);
+
+          // Se o colecionador tiver ao menos uma figurinha repetida que me falta, ele entra nos matches
+          if (matchFaltantes.length > 0) {
+            const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
+
+            colecionadoresDisponiveis.push({
+              usuario: u,
+              distanciaKm: distancia,
+              qtdFaltantesPossui: matchFaltantes.length,
+              albunsIds: albunsEnvolvidos
+            });
+          }
         }
       }
 
@@ -317,14 +344,23 @@
     function renderizarColecionadores() {
       const grid = document.getElementById('mercadoGrid');
       const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
+      const filtroDistancia = document.getElementById('selectFiltroDistancia').value;
 
-      if (colecionadoresDisponiveis.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Nenhum colecionador encontrado para match no momento.</div>`;
+      let filtrados = colecionadoresDisponiveis.filter(item => {
+        // Filtro por Álbum
+        let matchAlbum = (filtroAlbum === 'todos') || item.albunsIds.includes(filtroAlbum);
+        // Filtro por Distância
+        let matchDistancia = (filtroDistancia === 'todos') || (item.distanciaKm <= parseFloat(filtroDistancia));
+        return matchAlbum && matchDistancia;
+      });
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Nenhum colecionador encontrado com figurinhas repetidas para as suas faltantes com base nos filtros selecionados.</div>`;
         return;
       }
 
       let html = '';
-      colecionadoresDisponiveis.forEach(item => {
+      filtrados.forEach(item => {
         const u = item.usuario;
         html += `
           <div class="colecionador-card">
@@ -338,7 +374,7 @@
 
             <div class="match-stats">
               <div class="stat-row">
-                <span class="stat-label">📍 Match Disponível (Distância):</span>
+                <span class="stat-label">📍 Distância:</span>
                 <span class="stat-value gold">${item.distanciaKm} km</span>
               </div>
               <div class="stat-row">
