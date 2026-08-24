@@ -262,8 +262,8 @@
 
       const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_id, numero, nome, imagem');
       if (figsGerais) {
-        figurinhasGlobalMap = new Map(figsGerais.map(f => [f.id, f]));
-        albumPorFigurinhaMap = new Map(figsGerais.map(f => [f.id, f.album_id]));
+        figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
+        albumPorFigurinhaMap = new Map(figsGerais.map(f => [String(f.id), f.album_id]));
       }
 
       await carregarAlbunsEColecionadores();
@@ -308,14 +308,14 @@
       }
 
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
-      const minhasCadastradasIds = new Set((minhasFig || []).map(f => f.figurinha_id));
+      const minhasCadastradasIds = new Set((minhasFig || []).map(f => String(f.figurinha_id)));
       const minhasFaltantesIds = new Set();
 
       figurinhasGlobalMap.forEach((f, id) => {
         if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
       });
 
-      const minhasRepetidasIds = (minhasFig || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
+      const minhasRepetidasIds = (minhasFig || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id));
       minhasRepetidasMap.clear();
       minhasRepetidasIds.forEach(id => { if(figurinhasGlobalMap.has(id)) minhasRepetidasMap.set(id, figurinhasGlobalMap.get(id)); });
 
@@ -325,8 +325,8 @@
       if (usuarios) {
         for (let u of usuarios) {
           const { data: figColec } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', u.id);
-          const colecCadastradasIds = new Set((figColec || []).map(f => f.figurinha_id));
-          const colecRepetidasIds = new Set((figColec || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id));
+          const colecCadastradasIds = new Set((figColec || []).map(f => String(f.figurinha_id)));
+          const colecRepetidasIds = new Set((figColec || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
           const matchEuTenhoParaEle = minhasRepetidasIds.filter(id => !colecCadastradasIds.has(id));
           const matchEleTemParaMim = Array.from(colecRepetidasIds).filter(id => minhasFaltantesIds.has(id));
@@ -400,7 +400,7 @@
       const filtroAlbumAtual = document.getElementById('selectFiltroAlbum').value;
 
       const { data: figColec } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', alvoId);
-      const colecRepetidasIds = (figColec || []).filter(f => f.quantidade > 1).map(f => f.figurinha_id);
+      const colecRepetidasIds = (figColec || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id));
       
       colegaRepetidasMap.clear();
       colecRepetidasIds.forEach(id => {
@@ -507,10 +507,9 @@
         const outroId = souRemetente ? p.destinatario_id : p.remetente_id;
         const { data: outroUser } = await _supabase.from('usuarios_cadastrados').select('nome, avatar_url').eq('id', outroId).maybeSingle();
 
-        // Se eu sou remetente: Ofereço figurinhas_remetente, recebo figurinhas_destinatario
-        // Se eu sou destinatário: Ofereço figurinhas_destinatario, recebo figurinhas_remetente
-        const minhasFigIds = souRemetente ? (p.figurinhas_remetente || []) : (p.figurinhas_destinatario || []);
-        const deleFigIds = souRemetente ? (p.figurinhas_destinatario || []) : (p.figurinhas_remetente || []);
+        const converterIds = (arr) => (arr || []).map(id => String(id));
+        const minhasFigIds = converterIds(souRemetente ? p.figurinhas_remetente : p.figurinhas_destinatario);
+        const deleFigIds = converterIds(souRemetente ? p.figurinhas_destinatario : p.figurinhas_remetente);
 
         let miniMinhasHtml = '';
         minhasFigIds.forEach(id => {
