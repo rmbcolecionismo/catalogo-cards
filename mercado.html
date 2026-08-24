@@ -123,12 +123,6 @@
           </div>
           
           <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
-          
-          <div>
-            <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;" data-i18n="btn_minhas_propostas">
-              📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
-            </button>
-          </div>
 
           <div id="userInfoHeader" class="user-profile-header">
             <button class="btn-gold" onclick="abrirModalAuth()" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</button>
@@ -161,7 +155,14 @@
 
     <!-- Seção do Mercado de Trocas -->
     <div id="secaoTrocas">
-      <div class="section-title" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <div class="section-title" style="margin-bottom: 0;" data-i18n="sec_trocas_titulo">🔄 Mercado de Trocas Inteligente (Matches Próximos)</div>
+        <div>
+          <button class="btn-outline btn-propostas-animado" id="btnMinhasPropostas" onclick="abrirModalPropostasRecebidas()" style="display:none; font-size: 0.8rem;" data-i18n="btn_minhas_propostas">
+            📬 Minhas Propostas <span id="badgePropostasPendentes" class="badge-contador" style="display:none;">0</span>
+          </button>
+        </div>
+      </div>
       <div id="trocasGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_matches">Carregando matches de troca...</div>
       </div>
@@ -271,7 +272,7 @@
         msg_carregando_matches: "Cargando matches de intercambio...",
         footer_ajudar: "📸 Ayudar al Catalogo", footer_contato: "✉️ Contáctanos",
         modal_auth_titulo: "Accede a tu Cuenta", modal_auth_desc: "Entra o crea tu cuenta para controlar tu álbum y negociar figuritas.",
-        modal_prop_titulo: "📬 Tus Propuestas y Negociaciones", modal_prop_desc: "Gestiona las propuestas recibidas de otros coleccionistas.",
+        modal_prop_titulo: "📬 Tus Propuestas y Negociaciones", modal_prop_desc: "Gestiona las propuestas recibidas de otros colecionistas.",
         btn_fechar: "Cerrar"
       },
       'fr': {
