@@ -31,7 +31,6 @@
     body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
     
     .top-container { max-width: 1250px; margin: 0 auto 25px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
-    
     .top-utils-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     
     .nav-tabs-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--bg-card); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -56,18 +55,6 @@
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    /* ESTILO ADICIONADO PARA FIGURINHAS EM DESTAQUE */
-    .destaques-section { margin-bottom: 30px; }
-    .destaques-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-    .destaque-card { background: var(--bg-card); border: 1px solid var(--gold); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1); }
-    .destaque-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2); }
-    .destaque-img-wrap { height: 130px; background: var(--bg); padding: 8px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); }
-    .destaque-img { width: 100%; height: 100%; object-fit: contain; }
-    .destaque-info { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .destaque-num { font-size: 0.7rem; color: var(--gold); font-weight: 700; }
-    .destaque-name { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .destaque-preco { font-size: 0.85rem; font-weight: 800; color: #34d399; margin-top: 2px; }
-
     .collab-card { background: var(--bg-card); border: 1px dashed var(--gold); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
     .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
@@ -77,6 +64,9 @@
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
+
+    /* SEÇÃO DE DESTAQUES (AGORA COM O MESMO GRID E CARDS DE VENDA) */
+    .destaques-section { margin-bottom: 35px; }
 
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
     .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
@@ -126,7 +116,7 @@
       background: rgba(245, 158, 11, 0.1);
     }
 
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 30px; color: var(--text-muted); font-size: 0.85rem; }
 
     footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -143,9 +133,8 @@
 <body>
 
   <div class="container">
-    <!-- TOP CONTAINER EM DUAS CAMADAS (OPÇÃO 3) -->
+    <!-- TOP CONTAINER EM DUAS CAMADAS -->
     <div class="top-container">
-      <!-- Camada 1: Utilitários Globais (Bandeiras, Tema, Login/Perfil) -->
       <div class="top-utils-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-weight: 800; color: var(--gold); font-size: 1rem;">📦 RMB Colecionismo</span>
@@ -179,7 +168,6 @@
         </div>
       </div>
 
-      <!-- Camada 2: Barra de Abas de Navegação -->
       <div class="nav-tabs-bar">
         <a href="index.html" class="active" data-i18n="nav_inicio">🏠 Início</a>
         <a href="cardeneta.html" id="linkCardeneta" style="display:none;" data-i18n="nav_cadernetas">📖 Cadernetas</a>
@@ -207,10 +195,18 @@
       </div>
     </div>
 
-    <!-- SEÇÃO ADICIONADA: FIGURINHAS EM DESTAQUE -->
+    <!-- CONTROLES E FILTROS ACIMA DAS SEÇÕES DE DESTAQUE E VENDAS -->
+    <div class="controls-bar">
+      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()" data-i18n-placeholder="busca_placeholder">
+      <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
+        <option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>
+      </select>
+    </div>
+
+    <!-- SEÇÃO DE DESTAQUES (POSICIONADA ACIMA DE "FIGURINHAS À VENDA") -->
     <div class="destaques-section">
       <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
-      <div id="destaquesGrid" class="destaques-grid">
+      <div id="destaquesGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
       </div>
     </div>
@@ -223,13 +219,7 @@
       <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
     </div>
 
-    <div class="controls-bar">
-      <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()" data-i18n-placeholder="busca_placeholder">
-      <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
-        <option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>
-      </select>
-    </div>
-
+    <!-- SEÇÃO DE FIGURINHAS À VENDA -->
     <div id="secaoMarketplace">
       <div class="section-title" data-i18n="sec_vendas_titulo">📦 Figurinhas à Venda</div>
       <div id="marketplaceGrid" class="marketplace-grid">
@@ -288,7 +278,6 @@
     let albunsGlobaisMap = new Map();
 
     let idiomaAtual = 'pt-PT';
-    let moedaAtual = 'EUR';
 
     const dicionarios = {
       'pt-PT': {
@@ -461,16 +450,10 @@
       idiomaAtual = valor;
       localStorage.setItem('idioma_app', valor);
 
-      if (valor === 'pt-BR') moedaAtual = 'BRL';
-      else if (valor === 'en') moedaAtual = 'USD';
-      else if (['pt-PT', 'es', 'fr', 'it'].includes(valor)) moedaAtual = 'EUR';
-
-      localStorage.setItem('moeda_app', moedaAtual);
-
       if (usuarioLogadoGlobal) {
         await _supabase
           .from('usuarios_cadastrados')
-          .update({ idioma_preferido: valor, moeda_preferida: moedaAtual })
+          .update({ idioma_preferido: valor })
           .eq('id', usuarioLogadoGlobal.id);
       }
       
@@ -501,7 +484,7 @@
 
         let { data: perfil } = await _supabase
           .from('usuarios_cadastrados')
-          .select('id, nome, funcao, plano, idioma_preferido, moeda_preferida')
+          .select('id, nome, funcao, plano, idioma_preferido')
           .eq('email', usuarioLogadoGlobal.email)
           .maybeSingle();
 
@@ -514,16 +497,14 @@
               nome: nomeSugerido, 
               funcao: 'colecionador', 
               plano: 'gratis',
-              idioma_preferido: 'pt-PT',
-              moeda_preferida: 'EUR'
+              idioma_preferido: 'pt-PT'
             }
           ]).select().maybeSingle();
-          perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis', idioma_preferido: 'pt-PT', moeda_preferida: 'EUR' };
+          perfil = novoPerfil || { id: usuarioLogadoGlobal.id, nome: nomeSugerido, funcao: 'colecionador', plano: 'gratis', idioma_preferido: 'pt-PT' };
         }
         perfilLogadoGlobal = perfil;
 
         idiomaAtual = perfil?.idioma_preferido || 'pt-PT';
-        moedaAtual = perfil?.moeda_preferida || 'EUR';
 
         document.getElementById('linkCardeneta').style.display = 'inline-block';
         document.getElementById('linkVitrine').style.display = 'inline-block';
@@ -548,7 +529,6 @@
         `;
       } else {
         idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
-        moedaAtual = localStorage.getItem('moeda_app') || 'EUR';
       }
 
       aplicarTraducao();
@@ -593,28 +573,35 @@
       if (!gridDestaques) return;
 
       if (!itensMarketplaceGlobal || itensMarketplaceGlobal.length === 0) {
-        gridDestaques.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 20px;">Nenhum destaque disponível no momento.</div>`;
+        gridDestaques.innerHTML = `<div class="empty-state">Nenhum destaque disponível no momento.</div>`;
         return;
       }
 
-      // Pega os primeiros 5 itens do marketplace para exibir como destaque (ou ajuste a regra que preferir)
+      // Pega os primeiros 5 itens para exibir como destaque
       const destaques = itensMarketplaceGlobal.slice(0, 5);
       let html = '';
 
       destaques.forEach(item => {
         const fig = item.figurinha;
         if (!fig) return;
-        const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
+        const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
+        
+        // Mantém o valor cadastrado puro (sem conversão de moeda forçada)
+        const precoFormatado = `${Number(item.preco || 0).toFixed(2)} €`;
 
         html += `
-          <div class="destaque-card">
-            <div class="destaque-img-wrap">
-              <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="destaque-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+          <div class="market-card">
+            <div class="market-img-wrap">
+              <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="market-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             </div>
-            <div class="destaque-info">
-              <span class="destaque-num">${fig.numero} • ${fig.albuns?.nome || 'Álbum'}</span>
-              <span class="destaque-name" title="${fig.nome}">${fig.nome}</span>
-              <span class="destaque-preco">${precoFormatado}</span>
+            <div class="market-info">
+              <span class="market-num">${fig.numero} • ${fig.albuns?.nome || 'Álbum'}</span>
+              <span class="market-name" title="${fig.nome}">${fig.nome}</span>
+              <span class="market-preco">${precoFormatado}</span>
+              <span class="market-vendedor">Vendedor: <strong>${vendedor.nome}</strong></span>
+            </div>
+            <div class="market-footer">
+              <button class="btn-acao btn-perfil" onclick="verPerfilVendedor('${item.user_id}')">Ver Perfil Vendedor</button>
             </div>
           </div>
         `;
@@ -645,7 +632,7 @@
       filtrados.forEach(item => {
         const fig = item.figurinha;
         const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
-        const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
+        const precoFormatado = `${Number(item.preco || 0).toFixed(2)} €`;
 
         html += `
           <div class="market-card">
