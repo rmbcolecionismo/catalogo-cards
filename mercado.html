@@ -399,10 +399,11 @@
       let html = '';
       filtrados.forEach(item => {
         const u = item.usuario;
+        const fotoAvatar = u.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         html += `
           <div class="colecionador-card">
             <div class="colecionador-header">
-              <img src="${u.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <img src="${fotoAvatar}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
               <div class="colecionador-info">
                 <h3>${u.nome || 'Colecionador'}</h3>
                 <p>${u.cidade || 'Localização não informada'}</p>
@@ -495,7 +496,7 @@
       document.getElementById('modalProposta').style.display = 'none'; 
     }
 
-    /* AJUSTE 1: verificarEAtualizarLimiteDiario corrigido e seguro contra erros 400 */
+    /* Função que valida e atualiza o limite diário de propostas */
     async function verificarEAtualizarLimiteDiario() {
       const planoUsuario = perfilAtual.plano || 'gratis';
       
@@ -505,7 +506,8 @@
         .eq('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 5 : 50);
+      // Limite padrão de 3 para usuários grátis caso não ache na tabela
+      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 50);
       const hojeStr = new Date().toISOString().split('T')[0];
 
       const { data: historico, error: errSelect } = await _supabase
@@ -515,7 +517,6 @@
         .eq('data', hojeStr)
         .maybeSingle();
 
-      // Utilizando a coluna correta: propostas_enviadas
       const totalFeitasHoje = historico ? (historico.propostas_enviadas || 0) : 0;
 
       if (totalFeitasHoje >= limiteMaximo) {
@@ -539,6 +540,40 @@
       }
 
       return true;
+    }
+
+    /* Função que efetivamente faz o envio validando a trava do plano */
+    async function enviarPropostaConfirmada() {
+      if (selecionadasOferecidas.size === 0 && selecionadasDesejadas.size === 0) {
+        alert('Selecione ao menos uma figurinha.');
+        return;
+      }
+
+      // Validação do limite diário do plano aqui!
+      const podeEnviar = await verificarEAtualizarLimiteDiario();
+      if (!podeEnviar) return;
+
+      const { data, error } = await _supabase.from('propostas_troca').insert([
+        {
+          remetente_id: usuarioAtual.id,
+          destinatario_id: usuarioAlvoTrocaId,
+          status: 'pendente',
+          figurinhas_remetente: Array.from(selecionadasOferecidas),
+          figurinhas_destinatario: Array.from(selecionadasDesejadas)
+        }
+      ]).select().single();
+
+      if (error) { alert('Erro ao criar proposta: ' + error.message); return; }
+
+      await _supabase.from('proposta_mensagens').insert([{
+        proposta_id: data.id,
+        remetente_id: usuarioAtual.id,
+        mensagem: '✨ Proposta de troca enviada com os itens selecionados!'
+      }]);
+
+      alert('Proposta enviada com sucesso!');
+      fecharModalProposta();
+      carregarMinhasPropostas();
     }
 
     async function carregarMinhasPropostas() {
@@ -584,7 +619,6 @@
           if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
         });
 
-        // Usando a coluna 'avatar' da tabela, com suporte a fallback de imagem padrão caso esteja vazia
         const fotoAvatar = outroUser?.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
 
         html += `
@@ -614,6 +648,7 @@
       }
       grid.innerHTML = html;
     }
+
     async function excluirProposta(id) {
       if (!confirm('Deseja excluir esta proposta?')) return;
       await _supabase.from('propostas_troca').delete().eq('id', id);
