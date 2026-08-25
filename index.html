@@ -66,10 +66,6 @@
 
     .section-title-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
-    
-    .carousel-nav-btns { display: flex; gap: 8px; }
-    .carousel-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-weight: bold; }
-    .carousel-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(245, 158, 11, 0.05); }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
@@ -77,30 +73,46 @@
 
     .destaques-section { margin-bottom: 35px; }
 
-    /* ESTILO DO CARROSSEL DE DESTAQUES */
-    .carousel-container {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      padding-bottom: 10px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--gold) var(--border-color);
+    /* NOVO ESTILO DO GRID DE DESTAQUES PROFISSIONAL (SEM CARROSSEL) */
+    .destaques-grid-pro { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+      gap: 15px; 
+      margin-bottom: 20px; 
     }
-    .carousel-container::-webkit-scrollbar {
-      height: 6px;
+    
+    /* CARD COM BORDA GOLD E ESTILO PREMIUM */
+    .market-card.destaque-gold { 
+      background: var(--bg-card); 
+      border: 2px solid var(--gold); /* Borda dourada em destaque */
+      border-radius: 12px; 
+      overflow: hidden; 
+      display: flex; 
+      flex-direction: column; 
+      transition: 0.2s; 
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15); /* Sutil brilho dourado */
+      position: relative;
     }
-    .carousel-container::-webkit-scrollbar-track {
-      background: var(--bg-card);
-      border-radius: 10px;
+    .market-card.destaque-gold:hover { 
+      transform: translateY(-4px); 
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.3);
     }
-    .carousel-container::-webkit-scrollbar-thumb {
+
+    /* Selo visual de Destaque no topo da imagem */
+    .badge-destaque-top {
+      position: absolute;
+      top: 8px;
+      left: 8px;
       background: var(--gold);
-      border-radius: 10px;
-    }
-    .carousel-container .market-card {
-      min-width: 220px;
-      flex: 0 0 220px;
+      color: #0f172a;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      z-index: 2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
@@ -256,16 +268,13 @@
       </select>
     </div>
 
-    <!-- SEÇÃO DE DESTAQUES (COM CARROSSEL) -->
+    <!-- SEÇÃO DE DESTAQUES (GRID PROFISSIONAL - SEM CARROSSEL) -->
     <div class="destaques-section">
       <div class="section-title-wrapper">
         <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
-        <div class="carousel-nav-btns">
-          <button class="carousel-btn" onclick="rolarCarrossel('esq')" title="Anterior">❮</button>
-          <button class="carousel-btn" onclick="rolarCarrossel('dir')" title="Próximo">❯</button>
-        </div>
       </div>
-      <div id="destaquesGrid" class="carousel-container">
+      <!-- Substituído o carrossel-container por uma grade limpa e profissional -->
+      <div id="destaquesGrid" class="destaques-grid-pro">
         <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
       </div>
     </div>
@@ -521,17 +530,6 @@
       initHome();
     });
 
-    function rolarCarrossel(direcao) {
-      const container = document.getElementById('destaquesGrid');
-      if (!container) return;
-      const deslocamento = 250;
-      if (direcao === 'esq') {
-        container.scrollLeft -= deslocamento;
-      } else {
-        container.scrollLeft += deslocamento;
-      }
-    }
-
     async function initHome() {
       const { data: { session } } = await _supabase.auth.getSession();
       
@@ -642,7 +640,8 @@
         return;
       }
 
-      const destaques = itensMarketplaceGlobal.slice(0, 8);
+      // Exibimos por exemplo até 4 ou 8 cards em grade fixa profissional
+      const destaques = itensMarketplaceGlobal.slice(0, 4);
       let html = '';
 
       destaques.forEach(item => {
@@ -652,7 +651,8 @@
         const precoFormatado = `${Number(item.preco || 0).toFixed(2)} €`;
 
         html += `
-          <div class="market-card">
+          <div class="market-card destaque-gold">
+            <div class="badge-destaque-top">⭐ Destaque</div>
             <div class="market-img-wrap">
               <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="market-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             </div>
