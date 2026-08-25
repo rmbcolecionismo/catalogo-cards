@@ -99,6 +99,7 @@
     .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; display: flex; flex-direction: column; gap: 4px; position: relative; }
     .msg-bubble.eu { background: var(--gold); color: #0f172a; align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg-bubble.outro { background: var(--bg-card); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid var(--border-color); }
+    .msg-bubble.sistema { background: rgba(52, 211, 153, 0.15); border: 1px solid #34d399; color: var(--text-main); align-self: center; max-width: 90%; text-align: center; font-weight: 600; }
     .msg-actions { display: flex; gap: 8px; font-size: 0.65rem; align-self: flex-end; opacity: 0.8; margin-top: 2px; }
     .msg-actions button { background: none; border: none; cursor: pointer; font-weight: 600; color: inherit; text-decoration: underline; }
     .chat-input-bar { display: flex; padding: 10px; background: var(--bg-card); border-top: 1px solid var(--border-color); gap: 8px; }
@@ -405,7 +406,7 @@
             </div>
             <div class="match-stats">
               <div class="stat-row"><span class="stat-label">📍 Distância:</span><span class="stat-value gold">${item.distanciaKm} km</span></div>
-              <div class="stat-row"><span class="stat-label">📦 Você tem para ele(a):</span><span class="stat-value gold">${item.qtdEuTenho} fig(s)</span></div>
+              <div class="stat-row"><span class="stat-label">📦 Você tiene para ele(a):</span><span class="stat-value gold">${item.qtdEuTenho} fig(s)</span></div>
               <div class="stat-row"><span class="stat-label">🎁 Ele(a) tem para você:</span><span class="stat-value">${item.qtdEleTem} fig(s)</span></div>
             </div>
             <div class="card-actions">
@@ -596,14 +597,12 @@
         let miniMinhasHtml = '';
         minhasFigIds.forEach(id => {
           const f = figurinhasGlobalMap.get(id);
-          // Removido o prefixo ## aqui nas miniaturas de propostas
           if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero}</span></div>`;
         });
 
         let miniDeleHtml = '';
         deleFigIds.forEach(id => {
           const f = figurinhasGlobalMap.get(id);
-          // Removido o prefixo ## aqui nas miniaturas de propostas
           if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero}</span></div>`;
         });
 
@@ -674,12 +673,18 @@
       let html = '';
       msgs.forEach(m => {
         const eu = m.remetente_id === usuarioAtual.id;
-        html += `
-          <div class="msg-bubble ${eu ? 'eu' : 'outro'}">
-            <span>${m.mensagem}</span>
-            ${eu ? `<div class="msg-actions"><button type="button" onclick="iniciarEdicaoMensagem('${m.id}', \`${m.mensagem.replace(/`/g, '\\`')}\`)">Editar</button><button type="button" onclick="excluirMensagem('${m.id}')">Excluir</button></div>` : ''}
-          </div>
-        `;
+        const isSistema = m.tipo === 'sistema' || m.remetente_id === null;
+        
+        if (isSistema) {
+          html += `<div class="msg-bubble sistema"><span>⭐ ${m.mensagem}</span></div>`;
+        } else {
+          html += `
+            <div class="msg-bubble ${eu ? 'eu' : 'outro'}">
+              <span>${m.mensagem}</span>
+              ${eu ? `<div class="msg-actions"><button type="button" onclick="iniciarEdicaoMensagem('${m.id}', \`${m.mensagem.replace(/`/g, '\\`')}\`)">Editar</button></div>` : ''}
+            </div>
+          `;
+        }
       });
       container.innerHTML = html;
       container.scrollTop = container.scrollHeight;
@@ -710,24 +715,80 @@
       await carregarMensagensChat();
     }
 
-    // Corrigido para remover instantaneamente da tela ao excluir a mensagem
-    async function excluirMensagem(id) {
-      if (!confirm('Excluir esta mensagem?')) return;
-      const { error } = await _supabase.from('proposta_mensagens').delete().eq('id', id);
-      if (error) {
-        alert('Erro ao excluir mensagem: ' + error.message);
-        return;
+    // Função auxiliar para atualizar a caderneta de um usuário (subtraindo ou adicionando conforme a transação)
+    async function processarBaixaOuAdicaoCardeneta(userId, figIdsParaSubtrair, figIdsParaAdicionar) {
+      // 1. Processar subtrações de figurinhas enviadas (repetidas que saem)
+      for (let figId of figIdsParaSubtrair) {
+        const { data: registro } = await _supabase
+          .from('usuario_cardeneta')
+          .select('id, quantidade')
+          .eq('user_id', userId)
+          .eq('figurinha_id', figId)
+          .maybeSingle();
+
+        if (registro) {
+          const novaQtd = (registro.quantidade || 1) - 1;
+          if (novaQtd <= 0) {
+            // Se zerar ou ficar negativo, podemos remover o registro ou zerar quantidade
+            await _supabase.from('usuario_cardeneta').delete().eq('id', registro.id);
+          } else {
+            await _supabase.from('usuario_cardeneta').update({ quantidade: novaQtd }).eq('id', registro.id);
+          }
+        }
       }
-      await carregarMensagensChat();
+
+      // 2. Processar adições de figurinhas recebidas
+      for (let figId of figIdsParaAdicionar) {
+        const { data: registro } = await _supabase
+          .from('usuario_cardeneta')
+          .select('id, quantidade')
+          .eq('user_id', userId)
+          .eq('figurinha_id', figId)
+          .maybeSingle();
+
+        if (registro) {
+          // Se já tem, incrementa a quantidade (ou mantém e vira repetida caso já tivesse)
+          await _supabase.from('usuario_cardeneta').update({ quantidade: (registro.quantidade || 1) + 1 }).eq('id', registro.id);
+        } else {
+          // Se não tem, insere com quantidade 1
+          await _supabase.from('usuario_cardeneta').insert([{ user_id: userId, figurinha_id: figId, quantidade: 1 }]);
+        }
+      }
     }
 
     async function mudarStatusProposta(novoStatus) {
+      // Se aceitar a proposta, atualizamos as cadernetas dos dois usuários e enviamos a mensagem de sistema no chat
+      if (novoStatus === 'aceita') {
+        const { data: propData } = await _supabase.from('propostas_troca').select('*').eq('id', propostaSelecionadaId).single();
+        if (propData) {
+          const remetenteId = propData.remetente_id;
+          const destinatarioId = propData.destinatario_id;
+          
+          const figsRemetente = propData.figurinhas_remetente || []; // O que o remetente deu e o destinatário recebeu
+          const figsDestinatario = propData.figurinhas_destinatario || []; // O que o destinatário deu e o remetente recebeu
+
+          // Atualiza caderneta do Remetente (perde as que ele ofereceu, ganha as que o destinatario ofereceu)
+          await processarBaixaOuAdicaoCardeneta(remetenteId, figsRemetente, figsDestinatario);
+
+          // Atualiza caderneta do Destinatário (perde as que ele ofereceu, ganha as que o remetente ofereceu)
+          await processarBaixaOuAdicaoCardeneta(destinatarioId, figsDestinatario, figsRemetente);
+
+          // Insere mensagem destacada no chat informando o sucesso e a atualização automática
+          await _supabase.from('proposta_mensagens').insert([{
+            proposta_id: propostaSelecionadaId,
+            remetente_id: null, // Sistema
+            mensagem: 'Vossa Troca foi realizada com sucesso, sua cardeneta sera atualizada automaticamente subtraindo seu(s) repetidos.'
+          }]);
+        }
+      }
+
       const { error } = await _supabase.from('propostas_troca').update({ status: novoStatus }).eq('id', propostaSelecionadaId);
       if (error) { alert('Erro ao atualizar status: ' + error.message); return; }
       
       alert(`Proposta ${novoStatus} com sucesso!`);
       fecharModalChat();
       carregarMinhasPropostas();
+      carregarAlbunsEColecionadores(); // Recarrega os matches para refletir a remoção dos repetidos negociados
     }
 
     function fecharModalChat() {
