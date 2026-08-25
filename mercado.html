@@ -368,14 +368,12 @@
         if (!matchDistancia) return;
 
         if (filtroAlbum === 'todos') {
-          // Se for "todos", exibe o total geral do colecionador
           filtrados.push({
             ...item,
             qtdEuTenho: item.matchEuTenhoParaEleFull.length,
             qtdEleTem: item.matchEleTemParaMimFull.length
           });
         } else {
-          // Se um álbum específico foi selecionado, filtra os matches exclusivos desse álbum
           const filtradosEu = item.matchEuTenhoParaEleFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
           const filtradosEle = item.matchEleTemParaMimFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
 
@@ -489,13 +487,13 @@
       document.getElementById('chipsDesejadas').innerHTML = htmlD || '<span style="font-size:0.75rem; color:var(--text-muted);">Nenhuma selecionada.</span>';
     }
 
-    fn fecharModalProposta = function() { document.getElementById('modalProposta').style.display = 'none'; }; // compatibilidade abaixo
-    function fecharModalProposta() { document.getElementById('modalProposta').style.display = 'none'; }
+    function fecharModalProposta() { 
+      document.getElementById('modalProposta').style.display = 'none'; 
+    }
 
     async function verificarEAtualizarLimiteDiario() {
       const planoUsuario = perfilAtual.plano || 'gratis';
       
-      // Busca limite configurado na tabela configuracoes_planos
       const { data: configPlano } = await _supabase
         .from('configuracoes_planos')
         .select('limite_trocas')
@@ -506,7 +504,6 @@
 
       const hojeStr = new Date().toISOString().split('T')[0];
 
-      // Busca o registro de histórico diário do usuário na data atual
       const { data: historico } = await _supabase
         .from('historico_propostas_diarias')
         .select('*')
@@ -521,7 +518,6 @@
         return false;
       }
 
-      // Atualiza ou insere o histórico diário
       if (historico) {
         await _supabase
           .from('historico_propostas_diarias')
@@ -542,7 +538,6 @@
         return;
       }
 
-      // Valida e consome a cota diária do plano antes de enviar
       const podeEnviar = await verificarEAtualizarLimiteDiario();
       if (!podeEnviar) return;
 
