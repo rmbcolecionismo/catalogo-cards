@@ -73,7 +73,7 @@
 
     .destaques-section { margin-bottom: 35px; }
 
-    /* NOVO ESTILO DO GRID DE DESTAQUES PROFISSIONAL (SEM CARROSSEL) */
+    /* GRID DE DESTAQUES PROFISSIONAL (SEM CARROSSEL) */
     .destaques-grid-pro { 
       display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
@@ -81,16 +81,15 @@
       margin-bottom: 20px; 
     }
     
-    /* CARD COM BORDA GOLD E ESTILO PREMIUM */
     .market-card.destaque-gold { 
       background: var(--bg-card); 
-      border: 2px solid var(--gold); /* Borda dourada em destaque */
+      border: 2px solid var(--gold); 
       border-radius: 12px; 
       overflow: hidden; 
       display: flex; 
       flex-direction: column; 
       transition: 0.2s; 
-      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15); /* Sutil brilho dourado */
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15); 
       position: relative;
     }
     .market-card.destaque-gold:hover { 
@@ -98,7 +97,6 @@
       box-shadow: 0 8px 22px rgba(245, 158, 11, 0.3);
     }
 
-    /* Selo visual de Destaque no topo da imagem */
     .badge-destaque-top {
       position: absolute;
       top: 8px;
@@ -242,13 +240,13 @@
       </div>
     </div>
 
-    <!-- BANNER EXCLUSIVO PARA USUÁRIOS LOGADOS (MERCADO DE TROCA) -->
+    <!-- BANNER EXCLUSIVO PARA USUÁRIOS LOGADOS (MERCADO DE TROCA) COM ATRIBUTOS I18N -->
     <div id="bannerMercadoTrocaLogado" class="market-trade-banner" style="display: none;">
       <div class="market-trade-text">
-        <h4>🔄 Aproveite ao máximo o Mercado de Trocas!</h4>
-        <p>Acesse vosso perfil e insira sua localidade e WhatsApp para receber Match e propostas do Marketplace com facilidade.</p>
+        <h4 data-i18n="trade_banner_titulo">🔄 Aproveite ao máximo o Mercado de Trocas!</h4>
+        <p data-i18n="trade_banner_desc">Acesse vosso perfil e insira sua localidade e WhatsApp para receber Match e propostas do Marketplace com facilidade.</p>
       </div>
-      <a href="perfil.html" class="btn-gold" style="background: #34d399; color: #0f172a; white-space: nowrap;">⚙️ Configurar Meu Perfil</a>
+      <a href="perfil.html" class="btn-gold" style="background: #34d399; color: #0f172a; white-space: nowrap;" data-i18n="trade_banner_btn">⚙️ Configurar Meu Perfil</a>
     </div>
 
     <!-- BLOCO DE CONTRIBUIÇÃO -->
@@ -273,7 +271,6 @@
       <div class="section-title-wrapper">
         <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
       </div>
-      <!-- Substituído o carrossel-container por uma grade limpa e profissional -->
       <div id="destaquesGrid" class="destaques-grid-pro">
         <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
       </div>
@@ -341,12 +338,15 @@
 
     const dicionarios = {
       'pt-PT': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine", nav_mercado: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
         btn_entrar: "Entrar / Criar Conta",
         hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
         hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
         hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        trade_banner_titulo: "🔄 Aproveite ao máximo o Mercado de Trocas!",
+        trade_banner_desc: "Acesse vosso perfil e insira sua localidade e WhatsApp para receber Match e propostas do Marketplace com facilidade.",
+        trade_banner_btn: "⚙️ Configurar Meu Perfil",
         sec_destaques_titulo: "⭐ Figurinhas em Destaque",
         msg_carregando_destaques: "Carregando destaques...",
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
@@ -363,12 +363,15 @@
         btn_entrar_modal: "Entrar", btn_criar_conta: "Criar Conta", btn_fechar: "Fechar"
       },
       'pt-BR': {
-        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
+        nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine", nav_mercado: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Painel Admin", nav_estoque: "📊 Estoque Master",
         btn_entrar: "Entrar / Criar Conta",
         hero_titulo: "Organize sua Coleção & Venda/Troque Figurinhas!",
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
         hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
         hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        trade_banner_titulo: "🔄 Aproveite ao máximo o Mercado de Trocas!",
+        trade_banner_desc: "Acesse seu perfil e insira sua localidade e WhatsApp para receber Match e propostas do Marketplace com facilidade.",
+        trade_banner_btn: "⚙️ Configurar Meu Perfil",
         sec_destaques_titulo: "⭐ Figurinhas em Destaque",
         msg_carregando_destaques: "Carregando destaques...",
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
@@ -380,17 +383,20 @@
         msg_carregando_ofertas: "Carregando ofertas do marketplace...",
         footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
         modal_auth_titulo: "Acesse sua Conta", modal_auth_desc: "Entre ou crie sua conta para controlar sua caderneta e negociar figurinhas.",
-        btn_google: "Continuar con Google", ou_email: "ou com e-mail",
+        btn_google: "Continuar com Google", ou_email: "ou com e-mail",
         placeholder_email: "Seu e-mail", placeholder_senha: "Sua senha",
         btn_entrar_modal: "Entrar", btn_criar_conta: "Criar Conta", btn_fechar: "Fechar"
       },
       'en': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_mercado_trocas: "🔄 Trade Market", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase", nav_mercado: "🔄 Trade Market", nav_perfil: "⚙️ Profile", nav_admin: "🛡️ Admin Panel", nav_estoque: "📊 Master Stock",
         btn_entrar: "Sign In / Register",
         hero_titulo: "Organize Your Collection & Buy/Trade Stickers!",
         hero_desc: "Create your free account right now. Get full control of your digital album, manage missing and duplicates, and trade directly in the marketplace.",
         hero_feat1: "✅ Smart Album", hero_feat2: "✅ Sales Showcase", hero_feat3: "✅ Proximity Trade Market",
         hero_btn_criar: "✨ Create Free Account", hero_btn_demo: "View Demo",
+        trade_banner_titulo: "🔄 Make the most of the Trade Market!",
+        trade_banner_desc: "Access your profile and enter your location and WhatsApp to easily receive Matches and Marketplace proposals.",
+        trade_banner_btn: "⚙️ Configure My Profile",
         sec_destaques_titulo: "⭐ Featured Stickers",
         msg_carregando_destaques: "Loading featured...",
         collab_titulo: "📸 Spotted a missing or low-quality sticker?",
@@ -407,12 +413,15 @@
         btn_entrar_modal: "Sign In", btn_criar_conta: "Create Account", btn_fechar: "Close"
       },
       'it': {
-        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_mercado_trocas: "🔄 Mercato Scambi", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina", nav_mercado: "🔄 Mercato Scambi", nav_perfil: "⚙️ Profilo", nav_admin: "🛡️ Pannello Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Accedi / Registrati",
         hero_titulo: "Organizza la tua collezione e Vendi/Scambia figurine!",
         hero_desc: "Crea il tuo account gratuito adesso. Gestisci il tuo album digitale, le figurine mancanti e doppie, e negozia direttamente nel marketplace.",
         hero_feat1: "✅ Album Intelligente", hero_feat2: "✅ Vetrina Vendite", hero_feat3: "✅ Mercato Scambi per Vicinanza",
         hero_btn_criar: "✨ Crea Account Gratuito", hero_btn_demo: "Vedi Demo",
+        trade_banner_titulo: "🔄 Sfrutta al massimo il Mercato Scambi!",
+        trade_banner_desc: "Accedi al tuo profilo e inserisci la tua località e WhatsApp per ricevere facilmente Match e proposte dal Marketplace.",
+        trade_banner_btn: "⚙️ Configura il mio Profilo",
         sec_destaques_titulo: "⭐ Figurine in Evidenza",
         msg_carregando_destaques: "Caricamento in evidenza...",
         collab_titulo: "📸 Hai notato una figurina mancante o di bassa qualità?",
@@ -429,12 +438,15 @@
         btn_entrar_modal: "Accedi", btn_criar_conta: "Crea Account", btn_fechar: "Chiudi"
       },
       'es': {
-        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_mercado: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Entrar / Crear Cuenta",
         hero_titulo: "¡Organiza tu Colección & Vende/Intercambia Figus!",
-        hero_desc: "Crea tu cuenta gratuita ahora mesmo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
+        hero_desc: "Crea tu cuenta gratuita ahora mismo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
         hero_feat1: "✅ Álbum Inteligente", hero_feat2: "✅ Vitrina de Ventas", hero_feat3: "✅ Mercado de Intercambio por Proximidad",
         hero_btn_criar: "✨ Crear Cuenta Gratis", hero_btn_demo: "Ver Demostración",
+        trade_banner_titulo: "🔄 ¡Aprovecha al máximo el Mercado de Intercambio!",
+        trade_banner_desc: "Accede a tu perfil e ingresa tu localidad y WhatsApp para recibir Match y propuestas del Marketplace con facilidad.",
+        trade_banner_btn: "⚙️ Configurar Mi Perfil",
         sec_destaques_titulo: "⭐ Figuritas Destacadas",
         msg_carregando_destaques: "Cargando destacados...",
         collab_titulo: "📸 ¿Viste alguna figurita faltante o de baja calidad?",
@@ -451,12 +463,15 @@
         btn_entrar_modal: "Entrar", btn_criar_conta: "Crear Cuenta", btn_fechar: "Cerrar"
       },
       'fr': {
-        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_mercado_trocas: "🔄 Marché d'Échanges", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
+        nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine", nav_mercado: "🔄 Marché d'Échanges", nav_perfil: "⚙️ Profil", nav_admin: "🛡️ Panneau Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Se connecter / Créer un compte",
         hero_titulo: "Organisez votre collection & Vendez/Échangez vos stickers !",
         hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
         hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximité",
         hero_btn_criar: "✨ Créer un Compte Gratuit", hero_btn_demo: "Voir la Démo",
+        trade_banner_titulo: "🔄 Profitez pleinement du Marché d'Échanges !",
+        trade_banner_desc: "Accédez à votre profil et saisissez votre localisation et votre WhatsApp pour recevoir facilement des Matchs et des propositions du Marketplace.",
+        trade_banner_btn: "⚙️ Configurer mon Profil",
         sec_destaques_titulo: "⭐ Stickers en Vedette",
         msg_carregando_destaques: "Chargement des vedettes...",
         collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
@@ -640,7 +655,6 @@
         return;
       }
 
-      // Exibimos por exemplo até 4 ou 8 cards em grade fixa profissional
       const destaques = itensMarketplaceGlobal.slice(0, 4);
       let html = '';
 
