@@ -59,13 +59,17 @@
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
     .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
 
+    /* BANNER EXCLUSIVO PARA USUÁRIOS LOGADOS (MERCADO DE TROCA) */
+    .market-trade-banner { background: linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, var(--bg-card) 100%); border: 2px solid #34d399; border-radius: 14px; padding: 20px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    .market-trade-text h4 { color: #34d399; font-size: 1.1rem; margin-bottom: 5px; font-weight: 700; }
+    .market-trade-text p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
+
     .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
-    /* SEÇÃO DE DESTAQUES (AGORA COM O MESMO GRID E CARDS DE VENDA) */
     .destaques-section { margin-bottom: 35px; }
 
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
@@ -195,7 +199,25 @@
       </div>
     </div>
 
-    <!-- CONTROLES E FILTROS ACIMA DAS SEÇÕES DE DESTAQUE E VENDAS -->
+    <!-- BANNER EXCLUSIVO PARA USUÁRIOS LOGADOS (MERCADO DE TROCA) -->
+    <div id="bannerMercadoTrocaLogado" class="market-trade-banner" style="display: none;">
+      <div class="market-trade-text">
+        <h4>🔄 Aproveite ao máximo o Mercado de Trocas!</h4>
+        <p>Acesse vosso perfil e insira sua localidade e WhatsApp para receber Match e propostas do Marketplace com facilidade.</p>
+      </div>
+      <a href="perfil.html" class="btn-gold" style="background: #34d399; color: #0f172a; white-space: nowrap;">⚙️ Configurar Meu Perfil</a>
+    </div>
+
+    <!-- BLOCO DE CONTRIBUIÇÃO (MOVIDO PARA ACIMA DO FILTRO) -->
+    <div class="collab-card">
+      <div class="collab-text">
+        <h4 data-i18n="collab_titulo">📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
+        <p data-i18n="collab_desc">Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.</p>
+      </div>
+      <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
+    </div>
+
+    <!-- CONTROLES E FILTROS -->
     <div class="controls-bar">
       <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()" data-i18n-placeholder="busca_placeholder">
       <select id="selectFiltroAlbum" class="filter-field" onchange="filtrarAtivo()">
@@ -203,20 +225,12 @@
       </select>
     </div>
 
-    <!-- SEÇÃO DE DESTAQUES (POSICIONADA ACIMA DE "FIGURINHAS À VENDA") -->
+    <!-- SEÇÃO DE DESTAQUES -->
     <div class="destaques-section">
       <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
       <div id="destaquesGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
       </div>
-    </div>
-
-    <div class="collab-card">
-      <div class="collab-text">
-        <h4 data-i18n="collab_titulo">📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
-        <p data-i18n="collab_desc">Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.</p>
-      </div>
-      <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
     </div>
 
     <!-- SEÇÃO DE FIGURINHAS À VENDA -->
@@ -372,7 +386,7 @@
         nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina", nav_mercado_trocas: "🔄 Mercado de Trocas", nav_perfil: "⚙️ Perfil", nav_admin: "🛡️ Panel Admin", nav_estoque: "📊 Stock Master",
         btn_entrar: "Entrar / Crear Cuenta",
         hero_titulo: "¡Organiza tu Colección & Vende/Intercambia Figus!",
-        hero_desc: "Crea tu cuenta gratuita ahora mismo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
+        hero_desc: "Crea tu cuenta gratuita ahora mesmo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
         hero_feat1: "✅ Álbum Inteligente", hero_feat2: "✅ Vitrina de Ventas", hero_feat3: "✅ Mercado de Intercambio por Proximidad",
         hero_btn_criar: "✨ Crear Cuenta Gratis", hero_btn_demo: "Ver Demostración",
         sec_destaques_titulo: "⭐ Figuritas Destacadas",
@@ -478,6 +492,10 @@
         const banner = document.getElementById('heroBannerVisitante');
         if (banner) banner.style.display = 'none';
 
+        // Exibe o banner do Mercado de Trocas apenas para usuários logados
+        const bannerTrocaLogado = document.getElementById('bannerMercadoTrocaLogado');
+        if (bannerTrocaLogado) bannerTrocaLogado.style.display = 'flex';
+
         if (window.location.hash && window.location.hash.includes('access_token')) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -577,7 +595,6 @@
         return;
       }
 
-      // Pega os primeiros 5 itens para exibir como destaque
       const destaques = itensMarketplaceGlobal.slice(0, 5);
       let html = '';
 
@@ -586,7 +603,6 @@
         if (!fig) return;
         const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
         
-        // Mantém o valor cadastrado puro (sem conversão de moeda forçada)
         const precoFormatado = `${Number(item.preco || 0).toFixed(2)} €`;
 
         html += `
