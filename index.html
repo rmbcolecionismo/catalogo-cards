@@ -56,6 +56,18 @@
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
+    /* ESTILO ADICIONADO PARA FIGURINHAS EM DESTAQUE */
+    .destaques-section { margin-bottom: 30px; }
+    .destaques-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .destaque-card { background: var(--bg-card); border: 1px solid var(--gold); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1); }
+    .destaque-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2); }
+    .destaque-img-wrap { height: 130px; background: var(--bg); padding: 8px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); }
+    .destaque-img { width: 100%; height: 100%; object-fit: contain; }
+    .destaque-info { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .destaque-num { font-size: 0.7rem; color: var(--gold); font-weight: 700; }
+    .destaque-name { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .destaque-preco { font-size: 0.85rem; font-weight: 800; color: #34d399; margin-top: 2px; }
+
     .collab-card { background: var(--bg-card); border: 1px dashed var(--gold); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
     .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
@@ -195,6 +207,14 @@
       </div>
     </div>
 
+    <!-- SEÇÃO ADICIONADA: FIGURINHAS EM DESTAQUE -->
+    <div class="destaques-section">
+      <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
+      <div id="destaquesGrid" class="destaques-grid">
+        <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
+      </div>
+    </div>
+
     <div class="collab-card">
       <div class="collab-text">
         <h4 data-i18n="collab_titulo">📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
@@ -278,6 +298,8 @@
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
         hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
         hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        sec_destaques_titulo: "⭐ Figurinhas em Destaque",
+        msg_carregando_destaques: "Carregando destaques...",
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
         collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
         collab_btn: "Contribuir com Fotos",
@@ -298,6 +320,8 @@
         hero_desc: "Crie sua conta gratuita agora mesmo. Tenha controle total da sua caderneta digital, gerencie faltantes e repetidas, e negocie diretamente no marketplace e no mercado de trocas.",
         hero_feat1: "✅ Caderneta Inteligente", hero_feat2: "✅ Vitrine de Vendas", hero_feat3: "✅ Mercado de Trocas por Proximidade",
         hero_btn_criar: "✨ Criar Minha Conta Grátis", hero_btn_demo: "Ver Demonstração",
+        sec_destaques_titulo: "⭐ Figurinhas em Destaque",
+        msg_carregando_destaques: "Carregando destaques...",
         collab_titulo: "📸 Viu alguma figurinha faltando ou com qualidade baixa?",
         collab_desc: "Ajude a nossa comunidade enviando fotos das figurinhas ou cards que faltam no catálogo oficial.",
         collab_btn: "Contribuir com Fotos",
@@ -318,6 +342,8 @@
         hero_desc: "Create your free account right now. Get full control of your digital album, manage missing and duplicates, and trade directly in the marketplace.",
         hero_feat1: "✅ Smart Album", hero_feat2: "✅ Sales Showcase", hero_feat3: "✅ Proximity Trade Market",
         hero_btn_criar: "✨ Create Free Account", hero_btn_demo: "View Demo",
+        sec_destaques_titulo: "⭐ Featured Stickers",
+        msg_carregando_destaques: "Loading featured...",
         collab_titulo: "📸 Spotted a missing or low-quality sticker?",
         collab_desc: "Help our community by submitting photos of missing stickers or cards for the official catalog.",
         collab_btn: "Contribute Photos",
@@ -338,6 +364,8 @@
         hero_desc: "Crea il tuo account gratuito adesso. Gestisci il tuo album digitale, le figurine mancanti e doppie, e negozia direttamente nel marketplace.",
         hero_feat1: "✅ Album Intelligente", hero_feat2: "✅ Vetrina Vendite", hero_feat3: "✅ Mercato Scambi per Vicinanza",
         hero_btn_criar: "✨ Crea Account Gratuito", hero_btn_demo: "Vedi Demo",
+        sec_destaques_titulo: "⭐ Figurine in Evidenza",
+        msg_carregando_destaques: "Caricamento in evidenza...",
         collab_titulo: "📸 Hai notato una figurina mancante o di bassa qualità?",
         collab_desc: "Aiuta la nostra comunità inviando foto delle figurine mancanti nel catalogo ufficiale.",
         collab_btn: "Contribuisci con Foto",
@@ -358,6 +386,8 @@
         hero_desc: "Crea tu cuenta gratuita ahora mismo. Controla tu álbum digital, gestiona faltantes y repetidas, y haz negocios directamente en el marketplace.",
         hero_feat1: "✅ Álbum Inteligente", hero_feat2: "✅ Vitrina de Ventas", hero_feat3: "✅ Mercado de Intercambio por Proximidad",
         hero_btn_criar: "✨ Crear Cuenta Gratis", hero_btn_demo: "Ver Demostración",
+        sec_destaques_titulo: "⭐ Figuritas Destacadas",
+        msg_carregando_destaques: "Cargando destacados...",
         collab_titulo: "📸 ¿Viste alguna figurita faltante o de baja calidad?",
         collab_desc: "Ayuda a nuestra comunidad enviando fotos de las figuritas o cards faltantes en el catálogo oficial.",
         collab_btn: "Contribuir con Fotos",
@@ -378,6 +408,8 @@
         hero_desc: "Créez votre compte gratuit dès maintenant. Contrôlez votre album numérique, gérez les manquants et les doubles, et échangez directement sur le marché.",
         hero_feat1: "✅ Album Intelligent", hero_feat2: "✅ Vitrine de Vente", hero_feat3: "✅ Marché d'Échange de Proximité",
         hero_btn_criar: "✨ Créer un Compte Gratuit", hero_btn_demo: "Voir la Démo",
+        sec_destaques_titulo: "⭐ Stickers en Vedette",
+        msg_carregando_destaques: "Chargement des vedettes...",
         collab_titulo: "📸 Vous avez repéré un sticker manquant ou de faible qualité ?",
         collab_desc: "Aidez notre communauté en envoyant des photos des stickers manquants dans le catalogue officiel.",
         collab_btn: "Contribuer avec des Photos",
@@ -444,6 +476,7 @@
       
       aplicarTraducao();
       renderizarMarketplace();
+      renderizarDestaques();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -552,6 +585,42 @@
       itensMarketplaceGlobal = dataMarket || [];
 
       renderizarMarketplace();
+      renderizarDestaques();
+    }
+
+    function renderizarDestaques() {
+      const gridDestaques = document.getElementById('destaquesGrid');
+      if (!gridDestaques) return;
+
+      if (!itensMarketplaceGlobal || itensMarketplaceGlobal.length === 0) {
+        gridDestaques.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 20px;">Nenhum destaque disponível no momento.</div>`;
+        return;
+      }
+
+      // Pega os primeiros 5 itens do marketplace para exibir como destaque (ou ajuste a regra que preferir)
+      const destaques = itensMarketplaceGlobal.slice(0, 5);
+      let html = '';
+
+      destaques.forEach(item => {
+        const fig = item.figurinha;
+        if (!fig) return;
+        const precoFormatado = new Intl.NumberFormat(idiomaAtual, { style: 'currency', currency: moedaAtual }).format(item.preco || 0);
+
+        html += `
+          <div class="destaque-card">
+            <div class="destaque-img-wrap">
+              <img src="${fig.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="destaque-img" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+            </div>
+            <div class="destaque-info">
+              <span class="destaque-num">${fig.numero} • ${fig.albuns?.nome || 'Álbum'}</span>
+              <span class="destaque-name" title="${fig.nome}">${fig.nome}</span>
+              <span class="destaque-preco">${precoFormatado}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      gridDestaques.innerHTML = html;
     }
 
     function renderizarMarketplace() {
