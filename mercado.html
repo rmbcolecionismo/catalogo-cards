@@ -59,7 +59,6 @@
     .stat-value { font-weight: 700; color: #34d399; }
     .stat-value.gold { color: var(--gold); }
 
-    /* Caixa de Miniaturas nas Propostas */
     .proposta-detalhe-box { background: var(--bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem; }
     .mini-figs-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
     .mini-fig-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; text-align: center; width: 60px; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -81,7 +80,6 @@
     .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
 
-    /* Modais */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: flex; flex-direction: column; gap: 15px; }
     .modal-box h3 { color: var(--gold); font-size: 1.2rem; }
@@ -96,7 +94,6 @@
     .chip-item { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--gold); color: var(--text-main); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
     .chip-item button { background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
 
-    /* Chat Estilo */
     .chat-container { display: flex; flex-direction: column; height: 320px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg); overflow: hidden; }
     .chat-mensagens { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
     .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; display: flex; flex-direction: column; gap: 4px; position: relative; }
@@ -143,7 +140,6 @@
       </div>
     </div>
 
-    <!-- CONTROLES DE FILTRO POR ÁLBUM E DISTÂNCIA -->
     <div class="controls-bar">
       <select id="selectFiltroAlbum" class="filter-field" onchange="renderizarColecionadores()">
         <option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>
@@ -168,7 +164,6 @@
     </div>
   </div>
 
-  <!-- MODAL ENVIAR PROPOSTA COM SELEÇÃO POR ÁLBUM -->
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box">
       <h3 id="modalPropostaTitulo">✨ Criar Proposta de Troca Justa</h3>
@@ -189,7 +184,6 @@
     </div>
   </div>
 
-  <!-- MODAL CHAT & NEGOCIAÇÃO -->
   <div id="modalChat" class="modal-overlay">
     <div class="modal-box">
       <h3 id="chatTitulo">💬 Negociação da Proposta</h3>
@@ -496,7 +490,6 @@
       document.getElementById('modalProposta').style.display = 'none'; 
     }
 
-    /* Função que valida e atualiza o limite diário de propostas */
     async function verificarEAtualizarLimiteDiario() {
       const planoUsuario = perfilAtual.plano || 'gratis';
       
@@ -506,11 +499,10 @@
         .eq('plano', planoUsuario)
         .maybeSingle();
 
-      // Limite padrão de 3 para usuários grátis caso não ache na tabela
       const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 50);
       const hojeStr = new Date().toISOString().split('T')[0];
 
-      const { data: historico, error: errSelect } = await _supabase
+      const { data: historico } = await _supabase
         .from('historico_propostas_diarias')
         .select('*')
         .eq('user_id', usuarioAtual.id)
@@ -525,31 +517,25 @@
       }
 
       if (historico && historico.id) {
-        const { error: errUpdate } = await _supabase
+        await _supabase
           .from('historico_propostas_diarias')
           .update({ propostas_enviadas: totalFeitasHoje + 1 }) 
           .eq('id', historico.id);
-
-        if (errUpdate) console.error("Erro update histórico:", errUpdate.message);
       } else {
-        const { error: errInsert } = await _supabase
+        await _supabase
           .from('historico_propostas_diarias')
           .insert([{ user_id: usuarioAtual.id, data: hojeStr, propostas_enviadas: 1 }]); 
-
-        if (errInsert) console.error("Erro insert histórico:", errInsert.message);
       }
 
       return true;
     }
 
-    /* Função que efetivamente faz o envio validando a trava do plano */
     async function enviarPropostaConfirmada() {
       if (selecionadasOferecidas.size === 0 && selecionadasDesejadas.size === 0) {
         alert('Selecione ao menos uma figurinha.');
         return;
       }
 
-      // Validação do limite diário do plano aqui!
       const podeEnviar = await verificarEAtualizarLimiteDiario();
       if (!podeEnviar) return;
 
@@ -610,13 +596,15 @@
         let miniMinhasHtml = '';
         minhasFigIds.forEach(id => {
           const f = figurinhasGlobalMap.get(id);
-          if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
+          // Removido o prefixo ## aqui nas miniaturas de propostas
+          if (f) miniMinhasHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero}</span></div>`;
         });
 
         let miniDeleHtml = '';
         deleFigIds.forEach(id => {
           const f = figurinhasGlobalMap.get(id);
-          if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
+          // Removido o prefixo ## aqui nas miniaturas de propostas
+          if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero}</span></div>`;
         });
 
         const fotoAvatar = outroUser?.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
@@ -722,9 +710,14 @@
       await carregarMensagensChat();
     }
 
+    // Corrigido para remover instantaneamente da tela ao excluir a mensagem
     async function excluirMensagem(id) {
-      if(!confirm('Excluir esta mensagem?')) return;
-      await _supabase.from('proposta_mensagens').delete().eq('id', id);
+      if (!confirm('Excluir esta mensagem?')) return;
+      const { error } = await _supabase.from('proposta_mensagens').delete().eq('id', id);
+      if (error) {
+        alert('Erro ao excluir mensagem: ' + error.message);
+        return;
+      }
       await carregarMensagensChat();
     }
 
