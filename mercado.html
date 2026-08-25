@@ -251,7 +251,7 @@
       usuarioAtual = session.user;
 
       const { data: perfil } = await _supabase.from('usuarios_cadastrados').select('*').eq('email', usuarioAtual.email).maybeSingle();
-      perfilAtual = perfil || { id: usuarioAtual.id, nome: usuarioAtual.email.split('@')[0], latitude: 0, longitude: 0 };
+      perfilAtual = perfil || { id: usuarioAtual.id, nome: usuarioAtual.email.split('@')[0], latitude: 0, longitude: 0, plano: 'gratis' };
 
       if (perfilAtual.nome) {
         document.getElementById('userInfoHeader').innerHTML = `
@@ -319,11 +319,17 @@
       minhasRepetidasMap.clear();
       minhasRepetidasIds.forEach(id => { if(figurinhasGlobalMap.has(id)) minhasRepetidasMap.set(id, figurinhasGlobalMap.get(id)); });
 
+      // Busca usuários cadastrados exceto o atual
       const { data: usuarios } = await _supabase.from('usuarios_cadastrados').select('*').neq('id', usuarioAtual.id);
       
       colecionadoresDisponiveis = [];
       if (usuarios) {
         for (let u of usuarios) {
+          // Trava de Localização: descarta usuários sem localização ou com "Localização não informada"
+          if (!u.cidade || u.cidade.trim() === '' || u.cidade.toLowerCase().includes('não informada')) {
+            continue;
+          }
+
           const { data: figColec } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', u.id);
           const colecCadastradasIds = new Set((figColec || []).map(f => String(f.figurinha_id)));
           const colecRepetidasIds = new Set((figColec || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
@@ -340,8 +346,8 @@
             colecionadoresDisponiveis.push({
               usuario: u,
               distanciaKm: distancia,
-              matchEuTenhoParaEle: matchEuTenhoParaEle.length,
-              matchEleTemParaMim: matchEleTemParaMim.length,
+              matchEuTenhoParaEleFull: matchEuTenhoParaEle,
+              matchEleTemParaMimFull: matchEleTemParaMim,
               albunsIds: Array.from(albunsEnvolvidos)
             });
           }
@@ -355,10 +361,32 @@
       const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
       const filtroDistancia = document.getElementById('selectFiltroDistancia').value;
 
-      let filtrados = colecionadoresDisponiveis.filter(item => {
-        let matchAlbum = (filtroAlbum === 'todos') || item.albunsIds.includes(filtroAlbum);
+      let filtrados = [];
+
+      colecionadoresDisponiveis.forEach(item => {
         let matchDistancia = (filtroDistancia === 'todos') || (item.distanciaKm <= parseFloat(filtroDistancia));
-        return matchAlbum && matchDistancia;
+        if (!matchDistancia) return;
+
+        if (filtroAlbum === 'todos') {
+          // Se for "todos", exibe o total geral do colecionador
+          filtrados.push({
+            ...item,
+            qtdEuTenho: item.matchEuTenhoParaEleFull.length,
+            qtdEleTem: item.matchEleTemParaMimFull.length
+          });
+        } else {
+          // Se um álbum específico foi selecionado, filtra os matches exclusivos desse álbum
+          const filtradosEu = item.matchEuTenhoParaEleFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
+          const filtradosEle = item.matchEleTemParaMimFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
+
+          if (filtradosEu.length > 0 || filtradosEle.length > 0) {
+            filtrados.push({
+              ...item,
+              qtdEuTenho: filtradosEu.length,
+              qtdEleTem: filtradosEle.length
+            });
+          }
+        }
       });
 
       if (filtrados.length === 0) {
@@ -380,8 +408,8 @@
             </div>
             <div class="match-stats">
               <div class="stat-row"><span class="stat-label">📍 Distância:</span><span class="stat-value gold">${item.distanciaKm} km</span></div>
-              <div class="stat-row"><span class="stat-label">📦 Você tem para ele(a):</span><span class="stat-value gold">${item.matchEuTenhoParaEle} fig(s)</span></div>
-              <div class="stat-row"><span class="stat-label">🎁 Ele(a) tem para você:</span><span class="stat-value">${item.matchEleTemParaMim} fig(s)</span></div>
+              <div class="stat-row"><span class="stat-label">📦 Você tem para ele(a):</span><span class="stat-value gold">${item.qtdEuTenho} fig(s)</span></div>
+              <div class="stat-row"><span class="stat-label">🎁 Ele(a) tem para você:</span><span class="stat-value">${item.qtdEleTem} fig(s)</span></div>
             </div>
             <div class="card-actions">
               <button class="btn-gold" style="width: 100%;" onclick="abrirModalProposta('${u.id}')">✨ Iniciar Troca Justa</button>
@@ -461,13 +489,62 @@
       document.getElementById('chipsDesejadas').innerHTML = htmlD || '<span style="font-size:0.75rem; color:var(--text-muted);">Nenhuma selecionada.</span>';
     }
 
+    fn fecharModalProposta = function() { document.getElementById('modalProposta').style.display = 'none'; }; // compatibilidade abaixo
     function fecharModalProposta() { document.getElementById('modalProposta').style.display = 'none'; }
+
+    async function verificarEAtualizarLimiteDiario() {
+      const planoUsuario = perfilAtual.plano || 'gratis';
+      
+      // Busca limite configurado na tabela configuracoes_planos
+      const { data: configPlano } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_trocas')
+        .eq('plano', planoUsuario)
+        .maybeSingle();
+
+      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 5 : 50);
+
+      const hojeStr = new Date().toISOString().split('T')[0];
+
+      // Busca o registro de histórico diário do usuário na data atual
+      const { data: historico } = await _supabase
+        .from('historico_propostas_diarias')
+        .select('*')
+        .eq('user_id', usuarioAtual.id)
+        .eq('data', hojeStr)
+        .maybeSingle();
+
+      const totalFeitasHoje = historico ? (historico.quantidade || historico.total || 0) : 0;
+
+      if (totalFeitasHoje >= limiteMaximo) {
+        alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã ou faça upgrade do seu plano!`);
+        return false;
+      }
+
+      // Atualiza ou insere o histórico diário
+      if (historico) {
+        await _supabase
+          .from('historico_propostas_diarias')
+          .update({ quantidade: totalFeitasHoje + 1 })
+          .eq('id', historico.id);
+      } else {
+        await _supabase
+          .from('historico_propostas_diarias')
+          .insert([{ user_id: usuarioAtual.id, data: hojeStr, quantidade: 1 }]);
+      }
+
+      return true;
+    }
 
     async function enviarPropostaConfirmada() {
       if (selecionadasOferecidas.size === 0 && selecionadasDesejadas.size === 0) {
         alert('Selecione ao menos uma figurinha.');
         return;
       }
+
+      // Valida e consome a cota diária do plano antes de enviar
+      const podeEnviar = await verificarEAtualizarLimiteDiario();
+      if (!podeEnviar) return;
 
       const { data, error } = await _supabase.from('propostas_troca').insert([
         {
