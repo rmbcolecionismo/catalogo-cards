@@ -319,13 +319,11 @@
       minhasRepetidasMap.clear();
       minhasRepetidasIds.forEach(id => { if(figurinhasGlobalMap.has(id)) minhasRepetidasMap.set(id, figurinhasGlobalMap.get(id)); });
 
-      // Busca usuários cadastrados exceto o atual
       const { data: usuarios } = await _supabase.from('usuarios_cadastrados').select('*').neq('id', usuarioAtual.id);
       
       colecionadoresDisponiveis = [];
       if (usuarios) {
         for (let u of usuarios) {
-          // Trava de Localização: descarta usuários sem localização ou com "Localização não informada"
           if (!u.cidade || u.cidade.trim() === '' || u.cidade.toLowerCase().includes('não informada')) {
             continue;
           }
@@ -497,6 +495,7 @@
       document.getElementById('modalProposta').style.display = 'none'; 
     }
 
+    /* AJUSTE 1: verificarEAtualizarLimiteDiario corrigido e seguro contra erros 400 */
     async function verificarEAtualizarLimiteDiario() {
       const planoUsuario = perfilAtual.plano || 'gratis';
       
@@ -507,10 +506,9 @@
         .maybeSingle();
 
       const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 5 : 50);
-
       const hojeStr = new Date().toISOString().split('T')[0];
 
-      const { data: historico } = await _supabase
+      const { data: historico, error: errSelect } = await _supabase
         .from('historico_propostas_diarias')
         .select('*')
         .eq('user_id', usuarioAtual.id)
@@ -520,19 +518,27 @@
       const totalFeitasHoje = historico ? (historico.quantidade || historico.total || 0) : 0;
 
       if (totalFeitasHoje >= limiteMaximo) {
-        alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã ou faça upgrade do seu plano!`);
+        alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã!`);
         return false;
       }
 
-      if (historico) {
-        await _supabase
+      if (historico && historico.id) {
+        const { error: errUpdate } = await _supabase
           .from('historico_propostas_diarias')
           .update({ quantidade: totalFeitasHoje + 1 })
           .eq('id', historico.id);
+
+        if (errUpdate) {
+          console.error("Erro ao atualizar histórico diário:", errUpdate.message);
+        }
       } else {
-        await _supabase
+        const { error: errInsert } = await _supabase
           .from('historico_propostas_diarias')
           .insert([{ user_id: usuarioAtual.id, data: hojeStr, quantidade: 1 }]);
+
+        if (errInsert) {
+          console.error("Erro ao inserir histórico diário:", errInsert.message);
+        }
       }
 
       return true;
@@ -570,6 +576,7 @@
       carregarMinhasPropostas();
     }
 
+    /* AJUSTE 2: carregarMinhasPropostas com validação robusta para evitar erro 400 no ID */
     async function carregarMinhasPropostas() {
       const grid = document.getElementById('propostasGrid');
       const { data: propostas } = await _supabase.from('propostas_troca').select('*').or(`remetente_id.eq.${usuarioAtual.id},destinatario_id.eq.${usuarioAtual.id}`).order('id', { ascending: false });
@@ -587,7 +594,8 @@
         const outroIdStr = String(outroId || '').trim();
         let outroUser = null;
         
-        if (outroIdStr) {
+        // Validação estrita para evitar requisições inválidas que geram Bad Request (400)
+        if (outroIdStr && outroIdStr !== 'undefined' && outroIdStr !== 'null') {
           const resUser = await _supabase
             .from('usuarios_cadastrados')
             .select('nome, avatar_url')
