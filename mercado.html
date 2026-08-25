@@ -715,9 +715,9 @@
       await carregarMensagensChat();
     }
 
-    // Função auxiliar para atualizar a caderneta de um usuário (subtraindo ou adicionando conforme a transação)
+    // Função revisada para processar a baixa de repetidas e adição de novas figurinhas na caderneta
     async function processarBaixaOuAdicaoCardeneta(userId, figIdsParaSubtrair, figIdsParaAdicionar) {
-      // 1. Processar subtrações de figurinhas enviadas (repetidas que saem)
+      // 1. Subtrair -1 da coluna quantidade do usuário que está enviando (repassando repetidas)
       for (let figId of figIdsParaSubtrair) {
         const { data: registro } = await _supabase
           .from('usuario_cardeneta')
@@ -729,7 +729,6 @@
         if (registro) {
           const novaQtd = (registro.quantidade || 1) - 1;
           if (novaQtd <= 0) {
-            // Se zerar ou ficar negativo, podemos remover o registro ou zerar quantidade
             await _supabase.from('usuario_cardeneta').delete().eq('id', registro.id);
           } else {
             await _supabase.from('usuario_cardeneta').update({ quantidade: novaQtd }).eq('id', registro.id);
@@ -737,7 +736,7 @@
         }
       }
 
-      // 2. Processar adições de figurinhas recebidas
+      // 2. Criar ou incrementar a linha na caderneta de quem está recebendo
       for (let figId of figIdsParaAdicionar) {
         const { data: registro } = await _supabase
           .from('usuario_cardeneta')
@@ -747,36 +746,42 @@
           .maybeSingle();
 
         if (registro) {
-          // Se já tem, incrementa a quantidade (ou mantém e vira repetida caso já tivesse)
           await _supabase.from('usuario_cardeneta').update({ quantidade: (registro.quantidade || 1) + 1 }).eq('id', registro.id);
         } else {
-          // Se não tem, insere com quantidade 1
           await _supabase.from('usuario_cardeneta').insert([{ user_id: userId, figurinha_id: figId, quantidade: 1 }]);
         }
       }
     }
 
     async function mudarStatusProposta(novoStatus) {
-      // Se aceitar a proposta, atualizamos as cadernetas dos dois usuários e enviamos a mensagem de sistema no chat
       if (novoStatus === 'aceita') {
         const { data: propData } = await _supabase.from('propostas_troca').select('*').eq('id', propostaSelecionadaId).single();
         if (propData) {
           const remetenteId = propData.remetente_id;
           const destinatarioId = propData.destinatario_id;
           
-          const figsRemetente = propData.figurinhas_remetente || []; // O que o remetente deu e o destinatário recebeu
+          const figsRemetente = propData.figurinhas_remetente || [];       // O que o remetente deu e o destinatário recebeu
           const figsDestinatario = propData.figurinhas_destinatario || []; // O que o destinatário deu e o remetente recebeu
 
-          // Atualiza caderneta do Remetente (perde as que ele ofereceu, ganha as que o destinatario ofereceu)
-          await processarBaixaOuAdicaoCardeneta(remetenteId, figsRemetente, figsDestinatario);
+          // Executa a transação via RPC do banco se preferir, ou pelas chamadas sequenciais abaixo:
+          try {
+            await _supabase.rpc('executar_troca_cardeneta', {
+              p_remetente_id: remetenteId,
+              p_destinatario_id: destinatarioId,
+              p_figs_remetente: figsRemetente,
+              p_figs_destinatario: figsDestinatario
+            });
+          } catch (e) {
+            // Caso não utilize a RPC do SQL, fallback para as funções JS:
+            await processarBaixaOuAdicaoCardeneta(remetenteId, figsRemetente, figsDestinatario);
+            await processarBaixaOuAdicaoCardeneta(destinatarioId, figsDestinatario, figsRemetente);
+          }
 
-          // Atualiza caderneta do Destinatário (perde as que ele ofereceu, ganha as que o remetente ofereceu)
-          await processarBaixaOuAdicaoCardeneta(destinatarioId, figsDestinatario, figsRemetente);
-
-          // Insere mensagem destacada no chat informando o sucesso e a atualização automática
+          // Insere mensagem de sistema no chat confirmando a transação com sucesso
           await _supabase.from('proposta_mensagens').insert([{
             proposta_id: propostaSelecionadaId,
-            remetente_id: null, // Sistema
+            remetente_id: null,
+            tipo: 'sistema',
             mensagem: 'Vossa Troca foi realizada com sucesso, sua cardeneta sera atualizada automaticamente subtraindo seu(s) repetidos.'
           }]);
         }
@@ -788,7 +793,7 @@
       alert(`Proposta ${novoStatus} com sucesso!`);
       fecharModalChat();
       carregarMinhasPropostas();
-      carregarAlbunsEColecionadores(); // Recarrega os matches para refletir a remoção dos repetidos negociados
+      carregarAlbunsEColecionadores();
     }
 
     function fecharModalChat() {
