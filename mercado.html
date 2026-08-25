@@ -406,7 +406,7 @@
             </div>
             <div class="match-stats">
               <div class="stat-row"><span class="stat-label">📍 Distância:</span><span class="stat-value gold">${item.distanciaKm} km</span></div>
-              <div class="stat-row"><span class="stat-label">📦 Você tiene para ele(a):</span><span class="stat-value gold">${item.qtdEuTenho} fig(s)</span></div>
+              <div class="stat-row"><span class="stat-label">📦 Você tem para ele(a):</span><span class="stat-value gold">${item.qtdEuTenho} fig(s)</span></div>
               <div class="stat-row"><span class="stat-label">🎁 Ele(a) tem para você:</span><span class="stat-value">${item.qtdEleTem} fig(s)</span></div>
             </div>
             <div class="card-actions">
@@ -673,7 +673,7 @@
       let html = '';
       msgs.forEach(m => {
         const eu = m.remetente_id === usuarioAtual.id;
-        const isSistema = m.tipo === 'sistema' || m.remetente_id === null;
+        const isSistema = m.remetente_id === null; // Identifica mensagem do sistema pelo remetente nulo
         
         if (isSistema) {
           html += `<div class="msg-bubble sistema"><span>⭐ ${m.mensagem}</span></div>`;
@@ -715,9 +715,7 @@
       await carregarMensagensChat();
     }
 
-    // Função revisada para processar a baixa de repetidas e adição de novas figurinhas na caderneta
     async function processarBaixaOuAdicaoCardeneta(userId, figIdsParaSubtrair, figIdsParaAdicionar) {
-      // 1. Subtrair -1 da coluna quantidade do usuário que está enviando (repassando repetidas)
       for (let figId of figIdsParaSubtrair) {
         const { data: registro } = await _supabase
           .from('usuario_cardeneta')
@@ -736,7 +734,6 @@
         }
       }
 
-      // 2. Criar ou incrementar a linha na caderneta de quem está recebendo
       for (let figId of figIdsParaAdicionar) {
         const { data: registro } = await _supabase
           .from('usuario_cardeneta')
@@ -760,10 +757,9 @@
           const remetenteId = propData.remetente_id;
           const destinatarioId = propData.destinatario_id;
           
-          const figsRemetente = propData.figurinhas_remetente || [];       // O que o remetente deu e o destinatário recebeu
-          const figsDestinatario = propData.figurinhas_destinatario || []; // O que o destinatário deu e o remetente recebeu
+          const figsRemetente = propData.figurinhas_remetente || [];       
+          const figsDestinatario = propData.figurinhas_destinatario || []; 
 
-          // Executa a transação via RPC do banco se preferir, ou pelas chamadas sequenciais abaixo:
           try {
             await _supabase.rpc('executar_troca_cardeneta', {
               p_remetente_id: remetenteId,
@@ -772,16 +768,14 @@
               p_figs_destinatario: figsDestinatario
             });
           } catch (e) {
-            // Caso não utilize a RPC do SQL, fallback para as funções JS:
             await processarBaixaOuAdicaoCardeneta(remetenteId, figsRemetente, figsDestinatario);
             await processarBaixaOuAdicaoCardeneta(destinatarioId, figsDestinatario, figsRemetente);
           }
 
-          // Insere mensagem de sistema no chat confirmando a transação com sucesso
+          // Inserção ajustada sem o parâmetro 'tipo' (utilizando remetente_id: null para identificar o sistema)
           await _supabase.from('proposta_mensagens').insert([{
             proposta_id: propostaSelecionadaId,
             remetente_id: null,
-            tipo: 'sistema',
             mensagem: 'Vossa Troca foi realizada com sucesso, sua cardeneta sera atualizada automaticamente subtraindo seu(s) repetidos.'
           }]);
         }
