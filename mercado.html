@@ -515,7 +515,8 @@
         .eq('data', hojeStr)
         .maybeSingle();
 
-      const totalFeitasHoje = historico ? (historico.quantidade || historico.total || 0) : 0;
+      // Utilizando a coluna correta: propostas_enviadas
+      const totalFeitasHoje = historico ? (historico.propostas_enviadas || 0) : 0;
 
       if (totalFeitasHoje >= limiteMaximo) {
         alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã!`);
@@ -525,58 +526,21 @@
       if (historico && historico.id) {
         const { error: errUpdate } = await _supabase
           .from('historico_propostas_diarias')
-          .update({ quantidade: totalFeitasHoje + 1 })
+          .update({ propostas_enviadas: totalFeitasHoje + 1 }) 
           .eq('id', historico.id);
 
-        if (errUpdate) {
-          console.error("Erro ao atualizar histórico diário:", errUpdate.message);
-        }
+        if (errUpdate) console.error("Erro update histórico:", errUpdate.message);
       } else {
         const { error: errInsert } = await _supabase
           .from('historico_propostas_diarias')
-          .insert([{ user_id: usuarioAtual.id, data: hojeStr, quantidade: 1 }]);
+          .insert([{ user_id: usuarioAtual.id, data: hojeStr, propostas_enviadas: 1 }]); 
 
-        if (errInsert) {
-          console.error("Erro ao inserir histórico diário:", errInsert.message);
-        }
+        if (errInsert) console.error("Erro insert histórico:", errInsert.message);
       }
 
       return true;
     }
 
-    async function enviarPropostaConfirmada() {
-      if (selecionadasOferecidas.size === 0 && selecionadasDesejadas.size === 0) {
-        alert('Selecione ao menos uma figurinha.');
-        return;
-      }
-
-      const podeEnviar = await verificarEAtualizarLimiteDiario();
-      if (!podeEnviar) return;
-
-      const { data, error } = await _supabase.from('propostas_troca').insert([
-        {
-          remetente_id: usuarioAtual.id,
-          destinatario_id: usuarioAlvoTrocaId,
-          status: 'pendente',
-          figurinhas_remetente: Array.from(selecionadasOferecidas),
-          figurinhas_destinatario: Array.from(selecionadasDesejadas)
-        }
-      ]).select().single();
-
-      if (error) { alert('Erro ao criar proposta: ' + error.message); return; }
-
-      await _supabase.from('proposta_mensagens').insert([{
-        proposta_id: data.id,
-        remetente_id: usuarioAtual.id,
-        mensagem: '✨ Proposta de troca enviada com os itens selecionados!'
-      }]);
-
-      alert('Proposta enviada com sucesso!');
-      fecharModalProposta();
-      carregarMinhasPropostas();
-    }
-
-    /* AJUSTE 2: carregarMinhasPropostas com validação robusta para evitar erro 400 no ID */
     async function carregarMinhasPropostas() {
       const grid = document.getElementById('propostasGrid');
       const { data: propostas } = await _supabase.from('propostas_troca').select('*').or(`remetente_id.eq.${usuarioAtual.id},destinatario_id.eq.${usuarioAtual.id}`).order('id', { ascending: false });
@@ -594,11 +558,10 @@
         const outroIdStr = String(outroId || '').trim();
         let outroUser = null;
         
-        // Validação estrita para evitar requisições inválidas que geram Bad Request (400)
         if (outroIdStr && outroIdStr !== 'undefined' && outroIdStr !== 'null') {
           const resUser = await _supabase
             .from('usuarios_cadastrados')
-            .select('nome, avatar_url')
+            .select('*')
             .eq('id', outroIdStr)
             .maybeSingle();
             
@@ -621,10 +584,13 @@
           if (f) miniDeleHtml += `<div class="mini-fig-card"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>#${f.numero}</span></div>`;
         });
 
+        // Usando a coluna 'avatar' da tabela, com suporte a fallback de imagem padrão caso esteja vazia
+        const fotoAvatar = outroUser?.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+
         html += `
           <div class="colecionador-card">
             <div class="colecionador-header">
-              <img src="${outroUser?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <img src="${fotoAvatar}" class="colecionador-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
               <div class="colecionador-info">
                 <h3>Troca com ${outroUser?.nome || 'Colecionador'}</h3>
                 <p>Status: <strong style="color: var(--gold); text-transform:uppercase;">${p.status}</strong></p>
@@ -648,7 +614,6 @@
       }
       grid.innerHTML = html;
     }
-
     async function excluirProposta(id) {
       if (!confirm('Deseja excluir esta proposta?')) return;
       await _supabase.from('propostas_troca').delete().eq('id', id);
