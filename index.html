@@ -64,13 +64,44 @@
     .market-trade-text h4 { color: #34d399; font-size: 1.1rem; margin-bottom: 5px; font-weight: 700; }
     .market-trade-text p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
 
-    .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .section-title-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
+    
+    .carousel-nav-btns { display: flex; gap: 8px; }
+    .carousel-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-weight: bold; }
+    .carousel-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(245, 158, 11, 0.05); }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
     .filter-field:focus { border-color: var(--gold); }
 
     .destaques-section { margin-bottom: 35px; }
+
+    /* ESTILO DO CARROSSEL DE DESTAQUES */
+    .carousel-container {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) var(--border-color);
+    }
+    .carousel-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .carousel-container::-webkit-scrollbar-track {
+      background: var(--bg-card);
+      border-radius: 10px;
+    }
+    .carousel-container::-webkit-scrollbar-thumb {
+      background: var(--gold);
+      border-radius: 10px;
+    }
+    .carousel-container .market-card {
+      min-width: 220px;
+      flex: 0 0 220px;
+    }
 
     .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
     .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
@@ -120,7 +151,7 @@
       background: rgba(245, 158, 11, 0.1);
     }
 
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 30px; color: var(--text-muted); font-size: 0.85rem; }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 30px; color: var(--text-muted); font-size: 0.85rem; width: 100%; }
 
     footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -208,7 +239,7 @@
       <a href="perfil.html" class="btn-gold" style="background: #34d399; color: #0f172a; white-space: nowrap;">⚙️ Configurar Meu Perfil</a>
     </div>
 
-    <!-- BLOCO DE CONTRIBUIÇÃO (MOVIDO PARA ACIMA DO FILTRO) -->
+    <!-- BLOCO DE CONTRIBUIÇÃO -->
     <div class="collab-card">
       <div class="collab-text">
         <h4 data-i18n="collab_titulo">📸 Viu alguma figurinha faltando ou com qualidade baixa?</h4>
@@ -225,17 +256,23 @@
       </select>
     </div>
 
-    <!-- SEÇÃO DE DESTAQUES -->
+    <!-- SEÇÃO DE DESTAQUES (COM CARROSSEL) -->
     <div class="destaques-section">
-      <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
-      <div id="destaquesGrid" class="marketplace-grid">
+      <div class="section-title-wrapper">
+        <div class="section-title" data-i18n="sec_destaques_titulo">⭐ Figurinhas em Destaque</div>
+        <div class="carousel-nav-btns">
+          <button class="carousel-btn" onclick="rolarCarrossel('esq')" title="Anterior">❮</button>
+          <button class="carousel-btn" onclick="rolarCarrossel('dir')" title="Próximo">❯</button>
+        </div>
+      </div>
+      <div id="destaquesGrid" class="carousel-container">
         <div class="empty-state" data-i18n="msg_carregando_destaques">Carregando destaques...</div>
       </div>
     </div>
 
     <!-- SEÇÃO DE FIGURINHAS À VENDA -->
     <div id="secaoMarketplace">
-      <div class="section-title" data-i18n="sec_vendas_titulo">📦 Figurinhas à Venda</div>
+      <div class="section-title" data-i18n="sec_vendas_titulo" style="margin-bottom: 15px;">📦 Figurinhas à Venda</div>
       <div id="marketplaceGrid" class="marketplace-grid">
         <div class="empty-state" data-i18n="msg_carregando_ofertas">Carregando ofertas do marketplace...</div>
       </div>
@@ -484,6 +521,17 @@
       initHome();
     });
 
+    function rolarCarrossel(direcao) {
+      const container = document.getElementById('destaquesGrid');
+      if (!container) return;
+      const deslocamento = 250;
+      if (direcao === 'esq') {
+        container.scrollLeft -= deslocamento;
+      } else {
+        container.scrollLeft += deslocamento;
+      }
+    }
+
     async function initHome() {
       const { data: { session } } = await _supabase.auth.getSession();
       
@@ -492,7 +540,6 @@
         const banner = document.getElementById('heroBannerVisitante');
         if (banner) banner.style.display = 'none';
 
-        // Exibe o banner do Mercado de Trocas apenas para usuários logados
         const bannerTrocaLogado = document.getElementById('bannerMercadoTrocaLogado');
         if (bannerTrocaLogado) bannerTrocaLogado.style.display = 'flex';
 
@@ -595,14 +642,13 @@
         return;
       }
 
-      const destaques = itensMarketplaceGlobal.slice(0, 5);
+      const destaques = itensMarketplaceGlobal.slice(0, 8);
       let html = '';
 
       destaques.forEach(item => {
         const fig = item.figurinha;
         if (!fig) return;
         const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
-        
         const precoFormatado = `${Number(item.preco || 0).toFixed(2)} €`;
 
         html += `
