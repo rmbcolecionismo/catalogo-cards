@@ -303,7 +303,7 @@
       const { data: albunsData } = await _supabase.from('albuns').select('id, nome');
       if (albunsData) {
         let opts = `<option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>`;
-        albunsData.forEach(a => { opts += `<option value="${a.id}">${a.nome}</option>`; });
+        albunsData.forEach(a => { opts += `<option value="${String(a.id)}">${a.nome}</option>`; });
         document.getElementById('selectFiltroAlbum').innerHTML = opts;
       }
 
@@ -340,8 +340,14 @@
           if (matchEuTenhoParaEle.length > 0 || matchEleTemParaMim.length > 0) {
             const distancia = calcularDistanciaKm(perfilAtual.latitude, perfilAtual.longitude, u.latitude, u.longitude);
             const albunsEnvolvidos = new Set();
-            matchEuTenhoParaEle.forEach(id => { if(albumPorFigurinhaMap.has(id)) albunsEnvolvidos.add(albumPorFigurinhaMap.get(id)); });
-            matchEleTemParaMim.forEach(id => { if(albumPorFigurinhaMap.has(id)) albunsEnvolvidos.add(albumPorFigurinhaMap.get(id)); });
+            matchEuTenhoParaEle.forEach(id => { 
+              const albId = albumPorFigurinhaMap.get(id);
+              if(albId !== undefined && albId !== null) albunsEnvolvidos.add(String(albId)); 
+            });
+            matchEleTemParaMim.forEach(id => { 
+              const albId = albumPorFigurinhaMap.get(id);
+              if(albId !== undefined && albId !== null) albunsEnvolvidos.add(String(albId)); 
+            });
 
             colecionadoresDisponiveis.push({
               usuario: u,
@@ -358,7 +364,7 @@
 
     function renderizarColecionadores() {
       const grid = document.getElementById('mercadoGrid');
-      const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
+      const filtroAlbum = String(document.getElementById('selectFiltroAlbum').value);
       const filtroDistancia = document.getElementById('selectFiltroDistancia').value;
 
       let filtrados = [];
@@ -374,8 +380,8 @@
             qtdEleTem: item.matchEleTemParaMimFull.length
           });
         } else {
-          const filtradosEu = item.matchEuTenhoParaEleFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
-          const filtradosEle = item.matchEleTemParaMimFull.filter(id => albumPorFigurinhaMap.get(id) === filtroAlbum);
+          const filtradosEu = item.matchEuTenhoParaEleFull.filter(id => String(albumPorFigurinhaMap.get(id)) === filtroAlbum);
+          const filtradosEle = item.matchEleTemParaMimFull.filter(id => String(albumPorFigurinhaMap.get(id)) === filtroAlbum);
 
           if (filtradosEu.length > 0 || filtradosEle.length > 0) {
             filtrados.push({
@@ -423,7 +429,7 @@
       selecionadasOferecidas.clear();
       selecionadasDesejadas.clear();
 
-      const filtroAlbumAtual = document.getElementById('selectFiltroAlbum').value;
+      const filtroAlbumAtual = String(document.getElementById('selectFiltroAlbum').value);
 
       const { data: figColec } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', alvoId);
       const colecRepetidasIds = (figColec || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id));
@@ -432,7 +438,7 @@
       colecRepetidasIds.forEach(id => {
         if(figurinhasGlobalMap.has(id)) {
           const albumId = albumPorFigurinhaMap.get(id);
-          if (filtroAlbumAtual === 'todos' || albumId === filtroAlbumAtual) {
+          if (filtroAlbumAtual === 'todos' || String(albumId) === filtroAlbumAtual) {
             colegaRepetidasMap.set(id, figurinhasGlobalMap.get(id));
           }
         }
@@ -441,7 +447,7 @@
       let htmlMinhas = '';
       minhasRepetidasMap.forEach((f, id) => {
         const albumId = albumPorFigurinhaMap.get(id);
-        if (filtroAlbumAtual === 'todos' || albumId === filtroAlbumAtual) {
+        if (filtroAlbumAtual === 'todos' || String(albumId) === filtroAlbumAtual) {
           htmlMinhas += `<div class="fig-select-card" id="fig-oferecer-${id}" onclick="alternarOferecida('${id}')"><img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'"><span>${f.numero} - ${f.nome}</span></div>`;
         }
       });
