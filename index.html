@@ -647,7 +647,6 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
-      // Popula dinamicamente o seletor de Moedas com base nas ofertas cadastradas
       popularFiltroMoedas();
 
       renderizarMarketplace();
@@ -691,10 +690,29 @@
         return;
       }
 
-      const destaques = itensMarketplaceGlobal.slice(0, 4);
-      let html = '';
+      const busca = document.getElementById('inputBusca').value.toLowerCase();
+      const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
+      const filtroMoeda = document.getElementById('selectFiltroMoeda').value;
 
-      destaques.forEach(item => {
+      // Aplicando também o filtro nas figurinhas em destaque
+      const destaquesFiltrados = itensMarketplaceGlobal.filter(item => {
+        if (!item.figurinha) return false;
+        
+        const nomeMatch = item.figurinha.nome.toLowerCase().includes(busca);
+        const numMatch = String(item.figurinha.numero).toLowerCase().includes(busca);
+        const albumMatch = (filtroAlbum === 'todos' || String(item.figurinha.album_id) === String(filtroAlbum));
+        const moedaMatch = (filtroMoeda === 'todos' || (item.moeda && item.moeda.trim().toLowerCase() === filtroMoeda.toLowerCase()));
+
+        return (nomeMatch || numMatch) && albumMatch && moedaMatch;
+      }).slice(0, 4);
+
+      if (destaquesFiltrados.length === 0) {
+        gridDestaques.innerHTML = `<div class="empty-state">Nenhum destaque encontrado para os filtros selecionados.</div>`;
+        return;
+      }
+
+      let html = '';
+      destaquesFiltrados.forEach(item => {
         const fig = item.figurinha;
         if (!fig) return;
         const vendedor = usuariosMapGlobal[item.user_id] || { nome: 'Colecionador' };
@@ -734,8 +752,6 @@
         const nomeMatch = item.figurinha.nome.toLowerCase().includes(busca);
         const numMatch = String(item.figurinha.numero).toLowerCase().includes(busca);
         const albumMatch = (filtroAlbum === 'todos' || String(item.figurinha.album_id) === String(filtroAlbum));
-        
-        // Filtro por Moeda selecionada
         const moedaMatch = (filtroMoeda === 'todos' || (item.moeda && item.moeda.trim().toLowerCase() === filtroMoeda.toLowerCase()));
 
         return (nomeMatch || numMatch) && albumMatch && moedaMatch;
@@ -773,6 +789,7 @@
     }
 
     function filtrarAtivo() {
+      renderizarDestaques();
       renderizarMarketplace();
     }
 
