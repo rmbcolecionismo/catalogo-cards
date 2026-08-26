@@ -158,12 +158,12 @@
       </select>
     </div>
 
-    <!-- CABEÇALHO ATUALIZADO COM O PLANO E TROCAS ATIVAS À DIREITA -->
+    <!-- CABEÇALHO COM O PLANO E TROCAS ATIVAS FIXOS (SEM TRADUÇÃO AUTOMÁTICA) -->
     <div class="section-header-box">
       <div class="section-title" data-i18n="titulo_colecionadores">🔄 Colecionadores Próximos & Matches por Álbum</div>
       <div class="plan-badge-container">
-        <div id="badgePlanoContainer" class="plan-badge" data-i18n="carregando_plano">Plano: A carregar...</div>
-        <div id="avisoLimiteTrocas" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);" data-i18n="trocas_ativas_carregando">Trocas ativas: ... / ...</div>
+        <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+        <div id="avisoLimiteTrocas" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Trocas ativas: ... / ...</div>
       </div>
     </div>
 
@@ -225,7 +225,7 @@
   </footer>
 
   <script>
-    // DICIONÁRIO DE IDIOMAS DA PÁGINA
+    // DICIONÁRIO DE IDIOMAS DA PÁGINA (sem as chaves do plano/trocas ativas)
     const dicionarioIdiomas = {
       'pt-BR': {
         brand: '📦 RMB Colecionismo',
@@ -243,8 +243,6 @@
         filtro_dist_50: 'Até 50 km',
         filtro_dist_100: 'Até 100 km',
         titulo_colecionadores: '🔄 Colecionadores Próximos & Matches por Álbum',
-        carregando_plano: 'Plano: A carregar...',
-        trocas_ativas_carregando: 'Trocas ativas: ... / ...',
         carregando_matches: 'Carregando matches de troca...',
         titulo_minhas_propostas: '💬 Minhas Propostas de Troca Ativas',
         carregando_propostas: 'Carregando propostas...',
@@ -283,8 +281,6 @@
         filtro_dist_50: 'Até 50 km',
         filtro_dist_100: 'Até 100 km',
         titulo_colecionadores: '🔄 Colecionadores Próximos & Matches por Álbum',
-        carregando_plano: 'Plano: A carregar...',
-        trocas_ativas_carregando: 'Trocas ativas: ... / ...',
         carregando_matches: 'A carregar matches de troca...',
         titulo_minhas_propostas: '💬 Minhas Propostas de Troca Ativas',
         carregando_propostas: 'A carregar propostas...',
@@ -323,8 +319,6 @@
         filtro_dist_50: 'Up to 50 km',
         filtro_dist_100: 'Up to 100 km',
         titulo_colecionadores: '🔄 Nearby Collectors & Album Matches',
-        carregando_plano: 'Plan: Loading...',
-        trocas_ativas_carregando: 'Active trades: ... / ...',
         carregando_matches: 'Loading trade matches...',
         titulo_minhas_propostas: '💬 My Active Trade Proposals',
         carregando_propostas: 'Loading proposals...',
@@ -363,8 +357,6 @@
         filtro_dist_50: 'Fino a 50 km',
         filtro_dist_100: 'Fino a 100 km',
         titulo_colecionadores: '🔄 Collezionisti Nelle Vicinanze & Match',
-        carregando_plano: 'Piano: Caricamento...',
-        trocas_ativas_carregando: 'Scambi attivi: ... / ...',
         carregando_matches: 'Caricamento corrispondenze...',
         titulo_minhas_propostas: '💬 Le Mie Proposte Attive',
         carregando_propostas: 'Caricamento proposte...',
@@ -403,8 +395,6 @@
         filtro_dist_50: 'Hasta 50 km',
         filtro_dist_100: 'Hasta 100 km',
         titulo_colecionadores: '🔄 Coleccionistas Cercanos y Coincidencias',
-        carregando_plano: 'Plan: Cargando...',
-        trocas_ativas_carregando: 'Intercambios activos: ... / ...',
         carregando_matches: 'Cargando coincidencias...',
         titulo_minhas_propostas: '💬 Mis Propuestas Activas',
         carregando_propostas: 'Cargando propuestas...',
@@ -443,8 +433,6 @@
         filtro_dist_50: 'Jusqu\'à 50 km',
         filtro_dist_100: 'Jusqu\'à 100 km',
         titulo_colecionadores: '🔄 Collectionneurs Proches & Correspondances',
-        carregando_plano: 'Plan: Chargement...',
-        trocas_ativas_carregando: 'Échanges actifs: ... / ...',
         carregando_matches: 'Chargement des correspondances...',
         titulo_minhas_propostas: '💬 Mes Propositions Actives',
         carregando_propostas: 'Chargement des propositions...',
@@ -489,7 +477,7 @@
     }
 
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3orschungs2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioAtual = null;
@@ -561,7 +549,7 @@
       const qtdTrocasFeitasHoje = historicoDiario ? (historicoDiario.propostas_enviadas || 0) : 0;
       const avisoTrocasEl = document.getElementById('avisoLimiteTrocas');
 
-      // 4. Exibe no formato correto (Ex: 0 / 3, 0 / 10, 0 / 20)
+      // 4. Exibe no formato correto (Ex: 0 / 3, 0 / 10, 0 / 20) sem interferência de tradução
       if (limiteMaximoTrocas === -1) {
         avisoTrocasEl.innerText = `Trocas ativas: ${qtdTrocasFeitasHoje} / Ilimitado`;
       } else {
