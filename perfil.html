@@ -35,6 +35,9 @@
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
+    .user-profile-header { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
+
     .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 320px; background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
@@ -49,6 +52,26 @@
 
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
+    .sticker-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: var(--text-main); display: flex; flex-direction: column; transition: 0.3s; }
+    .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+    
+    .sticker-img-wrap { height: 190px; background: var(--bg); padding: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color); }
+    .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .card-row { font-size: 0.75rem; color: var(--text-muted); }
+    .card-row span { font-weight: 700; color: var(--text-main); }
+    
+    .sticker-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin: 2px 0; }
+    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
+    .sticker-qtd { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .sticker-qualidade { font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 4px; }
+
+    .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
+    .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
+    .btn-edit { background: #3b82f6; color: white; }
+    .btn-delete { background: #ef4444; color: white; }
+
     .edit-field { background: var(--bg); border: 1px solid var(--gold); color: var(--text-main); padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; font-size: 0.9rem; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-logout { background: #ef4444; color: white; }
@@ -57,11 +80,15 @@
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
     .reviews-section { margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+    .review-card { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); position: relative; }
+    .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
+
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-box { background: var(--modal-bg); border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 340px; }
 
-    .cardeneta-cta { background: linear-gradient(45deg, #f59e0b, #d97706); color: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+    .cardeneta-cta { background: linear-gradient(45deg, #f59e0b, #d97706); color: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; animation: pulse 2s infinite; }
     .cardeneta-cta p { font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
 
     .language-selector-flags {
       display: flex;
@@ -72,12 +99,24 @@
       padding: 3px 6px;
       border-radius: 8px;
     }
-    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; opacity: 0.6; }
+    .flag-option {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: 0.2s;
+      opacity: 0.6;
+    }
+    .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
   </style>
 </head>
 <body>
 
+<!-- Barra de Navegação Superior Integrada -->
 <div class="top-nav">
   <div class="nav-links">
     <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
@@ -87,11 +126,26 @@
     <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
     <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
   </div>
-  <div style="display: flex; align-items: center; gap: 8px;">
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
     <div class="language-selector-flags">
-      <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')">🇵🇹</button>
-      <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')">🇧🇷</button>
-      <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')">🇬🇧</button>
+      <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
+        <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
+      </button>
+      <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
+        <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
+      </button>
+      <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
+        <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
+      </button>
+      <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
+        <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
+      </button>
+      <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
+        <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
+      </button>
+      <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
+        <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
+      </button>
     </div>
     <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem; margin-top:0;">☀️ / 🌙</button>
   </div>
@@ -101,22 +155,51 @@
   <div class="profile-sidebar">
     <div style="text-align:center">
       <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="avatar-img">
+      <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
+      <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()" data-i18n="btn_change_photo">Trocar Foto</button>
     </div>
 
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
+      <!-- Alerta informando sobre o funcionamento do Marketplace e Mercado de Trocas caso o telefone ou código postal estejam vazios -->
       <div id="profileWarningAlert" class="profile-warning-alert">
-        ⚠️ Preencha o seu Telefone e Código Postal.
+        ⚠️ Para que o <strong>Marketplace</strong> e o <strong>Mercado de Trocas</strong> funcionem corretamente, preencha o seu <strong>Telefone (WhatsApp)</strong> e o <strong>Código Postal / CEP</strong>.
       </div>
       <div id="profileDetails" style="font-size: 0.9rem; color: var(--text-muted); margin: 15px 0;"></div>
+      <div id="mediaEstrelas" style="margin-bottom: 10px;"></div>
+      <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()" data-i18n="btn_edit_profile">Editar Perfil</button>
+    </div>
+
+    <div id="editMode" style="display:none; margin-top:20px;">
+      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_name">Nome:</label>
+      <input type="text" id="editNome" class="edit-field">
+      
+      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_postal">📍 Código Postal / CEP:</label>
+      <input type="text" id="editCodigoPostal" class="edit-field" placeholder="Ex: 2400-123 ou 01001-000">
+
+      <!-- Campo Telefone alimentando usuarios_cadastrados > telefone_whats -->
+      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_telefone">📱 Telefone (WhatsApp):</label>
+      <input type="text" id="editTelefoneWhats" class="edit-field" placeholder="Ex: +351 912345678 ou (11) 98765-4321">
+      
+      <button class="btn-gold" onclick="salvarPerfil()" data-i18n="btn_save">Salvar Alterações</button>
+      <button onclick="toggleEdit()" style="background:transparent; border:1px solid var(--border-color); color: var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
     </div>
 
     <div class="reviews-section">
-      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);" data-i18n="reviews_title">⭐ Avaliações</h4>
-      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; color: var(--text-muted);">Carregando avaliações...</div>
+      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);" data-i18n="reviews_title">⭐ Avaliações do Vendedor</h4>
+      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px; color: var(--text-muted);">Carregando avaliações...</div>
+      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()" data-i18n="btn_leave_review">Deixar Avaliação</button>
     </div>
 
+    <!-- Menu lateral simplificado (removidos Início, Gerenciar Vitrine e botões abaixo, pois estão no topo) -->
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid var(--border-color); padding-top:20px;">
+      <div class="cardeneta-cta">
+        <p data-i18n="cta_organize">✨ Quer organizar sua coleção?</p>
+        <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
+          <button style="background: white; color: #0f172a; border: none; font-weight: 800;" data-i18n="cta_button">Acessar Minha Cardeneta Agora</button>
+        </a>
+      </div>
+
       <div id="loggedMenu" style="display:none;">
         <button class="btn-logout" onclick="fazerLogout()" data-i18n="btn_logout">Sair do Sistema</button>
       </div>
@@ -133,10 +216,58 @@
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="" data-i18n="filter_all_albums">Filtrar por Álbum (Todos)</option>
       </select>
-      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código..." oninput="aplicarFiltros()">
+      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código..." oninput="aplicarFiltros()" data-i18n-placeholder="search_placeholder">
+    </div>
+
+    <div class="marketplace-alert" data-i18n="marketplace_alert">
+      ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.
     </div>
 
     <div class="cards-grid" id="vitrineGrid" style="color: var(--text-muted);">Carregando vitrine...</div>
+    <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
+      <button class="btn-gold" style="width: 200px;" onclick="carregarMais()" data-i18n="btn_load_more">Carregar Mais</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modais -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_edit_title">✏️ Editar Oferta</h3>
+    <input type="hidden" id="modalOfertaId">
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_price">Preço:</label>
+    <input type="number" step="0.01" id="modalPreco" class="edit-field">
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_stock">Estoque:</label>
+    <input type="number" id="modalEstoque" class="edit-field">
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_quality">Nota de Qualidade / Estado:</label>
+    <select id="modalQualidade" class="edit-field">
+      <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
+      <option value="Ótimo estado">👍 Ótimo estado</option>
+      <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
+      <option value="Com marcas de uso">📌 Com marcas de uso</option>
+    </select>
+    <button class="btn-gold" onclick="salvarEdicaoOferta()" data-i18n="btn_save">Salvar</button>
+    <button onclick="fecharModal()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalAvaliar">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_review_title">⭐ Avaliar Vendedor</h3>
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_your_name">Seu Nome:</label>
+    <input type="text" id="avaliacaoNome" class="edit-field">
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_stars">Nota (Estrelas):</label>
+    <select id="avaliacaoEstrelas" class="edit-field">
+      <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+      <option value="4">⭐⭐⭐⭐ (4/5)</option>
+      <option value="3">⭐⭐⭐ (3/5)</option>
+      <option value="2">⭐⭐ (2/5)</option>
+      <option value="1">⭐ (1/5)</option>
+    </select>
+    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_comment">Comentário:</label>
+    <textarea id="avaliacaoComentario" class="edit-field" rows="3"></textarea>
+    <button class="btn-gold" onclick="enviarAvaliacao()" data-i18n="btn_send">Enviar Avaliação</button>
+    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
   </div>
 </div>
 
@@ -148,8 +279,18 @@
   let usuarioLogado = null;
   let authUserId = null;
   let perfilAlvoUuid = null;
+  let perfilAlvoIdNumerico = null;
   let isAdminOrMaster = false;
+  let todasOfertas = [];
+  let figsMapGlobal = {};
+  let albunsMapGlobal = {};
+  let limiteExibicao = 30;
+
   let idiomaAtual = localStorage.getItem('user_lang') || 'pt-PT';
+  let moedaAtual = localStorage.getItem('user_currency') || 'EUR';
+
+  const taxasCambio = { EUR: 1.0, BRL: 5.50, USD: 1.08, GBP: 0.85 };
+  const simbolosMoeda = { EUR: '€', BRL: 'R$', USD: '$', GBP: '£' };
 
   const traducoes = {
     'pt-PT': {
@@ -160,11 +301,33 @@
       nav_perfil: "⚙️ Perfil",
       nav_admin: "🛡️ Painel Admin",
       nav_estoque: "📊 Estoque Master",
+      btn_change_photo: "Trocar Foto",
+      btn_edit_profile: "Editar Perfil",
+      label_name: "Nome:",
+      label_postal: "📍 Código Postal / CEP:",
+      label_telefone: "📱 Telefone (WhatsApp):",
+      btn_save: "Salvar Alterações",
+      btn_cancel: "Cancelar",
       reviews_title: "⭐ Avaliações do Vendedor",
+      btn_leave_review: "Deixar Avaliação",
+      cta_organize: "✨ Quer organizar sua coleção?",
+      cta_button: "Acessar Minha Cardeneta Agora",
       btn_logout: "Sair do Sistema",
       btn_login: "Entrar / Fazer Login",
       showcase_title: "🛍️ Vitrine do Vendedor",
-      filter_all_albums: "Filtrar por Álbum (Todos)"
+      filter_all_albums: "Filtrar por Álbum (Todos)",
+      search_placeholder: "Buscar por Nome ou Código...",
+      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.",
+      btn_load_more: "Carregar Mais",
+      modal_edit_title: "✏️ Editar Oferta",
+      label_price: "Preço:",
+      label_stock: "Estoque:",
+      label_quality: "Nota de Qualidade / Estado:",
+      modal_review_title: "⭐ Avaliar Vendedor",
+      label_your_name: "Seu Nome:",
+      label_stars: "Nota (Estrelas):",
+      label_comment: "Comentário:",
+      btn_send: "Enviar Avaliação"
     },
     'pt-BR': {
       title: "Perfil e Vitrine",
@@ -174,11 +337,141 @@
       nav_perfil: "⚙️ Perfil",
       nav_admin: "🛡️ Painel Admin",
       nav_estoque: "📊 Estoque Master",
+      btn_change_photo: "Trocar Foto",
+      btn_edit_profile: "Editar Perfil",
+      label_name: "Nome:",
+      label_postal: "📍 Código Postal / CEP:",
+      label_telefone: "📱 Telefone (WhatsApp):",
+      btn_save: "Salvar Alterações",
+      btn_cancel: "Cancelar",
       reviews_title: "⭐ Avaliações do Vendedor",
+      btn_leave_review: "Deixar Avaliação",
+      cta_organize: "✨ Quer organizar sua coleção?",
+      cta_button: "Acessar Minha Cardeneta Agora",
       btn_logout: "Sair do Sistema",
       btn_login: "Entrar / Fazer Login",
       showcase_title: "🛍️ Vitrine do Vendedor",
-      filter_all_albums: "Filtrar por Álbum (Todos)"
+      filter_all_albums: "Filtrar por Álbum (Todos)",
+      search_placeholder: "Buscar por Nome ou Código...",
+      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.",
+      btn_load_more: "Carregar Mais",
+      modal_edit_title: "✏️ Editar Oferta",
+      label_price: "Preço:",
+      label_stock: "Estoque:",
+      label_quality: "Nota de Qualidade / Estado:",
+      modal_review_title: "⭐ Avaliar Vendedor",
+      label_your_name: "Seu Nome:",
+      label_stars: "Nota (Estrelas):",
+      label_comment: "Comentário:",
+      btn_send: "Enviar Avaliação"
+    },
+    es: {
+      title: "Perfil y Vitrina",
+      nav_inicio: "🏠 Inicio",
+      nav_cadernetas: "📖 Álbumes",
+      nav_vitrine: "📦 Vitrina",
+      nav_perfil: "⚙️ Perfil",
+      nav_admin: "🛡️ Panel Admin",
+      nav_estoque: "📊 Stock",
+      btn_change_photo: "Cambiar Foto",
+      btn_edit_profile: "Editar Perfil",
+      label_name: "Nombre:",
+      label_postal: "📍 Código Postal:",
+      label_telefone: "📱 Teléfono (WhatsApp):",
+      btn_save: "Guardar Cambios",
+      btn_cancel: "Cancelar",
+      reviews_title: "⭐ Opiniones del Vendedor",
+      btn_leave_review: "Dejar Opinión",
+      cta_organize: "✨ ¿Quieres organizar tu colección?",
+      cta_button: "Acceder a mi Álbum Ahora",
+      btn_logout: "Cerrar Sesión",
+      btn_login: "Entrar / Iniciar Sesión",
+      showcase_title: "🛍️ Vitrina del Vendedor",
+      filter_all_albums: "Filtrar por Álbum (Todos)",
+      search_placeholder: "Buscar por Nombre o Código...",
+      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma actúa exclusivamente como escaparate de anuncios. Los artículos negociados son responsabilidad exclusiva de los usuarios.",
+      btn_load_more: "Cargar Más",
+      modal_edit_title: "✏️ Editar Oferta",
+      label_price: "Precio:",
+      label_stock: "Stock:",
+      label_quality: "Nota de Calidad / Estado:",
+      modal_review_title: "⭐ Calificar Vendedor",
+      label_your_name: "Tu Nombre:",
+      label_stars: "Calificación (Estrellas):",
+      label_comment: "Comentario:",
+      btn_send: "Enviar Opinión"
+    },
+    fr: {
+      title: "Profil et Vitrine",
+      nav_inicio: "🏠 Accueil",
+      nav_cadernetas: "📖 Albums",
+      nav_vitrine: "📦 Vitrine",
+      nav_perfil: "⚙️ Profil",
+      nav_admin: "🛡️ Panneau Admin",
+      nav_estoque: "📊 Stock",
+      btn_change_photo: "Changer la Photo",
+      btn_edit_profile: "Modifier le Profil",
+      label_name: "Nom:",
+      label_postal: "📍 Code Postal:",
+      label_telefone: "📱 Téléphone (WhatsApp):",
+      btn_save: "Enregistrer",
+      btn_cancel: "Annuler",
+      reviews_title: "⭐ Évaluations du Vendeur",
+      btn_leave_review: "Laisser un Avis",
+      cta_organize: "✨ Envie d'organiser votre collection?",
+      cta_button: "Accéder à mon Album Maintenant",
+      btn_logout: "Se Déconnecter",
+      btn_login: "Se Connecter",
+      showcase_title: "🛍️ Vitrine du Vendeur",
+      filter_all_albums: "Filtrer par Album (Tous)",
+      search_placeholder: "Rechercher par Nom ou Code...",
+      marketplace_alert: "⚠️ <strong>Avis Important:</strong> Cette plateforme sert exclusivement de vitrine d'annonces. Les articles négociés relèvent de la seule responsabilité des utilisateurs.",
+      btn_load_more: "Charger Plus",
+      modal_edit_title: "✏️ Modifier l'Offre",
+      label_price: "Prix:",
+      label_stock: "Stock:",
+      label_quality: "Qualité / État:",
+      modal_review_title: "⭐ Évaluer le Vendeur",
+      label_your_name: "Votre Nom:",
+      label_stars: "Note (Étoiles):",
+      label_comment: "Commentaire:",
+      btn_send: "Envoyer l'Avis"
+    },
+    it: {
+      title: "Profilo e Vetrina",
+      nav_inicio: "🏠 Inizio",
+      nav_cadernetas: "📖 Album",
+      nav_vitrine: "📦 Vetrina",
+      nav_perfil: "⚙️ Profilo",
+      nav_admin: "🛡️ Pannello Admin",
+      nav_estoque: "📊 Magazzino",
+      btn_change_photo: "Cambia Foto",
+      btn_edit_profile: "Modifica Profilo",
+      label_name: "Nome:",
+      label_postal: "📍 Codice Postale:",
+      label_telefone: "📱 Telefono (WhatsApp):",
+      btn_save: "Salva Modifiche",
+      btn_cancel: "Annulla",
+      reviews_title: "⭐ Recensioni del Venditore",
+      btn_leave_review: "Lascia una Recensione",
+      cta_organize: "✨ Vuoi organizzare la tua collezione?",
+      cta_button: "Accedi al mio Album Ora",
+      btn_logout: "Esci dal Sistema",
+      btn_login: "Accedi / Login",
+      showcase_title: "🛍️ Vetrina del Venditore",
+      filter_all_albums: "Filtra per Album (Tutti)",
+      search_placeholder: "Cerca per Nome o Codice...",
+      marketplace_alert: "⚠️ <strong>Avviso Importante:</strong> Questa piattaforma funge esclusivamente da vetrina per annunci. Gli articoli negoziati sono di esclusiva responsabilità degli utenti.",
+      btn_load_more: "Carica Altri",
+      modal_edit_title: "✏️ Modifica Offerta",
+      label_price: "Prezzo:",
+      label_stock: "Magazzino:",
+      label_quality: "Qualità / Condizione:",
+      modal_review_title: "⭐ Valuta Venditore",
+      label_your_name: "Il tuo Nome:",
+      label_stars: "Valutazione (Stelle):",
+      label_comment: "Commento:",
+      btn_send: "Invia Recensione"
     },
     en: {
       title: "Profile & Showcase",
@@ -188,11 +481,33 @@
       nav_perfil: "⚙️ Profile",
       nav_admin: "🛡️ Admin Panel",
       nav_estoque: "📊 Stock",
+      btn_change_photo: "Change Photo",
+      btn_edit_profile: "Edit Profile",
+      label_name: "Name:",
+      label_postal: "📍 Postal Code / ZIP:",
+      label_telefone: "📱 Phone (WhatsApp):",
+      btn_save: "Save Changes",
+      btn_cancel: "Cancel",
       reviews_title: "⭐ Seller Reviews",
+      btn_leave_review: "Leave a Review",
+      cta_organize: "✨ Want to organize your collection?",
+      cta_button: "Access My Collection Now",
       btn_logout: "Log Out",
       btn_login: "Log In",
       showcase_title: "🛍️ Seller Showcase",
-      filter_all_albums: "Filter by Album (All)"
+      filter_all_albums: "Filter by Album (All)",
+      search_placeholder: "Search by Name or Code...",
+      marketplace_alert: "⚠️ <strong>Important Notice:</strong> This platform acts exclusively as an ad showcase. Negotiated items are the sole responsibility of the users.",
+      btn_load_more: "Load More",
+      modal_edit_title: "✏️ Edit Offer",
+      label_price: "Price:",
+      label_stock: "Stock:",
+      label_quality: "Quality / Condition:",
+      modal_review_title: "⭐ Rate Seller",
+      label_your_name: "Your Name:",
+      label_stars: "Rating (Stars):",
+      label_comment: "Comment:",
+      btn_send: "Send Review"
     }
   };
 
@@ -200,6 +515,17 @@
     idiomaAtual = lang;
     localStorage.setItem('user_lang', lang);
     aplicarTraducaoInterface();
+    atualizarBotoesBandeiras();
+  }
+
+  function atualizarBotoesBandeiras() {
+    document.querySelectorAll('.flag-option').forEach(btn => {
+      if (btn.getAttribute('data-lang') === idiomaAtual) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
   }
 
   function aplicarTraducaoInterface() {
@@ -208,6 +534,11 @@
       const chave = el.getAttribute('data-i18n');
       if (t[chave]) el.innerHTML = t[chave];
     });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const chave = el.getAttribute('data-i18n-placeholder');
+      if (t[chave]) el.placeholder = t[chave];
+    });
+    atualizarBotoesBandeiras();
   }
 
   function alternarTema() {
@@ -230,7 +561,6 @@
     aplicarTraducaoInterface();
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
-    
     const { data: { session } } = await _supabase.auth.getSession();
     let perfilAlvo = null;
 
@@ -242,6 +572,9 @@
         isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
       }
       document.getElementById('loggedMenu').style.display = 'block';
+      document.getElementById('linkCardeneta').style.display = 'inline-block';
+      document.getElementById('linkVitrine').style.display = 'inline-block';
+      document.getElementById('linkPerfil').style.display = 'inline-block';
     } else {
       document.getElementById('unloggedMenu').style.display = 'block';
     }
@@ -255,23 +588,300 @@
 
     if (perfilAlvo && perfilAlvo.id) {
       perfilAlvoUuid = perfilAlvo.id;
-      document.getElementById('userName').innerText = perfilAlvo.nome || "Usuário";
-      if(perfilAlvo.foto_url) document.getElementById('userAvatar').src = perfilAlvo.foto_url;
-      
-      if (typeof carregarVitrine === 'function') carregarVitrine(perfilAlvoUuid);
-      if (typeof carregarAvaliacoes === 'function') carregarAvaliacoes(perfilAlvoUuid);
+      perfilAlvoIdNumerico = perfilAlvo.id;
+      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
+      preencherDadosPerfil(perfilAlvo, ehProprio);
+      carregarVitrine(perfilAlvoUuid);
+      carregarAvaliacoes(perfilAlvoUuid);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
       document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor.";
+      return;
     }
-
     if (isAdminOrMaster) {
       document.getElementById('linkAdmin').style.display = 'inline-block';
       document.getElementById('linkEstoque').style.display = 'inline-block';
     }
   }
 
-  window.addEventListener('DOMContentLoaded', verificarAcesso);
+  function preencherDadosPerfil(perfil, ehProprio) {
+    document.getElementById('userName').innerText = perfil.nome || "Usuário";
+    document.getElementById('userAvatar').src = perfil.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+    document.getElementById('profileDetails').innerHTML = `<p>📍 <strong>${perfil.cidade || 'Localidade não informada'}</strong></p>`;
+
+    // Verifica se telefone_whats e codigo_postal estão vazios para exibir o alerta
+    const alertaWarning = document.getElementById('profileWarningAlert');
+    if (!perfil.telefone_whats || !perfil.codigo_postal) {
+      alertaWarning.style.display = 'block';
+    } else {
+      alertaWarning.style.display = 'none';
+    }
+
+    const identificadorCardeneta = perfil.id;
+    if (identificadorCardeneta) {
+      document.getElementById('linkCardenetaColega').href = `cardeneta.html?id=${identificadorCardeneta}`;
+    }
+    document.getElementById('editNome').value = perfil.nome || '';
+    document.getElementById('editCodigoPostal').value = perfil.codigo_postal || '';
+    document.getElementById('editTelefoneWhats').value = perfil.telefone_whats || '';
+    
+    if (ehProprio || isAdminOrMaster) {
+      document.getElementById('btnTrocarFoto').style.display = 'block';
+      document.getElementById('btnEditarPerfil').style.display = 'block';
+    }
+  }
+
+  async function buscarDadosPorCodigoPostal(codigoPostal) {
+    try {
+      const limpo = codigoPostal.replace(/\D/g, '');
+      if (limpo.length === 8) {
+        const respostaCep = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+        const dadosCep = await respostaCep.json();
+        if (!dadosCep.erro && dadosCep.localidade) {
+          const municipio = dadosCep.localidade;
+          const coords = await buscarCoordenadasPorEndereco(municipio);
+          return { cidadeFormatada: `${municipio} - Brasil`, lat: coords ? coords.lat : null, lon: coords ? coords.lon : null };
+        }
+      }
+      let resposta = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(codigoPostal)}&country=Portugal&format=json&addressdetails=1&limit=1`, {
+        headers: { 'Accept-Language': 'pt-PT,pt;q=0.9' }
+      });
+      let dados = await resposta.json();
+      if (dados && dados.length > 0) {
+        const endereco = dados[0].address || {};
+        let localidade = endereco.city || endereco.town || endereco.municipality || endereco.county;
+        const pais = endereco.country || 'Portugal';
+        if (localidade) {
+          return { cidadeFormatada: `${localidade} - ${pais}`, lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
+        }
+      }
+    } catch (err) {}
+    return null;
+  }
+
+  async function buscarCoordenadasPorEndereco(termo) {
+    try {
+      const resposta = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(termo)}&format=json&limit=1`);
+      const dados = await resposta.json();
+      if (dados && dados.length > 0) return { lat: parseFloat(dados[0].lat), lon: parseFloat(dados[0].lon) };
+    } catch(e) {}
+    return null;
+  }
+
+  async function salvarPerfil() {
+    if (!usuarioLogado) return alert("Você precisa estar logado.");
+    const codigoPostal = document.getElementById('editCodigoPostal').value.trim();
+    const telefoneWhats = document.getElementById('editTelefoneWhats').value.trim();
+    let cidadeFormatada = usuarioLogado.cidade || '';
+    let latitude = usuarioLogado.latitude;
+    let longitude = usuarioLogado.longitude;
+
+    if (codigoPostal) {
+      const infoLocal = await buscarDadosPorCodigoPostal(codigoPostal);
+      if (infoLocal && infoLocal.cidadeFormatada) {
+        cidadeFormatada = infoLocal.cidadeFormatada;
+        if (infoLocal.lat) latitude = infoLocal.lat;
+        if (infoLocal.lon) longitude = infoLocal.lon;
+      } else {
+        alert("Localidade não encontrada para o código postal informado.");
+        return;
+      }
+    }
+
+    const updates = {
+      nome: document.getElementById('editNome').value,
+      cidade: cidadeFormatada,
+      codigo_postal: codigoPostal,
+      telefone_whats: telefoneWhats,
+      latitude: latitude,
+      longitude: longitude
+    };
+
+    const { error } = await _supabase.from('usuarios_cadastrados').update(updates).eq('id', usuarioLogado.id);
+    if (error) alert("Erro: " + error.message);
+    else { alert("Perfil atualizado!"); location.reload(); }
+  }
+
+  function toggleEdit() {
+    const view = document.getElementById('viewMode');
+    const edit = document.getElementById('editMode');
+    view.style.display = (view.style.display === 'none') ? 'block' : 'none';
+    edit.style.display = (edit.style.display === 'none') ? 'block' : 'none';
+  }
+
+  async function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file || !usuarioLogado) return;
+    const fileName = `${usuarioLogado.id}_${Date.now()}.jpg`;
+    const { error } = await _supabase.storage.from('avatars').upload(fileName, file);
+    if (error) return alert("Erro no upload: " + error.message);
+    const { data: { publicUrl } } = _supabase.storage.from('avatars').getPublicUrl(fileName);
+    await _supabase.from('usuarios_cadastrados').update({ avatar: publicUrl }).eq('id', usuarioLogado.id);
+    location.reload();
+  }
+
+  async function carregarVitrine(uuidVal) {
+    const grid = document.getElementById('vitrineGrid');
+    const { data: ofertas, error } = await _supabase.from('vitrine_ofertas').select('*').eq('user_id', uuidVal);
+    if (error) { grid.innerHTML = `Erro: ${error.message}`; return; }
+    if (!ofertas || ofertas.length === 0) { grid.innerHTML = "Vitrine vazia."; return; }
+    todasOfertas = ofertas;
+    const figIds = ofertas.map(o => o.figurinha_id || o.id_figurinha);
+    const { data: figs } = await _supabase.from('figurinhas').select('*').in('id', figIds);
+    figsMapGlobal = figs ? Object.fromEntries(figs.map(f => [f.id, f])) : {};
+    const albumIds = [...new Set(Object.values(figsMapGlobal).map(f => f.album_id).filter(Boolean))];
+    if (albumIds.length > 0) {
+      const { data: albuns } = await _supabase.from('albuns').select('*').in('id', albumIds);
+      if (albuns) {
+        albunsMapGlobal = Object.fromEntries(albuns.map(a => [a.id, a.nome]));
+        const selectAlbum = document.getElementById('filtroAlbum');
+        selectAlbum.innerHTML = '<option value="">Filtrar por Álbum (Todos)</option>' + albuns.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      }
+    }
+    renderizarGridFiltrado();
+  }
+
+  function aplicarFiltros() { limiteExibicao = 30; renderizarGridFiltrado(); }
+  function carregarMais() { limiteExibicao += 30; renderizarGridFiltrado(); }
+
+  function renderizarGridFiltrado() {
+    const grid = document.getElementById('vitrineGrid');
+    const filtroAlbumVal = document.getElementById('filtroAlbum').value;
+    const filtroBuscaVal = document.getElementById('filtroBusca').value.trim().toLowerCase().replace('#', '');
+    let filtradas = todasOfertas.filter(item => {
+      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
+      if (filtroAlbumVal && String(f.album_id) !== String(filtroAlbumVal)) return false;
+      if (filtroBuscaVal) {
+        const nomeFig = (f.nome || '').toLowerCase();
+        const numFig = String(f.numero || '').toLowerCase().replace('#', '');
+        if (!nomeFig.includes(filtroBuscaVal) && !numFig.includes(filtroBuscaVal)) return false;
+      }
+      return true;
+    });
+
+    if (filtradas.length === 0) {
+      grid.innerHTML = "Nenhuma figurinha encontrada.";
+      document.getElementById('carregarMaisContainer').style.display = 'none';
+      return;
+    }
+
+    const visiveis = filtradas.slice(0, limiteExibicao);
+    document.getElementById('carregarMaisContainer').style.display = (filtradas.length > limiteExibicao) ? 'block' : 'none';
+    
+    const taxa = taxasCambio[moedaAtual] || 1.0;
+    const simbolo = simbolosMoeda[moedaAtual] || '€';
+
+    grid.innerHTML = visiveis.map(item => {
+      const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
+      const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
+      const selecaoEscuderia = f.selecao_escuderia || f.selecao || f.escuderia || '-';
+      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || String(item.user_id) === String(usuarioLogado.id) || isAdminOrMaster);
+      const qualid = item.qualidade || '100% (Nova / Perfeita)';
+      
+      const precoConvertido = (Number(item.preco) * taxa).toFixed(2).replace('.', ',');
+      const precoHtml = `<div class="sticker-price">${simbolo} ${precoConvertido}</div>`;
+      
+      return `
+        <div class="sticker-card">
+          <div class="sticker-img-wrap"><img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}"></div>
+          <div class="sticker-info">
+            <div class="card-row">Álbum: <span>${nomeAlbum}</span></div>
+            <div class="card-row">Número: <span>${f.numero || '-'}</span></div>
+            <div class="sticker-title">${f.nome || 'Sem Nome'}</div>
+            <div class="card-row">Seleção: <span>${selecaoEscuderia}</span></div>
+            <div class="sticker-qualidade">📌 ${qualid}</div>
+            <div class="sticker-qtd" style="margin-top: 4px;">Estoque: ${item.estoque || 0}</div>
+            ${precoHtml}
+            ${podeGerenciar ? `
+              <div class="card-actions">
+                <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque}, '${qualid}')">Editar</button>
+                <button class="btn-card-action btn-delete" onclick="excluirOfertaVitrine('${item.id}')">Excluir</button>
+              </div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function abrirModalEdicao(id, preco, estoq, qualidadeAtual) {
+    document.getElementById('modalOfertaId').value = id;
+    document.getElementById('modalPreco').value = preco;
+    document.getElementById('modalEstoque').value = estoq;
+    document.getElementById('modalQualidade').value = qualidadeAtual;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function fecharModal() { document.getElementById('editModal').style.display = 'none'; }
+
+  async function salvarEdicaoOferta() {
+    const ofertaId = document.getElementById('modalOfertaId').value;
+    const novoPreco = document.getElementById('modalPreco').value;
+    const novoEstoque = document.getElementById('modalEstoque').value;
+    const novaQualidade = document.getElementById('modalQualidade').value;
+    if (!ofertaId) return alert("Erro: ID vazio!");
+    const { error } = await _supabase.from('vitrine_ofertas').update({ preco: parseFloat(novoPreco) || 0, estoque: parseInt(novoEstoque) || 0, qualidade: novaQualidade }).eq('id', ofertaId);
+    if (error) alert("Erro ao atualizar: " + error.message);
+    else location.reload();
+  }
+
+  async function excluirOfertaVitrine(id) {
+    if (!confirm("Tem certeza que deseja excluir esta oferta?")) return;
+    const { error } = await _supabase.from('vitrine_ofertas').delete().eq('id', id);
+    if (error) alert("Erro: " + error.message);
+    else location.reload();
+  }
+
+  async function carregarAvaliacoes(vendedorUuid) {
+    const container = document.getElementById('listaAvaliacoes');
+    const { data: avaliacoes, error } = await _supabase.from('avaliacoes_vendedores').select('*').eq('vendedor_id', vendedorUuid).order('created_at', { ascending: false });
+    if (error) { container.innerHTML = "Erro ao carregar avaliações."; return; }
+    if (!avaliacoes || avaliacoes.length === 0) {
+      container.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Nenhuma avaliação ainda.</p>";
+      document.getElementById('mediaEstrelas').innerHTML = "";
+      return;
+    }
+    let soma = avaliacoes.reduce((acc, curr) => acc + curr.estrelas, 0);
+    let media = (soma / avaliacoes.length).toFixed(1);
+    document.getElementById('mediaEstrelas').innerHTML = `<div class="stars-display">${'⭐'.repeat(Math.round(media))}</div><span style="font-size:0.8rem; color:var(--text-muted);">Média ${media}</span>`;
+    container.innerHTML = avaliacoes.map(av => `
+      <div class="review-card" id="review-card-${av.id}">
+        ${isAdminOrMaster ? `<button onclick="excluirAvaliacao('${av.id}')" style="position:absolute; right:5px; top:5px; background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer;">X</button>` : ''}
+        <div style="display:flex; justify-content:space-between; margin-bottom: 3px; padding-right: 15px;">
+          <strong style="color:var(--text-main);">${av.visitante_nome}</strong>
+          <span style="color:var(--gold); font-size: 0.7rem;">${'⭐'.repeat(av.estrelas)}</span>
+        </div>
+        <p style="color:var(--text-muted); font-size: 0.75rem;">${av.comentario || ''}</p>
+      </div>
+    `).join('');
+  }
+
+  async function excluirAvaliacao(id) {
+    if (!confirm("Tem certeza que deseja apagar?")) return;
+    const { error } = await _supabase.from('avaliacoes_vendedores').delete().eq('id', id);
+    if (error) alert("Erro: " + error.message);
+    else {
+      document.getElementById(`review-card-${id}`)?.remove();
+      carregarAvaliacoes(perfilAlvoUuid);
+    }
+  }
+
+  function abrirModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'flex'; }
+  function fecharModalAvaliacao() { document.getElementById('modalAvaliar').style.display = 'none'; }
+
+  async function enviarAvaliacao() {
+    const nome = document.getElementById('avaliacaoNome').value.trim();
+    const estrelas = parseInt(document.getElementById('avaliacaoEstrelas').value);
+    const comentario = document.getElementById('avaliacaoComentario').value.trim();
+    if (!nome) return alert("Digite seu nome.");
+    const { error } = await _supabase.from('avaliacoes_vendedores').insert([{ vendedor_id: perfilAlvoUuid, visitante_nome: nome, estrelas: estrelas, comentario: comentario }]);
+    if (error) alert("Erro: " + error.message);
+    else { alert("Enviado!"); fecharModalAvaliacao(); carregarAvaliacoes(perfilAlvoUuid); }
+  }
+
+  async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
+
+  verificarAcesso();
 </script>
 </body>
 </html>
+
