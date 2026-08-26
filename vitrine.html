@@ -52,7 +52,6 @@
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; width: 100%; }
     .filter-field:focus { border-color: var(--gold); }
 
-    /* Exatamente 5 cards por linha usando grid layout */
     .cards-grid { 
       display: grid; 
       grid-template-columns: repeat(5, minmax(0, 1fr)); 
@@ -178,12 +177,11 @@
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <script[cite: 8]>
+  <script>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    // Configurado exatamente para 30 itens por página (5 cards por linha * 6 linhas)
     const ITENS_POR_PAGINA = 30;
 
     let authUserId = null;
@@ -321,7 +319,6 @@
           
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
             const numeroInt = parseInt(termoLimpo, 10);
-            // Permite buscar pelo número exato (ex: 1, 01, 001) ou por texto em nome, seleção, escuderia ou tipo
             query = query.or(`numero.eq.${numeroInt},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
           } else {
             query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
