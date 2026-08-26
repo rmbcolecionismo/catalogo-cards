@@ -49,8 +49,10 @@
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    .header-painel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .header-painel { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     .header-painel h2 { font-size: 1.6rem; color: var(--gold); font-weight: 700; letter-spacing: -0.5px; }
+
+    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
 
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
     .album-criado-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -186,7 +188,13 @@
     <!-- TELA 1 -->
     <div id="viewMeusAlbuns">
       <div class="header-painel">
-        <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
+        <div>
+          <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+          <div id="avisoLimiteCardeneta" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
+        </div>
         <button class="btn-gold" onclick="abrirModalCriar()" data-i18n="btn_add_cardeneta">+ Adicionar Nova Caderneta</button>
       </div>
       <div id="gridMeusAlbuns" class="albuns-usuario-grid">
@@ -287,7 +295,7 @@
         btn_excluir_album: "🗑️ Excluir este Álbum",
         sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
         stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
-        filtro_todas_cat: "📂 Todas as Categorias / Tipos",
+        filtro_todas_cat: "📂 Toutes les Catégories",
         filtro_mostrar_todas: "👁️ Mostrar Todas",
         filtro_mostrar_faltam: "❌ Mostrar Apenas o que Faltam",
         filtro_mostrar_possui: "✅ Mostrar Apenas o que Possui",
@@ -511,6 +519,42 @@
         <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
+      // --- ATUALIZAÇÃO DO PLANO E CONTADOR NO CABEÇALHO ---
+      const planoUsuario = (dadosPerfilUsuario.plano || 'gratis').toLowerCase().trim();
+      document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
+
+      const { data: configPlano } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_cadernetas')
+        .ilike('plano', planoUsuario)
+        .maybeSingle();
+
+      const limiteMaximo = configPlano ? configPlano.limite_cadernetas : 1;
+
+      const { count: totalCadernetas } = await _supabase
+        .from('usuario_albuns')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', usuarioAtual.id);
+
+      const qtdAtivas = totalCadernetas || 0;
+      const avisoEl = document.getElementById('avisoLimiteCardeneta');
+
+      if (avisoEl) {
+        if (limiteMaximo !== -1 && qtdAtivas >= limiteMaximo) {
+          avisoEl.style.display = 'block';
+          avisoEl.innerHTML = `⚠️ Limite atingido (${qtdAtivas}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mudar plano</a>`;
+        } else if (limiteMaximo !== -1) {
+          avisoEl.style.display = 'block';
+          avisoEl.style.color = 'var(--text-muted)';
+          avisoEl.innerText = `Cadernetas ativas: ${qtdAtivas} / ${limiteMaximo}`;
+        } else {
+          avisoEl.style.display = 'block';
+          avisoEl.style.color = 'var(--gold)';
+          avisoEl.innerText = `Cadernetas ativas: ${qtdAtivas} (Ilimitado)`;
+        }
+      }
+      // ----------------------------------------------------
+
       await carregarMinhasCadernetas();
     }
 
@@ -577,7 +621,6 @@
       
       if (!albumBaseId) return alert("Selecione um álbum.");
 
-      // --- LOGICA DO SISTEMA DE PLANOS (IDÊNTICA À DO VITRINE) ---
       const { data: dadosUsuario } = await _supabase
         .from('usuarios_cadastrados')
         .select('plano')
@@ -616,12 +659,11 @@
 
       const totalCadernetasAtuais = count || 0;
 
-      if (totalCadernetasAtuais >= limitePermitido) {
+      if (limitePermitido !== -1 && totalCadernetasAtuais >= limitePermitido) {
         alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso Plano Premium ou Anual para desbloquear álbuns ilimitados!`);
         window.location.href = "plano.html";
         return;
       }
-      // -----------------------------------------------------------
 
       const { error } = await _supabase.from('usuario_albuns').insert([{
         user_id: usuarioAtual.id,
@@ -636,6 +678,8 @@
 
       fecharModalCriar();
       await carregarMinhasCadernetas();
+      // Recarrega a página para atualizar o contador no topo se necessário
+      location.reload();
     }
 
     async function excluirAlbumAtual() {
@@ -657,6 +701,7 @@
       alert("Álbum excluído com sucesso!");
       voltarParaLista();
       await carregarMinhasCadernetas();
+      location.reload();
     }
 
     async function abrirCaderneta(usuarioAlbumId) {
