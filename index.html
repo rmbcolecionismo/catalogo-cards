@@ -253,7 +253,7 @@
       <a href="ajudar.html" class="btn-outline" style="border-color: var(--gold); color: var(--gold);" data-i18n="collab_btn">Contribuir com Fotos</a>
     </div>
 
-    <!-- CONTROLES E FILTROS ATUALIZADOS -->
+    <!-- CONTROLES E FILTROS -->
     <div class="controls-bar">
       <input type="text" id="inputBusca" class="filter-field" placeholder="🔍 Pesquisar por nome ou número..." oninput="filtrarAtivo()" data-i18n-placeholder="busca_placeholder">
       
@@ -261,13 +261,9 @@
         <option value="todos" data-i18n="filtro_todos_albuns">📖 Todos os Álbuns</option>
       </select>
 
-      <!-- Novo Filtro por País/Região -->
-      <select id="selectFiltroPais" class="filter-field" onchange="filtrarAtivo()">
-        <option value="todos" data-i18n="filtro_todos_paises">🌍 Todos os Países</option>
-        <option value="Brasil">🇧🇷 Brasil</option>
-        <option value="Portugal">🇵🇹 Portugal</option>
-        <option value="Espanha">🇪🇸 Espanha</option>
-        <option value="França">🇫🇷 França</option>
+      <!-- Filtro por Moeda Atualizado -->
+      <select id="selectFiltroMoeda" class="filter-field" onchange="filtrarAtivo()">
+        <option value="todos" data-i18n="filtro_todas_moedas">💱 Todas as Moedas</option>
       </select>
     </div>
 
@@ -357,7 +353,7 @@
         collab_btn: "Contribuir com Fotos",
         busca_placeholder: "🔍 Pesquisar por nome ou número...",
         filtro_todos_albuns: "📖 Todos os Álbuns",
-        filtro_todos_paises: "🌍 Todos os Países",
+        filtro_todas_moedas: "💱 Todas as Moedas",
         sec_vendas_titulo: "📦 Figurinhas à Venda",
         msg_carregando_ofertas: "Carregando ofertas do marketplace...",
         footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
@@ -383,7 +379,7 @@
         collab_btn: "Contribuir com Fotos",
         busca_placeholder: "🔍 Pesquisar por nome ou número...",
         filtro_todos_albuns: "📖 Todos os Álbuns",
-        filtro_todos_paises: "🌍 Todos os Países",
+        filtro_todas_moedas: "💱 Todas as Moedas",
         sec_vendas_titulo: "📦 Figurinhas à Venda",
         msg_carregando_ofertas: "Carregando ofertas do marketplace...",
         footer_ajudar: "📸 Ajudar o Catálogo", footer_contato: "✉️ Fale Conosco",
@@ -409,7 +405,7 @@
         collab_btn: "Contribute Photos",
         busca_placeholder: "🔍 Search by name or number...",
         filtro_todos_albuns: "📖 All Albums",
-        filtro_todos_paises: "🌍 All Countries",
+        filtro_todas_moedas: "💱 All Currencies",
         sec_vendas_titulo: "📦 Stickers for Sale",
         msg_carregando_ofertas: "Loading marketplace offers...",
         footer_ajudar: "📸 Help Catalog", footer_contato: "✉️ Contact Us",
@@ -435,7 +431,7 @@
         collab_btn: "Contribuisci con Foto",
         busca_placeholder: "🔍 Cerca per nome o numero...",
         filtro_todos_albuns: "📖 Tutti gli Album",
-        filtro_todos_paises: "🌍 Tutti i Paesi",
+        filtro_todas_moedas: "💱 Tutte le Valute",
         sec_vendas_titulo: "📦 Figurine in Vendita",
         msg_carregando_ofertas: "Caricamento offerte marketplace...",
         footer_ajudar: "📸 Aiuta Catalogo", footer_contato: "✉️ Contattaci",
@@ -461,7 +457,7 @@
         collab_btn: "Contribuir con Fotos",
         busca_placeholder: "🔍 Buscar por nombre o número...",
         filtro_todos_albuns: "📖 Todos los Álbumes",
-        filtro_todos_paises: "🌍 Todos los Países",
+        filtro_todas_moedas: "💱 Todas las Monedas",
         sec_vendas_titulo: "📦 Figuritas a la Venta",
         msg_carregando_ofertas: "Cargando ofertas del marketplace...",
         footer_ajudar: "📸 Ayudar al Catalogo", footer_contato: "✉️ Contáctanos",
@@ -487,7 +483,7 @@
         collab_btn: "Contribuer avec des Photos",
         busca_placeholder: "🔍 Rechercher par nom ou numéro...",
         filtro_todos_albuns: "📖 Tous les Albums",
-        filtro_todos_paises: "🌍 Tous les Pays",
+        filtro_todas_moedas: "💱 Toutes les Devises",
         sec_vendas_titulo: "📦 Stickers à Vendre",
         msg_carregando_ofertas: "Chargement des offres du marketplace...",
         footer_ajudar: "📸 Aide au Catalogue", footer_contato: "✉️ Contactez-nous",
@@ -638,13 +634,11 @@
         }
       }
 
-      // Trazemos também a localidade/pais/cidade do usuário, caso exista na tabela
-      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome, localidade, pais');
+      const { data: usuariosData } = await _supabase.from('usuarios_cadastrados').select('id, nome');
       if (usuariosData) {
         usuariosMapGlobal = Object.fromEntries(usuariosData.map(u => [u.id, u]));
       }
 
-      // Incluída a coluna 'moeda' na query
       const { data: dataMarket, error: errorMarket } = await _supabase
         .from('vitrine_ofertas')
         .select(`id, preco, moeda, user_id, qualidade, figurinha_id, figurinha:figurinha_id ( id, numero, nome, imagem, album_id, albuns ( id, nome ) )`)
@@ -653,20 +647,38 @@
       if (errorMarket) console.error("Erro ao carregar marketplace:", errorMarket.message);
       itensMarketplaceGlobal = dataMarket || [];
 
+      // Popula dinamicamente o seletor de Moedas com base nas ofertas cadastradas
+      popularFiltroMoedas();
+
       renderizarMarketplace();
       renderizarDestaques();
     }
 
-    // Função para tratar o formato do preço e moeda (Preço antes na Europa ex: 10€, ou símbolo R$ antes no Brasil ex: R$ 10)
+    function popularFiltroMoedas() {
+      const selectMoeda = document.getElementById('selectFiltroMoeda');
+      if (!selectMoeda) return;
+
+      const moedasSet = new Set();
+      itensMarketplaceGlobal.forEach(item => {
+        if (item.moeda) {
+          moedasSet.add(item.moeda.trim());
+        }
+      });
+
+      let opts = `<option value="todos" data-i18n="filtro_todas_moedas">💱 Todas as Moedas</option>`;
+      moedasSet.forEach(moeda => {
+        opts += `<option value="${moeda}">${moeda}</option>`;
+      });
+      selectMoeda.innerHTML = opts;
+    }
+
     function formatarPreco(valor, moeda) {
       const num = Number(valor || 0).toFixed(2);
       const m = (moeda || '€').trim();
       
-      // Se for Real brasileiro, formato R$ X.XX
       if (m.toUpperCase() === 'R$' || m.toLowerCase() === 'brl') {
         return `R$ ${num}`;
       }
-      // Padrão europeu ou outros símbolos (ex: 10.00 €, 10.00 CHF, etc.)
       return `${num} ${m}`;
     }
 
@@ -714,7 +726,7 @@
       const grid = document.getElementById('marketplaceGrid');
       const busca = document.getElementById('inputBusca').value.toLowerCase();
       const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
-      const filtroPais = document.getElementById('selectFiltroPais').value;
+      const filtroMoeda = document.getElementById('selectFiltroMoeda').value;
 
       const filtrados = itensMarketplaceGlobal.filter(item => {
         if (!item.figurinha) return false;
@@ -723,15 +735,10 @@
         const numMatch = String(item.figurinha.numero).toLowerCase().includes(busca);
         const albumMatch = (filtroAlbum === 'todos' || String(item.figurinha.album_id) === String(filtroAlbum));
         
-        // Filtro de País/Localidade baseado no perfil do vendedor
-        const vendedor = usuariosMapGlobal[item.user_id] || {};
-        let paisMatch = true;
-        if (filtroPais !== 'todos') {
-          const locString = `${vendedor.pais || ''} ${vendedor.localidade || ''}`.toLowerCase();
-          paisMatch = locString.includes(filtroPais.toLowerCase());
-        }
+        // Filtro por Moeda selecionada
+        const moedaMatch = (filtroMoeda === 'todos' || (item.moeda && item.moeda.trim().toLowerCase() === filtroMoeda.toLowerCase()));
 
-        return (nomeMatch || numMatch) && albumMatch && paisMatch;
+        return (nomeMatch || numMatch) && albumMatch && moedaMatch;
       });
 
       if (filtrados.length === 0) {
