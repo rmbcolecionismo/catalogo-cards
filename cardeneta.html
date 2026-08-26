@@ -43,98 +43,17 @@
     
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
 
-    .hero-banner { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, var(--bg-card) 100%); border: 2px solid var(--gold); border-radius: 16px; padding: 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    .hero-content { flex: 1; min-width: 280px; }
-    .hero-content h1 { font-size: 1.8rem; color: var(--gold); margin-bottom: 8px; font-weight: 800; }
-    .hero-content p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; }
-    .hero-features { display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.8rem; color: #34d399; font-weight: 600; }
-    
-    .hero-action { display: flex; flex-direction: column; gap: 10px; min-width: 220px; }
     .btn-gold { background: var(--gold); color: #0f172a; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: 0.2s; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
     .btn-gold:hover { opacity: 0.9; transform: translateY(-2px); }
 
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    .collab-card { background: var(--bg-card); border: 1px dashed var(--gold); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
-    .collab-text p { color: var(--text-muted); font-size: 0.85rem; }
-
-    .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
-    .filter-field:focus { border-color: var(--gold); }
-
-    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
-    .market-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    .market-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-    
-    .market-img-wrap { height: 160px; background: var(--bg); padding: 10px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); }
-    .market-img { width: 100%; height: 100%; object-fit: contain; }
-    
-    .market-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .market-num { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
-    .market-name { font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .market-preco { font-size: 0.95rem; font-weight: 800; color: #34d399; margin-top: 4px; }
-    .market-vendedor { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-
-    .market-footer { padding: 10px; background: var(--bg); border-top: 1px solid var(--border-color); text-align: center; }
-    .btn-acao { background: #34d399; color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
-    .btn-acao:hover { opacity: 0.9; }
-    .btn-perfil { background: var(--gold); color: #0f172a; }
-
-    .language-selector-flags {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--bg);
-      border: 1px solid var(--border-color);
-      padding: 3px 6px;
-      border-radius: 8px;
-    }
-    .flag-option {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      padding: 2px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      line-height: 1;
-      transition: 0.2s;
-      opacity: 0.6;
-    }
-    .flag-option:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-    .flag-option.active {
-      opacity: 1;
-      border-color: var(--gold);
-      background: rgba(245, 158, 11, 0.1);
-    }
-
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); }
-
-    footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; }
-    .footer-links a:hover { color: var(--gold); }
-    footer strong { color: var(--gold); }
-
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
-    .modal-box h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.3rem; }
-    .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
-
-    #viewMeusAlbuns { display: block; }
-    #viewDetalheAlbum { display: none; }
-
     .header-painel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     .header-painel h2 { font-size: 1.6rem; color: var(--gold); font-weight: 700; letter-spacing: -0.5px; }
 
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .album-criado-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; box-shadow: var(--shadow-sm); }
+    .album-criado-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .album-criado-card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15); }
     
     .album-criado-capa { height: 180px; background: var(--bg); display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-color); padding: 12px; }
@@ -145,34 +64,28 @@
     .album-criado-titulo { font-size: 1rem; font-weight: 700; color: var(--text-main); }
     .album-criado-sub { font-size: 0.78rem; color: var(--gold); font-weight: 600; }
 
-    .btn-voltar { background: var(--border-color); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
+    .btn-voltar { background: var(--border-color); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
     .btn-voltar:hover { background: rgba(245, 158, 11, 0.12); border-color: var(--gold); color: var(--gold); }
 
-    .stats-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px; box-shadow: var(--shadow-sm); }
+    .stats-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 22px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .stats-info h2 { font-size: 1.35rem; color: var(--gold); margin-bottom: 4px; font-weight: 700; }
     .stats-numbers { display: flex; gap: 10px; flex-wrap: wrap; }
-    .stat-box { background: var(--bg); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; min-width: 90px; }
+    .stat-box { background: var(--bg); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; min-width: 90px; }
     .stat-box span { display: block; font-size: 0.68rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
     .stat-box strong { font-size: 1rem; color: var(--text-main); font-weight: 700; }
 
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; background: var(--bg-card); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); align-items: center; box-shadow: var(--shadow-sm); }
-    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; transition: border-color 0.2s; }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; transition: border-color 0.2s; }
     .filter-field:focus { border-color: var(--gold); }
     
-    .btn-gold { background: var(--gold); color: #090d16; border: none; padding: 10px 18px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
-    .btn-gold:hover { opacity: 0.92; transform: translateY(-1px); }
-
-    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 0.82rem; text-decoration: none; transition: 0.2s; }
-    .btn-outline:hover { border-color: var(--gold); color: var(--gold); background: rgba(245, 158, 11, 0.08); }
-
-    .btn-success-outline { background: transparent; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-success-outline { background: transparent; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-success-outline:hover { background: rgba(52, 211, 153, 0.12); }
 
-    .btn-danger-outline { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-danger-outline { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-danger-outline:hover { background: rgba(248, 113, 113, 0.12); }
 
     .share-dropdown { position: relative; display: inline-block; }
-    .share-menu-content { display: none; position: absolute; right: 0; background-color: var(--modal-bg); min-width: 230px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 10; border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow: hidden; margin-top: 6px; }
+    .share-menu-content { display: none; position: absolute; right: 0; background-color: var(--modal-bg); min-width: 230px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 10; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; margin-top: 6px; }
     .share-menu-content button { color: var(--text-main); padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 0.82rem; border-bottom: 1px solid var(--border-color); cursor: pointer; font-weight: 500; transition: background 0.2s, color 0.2s; }
     .share-menu-content button:hover { background-color: rgba(245, 158, 11, 0.12); color: var(--gold); }
     .share-dropdown.active .share-menu-content { display: block; }
@@ -183,7 +96,7 @@
     .cardeneta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     @media (min-width: 768px) { .cardeneta-grid { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); } }
     
-    .fig-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s ease; position: relative; box-shadow: var(--shadow-sm); }
+    .fig-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s ease; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .fig-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
     .fig-card.possui { background: var(--bg); border-color: rgba(52, 211, 153, 0.6); }
     .fig-card.possui img.fig-img { opacity: 0.45; filter: grayscale(15%); }
@@ -203,36 +116,18 @@
     .qty-btn:hover { background: var(--gold); color: #090d16; border-color: var(--gold); }
     .qty-display { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
     .fig-footer { padding: 8px; text-align: center; font-size: 0.72rem; font-weight: 700; background: var(--border-color); color: var(--text-muted); }
-    .empty-state { text-align: center; grid-column: 1 / -1; padding: 45px; color: var(--text-muted); font-size: 0.95rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+    .empty-state { text-align: center; grid-column: 1 / -1; padding: 45px; color: var(--text-muted); font-size: 0.95rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 28px; border-radius: var(--radius-lg); width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+    .modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); padding: 28px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
     .modal-box h3 { color: var(--gold); margin-bottom: 18px; font-size: 1.25rem; font-weight: 700; }
     .modal-box label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
-    .modal-box select, .modal-box input { width: 100%; background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: var(--radius-md); margin-bottom: 18px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .modal-box select, .modal-box input { width: 100%; background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 8px; margin-bottom: 18px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
     .modal-box select:focus, .modal-box input:focus { border-color: var(--gold); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-    .language-selector-flags {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg);
-      border: 1px solid var(--border-color);
-      padding: 4px 8px;
-      border-radius: var(--radius-md);
-    }
-    .flag-option {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      padding: 2px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      line-height: 1;
-      transition: all 0.2s;
-      opacity: 0.55;
-    }
+    .language-selector-flags { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 8px; }
+    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: all 0.2s; opacity: 0.55; }
     .flag-option:hover { opacity: 0.9; transform: scale(1.08); }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.12); }
   </style>
@@ -300,7 +195,7 @@
     </div>
 
     <!-- TELA 2 -->
-    <div id="viewDetalheAlbum">
+    <div id="viewDetalheAlbum" style="display:none;">
       <div class="top-nav" style="margin-bottom: 15px; background: transparent; border: none; padding: 0; box-shadow: none; display: flex; justify-content: space-between; align-items: center;">
         <div class="nav-links">
           <button class="btn-voltar" onclick="voltarParaLista()" data-i18n="btn_voltar_lista">&larr; Voltar para minhas cadernetas</button>
@@ -316,8 +211,6 @@
           <p style="font-size: 0.82rem; color: var(--text-muted);" data-i18n="sub_instrucao_clique">Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.</p>
         </div>
         <div class="stats-numbers">
-          <div class="stat-box"><span>Plano</span><strong id="statPlano" style="color: var(--gold);">PREMIUM</strong></div>
-          <div class="stat-box"><span>Cardenetas Ativas</span><strong id="statCardenetasAtivas" style="color: #34d399;">1 / 1</strong></div>
           <div class="stat-box"><span data-i18n="stat_total">Total Álbum</span><strong id="statTotal">0</strong></div>
           <div class="stat-box"><span data-i18n="stat_tenho">Tenho</span><strong id="statTenho" style="color: #34d399;">0</strong></div>
           <div class="stat-box"><span data-i18n="stat_faltam">Faltam</span><strong id="statFaltam" style="color: var(--text-main);">0</strong></div>
@@ -387,7 +280,6 @@
     const dicionarios = {
       'pt-PT': {
         nav_inicio: "🏠 Início", nav_cadernetas: "📖 Cadernetas", nav_vitrine: "📦 Vitrine",
-        msg_carregando: "Carregando...",
         painel_tit_albuns: "📖 Minhas Cadernetas",
         btn_add_cardeneta: "+ Adicionar Nova Caderneta",
         msg_carregando_cardenetas: "Carregando suas cadernetas...",
@@ -414,7 +306,6 @@
       },
       'pt-BR': {
         nav_inicio: "🏠 Início", nav_cadernetas: "📖 Álbuns", nav_vitrine: "📦 Vitrine",
-        msg_carregando: "Carregando...",
         painel_tit_albuns: "📖 Meus Álbuns",
         btn_add_cardeneta: "+ Adicionar Novo Álbum",
         msg_carregando_cardenetas: "Carregando seus álbuns...",
@@ -441,7 +332,6 @@
       },
       'en': {
         nav_inicio: "🏠 Home", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Showcase",
-        msg_carregando: "Loading...",
         painel_tit_albuns: "📖 My Albums",
         btn_add_cardeneta: "+ Add New Album",
         msg_carregando_cardenetas: "Loading your albums...",
@@ -468,7 +358,6 @@
       },
       'it': {
         nav_inicio: "🏠 Home", nav_cadernetas: "📖 Album", nav_vitrine: "📦 Vetrina",
-        msg_carregando: "Caricamento...",
         painel_tit_albuns: "📖 I Miei Album",
         btn_add_cardeneta: "+ Aggiungi Nuovo Album",
         msg_carregando_cardenetas: "Caricamento album...",
@@ -489,25 +378,24 @@
         share_repetidas: "🔁 Solo Doppie",
         modal_criar_titulo: "Aggiungi Nuovo Album",
         modal_lbl_base: "Scegli Album Base:",
-        modal_lbl_apelido: "Soprannome / ID (Facoltativo):",
+        modal_lbl_apelido: "Soprannome / ID (Opzionale):",
         btn_cancelar: "Annulla",
         btn_criar_cardeneta: "Crea Album"
       },
       'es': {
         nav_inicio: "🏠 Inicio", nav_cadernetas: "📖 Álbumes", nav_vitrine: "📦 Vitrina",
-        msg_carregando: "Cargando...",
         painel_tit_albuns: "📖 Mis Álbumes",
         btn_add_cardeneta: "+ Agregar Nuevo Álbum",
         msg_carregando_cardenetas: "Cargando tus álbumes...",
         btn_voltar_lista: "← Volver a álbumes",
         btn_excluir_album: "🗑️ Eliminar Álbum",
-        sub_instrucao_clique: "Haz clic en la imagen para marcar/desmarcar o usa los botones.",
+        sub_instrucao_clique: "Haz clic en la imagen para marcar o usa los botones.",
         stat_total: "Total", stat_tenho: "Tengo", stat_faltam: "Faltan", stat_repetidas: "Repetidas", stat_progresso: "Progreso",
         filtro_todas_cat: "📂 Todas las Categorías",
         filtro_mostrar_todas: "👁️ Mostrar Todas",
-        filtro_mostrar_faltam: "❌ Mostrar Solo Faltantes",
-        filtro_mostrar_possui: "✅ Mostrar Solo Tenidas",
-        filtro_mostrar_repetidas: "🔁 Mostrar Solo Repetidas",
+        filtro_mostrar_faltam: "❌ Mostrar Faltantes",
+        filtro_mostrar_possui: "✅ Mostrar Tenidas",
+        filtro_mostrar_repetidas: "🔁 Mostrar Repetidas",
         btn_marcar_todas: "✅ Marcar Todas",
         btn_desmarcar_todas: "🔄 Desmarcar Todas",
         btn_compartilhar: "📤 Compartir WhatsApp ▾",
@@ -515,32 +403,31 @@
         share_faltantes: "❌ Solo Faltantes",
         share_repetidas: "🔁 Solo Repetidas",
         modal_criar_titulo: "Agregar Nuevo Álbum",
-        modal_lbl_base: "Elija Álbum Base:",
+        modal_lbl_base: "Elige Álbum Base:",
         modal_lbl_apelido: "Apodo / ID (Opcional):",
         btn_cancelar: "Cancelar",
         btn_criar_cardeneta: "Crear Álbum"
       },
       'fr': {
         nav_inicio: "🏠 Accueil", nav_cadernetas: "📖 Albums", nav_vitrine: "📦 Vitrine",
-        msg_carregando: "Chargement...",
         painel_tit_albuns: "📖 Mes Albums",
         btn_add_cardeneta: "+ Ajouter un Album",
         msg_carregando_cardenetas: "Chargement de vos albums...",
         btn_voltar_lista: "← Retour aux albums",
         btn_excluir_album: "🗑️ Supprimer l'album",
-        sub_instrucao_clique: "Cliquez sur l'image pour marquer/démarquer.",
-        stat_total: "Total", stat_tenho: "J'ai", stat_faltam: "Manquants", stat_repetidas: "Doubles", stat_progresso: "Progrès",
-        filtro_todas_cat: "📂 Toutes les catégories",
-        filtro_mostrar_todas: "👁️ Tout afficher",
-        filtro_mostrar_faltam: "❌ Afficher manquants",
-        filtro_mostrar_possui: "✅ Afficher possédés",
-        filtro_mostrar_repetidas: "🔁 Afficher doubles",
-        btn_marcar_todas: "✅ Tout cocher",
-        btn_desmarcar_todas: "🔄 Tout décocher",
+        sub_instrucao_clique: "Cliquez sur l'image pour marquer ou utilisez les boutons.",
+        stat_total: "Total", stat_tenho: "Possédé", stat_faltam: "Manquant", stat_repetidas: "Doubles", stat_progresso: "Progrès",
+        filtro_todas_cat: "📂 Toutes les Catégories",
+        filtro_mostrar_todas: "👁️ Afficher Tout",
+        filtro_mostrar_faltam: "❌ Afficher Manquants",
+        filtro_mostrar_possui: "✅ Afficher Possédés",
+        filtro_mostrar_repetidas: "🔁 Afficher Doubles",
+        btn_marcar_todas: "✅ Tout Marquer",
+        btn_desmarcar_todas: "🔄 Tout Démarquer",
         btn_compartilhar: "📤 Partager WhatsApp ▾",
-        share_ambos: "📋 Manquants et Doubles",
-        share_faltantes: "❌ Manquants seulement",
-        share_repetidas: "🔁 Doubles seulement",
+        share_ambos: "📋 Manquants & Doubles",
+        share_faltantes: "❌ Uniquement Manquants",
+        share_repetidas: "🔁 Uniquement Doubles",
         modal_criar_titulo: "Ajouter un Album",
         modal_lbl_base: "Choisir l'album de base :",
         modal_lbl_apelido: "Surnom / ID (Optionnel) :",
@@ -549,140 +436,135 @@
       }
     };
 
-    function atualizarTextosIdioma() {
-      const dict = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
+    function aplicarTraducao() {
+      const dic = dicionarios[idiomaAtual] || dicionarios['pt-PT'];
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const chave = el.getAttribute('data-i18n');
-        if (dict[chave]) {
-          el.textContent = dict[chave];
-        }
+        if (dic[chave]) el.innerText = dic[chave];
       });
-    }
-
-    function mudarIdiomaGlobal(lang) {
-      idiomaAtual = lang;
-      localStorage.setItem('idioma_preferido', lang);
       document.querySelectorAll('.flag-option').forEach(btn => {
-        if (btn.getAttribute('data-lang') === lang) {
+        if (btn.getAttribute('data-lang') === idiomaAtual) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
         }
       });
-      atualizarTextosIdioma();
+    }
+
+    async function mudarIdiomaGlobal(valor) {
+      idiomaAtual = valor;
+      localStorage.setItem('idioma_app', valor);
+      if (usuarioAtual) {
+        await _supabase.from('usuarios_cadastrados').update({ idioma_preferido: valor }).eq('id', usuarioAtual.id);
+      }
+      aplicarTraducao();
     }
 
     function alternarTema() {
       const atual = document.documentElement.getAttribute('data-theme');
       const novo = atual === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', novo);
-      localStorage.setItem('tema_preferido', novo);
+      if (novo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('tema_app', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('tema_app', 'dark');
+      }
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      const temaSalvo = localStorage.getItem('tema_preferido') || 'dark';
-      document.documentElement.setAttribute('data-theme', temaSalvo);
-      const langSalvo = localStorage.getItem('idioma_preferido') || 'pt-PT';
-      mudarIdiomaGlobal(langSalvo);
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaSalvo = localStorage.getItem('tema_app');
+      if (temaSalvo === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      idiomaAtual = localStorage.getItem('idioma_app') || 'pt-PT';
+      aplicarTraducao();
+      init();
+    });
 
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
+    async function init() {
+      const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+      if (sessionError || !session) {
+        alert("Faça login para gerenciar sua caderneta.");
         window.location.href = "index.html";
         return;
       }
       usuarioAtual = session.user;
-
-      // Buscar perfil e limite de cadernetas igual à vitrine
-      try {
-        const { data: perfil } = await _supabase.from('perfis').select('*').eq('id', usuarioAtual.id).single();
-        dadosPerfilUsuario = perfil;
-        if (perfil) {
-          document.getElementById('userInfoHeader').innerHTML = `
-            <img src="${perfil.avatar_url || 'https://via.placeholder.com/32'}" class="user-avatar-top" alt="Avatar">
-            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-main);">${perfil.nome || 'Usuário'}</span>
-          `;
-        }
-
-        const planoUser = perfil?.plano || 'free';
-        const { data: configPlano } = await _supabase.from('configuracoes_planos').select('limite_cadenetas').eq('nome', planoUser).single();
-        const limiteCadenetas = configPlano ? configPlano.limite_cadenetas : 1;
-
-        const { count: totalCadUser } = await _supabase.from('cadernetas_usuario').select('*', { count: 'exact', head: true }).eq('user_id', usuarioAtual.id);
+      
+      const { data: perfil } = await _supabase
+        .from('usuarios_cadastrados')
+        .select('*')
+        .eq('id', usuarioAtual.id)
+        .maybeSingle();
         
-        const elCardenetasAtivas = document.getElementById('statCardenetasAtivas');
-        if (elCardenetasAtivas) {
-          elCardenetasAtivas.textContent = `${totalCadUser || 0} / ${limiteCadenetas === 999 ? 'Ilimitado' : limiteCadenetas}`;
-        }
-      } catch (e) {
-        console.error("Erro ao buscar plano/limite de cadernetas:", e);
+      dadosPerfilUsuario = perfil || { plano: 'gratis' };
+      if (dadosPerfilUsuario.idioma_preferido) {
+        idiomaAtual = dadosPerfilUsuario.idioma_preferido;
+        aplicarTraducao();
       }
-
-      carregarMinhasCadernetas();
-    });
+      
+      const nomeUsuario = dadosPerfilUsuario.nome || (usuarioAtual.email ? usuarioAtual.email.split('@')[0] : 'Colecionador');
+      const avatarUrl = usuarioAtual.user_metadata?.avatar_url || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+      
+      document.getElementById('userInfoHeader').innerHTML = `
+        <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+        <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
+      `;
+      
+      await carregarMinhasCadernetas();
+    }
 
     async function carregarMinhasCadernetas() {
       const grid = document.getElementById('gridMeusAlbuns');
-      grid.innerHTML = `<div class="empty-state" data-i18n="msg_carregando">Carregando...</div>`;
+      
+      const { data, error } = await _supabase
+        .from('usuario_albuns')
+        .select(`
+          id, 
+          apelido_personalizado, 
+          album_base_id,
+          albuns ( id, nome, imagem )
+        `)
+        .eq('user_id', usuarioAtual.id);
 
-      try {
-        const { data: cadernetas, error } = await _supabase
-          .from('cadernetas_usuario')
-          .select('*, albuns_base(id, titulo, capa_url)')
-          .eq('user_id', usuarioAtual.id);
-
-        if (error) throw error;
-        minhasCadernetas = cadernetas || [];
-
-        if (minhasCadernetas.length === 0) {
-          grid.innerHTML = `<div class="empty-state">Você ainda não possui nenhuma caderneta adicionada. Clique em "+ Adicionar Nova Caderneta" acima.</div>`;
-          return;
-        }
-
-        let html = '';
-        for (const cad of minhasCadernetas) {
-          const base = cad.albuns_base || {};
-          const tituloExibido = cad.apelido ? `${base.titulo || 'Álbum'} (${cad.apelido})` : (base.titulo || 'Álbum');
-          html += `
-            <div class="album-criado-card" onclick="abrirCaderneta('${cad.id}')">
-              <div class="album-criado-capa">
-                <img src="${base.capa_url || 'https://via.placeholder.com/150'}" alt="Capa">
-              </div>
-              <div class="album-criado-info">
-                <div class="album-criado-titulo">${tituloExibido}</div>
-                <div class="album-criado-sub">Clique para gerenciar</div>
-              </div>
-            </div>
-          `;
-        }
-        grid.innerHTML = html;
-      } catch (err) {
-        console.error(err);
-        grid.innerHTML = `<div class="empty-state" style="color: #f87171;">Erro ao carregar cadernetas.</div>`;
+      if (error) {
+        console.error("Erro ao carregar cadernetas:", error);
+        grid.innerHTML = `<div class="empty-state" style="color: #f87171;">Erro ao carregar cadernetas: ${error.message}</div>`;
+        return;
       }
+
+      minhasCadernetas = data || [];
+
+      if (minhasCadernetas.length === 0) {
+        grid.innerHTML = '<div class="empty-state">Você ainda não adicionou nenhuma caderneta. Clique no botão acima para começar!</div>';
+        return;
+      }
+
+      grid.innerHTML = minhasCadernetas.map(c => {
+        const albumBase = Array.isArray(c.albuns) ? c.albuns[0] : (c.albuns || {});
+        const nomeExibicao = c.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${c.apelido_personalizado}` : (albumBase.nome || 'Álbum');
+        const capaUrl = albumBase.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+
+        return `
+          <div class="album-criado-card" onclick="abrirCaderneta('${c.id}')">
+            <div class="album-criado-capa">
+              <img src="${capaUrl}" alt="Capa do Álbum" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+            </div>
+            <div class="album-criado-info">
+              <div class="album-criado-titulo">${nomeExibicao}</div>
+              <div class="album-criado-sub">Clique para ver marcações</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     async function abrirModalCriar() {
+      const { data: albunsBase } = await _supabase.from('albuns').select('id, nome');
       const select = document.getElementById('selectAlbumBaseModal');
-      select.innerHTML = `<option value="">Carregando álbuns base...</option>`;
+      select.innerHTML = (albunsBase || []).map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
       document.getElementById('inputApelidoCardeneta').value = '';
       document.getElementById('modalCriarCardeneta').style.display = 'flex';
-
-      try {
-        const { data: bases, error } = await _supabase.from('albuns_base').select('id, titulo').order('titulo');
-        if (error) throw error;
-        if (!bases || bases.length === 0) {
-          select.innerHTML = `<option value="">Nenhum álbum base cadastrado</option>`;
-          return;
-        }
-        let opts = '';
-        for (const b of bases) {
-          opts += `<option value="${b.id}">${b.titulo}</option>`;
-        }
-        select.innerHTML = opts;
-      } catch (e) {
-        console.error(e);
-        select.innerHTML = `<option value="">Erro ao carregar álbuns</option>`;
-      }
     }
 
     function fecharModalCriar() {
@@ -692,354 +574,392 @@
     async function salvarNovaCaderneta() {
       const albumBaseId = document.getElementById('selectAlbumBaseModal').value;
       const apelido = document.getElementById('inputApelidoCardeneta').value.trim();
+      
+      if (!albumBaseId) return alert("Selecione um álbum.");
 
-      if (!albumBaseId) {
-        alert('Selecione um álbum base.');
+      // --- LOGICA DO SISTEMA DE PLANOS (IDÊNTICA À DO VITRINE) ---
+      const { data: dadosUsuario } = await _supabase
+        .from('usuarios_cadastrados')
+        .select('plano')
+        .eq('id', usuarioAtual.id)
+        .maybeSingle();
+
+      const nomePlanoUsuario = (dadosUsuario && dadosUsuario.plano) ? dadosUsuario.plano : 'gratis';
+
+      let limitePermitido = 1; 
+      
+      const { data: dadosConfigPlano, error: erroConfig } = await _supabase
+        .from('configuracoes_planos')
+        .select('limite_cadernetas')
+        .eq('plano', nomePlanoUsuario)
+        .maybeSingle();
+
+      if (!erroConfig && dadosConfigPlano) {
+        limitePermitido = dadosConfigPlano.limite_cadernetas;
+      } else {
+        if (nomePlanoUsuario === 'gratis') {
+          limitePermitido = 1;
+        } else {
+          limitePermitido = 999; 
+        }
+      }
+
+      const { count, error: countError } = await _supabase
+        .from('usuario_albuns')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', usuarioAtual.id);
+
+      if (countError) {
+        alert("Erro ao verificar quantidade de cadernetas cadastradas.");
         return;
       }
 
-      try {
-        // Verificar limite de cadernetas com base no plano
-        const planoUser = dadosPerfilUsuario?.plano || 'free';
-        const { data: configPlano } = await _supabase.from('configuracoes_planos').select('limite_cadenetas').eq('nome', planoUser).single();
-        const limiteCadenetas = configPlano ? configPlano.limite_cadenetas : 1;
+      const totalCadernetasAtuais = count || 0;
 
-        const { count: totalCadUser } = await _supabase.from('cadernetas_usuario').select('*', { count: 'exact', head: true }).eq('user_id', usuarioAtual.id);
-
-        if (limiteCadenetas !== 999 && totalCadUser >= limiteCadenetas) {
-          alert(`Você atingiu o limite de ${limiteCadenetas} caderneta(s) permitidas no seu plano atual.`);
-          return;
-        }
-
-        const { error } = await _supabase.from('cadernetas_usuario').insert([{
-          user_id: usuarioAtual.id,
-          album_base_id: albumBaseId,
-          apelido: apelido || null
-        }]);
-
-        if (error) throw error;
-        fecharModalCriar();
-        carregarMinhasCadernetas();
-      } catch (e) {
-        console.error(e);
-        alert('Erro ao criar caderneta.');
+      if (totalCadernetasAtuais >= limitePermitido) {
+        alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso Plano Premium ou Anual para desbloquear álbuns ilimitados!`);
+        window.location.href = "plano.html";
+        return;
       }
+      // -----------------------------------------------------------
+
+      const { error } = await _supabase.from('usuario_albuns').insert([{
+        user_id: usuarioAtual.id,
+        album_base_id: albumBaseId,
+        apelido_personalizado: apelido || null
+      }]);
+
+      if (error) {
+        alert("Erro ao criar caderneta: " + error.message);
+        return;
+      }
+
+      fecharModalCriar();
+      await carregarMinhasCadernetas();
     }
 
-    async function abrirCaderneta(cadernetaId) {
-      cadernetaAtiva = minhasCadernetas.find(c => c.id === cadernetaId);
+    async function excluirAlbumAtual() {
+      if (!cadernetaAtiva) return;
+      
+      if (!confirm("Tem certeza que deseja excluir este álbum e todas as marcações associadas a ele?")) return;
+
+      const { error } = await _supabase
+        .from('usuario_albuns')
+        .delete()
+        .eq('id', cadernetaAtiva.id)
+        .eq('user_id', usuarioAtual.id);
+
+      if (error) {
+        alert("Erro ao excluir o álbum: " + error.message);
+        return;
+      }
+
+      alert("Álbum excluído com sucesso!");
+      voltarParaLista();
+      await carregarMinhasCadernetas();
+    }
+
+    async function abrirCaderneta(usuarioAlbumId) {
+      cadernetaAtiva = minhasCadernetas.find(c => c.id === usuarioAlbumId);
       if (!cadernetaAtiva) return;
 
+      const albumBase = Array.isArray(cadernetaAtiva.albuns) ? cadernetaAtiva.albuns[0] : (cadernetaAtiva.albuns || {});
+      const nomeExibicao = cadernetaAtiva.apelido_personalizado ? `${albumBase.nome || 'Álbum'} - ${cadernetaAtiva.apelido_personalizado}` : (albumBase.nome || 'Álbum');
+      
+      document.getElementById('tituloCardenetaPagina').innerText = `📖 ${nomeExibicao}`;
       document.getElementById('viewMeusAlbuns').style.display = 'none';
       document.getElementById('viewDetalheAlbum').style.display = 'block';
 
-      const base = cadernetaAtiva.albuns_base || {};
-      const tituloCompleto = cadernetaAtiva.apelido ? `${base.titulo || 'Álbum'} (${cadernetaAtiva.apelido})` : (base.titulo || 'Álbum');
-      document.getElementById('tituloCardenetaPagina').textContent = `📖 ${tituloCompleto}`;
-
-      await carregarFigurinhasEProgresso();
+      await carregarDadosAlbumBase(albumBase.id || cadernetaAtiva.album_base_id);
     }
 
     function voltarParaLista() {
       document.getElementById('viewDetalheAlbum').style.display = 'none';
       document.getElementById('viewMeusAlbuns').style.display = 'block';
       cadernetaAtiva = null;
-      carregarMinhasCadernetas();
     }
 
-    async function carregarFigurinhasEProgresso() {
+    async function carregarDadosAlbumBase(albumBaseId) {
       try {
-        const { data: figs, error } = await _supabase
-          .from('figurinhas')
-          .select('*')
-          .eq('album_id', cadernetaAtiva.album_base_id)
-          .order('numero', { ascending: true });
+        const { data: ordemData } = await _supabase
+          .from('album_categorias_ordem')
+          .select('nome_categoria, posicao, icone')
+          .eq('album_id', albumBaseId)
+          .order('posicao', { ascending: true });
 
-        if (error) throw error;
-        figurinhasDoAlbum = figs || [];
-
-        // Extrair categorias unicas mantendo ordem
-        const catsSet = new Set();
         ordemCategoriasDinamica = [];
         mapaIconesCategorias = {};
-        for (const f of figurinhasDoAlbum) {
-          const cat = f.categoria || 'Geral';
-          if (!catsSet.has(cat)) {
-            catsSet.add(cat);
-            ordemCategoriasDinamica.push(cat);
-            if (f.icone_categoria) {
-              mapaIconesCategorias[cat] = f.icone_categoria;
-            }
+        (ordemData || []).forEach(item => {
+          const nomeCat = String(item.nome_categoria || '').trim();
+          if (nomeCat) {
+            ordemCategoriasDinamica.push(nomeCat);
+            if (item.icone) mapaIconesCategorias[nomeCat] = item.icone;
           }
-        }
+        });
 
-        // Popular select filtro tipo
-        const selTipo = document.getElementById('selectFiltroTipo');
-        let optsTipo = `<option value="todos" data-i18n="filtro_todas_cat">📂 Todas as Categorias / Tipos</option>`;
-        for (const c of ordemCategoriasDinamica) {
-          const icone = mapaIconesCategorias[c] ? mapaIconesCategorias[c] + ' ' : '';
-          optsTipo += `<option value="${c}">${icone}${c}</option>`;
-        }
-        selTipo.innerHTML = optsTipo;
-
-        // Carregar dados da caderneta do usuário (quantidades)
-        const { data: itens, error: errItens } = await _supabase
-          .from('itens_cardeneta')
+        const { data: figs } = await _supabase
+          .from('figurinhas')
           .select('*')
-          .eq('cardeneta_usuario_id', cadernetaAtiva.id);
+          .eq('album_id', albumBaseId);
 
-        if (errItens) throw errItens;
+        figurinhasDoAlbum = figs || [];
+        figurinhasDoAlbum.sort((a, b) => String(a.numero || '').localeCompare(String(b.numero || ''), undefined, {numeric: true}));
 
+        const idsFig = figurinhasDoAlbum.map(f => f.id);
         mapaCadernetaUsuario = {};
-        if (itens) {
-          for (const item of itens) {
-            mapaCadernetaUsuario[item.figurinha_id] = item.quantidade || 0;
-          }
+        if (idsFig.length > 0) {
+          const { data: userQtd } = await _supabase
+            .from('usuario_cardeneta')
+            .select('figurinha_id, quantidade')
+            .eq('user_id', usuarioAtual.id)
+            .in('figurinha_id', idsFig);
+
+          (userQtd || []).forEach(item => {
+            mapaCadernetaUsuario[item.figurinha_id] = item.quantidade;
+          });
         }
 
+        popularSelectFiltroTipos();
         renderizarGrid();
-        atualizarEstatisticas();
       } catch (e) {
-        console.error(e);
-        document.getElementById('cardenetaContainer').innerHTML = `<div class="empty-state" style="color: #f87171;">Erro ao carregar figurinhas.</div>`;
+        console.error("Erro ao carregar detalhes:", e);
       }
+    }
+
+    function obterCategoriaPadrao(f) {
+      const tipoStr = String(f.tipo || '').trim();
+      const selecaoStr = String(f.selecao_escuderia || f.selecao || f.escuderia || '').trim();
+      if (ordemCategoriasDinamica.includes(tipoStr)) return tipoStr;
+      if (ordemCategoriasDinamica.includes(selecaoStr)) return selecaoStr;
+      return selecaoStr || tipoStr || 'Geral';
+    }
+
+    function popularSelectFiltroTipos() {
+      const selectTipo = document.getElementById('selectFiltroTipo');
+      let cats = new Set();
+      figurinhasDoAlbum.forEach(f => cats.add(obterCategoriaPadrao(f)));
+      
+      let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+      Array.from(cats).forEach(cat => {
+        html += `<option value="${cat}">${cat}</option>`;
+      });
+      selectTipo.innerHTML = html;
     }
 
     function renderizarGrid() {
       const container = document.getElementById('cardenetaContainer');
-      const filtroTipo = document.getElementById('selectFiltroTipo').value;
       const filtroStatus = document.getElementById('selectFiltroStatus').value;
+      const filtroTipo = document.getElementById('selectFiltroTipo').value;
 
-      let html = '';
-      let categoriasFiltradas = ordemCategoriasDinamica;
-      if (filtroTipo !== 'todos') {
-        categoriasFiltradas = [filtroTipo];
-      }
-
-      let totalRenderizadas = 0;
-
-      for (const cat of categoriasFiltradas) {
-        const figsCat = figurinhasDoAlbum.filter(f => (f.categoria || 'Geral') === cat);
-        
-        // Filtrar por status
-        const figsValidas = figsCat.filter(f => {
-          const qtd = mapaCadernetaUsuario[f.id] || 0;
-          if (filtroStatus === 'faltam') return qtd === 0;
-          if (filtroStatus === 'possui') return qtd > 0;
-          if (filtroStatus === 'repetidas') return qtd > 1;
-          return true;
-        });
-
-        if (figsValidas.length === 0) continue;
-        totalRenderizadas += figsValidas.length;
-
-        const iconeCat = mapaIconesCategorias[cat] ? mapaIconesCategorias[cat] + ' ' : '📂 ';
-        html += `
-          <div class="secao-grupo">
-            <div class="secao-titulo">${iconeCat}${cat}</div>
-            <div class="cardeneta-grid">
-        `;
-
-        for (const f of figsValidas) {
-          const qtd = mapaCadernetaUsuario[f.id] || 0;
-          const possui = qtd > 0;
-          const cardClass = possui ? 'fig-card possui' : 'fig-card';
-          const badgeText = possui ? `Possui: ${qtd}` : 'Falta';
-
-          html += `
-            <div class="${cardClass}" id="fig-card-${f.id}">
-              <div class="fig-img-wrap" onclick="mudarQtdClick('${f.id}')" style="cursor: pointer;" title="Clique para alternar possuir/faltar">
-                <span class="fig-badge-status" id="badge-${f.id}">${badgeText}</span>
-                <img src="${f.imagem_url || 'https://via.placeholder.com/150'}" class="fig-img" alt="Figurinha">
-              </div>
-              <div class="fig-content">
-                <div class="fig-numero">#${f.numero}</div>
-                <div class="fig-nome" title="${f.nome || ''}">${f.nome || 'Figurinha'}</div>
-              </div>
-              <div class="fig-actions-row">
-                <button class="qty-btn" onclick="alterarQuantidade('${f.id}', -1)">-</button>
-                <span class="qty-display" id="qty-${f.id}">${qtd}</span>
-                <button class="qty-btn" onclick="alterarQuantidade('${f.id}', 1)">+</button>
-              </div>
-            </div>
-          `;
-        }
-
-        html += `</div></div>`;
-      }
-
-      if (totalRenderizadas === 0) {
-        html = `<div class="empty-state">Nenhuma figurinha encontrada com os filtros selecionados.</div>`;
-      }
-
-      container.innerHTML = html;
-    }
-
-    async function mudarQtdClick(figurinhaId) {
-      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
-      const novaQtd = qtdAtual === 0 ? 1 : 0;
-      await salvarQuantidadeServidor(figurinhaId, novaQtd);
-    }
-
-    async function alterarQuantidade(figurinhaId, delta) {
-      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
-      let novaQtd = qtdAtual + delta;
-      if (novaQtd < 0) novaQtd = 0;
-      await salvarQuantidadeServidor(figurinhaId, novaQtd);
-    }
-
-    async function salvarQuantidadeServidor(figurinhaId, novaQtd) {
-      mapaCadernetaUsuario[figurinhaId] = novaQtd;
-      
-      // Atualizar UI instantaneamente
-      const card = document.getElementById(`fig-card-${figurinhaId}`);
-      const badge = document.getElementById(`badge-${figurinhaId}`);
-      const qtyDisp = document.getElementById(`qty-${figurinhaId}`);
-
-      if (qtyDisp) qtyDisp.textContent = novaQtd;
-      if (badge) badge.textContent = novaQtd > 0 ? `Possui: ${novaQtd}` : 'Falta';
-      if (card) {
-        if (novaQtd > 0) {
-          card.classList.add('possui');
-        } else {
-          card.classList.remove('possui');
-        }
-      }
-
-      atualizarEstatisticas();
-
-      // Salvar no Supabase
-      try {
-        if (novaQtd === 0) {
-          await _supabase.from('itens_cardeneta')
-            .delete()
-            .eq('cardeneta_usuario_id', cadernetaAtiva.id)
-            .eq('figurinha_id', figurinhaId);
-        } else {
-          await _supabase.from('itens_cardeneta').upsert({
-            cardeneta_usuario_id: cadernetaAtiva.id,
-            figurinha_id: figurinhaId,
-            quantidade: novaQtd
-          }, { onConflict: 'cardeneta_usuario_id,figurinha_id' });
-        }
-      } catch (e) {
-        console.error("Erro ao salvar quantidade:", e);
-      }
-    }
-
-    function atualizarEstatisticas() {
-      const total = figurinhasDoAlbum.length;
-      let tenho = 0;
-      let repetidas = 0;
-
-      for (const f of figurinhasDoAlbum) {
+      let tenhoCount = 0, repetidasCount = 0;
+      figurinhasDoAlbum.forEach(f => {
         const q = mapaCadernetaUsuario[f.id] || 0;
-        if (q > 0) tenho++;
-        if (q > 1) repetidas += (q - 1);
+        if (q > 0) {
+          tenhoCount++;
+          if (q > 1) repetidasCount += (q - 1);
+        }
+      });
+      atualizarEstatisticas(figurinhasDoAlbum.length, tenhoCount, repetidasCount);
+
+      let filtradas = figurinhasDoAlbum.filter(f => {
+        const qtd = mapaCadernetaUsuario[f.id] || 0;
+        const possui = qtd > 0;
+        if (filtroStatus === 'possui' && !possui) return false;
+        if (filtroStatus === 'faltam' && possui) return false;
+        if (filtroStatus === 'repetidas' && qtd <= 1) return false;
+        if (filtroTipo !== 'todos' && obterCategoriaPadrao(f) !== filtroTipo) return false;
+        return true;
+      });
+
+      if (filtradas.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada.</div>';
+        return;
       }
 
-      const faltam = total - tenho;
-      const porcentagem = total > 0 ? Math.round((tenho / total) * 100) : 0;
+      let gruposMap = {};
+      filtradas.forEach(f => {
+        let cat = obterCategoriaPadrao(f);
+        if (!gruposMap[cat]) gruposMap[cat] = [];
+        gruposMap[cat].push(f);
+      });
 
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statTenho').textContent = tenho;
-      document.getElementById('statFaltam').textContent = faltam;
-      document.getElementById('statRepetidas').textContent = repetidas;
-      document.getElementById('statPorcentagem').textContent = porcentagem + '%';
+      let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
+        let indexA = ordemCategoriasDinamica.indexOf(a);
+        let indexB = ordemCategoriasDinamica.indexOf(b);
+        if (indexA === -1) indexA = 9999;
+        if (indexB === -1) indexB = 9999;
+        return indexA - indexB;
+      });
+
+      container.innerHTML = chavesOrdenadas.map(cat => {
+        let iconeVal = mapaIconesCategorias[cat] || '';
+        let htmlIcone = '';
+
+        if (iconeVal) {
+          iconeVal = iconeVal.replace(/^img[:=]+/i, '').trim();
+          if (iconeVal.startsWith('http')) {
+            htmlIcone = `<img src="${iconeVal}" alt="${cat}" style="width: 20px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px;">`;
+          } else {
+            htmlIcone = `<span style="margin-right: 6px;">${iconeVal}</span>`;
+          }
+        }
+
+        return `
+          <div class="secao-grupo">
+            <div class="secao-titulo">${htmlIcone}${cat}</div>
+            <div class="cardeneta-grid">
+              ${gruposMap[cat].map(f => {
+                const qtd = mapaCadernetaUsuario[f.id] || 0;
+                const possui = qtd > 0;
+                const classeCard = possui ? 'fig-card possui' : 'fig-card';
+                const textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1}` : '✅ Já tenho') : '❌ Falta';
+                const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+                
+                let numFig = String(f.numero || '').trim();
+                if (numFig.startsWith('#')) {
+                  numFig = numFig;
+                } else if (numFig) {
+                  numFig = '#' + numFig;
+                }
+
+                return `
+                  <div class="${classeCard}" id="card-${f.id}">
+                    <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
+                      <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                    </div>
+                    <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <div class="fig-numero">${numFig}</div>
+                      <div class="fig-nome">${f.nome || 'Sem Nome'}</div>
+                    </div>
+                    <div class="fig-actions-row">
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', -1)">-</button>
+                      <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', 1)">+</button>
+                    </div>
+                    <div class="fig-footer" id="footer-${f.id}">${possui && qtd > 1 ? `Repetidas: ${qtd-1}` : ''}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function clicarMarcar(figurinhaId) {
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      await salvarQuantidade(figurinhaId, qtd > 0 ? 0 : 1);
+    }
+
+    async function alterarQtd(figurinhaId, delta) {
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      let novaQtd = qtd + delta;
+      if (novaQtd < 0) novaQtd = 0;
+      await salvarQuantidade(figurinhaId, novaQtd);
+    }
+
+    async function salvarQuantidade(figurinhaId, novaQtd) {
+      if (novaQtd === 0) {
+        delete mapaCadernetaUsuario[figurinhaId];
+        await _supabase.from('usuario_cardeneta').delete().eq('user_id', usuarioAtual.id).eq('figurinha_id', figurinhaId);
+      } else {
+        mapaCadernetaUsuario[figurinhaId] = novaQtd;
+        await _supabase.from('usuario_cardeneta').upsert([{
+          user_id: usuarioAtual.id,
+          figurinha_id: figurinhaId,
+          quantidade: novaQtd
+        }], { onConflict: 'user_id, figurinha_id' });
+      }
+      renderizarGrid();
     }
 
     async function confirmarMarcarTodas() {
-      if (!confirm('Deseja marcar todas as figurinhas como possuídas (quantidade 1)?')) return;
-      for (const f of figurinhasDoAlbum) {
+      if (!confirm("Marcar todas como 'Já tenho'?")) return;
+      let upsertData = [];
+      figurinhasDoAlbum.forEach(f => {
         mapaCadernetaUsuario[f.id] = 1;
-      }
+        upsertData.push({ user_id: usuarioAtual.id, figurinha_id: f.id, quantidade: 1 });
+      });
       renderizarGrid();
-      atualizarEstatisticas();
-
-      try {
-        const upserts = figurinhasDoAlbum.map(f => ({
-          cardeneta_usuario_id: cadernetaAtiva.id,
-          figurinha_id: f.id,
-          quantidade: 1
-        }));
-        await _supabase.from('itens_cardeneta').upsert(upserts, { onConflict: 'cardeneta_usuario_id,figurinha_id' });
-      } catch (e) {
-        console.error("Erro ao marcar todas:", e);
-      }
+      await _supabase.from('usuario_cardeneta').upsert(upsertData, { onConflict: 'user_id, figurinha_id' });
     }
 
     async function confirmarLimparColecao() {
-      if (!confirm('Deseja desmarcar todas as figurinhas da sua caderneta?')) return;
+      if (!confirm("Zerar todas as marcações?")) return;
+      let ids = figurinhasDoAlbum.map(f => f.id);
       mapaCadernetaUsuario = {};
       renderizarGrid();
-      atualizarEstatisticas();
-
-      try {
-        await _supabase.from('itens_cardeneta').delete().eq('cardeneta_usuario_id', cadernetaAtiva.id);
-      } catch (e) {
-        console.error("Erro ao limpar coleção:", e);
-      }
+      await _supabase.from('usuario_cardeneta').delete().eq('user_id', usuarioAtual.id).in('figurinha_id', ids);
     }
 
-    async function excluirAlbumAtual() {
-      if (!confirm('Tem certeza que deseja excluir esta caderneta? Todo o progresso será perdido.')) return;
-      try {
-        await _supabase.from('itens_cardeneta').delete().eq('cardeneta_usuario_id', cadernetaAtiva.id);
-        const { error } = await _supabase.from('cadernetas_usuario').delete().eq('id', cadernetaAtiva.id);
-        if (error) throw error;
-        voltarParaLista();
-      } catch (e) {
-        console.error(e);
-        alert('Erro ao excluir caderneta.');
-      }
+    function atualizarEstatisticas(total, tenho, repetidas) {
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statTenho').innerText = tenho;
+      document.getElementById('statFaltam').innerText = total - tenho;
+      document.getElementById('statRepetidas').innerText = repetidas;
+      document.getElementById('statPorcentagem').innerText = (total > 0 ? ((tenho / total) * 100).toFixed(1) : 0) + '%';
     }
 
-    function toggleShareMenu() {
-      const container = document.getElementById('shareDropdownContainer');
-      container.classList.toggle('active');
-    }
+    function toggleShareMenu() { document.getElementById('shareDropdownContainer').classList.toggle('active'); }
 
-    window.onclick = function(event) {
-      if (!event.target.matches('.btn-gold') && !event.target.closest('.share-dropdown')) {
-        const dropdowns = document.getElementsByClassName("share-dropdown");
-        for (let d of dropdowns) {
-          d.classList.remove('active');
-        }
-      }
-    }
-
-    function enviarWhatsApp(tipo) {
-      const base = cadernetaAtiva.albuns_base || {};
-      const nomeAlbum = base.titulo || 'Caderneta';
-      let texto = `📦 *Minha Caderneta: ${nomeAlbum}*\n\n`;
-
-      let faltantesArr = [];
-      let repetidasArr = [];
-
-      for (const f of figurinhasDoAlbum) {
-        const q = mapaCadernetaUsuario[f.id] || 0;
-        if (q === 0) {
-          faltantesArr.push(`#${f.numero}`);
-        } else if (q > 1) {
-          repetidasArr.push(`#${f.numero} (${q}x)`);
-        }
-      }
-
-      if (tipo === 'ambos' || tipo === 'faltantes') {
-        texto += `❌ *Faltantes (${faltantesArr.length}):*\n`;
-        texto += faltantesArr.length > 0 ? faltantesArr.join(', ') : 'Nenhuma faltando!';
-        texto += `\n\n`;
-      }
-
-      if (tipo === 'ambos' || tipo === 'repetidas') {
-        texto += `🔁 *Repetidas (${repetidasArr.length}):*\n`;
-        texto += repetidasArr.length > 0 ? repetidasArr.join(', ') : 'Nenhuma repetida!';
-        texto += `\n`;
-      }
-
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
+    async function enviarWhatsApp(tipo) {
       toggleShareMenu();
+
+      const albumBase = cadernetaAtiva && (Array.isArray(cadernetaAtiva.albuns) ? cadernetaAtiva.albuns[0] : cadernetaAtiva.albuns);
+      const nomeAlbum = cadernetaAtiva?.apelido_personalizado 
+        ? `${albumBase?.nome || 'Álbum'} - ${cadernetaAtiva.apelido_personalizado}` 
+        : (albumBase?.nome || 'Minha Coleção');
+
+      let texto = `🏁 ${nomeAlbum}\n`;
+
+      let faltantesPorCat = {};
+      let repetidasPorCat = {};
+
+      figurinhasDoAlbum.forEach(f => {
+        let q = mapaCadernetaUsuario[f.id] || 0;
+        let catId = f.categoria_id || f.id_categoria || f.grupo_id || 'geral';
+        let catInt = obterCategoriaPadrao(f);
+        let catIcone = f.icone || f.categoria_icone || mapaIconesCategorias[catInt] || '📌'; 
+
+        if (q === 0) {
+          if (!faltantesPorCat[catId]) {
+            faltantesPorCat[catId] = { nome: catInt, icone: catIcone, numeros: [] };
+          }
+          faltantesPorCat[catId].numeros.push(f.numero);
+        }
+        
+        if (q > 1) {
+          if (!repetidasPorCat[catId]) {
+            repetidasPorCat[catId] = { nome: catInt, icone: catIcone, itens: [] };
+          }
+          repetidasPorCat[catId].itens.push(`${f.numero} (${q-1})`);
+        }
+      });
+
+      if ((tipo === 'ambos' || tipo === 'faltantes') && Object.keys(faltantesPorCat).length > 0) {
+        texto += `\nFaltantes`;
+        for (let catId in faltantesPorCat) {
+          let cat = faltantesPorCat[catId];
+          let numerosOrdenados = cat.numeros.sort((a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b));
+          texto += `\n${cat.icone} ${cat.nome}: ${numerosOrdenados.join(', ')}`;
+        }
+      }
+
+      if ((tipo === 'ambos' || tipo === 'repetidas') && Object.keys(repetidasPorCat).length > 0) {
+        texto += `\n\nRepetidas`;
+        for (let catId in repetidasPorCat) {
+          let cat = repetidasPorCat[catId];
+          let itensOrdenados = cat.itens.sort((a, b) => {
+            let numA = parseInt(a.split(' ')[0]);
+            let numB = parseInt(b.split(' ')[0]);
+            return numA - numB || a.localeCompare(b);
+          });
+          texto += `\n${cat.icone} ${cat.nome}: ${itensOrdenados.join(', ')}`;
+        }
+      }
+
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
     }
   </script>
 </body>
