@@ -267,19 +267,23 @@
         `;
       }
 
-      // Renderiza o Plano e contagem exata da tabela configuracoes_planos_limite_trocas
+      // 1. Identifica o plano atual do usuário vindo de 'usuarios_cadastrados'
       const planoUsuario = (perfilAtual?.plano || 'gratis').toLowerCase().trim();
-      document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
+      document.getElementById('badgePlanoContainer').innerText = `Plano: ${perfilAtual?.plano ? perfilAtual.plano.toUpperCase() : 'GRÁTIS'}`;
 
+      // 2. Busca o limite correto na tabela 'configuracoes_planos' (coluna 'limite_trocas')
       const { data: configPlano } = await _supabase
-        .from('configuracoes_planos_limite_trocas')
+        .from('configuracoes_planos')
         .select('limite_trocas')
         .ilike('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximoTrocas = configPlano ? configPlano.limite_trocas : 80;
+      // Se encontrar na tabela usa o valor dela (ex: 3, 10, 20), senão assume 3 como padrão para grátis
+      const limiteMaximoTrocas = configPlano ? configPlano.limite_trocas : 3; 
+
       const hojeStr = new Date().toISOString().split('T')[0];
 
+      // 3. Conta as propostas feitas hoje na tabela 'historico_propostas_diarias'
       const { data: historicoDiario } = await _supabase
         .from('historico_propostas_diarias')
         .select('propostas_enviadas')
@@ -290,6 +294,7 @@
       const qtdTrocasFeitasHoje = historicoDiario ? (historicoDiario.propostas_enviadas || 0) : 0;
       const avisoTrocasEl = document.getElementById('avisoLimiteTrocas');
 
+      // 4. Exibe no formato correto (Ex: 0 / 3, 0 / 10, 0 / 20)
       if (limiteMaximoTrocas === -1) {
         avisoTrocasEl.innerText = `Trocas ativas: ${qtdTrocasFeitasHoje} / Ilimitado`;
       } else {
@@ -536,12 +541,12 @@
       const planoUsuario = (perfilAtual.plano || 'gratis').toLowerCase().trim();
       
       const { data: configPlano } = await _supabase
-        .from('configuracoes_planos_limite_trocas')
+        .from('configuracoes_planos')
         .select('limite_trocas')
         .ilike('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 80);
+      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 20);
       const hojeStr = new Date().toISOString().split('T')[0];
 
       const { data: historico } = await _supabase
