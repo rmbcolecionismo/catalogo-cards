@@ -118,7 +118,7 @@
     <div class="top-container">
       <div class="top-utils-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-weight: 800; color: var(--gold); font-size: 1rem;">📦 RMB Colecionismo</span>
+          <span style="font-weight: 800; color: var(--gold); font-size: 1rem;" data-i18n="brand">📦 RMB Colecionismo</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <div class="language-selector-flags">
@@ -131,100 +131,363 @@
           </div>
           <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
           <div id="userInfoHeader" class="user-profile-header">
-            <a href="index.html" class="btn-gold" style="padding: 6px 14px; font-size: 0.8rem; text-decoration: none;">Entrar</a>
+            <a href="index.html" class="btn-gold" style="padding: 6px 14px; font-size: 0.8rem; text-decoration: none;" data-i18n="entrar">Entrar</a>
           </div>
         </div>
       </div>
 
       <div class="nav-tabs-bar">
-        <a href="index.html">🏠 Início</a>
-        <a href="cardeneta.html" id="linkCardeneta">📖 Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine">📦 Vitrine</a>
-        <a href="mercado.html" class="active" id="linkMercado">🔄 Mercado de Trocas</a>
-        <a href="perfil.html" id="linkPerfil">⚙️ Perfil</a>
+        <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
+        <a href="cardeneta.html" id="linkCardeneta" data-i18n="nav_cardeneta">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" data-i18n="nav_vitrine">📦 Vitrine</a>
+        <a href="mercado.html" class="active" id="linkMercado" data-i18n="nav_mercado">🔄 Mercado de Trocas</a>
+        <a href="perfil.html" id="linkPerfil" data-i18n="nav_perfil">⚙️ Perfil</a>
       </div>
     </div>
 
     <div class="controls-bar">
       <select id="selectFiltroAlbum" class="filter-field" onchange="renderizarColecionadores()">
-        <option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>
+        <option value="todos" data-i18n="filtro_album_todos">📖 Filtro por Álbum: Todos os Álbuns</option>
       </select>
       <select id="selectFiltroDistancia" class="filter-field" onchange="renderizarColecionadores()">
-        <option value="todos">📍 Distância: Qualquer distância</option>
-        <option value="10">Até 10 km</option>
-        <option value="25">Até 25 km</option>
-        <option value="50">Até 50 km</option>
-        <option value="100">Até 100 km</option>
+        <option value="todos" data-i18n="filtro_dist_todos">📍 Distância: Qualquer distância</option>
+        <option value="10" data-i18n="filtro_dist_10">Até 10 km</option>
+        <option value="25" data-i18n="filtro_dist_25">Até 25 km</option>
+        <option value="50" data-i18n="filtro_dist_50">Até 50 km</option>
+        <option value="100" data-i18n="filtro_dist_100">Até 100 km</option>
       </select>
     </div>
 
     <!-- CABEÇALHO ATUALIZADO COM O PLANO E TROCAS ATIVAS À DIREITA -->
     <div class="section-header-box">
-      <div class="section-title">🔄 Colecionadores Próximos & Matches por Álbum</div>
+      <div class="section-title" data-i18n="titulo_colecionadores">🔄 Colecionadores Próximos & Matches por Álbum</div>
       <div class="plan-badge-container">
-        <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
-        <div id="avisoLimiteTrocas" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Trocas ativas: ... / ...</div>
+        <div id="badgePlanoContainer" class="plan-badge" data-i18n="carregando_plano">Plano: A carregar...</div>
+        <div id="avisoLimiteTrocas" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);" data-i18n="trocas_ativas_carregando">Trocas ativas: ... / ...</div>
       </div>
     </div>
 
     <div id="mercadoGrid" class="market-grid">
-      <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Carregando matches de troca...</div>
+      <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="carregando_matches">Carregando matches de troca...</div>
     </div>
 
-    <div class="section-title" style="margin-top: 30px; margin-bottom: 15px;">💬 Minhas Propostas de Troca Ativas</div>
+    <div class="section-title" style="margin-top: 30px; margin-bottom: 15px;" data-i18n="titulo_minhas_propostas">💬 Minhas Propostas de Troca Ativas</div>
     <div id="propostasGrid" class="market-grid">
-      <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">Carregando propostas...</div>
+      <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;" data-i18n="carregando_propostas">Carregando propostas...</div>
     </div>
   </div>
 
   <div id="modalProposta" class="modal-overlay">
     <div class="modal-box">
-      <h3 id="modalPropostaTitulo">✨ Criar Proposta de Troca Justa</h3>
-      <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione figurinhas correspondentes do mesmo álbum para realizar uma troca justa:</p>
+      <h3 id="modalPropostaTitulo" data-i18n="modal_prop_titulo">✨ Criar Proposta de Troca Justa</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted);" data-i18n="modal_prop_desc">Selecione figurinhas correspondentes do mesmo álbum para realizar uma troca justa:</p>
       
-      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold);">1. Suas Figurinhas Repetidas para Oferecer:</div>
+      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold);" data-i18n="modal_prop_sub1">1. Suas Figurinhas Repetidas para Oferecer:</div>
       <div id="gridMinhasRepetidas" class="proposta-grid"></div>
-      <div id="chipsOferecidas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma selecionada.</span></div>
+      <div id="chipsOferecidas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="nenhuma_selecionada">Nenhuma selecionada.</span></div>
 
-      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold); margin-top: 10px;">2. Figurinhas do Colega que Você Deseja (Faltantes):</div>
+      <div style="font-weight: 600; font-size: 0.82rem; color: var(--gold); margin-top: 10px;" data-i18n="modal_prop_sub2">2. Figurinhas do Colega que Você Deseja (Faltantes):</div>
       <div id="gridColegaRepetidas" class="proposta-grid"></div>
-      <div id="chipsDesejadas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma selecionada.</span></div>
+      <div id="chipsDesejadas" class="chips-container"><span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="nenhuma_selecionada">Nenhuma selecionada.</span></div>
 
       <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn-gold" onclick="enviarPropostaConfirmada()">Enviar Proposta Justa</button>
-        <button class="btn-outline" onclick="fecharModalProposta()">Cancelar</button>
+        <button class="btn-gold" onclick="enviarPropostaConfirmada()" data-i18n="btn_enviar_proposta">Enviar Proposta Justa</button>
+        <button class="btn-outline" onclick="fecharModalProposta()" data-i18n="btn_cancelar">Cancelar</button>
       </div>
     </div>
   </div>
 
   <div id="modalChat" class="modal-overlay">
     <div class="modal-box">
-      <h3 id="chatTitulo">💬 Negociação da Proposta</h3>
+      <h3 id="chatTitulo" data-i18n="modal_chat_titulo">💬 Negociação da Proposta</h3>
       <div id="detalhesPropostaResumo" style="background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.8rem; border: 1px solid var(--border-color);"></div>
       
       <div class="chat-container">
         <div id="chatMensagens" class="chat-mensagens"></div>
         <div class="chat-input-bar">
-          <input type="text" id="inputMsgChat" class="filter-field" placeholder="Digite sua mensagem ou contraproposta..." onkeypress="if(event.key==='Enter') enviarOuEditarMensagemChat()">
-          <button class="btn-gold" id="btnEnviarMsg" onclick="enviarOuEditarMensagemChat()" style="flex: 0 0 90px;">Enviar</button>
+          <input type="text" id="inputMsgChat" class="filter-field" placeholder="Digite sua mensagem ou contraproposta..." data-i18n-placeholder="placeholder_chat" onkeypress="if(event.key==='Enter') enviarOuEditarMensagemChat()">
+          <button class="btn-gold" id="btnEnviarMsg" onclick="enviarOuEditarMensagemChat()" style="flex: 0 0 90px;" data-i18n="btn_enviar">Enviar</button>
         </div>
       </div>
 
       <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
         <div style="display: flex; gap: 8px; flex: 1;">
-          <button class="btn-success" onclick="mudarStatusProposta('aceita')">✅ Aceitar Proposta</button>
-          <button class="btn-danger" onclick="mudarStatusProposta('recusada')">❌ Recusar Proposta</button>
+          <button class="btn-success" onclick="mudarStatusProposta('aceita')" data-i18n="btn_aceitar">✅ Aceitar Proposta</button>
+          <button class="btn-danger" onclick="mudarStatusProposta('recusada')" data-i18n="btn_recusar">❌ Recusar Proposta</button>
         </div>
-        <button class="btn-outline" onclick="fecharModalChat()" style="flex: 0 0 120px;">Fechar</button>
+        <button class="btn-outline" onclick="fecharModalChat()" style="flex: 0 0 120px;" data-i18n="btn_fechar">Fechar</button>
       </div>
     </div>
   </div>
 
   <footer>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+    <p><span data-i18n="footer_copy">Plataforma de Colecionadores &copy; 2026 — Desenvolvido por</span> <strong>RMB</strong></p>
   </footer>
 
   <script>
+    // DICIONÁRIO DE IDIOMAS DA PÁGINA
+    const dicionarioIdiomas = {
+      'pt-BR': {
+        brand: '📦 RMB Colecionismo',
+        entrar: 'Entrar',
+        sair: 'Sair',
+        nav_inicio: '🏠 Início',
+        nav_cardeneta: '📖 Cadernetas',
+        nav_vitrine: '📦 Vitrine',
+        nav_mercado: '🔄 Mercado de Trocas',
+        nav_perfil: '⚙️ Perfil',
+        filtro_album_todos: '📖 Filtro por Álbum: Todos os Álbuns',
+        filtro_dist_todos: '📍 Distância: Qualquer distância',
+        filtro_dist_10: 'Até 10 km',
+        filtro_dist_25: 'Até 25 km',
+        filtro_dist_50: 'Até 50 km',
+        filtro_dist_100: 'Até 100 km',
+        titulo_colecionadores: '🔄 Colecionadores Próximos & Matches por Álbum',
+        carregando_plano: 'Plano: A carregar...',
+        trocas_ativas_carregando: 'Trocas ativas: ... / ...',
+        carregando_matches: 'Carregando matches de troca...',
+        titulo_minhas_propostas: '💬 Minhas Propostas de Troca Ativas',
+        carregando_propostas: 'Carregando propostas...',
+        modal_prop_titulo: '✨ Criar Proposta de Troca Justa',
+        modal_prop_desc: 'Selecione figurinhas correspondentes do mesmo álbum para realizar uma troca justa:',
+        modal_prop_sub1: '1. Suas Figurinhas Repetidas para Oferecer:',
+        nenhuma_selecionada: 'Nenhuma selecionada.',
+        modal_prop_sub2: '2. Figurinhas do Colega que Você Deseja (Faltantes):',
+        btn_enviar_proposta: 'Enviar Proposta Justa',
+        btn_cancelar: 'Cancelar',
+        modal_chat_titulo: '💬 Negociação da Proposta',
+        placeholder_chat: 'Digite sua mensagem ou contraproposta...',
+        btn_enviar: 'Enviar',
+        btn_aceitar: '✅ Aceitar Proposta',
+        btn_recusar: '❌ Recusar Proposta',
+        btn_fechar: 'Fechar',
+        footer_copy: 'Plataforma de Colecionadores © 2026 — Desenvolvido por',
+        alerta_logado: 'Você precisa estar logado.',
+        alerta_limite: '⚠️ Você atingiu o limite diário de propostas do seu plano. Tente novamente amanhã!',
+        alerta_sucesso_prop: 'Proposta enviada com sucesso!',
+        alerta_sucesso_status: 'Proposta atualizada com sucesso!'
+      },
+      'pt-PT': {
+        brand: '📦 RMB Colecionismo',
+        entrar: 'Entrar',
+        sair: 'Sair',
+        nav_inicio: '🏠 Início',
+        nav_cardeneta: '📖 Cadernetas',
+        nav_vitrine: '📦 Vitrine',
+        nav_mercado: '🔄 Mercado de Trocas',
+        nav_perfil: '⚙️ Perfil',
+        filtro_album_todos: '📖 Filtro por Álbum: Todos os Álbuns',
+        filtro_dist_todos: '📍 Distância: Qualquer distância',
+        filtro_dist_10: 'Até 10 km',
+        filtro_dist_25: 'Até 25 km',
+        filtro_dist_50: 'Até 50 km',
+        filtro_dist_100: 'Até 100 km',
+        titulo_colecionadores: '🔄 Colecionadores Próximos & Matches por Álbum',
+        carregando_plano: 'Plano: A carregar...',
+        trocas_ativas_carregando: 'Trocas ativas: ... / ...',
+        carregando_matches: 'A carregar matches de troca...',
+        titulo_minhas_propostas: '💬 Minhas Propostas de Troca Ativas',
+        carregando_propostas: 'A carregar propostas...',
+        modal_prop_titulo: '✨ Criar Proposta de Troca Justa',
+        modal_prop_desc: 'Selecione cromos correspondentes do mesmo álbum para realizar uma troca justa:',
+        modal_prop_sub1: '1. Os Seus Cromos Repetidos para Oferecer:',
+        nenhuma_selecionada: 'Nenhum selecionado.',
+        modal_prop_sub2: '2. Cromos do Colega que Deseja (Faltantes):',
+        btn_enviar_proposta: 'Enviar Proposta Justa',
+        btn_cancelar: 'Cancelar',
+        modal_chat_titulo: '💬 Negociação da Proposta',
+        placeholder_chat: 'Digite a sua mensagem ou contraproposta...',
+        btn_enviar: 'Enviar',
+        btn_aceitar: '✅ Aceitar Proposta',
+        btn_recusar: '❌ Recusar Proposta',
+        btn_fechar: 'Fechar',
+        footer_copy: 'Plataforma de Colecionadores © 2026 — Desenvolvido por',
+        alerta_logado: 'Precisa de estar autenticado.',
+        alerta_limite: '⚠️ Atingiu o limite diário de propostas do seu plano. Tente novamente amanhã!',
+        alerta_sucesso_prop: 'Proposta enviada com sucesso!',
+        alerta_sucesso_status: 'Proposta atualizada com sucesso!'
+      },
+      'en': {
+        brand: '📦 RMB Collecting',
+        entrar: 'Sign In',
+        sair: 'Sign Out',
+        nav_inicio: '🏠 Home',
+        nav_cardeneta: '📖 Albums',
+        nav_vitrine: '📦 Showcase',
+        nav_mercado: '🔄 Trading Market',
+        nav_perfil: '⚙️ Profile',
+        filtro_album_todos: '📖 Album Filter: All Albums',
+        filtro_dist_todos: '📍 Distance: Any distance',
+        filtro_dist_10: 'Up to 10 km',
+        filtro_dist_25: 'Up to 25 km',
+        filtro_dist_50: 'Up to 50 km',
+        filtro_dist_100: 'Up to 100 km',
+        titulo_colecionadores: '🔄 Nearby Collectors & Album Matches',
+        carregando_plano: 'Plan: Loading...',
+        trocas_ativas_carregando: 'Active trades: ... / ...',
+        carregando_matches: 'Loading trade matches...',
+        titulo_minhas_propostas: '💬 My Active Trade Proposals',
+        carregando_propostas: 'Loading proposals...',
+        modal_prop_titulo: '✨ Create Fair Trade Proposal',
+        modal_prop_desc: 'Select matching stickers from the same album to make a fair trade:',
+        modal_prop_sub1: '1. Your Duplicate Stickers to Offer:',
+        nenhuma_selecionada: 'None selected.',
+        modal_prop_sub2: '2. Collector Stickers You Want (Missing):',
+        btn_enviar_proposta: 'Send Fair Proposal',
+        btn_cancelar: 'Cancel',
+        modal_chat_titulo: '💬 Proposal Negotiation',
+        placeholder_chat: 'Type your message or counter-proposal...',
+        btn_enviar: 'Send',
+        btn_aceitar: '✅ Accept Proposal',
+        btn_recusar: '❌ Reject Proposal',
+        btn_fechar: 'Close',
+        footer_copy: 'Collectors Platform © 2026 — Developed by',
+        alerta_logado: 'You need to be logged in.',
+        alerta_limite: '⚠️ You have reached the daily proposal limit of your plan. Try again tomorrow!',
+        alerta_sucesso_prop: 'Proposal sent successfully!',
+        alerta_sucesso_status: 'Proposal updated successfully!'
+      },
+      'it': {
+        brand: '📦 RMB Collezionismo',
+        entrar: 'Accedi',
+        sair: 'Esci',
+        nav_inicio: '🏠 Home',
+        nav_cardeneta: '📖 Album',
+        nav_vitrine: '📦 Vetrina',
+        nav_mercado: '🔄 Mercato Scambi',
+        nav_perfil: '⚙️ Profilo',
+        filtro_album_todos: '📖 Filtro Album: Tutti gli album',
+        filtro_dist_todos: '📍 Distanza: Qualsiasi distanza',
+        filtro_dist_10: 'Fino a 10 km',
+        filtro_dist_25: 'Fino a 25 km',
+        filtro_dist_50: 'Fino a 50 km',
+        filtro_dist_100: 'Fino a 100 km',
+        titulo_colecionadores: '🔄 Collezionisti Nelle Vicinanze & Match',
+        carregando_plano: 'Piano: Caricamento...',
+        trocas_ativas_carregando: 'Scambi attivi: ... / ...',
+        carregando_matches: 'Caricamento corrispondenze...',
+        titulo_minhas_propostas: '💬 Le Mie Proposte Attive',
+        carregando_propostas: 'Caricamento proposte...',
+        modal_prop_titulo: '✨ Crea Proposta di Scambio Equo',
+        modal_prop_desc: 'Seleziona le figurine corrispondenti dallo stesso album:',
+        modal_prop_sub1: '1. Le Tue Figurine Doppie da Offrire:',
+        nenhuma_selecionada: 'Nessuna selezionata.',
+        modal_prop_sub2: '2. Figurine che desideri (Mancanti):',
+        btn_enviar_proposta: 'Invia Proposta',
+        btn_cancelar: 'Annulla',
+        modal_chat_titulo: '💬 Negoziazione Proposta',
+        placeholder_chat: 'Scrivi un messaggio o controproposta...',
+        btn_enviar: 'Invia',
+        btn_aceitar: '✅ Accetta Proposta',
+        btn_recusar: '❌ Rifiuta Proposta',
+        btn_fechar: 'Chiudi',
+        footer_copy: 'Piattaforma Collezionisti © 2026 — Sviluppato da',
+        alerta_logado: 'Devi effettuare il login.',
+        alerta_limite: '⚠️ Hai raggiunto il limite giornaliero del tuo piano.',
+        alerta_sucesso_prop: 'Proposta inviata con successo!',
+        alerta_sucesso_status: 'Proposta aggiornata con successo!'
+      },
+      'es': {
+        brand: '📦 RMB Coleccionismo',
+        entrar: 'Entrar',
+        sair: 'Salir',
+        nav_inicio: '🏠 Inicio',
+        nav_cardeneta: '📖 Álbumes',
+        nav_vitrine: '📦 Vitrina',
+        nav_mercado: '🔄 Mercado de Intercambio',
+        nav_perfil: '⚙️ Perfil',
+        filtro_album_todos: '📖 Filtro por Álbum: Todos los Álbumes',
+        filtro_dist_todos: '📍 Distancia: Cualquier distancia',
+        filtro_dist_10: 'Hasta 10 km',
+        filtro_dist_25: 'Hasta 25 km',
+        filtro_dist_50: 'Hasta 50 km',
+        filtro_dist_100: 'Hasta 100 km',
+        titulo_colecionadores: '🔄 Coleccionistas Cercanos y Coincidencias',
+        carregando_plano: 'Plan: Cargando...',
+        trocas_ativas_carregando: 'Intercambios activos: ... / ...',
+        carregando_matches: 'Cargando coincidencias...',
+        titulo_minhas_propostas: '💬 Mis Propuestas Activas',
+        carregando_propostas: 'Cargando propuestas...',
+        modal_prop_titulo: '✨ Crear Propuesta Justa',
+        modal_prop_desc: 'Selecciona las figuritas correspondientes del mismo álbum:',
+        modal_prop_sub1: '1. Tus Figuritas Repetidas para Ofrecer:',
+        nenhuma_selecionada: 'Ninguna seleccionada.',
+        modal_prop_sub2: '2. Figuritas del Colega que Deseas (Faltantes):',
+        btn_enviar_proposta: 'Enviar Propuesta Justa',
+        btn_cancelar: 'Cancelar',
+        modal_chat_titulo: '💬 Negociación de Propuesta',
+        placeholder_chat: 'Escribe tu mensaje o contrapropuesta...',
+        btn_enviar: 'Enviar',
+        btn_aceitar: '✅ Aceptar Propuesta',
+        btn_recusar: '❌ Rechazar Propuesta',
+        btn_fechar: 'Cerrar',
+        footer_copy: 'Plataforma de Coleccionistas © 2026 — Desarrollado por',
+        alerta_logado: 'Necesitas iniciar sesión.',
+        alerta_limite: '⚠️ Has alcanzado el límite diario de propuestas de tu plan.',
+        alerta_sucesso_prop: '¡Propuesta enviada com éxito!',
+        alerta_sucesso_status: '¡Propuesta actualizada con éxito!'
+      },
+      'fr': {
+        brand: '📦 RMB Collection',
+        entrar: 'Connexion',
+        sair: 'Déconnexion',
+        nav_inicio: '🏠 Accueil',
+        nav_cardeneta: '📖 Albums',
+        nav_vitrine: '📦 Vitrine',
+        nav_mercado: '🔄 Marché d\'Échange',
+        nav_perfil: '⚙️ Profil',
+        filtro_album_todos: '📖 Filtre par Album: Tous les Albums',
+        filtro_dist_todos: '📍 Distance: Toute distance',
+        filtro_dist_10: 'Jusqu\'à 10 km',
+        filtro_dist_25: 'Jusqu\'à 25 km',
+        filtro_dist_50: 'Jusqu\'à 50 km',
+        filtro_dist_100: 'Jusqu\'à 100 km',
+        titulo_colecionadores: '🔄 Collectionneurs Proches & Correspondances',
+        carregando_plano: 'Plan: Chargement...',
+        trocas_ativas_carregando: 'Échanges actifs: ... / ...',
+        carregando_matches: 'Chargement des correspondances...',
+        titulo_minhas_propostas: '💬 Mes Propositions Actives',
+        carregando_propostas: 'Chargement des propositions...',
+        modal_prop_titulo: '✨ Créer une Proposition Équitable',
+        modal_prop_desc: 'Sélectionnez des vignettes correspondantes du même album :',
+        modal_prop_sub1: '1. Vos Vignettes en Double à Offrir :',
+        nenhuma_selecionada: 'Aucune sélectionnée.',
+        modal_prop_sub2: '2. Vignettes Souhaitées (Manquantes) :',
+        btn_enviar_proposta: 'Envoyer la Proposition',
+        btn_cancelar: 'Annuler',
+        modal_chat_titulo: '💬 Négociation de Proposition',
+        placeholder_chat: 'Tapez votre message ou contre-proposition...',
+        btn_enviar: 'Envoyer',
+        btn_aceitar: '✅ Accepter la Proposition',
+        btn_recusar: '❌ Refuser la Proposition',
+        btn_fechar: 'Fermer',
+        footer_copy: 'Plateforme de Collectionneurs © 2026 — Développé par',
+        alerta_logado: 'Vous devez être connecté.',
+        alerta_limite: '⚠️ Vous avez atteint la limite quotidienne de propositions de votre forfait.',
+        alerta_sucesso_prop: 'Proposition envoyée avec succès!',
+        alerta_sucesso_status: 'Proposition mise à jour avec succès!'
+      }
+    };
+
+    function mudarIdiomaGlobal(lang) {
+      localStorage.setItem('idioma_app', lang);
+      document.querySelectorAll('.flag-option').forEach(btn => {
+        if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      const dict = dicionarioIdiomas[lang] || dicionarioIdiomas['pt-BR'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const chave = el.getAttribute('data-i18n');
+        if (dict[chave]) el.innerText = dict[chave];
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const chave = el.getAttribute('data-i18n-placeholder');
+        if (dict[chave]) el.placeholder = dict[chave];
+      });
+    }
+
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -249,9 +512,13 @@
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') document.documentElement.setAttribute('data-theme', 'light');
 
+      const idiomaSalvo = localStorage.getItem('idioma_app') || 'pt-BR';
+      mudarIdiomaGlobal(idiomaSalvo);
+
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) {
-        alert('Você precisa estar logado.');
+        const lang = localStorage.getItem('idioma_app') || 'pt-BR';
+        alert(dicionarioIdiomas[lang].alerta_logado);
         window.location.href = 'index.html';
         return;
       }
@@ -261,25 +528,29 @@
       perfilAtual = perfil || { id: usuarioAtual.id, nome: usuarioAtual.email.split('@')[0], latitude: 0, longitude: 0, plano: 'gratis' };
 
       if (perfilAtual.nome) {
+        const lang = localStorage.getItem('idioma_app') || 'pt-BR';
+        const txtSair = dicionarioIdiomas[lang].sair;
         document.getElementById('userInfoHeader').innerHTML = `
           <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${perfilAtual.nome}</strong></span>
-          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem;">Sair</button>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem;">${txtSair}</button>
         `;
       }
 
-      // Renderiza o Plano e contagem exata da tabela configuracoes_planos_limite_trocas
+      // 1. Identifica o plano atual do usuário vindo de 'usuarios_cadastrados'
       const planoUsuario = (perfilAtual?.plano || 'gratis').toLowerCase().trim();
-      document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
+      document.getElementById('badgePlanoContainer').innerText = `Plano: ${perfilAtual?.plano ? perfilAtual.plano.toUpperCase() : 'GRÁTIS'}`;
 
+      // 2. Busca o limite correto na tabela CORRETA 'configuracoes_planos' (coluna 'limite_trocas')
       const { data: configPlano } = await _supabase
-        .from('configuracoes_planos_limite_trocas')
+        .from('configuracoes_planos')
         .select('limite_trocas')
         .ilike('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximoTrocas = configPlano ? configPlano.limite_trocas : 80;
+      const limiteMaximoTrocas = configPlano ? configPlano.limite_trocas : 3;
       const hojeStr = new Date().toISOString().split('T')[0];
 
+      // 3. Conta as propostas feitas hoje na tabela 'historico_propostas_diarias'
       const { data: historicoDiario } = await _supabase
         .from('historico_propostas_diarias')
         .select('propostas_enviadas')
@@ -290,6 +561,7 @@
       const qtdTrocasFeitasHoje = historicoDiario ? (historicoDiario.propostas_enviadas || 0) : 0;
       const avisoTrocasEl = document.getElementById('avisoLimiteTrocas');
 
+      // 4. Exibe no formato correto (Ex: 0 / 3, 0 / 10, 0 / 20)
       if (limiteMaximoTrocas === -1) {
         avisoTrocasEl.innerText = `Trocas ativas: ${qtdTrocasFeitasHoje} / Ilimitado`;
       } else {
@@ -338,7 +610,7 @@
     async function carregarAlbunsEColecionadores() {
       const { data: albunsData } = await _supabase.from('albuns').select('id, nome');
       if (albunsData) {
-        let opts = `<option value="todos">📖 Filtro por Álbum: Todos os Álbuns</option>`;
+        let opts = `<option value="todos" data-i18n="filtro_album_todos">📖 Filtro por Álbum: Todos os Álbuns</option>`;
         albunsData.forEach(a => { opts += `<option value="${String(a.id)}">${a.nome}</option>`; });
         document.getElementById('selectFiltroAlbum').innerHTML = opts;
       }
@@ -536,12 +808,12 @@
       const planoUsuario = (perfilAtual.plano || 'gratis').toLowerCase().trim();
       
       const { data: configPlano } = await _supabase
-        .from('configuracoes_planos_limite_trocas')
+        .from('configuracoes_planos')
         .select('limite_trocas')
         .ilike('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 80);
+      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 10);
       const hojeStr = new Date().toISOString().split('T')[0];
 
       const { data: historico } = await _supabase
@@ -554,7 +826,8 @@
       const totalFeitasHoje = historico ? (historico.propostas_enviadas || 0) : 0;
 
       if (limiteMaximo !== -1 && totalFeitasHoje >= limiteMaximo) {
-        alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã!`);
+        const lang = localStorage.getItem('idioma_app') || 'pt-BR';
+        alert(dicionarioIdiomas[lang].alerta_limite);
         return false;
       }
 
@@ -599,7 +872,8 @@
         mensagem: '✨ Proposta de troca enviada com os itens selecionados!'
       }]);
 
-      alert('Proposta enviada com sucesso!');
+      const lang = localStorage.getItem('idioma_app') || 'pt-BR';
+      alert(dicionarioIdiomas[lang].alerta_sucesso_prop);
       fecharModalProposta();
       carregarMinhasPropostas();
     }
@@ -824,7 +1098,8 @@
       const { error } = await _supabase.from('propostas_troca').update({ status: novoStatus }).eq('id', propostaSelecionadaId);
       if (error) { alert('Erro ao atualizar status: ' + error.message); return; }
       
-      alert(`Proposta ${novoStatus} com sucesso!`);
+      const lang = localStorage.getItem('idioma_app') || 'pt-BR';
+      alert(dicionarioIdiomas[lang].alerta_sucesso_status);
       fecharModalChat();
       carregarMinhasPropostas();
       carregarAlbunsEColecionadores();
