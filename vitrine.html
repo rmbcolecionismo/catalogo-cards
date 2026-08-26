@@ -178,7 +178,7 @@
     <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
   </footer>
 
-  <script>
+  <script[cite: 8]>
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -286,7 +286,7 @@
 
       const { data: vitrineSalva } = await _supabase
         .from('vitrine_ofertas')
-        .select('figurinha_id, preco, estoque, qualidade')
+        .select('figurinha_id, preco, estoque, qualidade, moeda')
         .eq('user_id', authUserId);
 
       if (vitrineSalva) {
@@ -294,7 +294,8 @@
           meusPrecosQtd[item.figurinha_id] = { 
             preco: item.preco, 
             estoque: item.estoque, 
-            qualidade: item.qualidade || '100% (Nova / Perfeita)'
+            qualidade: item.qualidade || '100% (Nova / Perfeita)',
+            moeda: item.moeda || 'EUR'
           };
         });
       }
@@ -320,6 +321,7 @@
           
           if (!isNaN(termoLimpo) && termoLimpo !== "") {
             const numeroInt = parseInt(termoLimpo, 10);
+            // Permite buscar pelo número exato (ex: 1, 01, 001) ou por texto em nome, seleção, escuderia ou tipo
             query = query.or(`numero.eq.${numeroInt},nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
           } else {
             query = query.or(`nome.ilike.%${termo}%,selecao_escuderia.ilike.%${termo}%,tipo.ilike.%${termo}%`);
@@ -350,7 +352,7 @@
       }
 
       grid.innerHTML = lista.map(f => {
-        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, qualidade: '100% (Nova / Perfeita)' };
+        const salvo = meusPrecosQtd[f.id] || { preco: 0, estoque: 0, qualidade: '100% (Nova / Perfeita)', moeda: 'EUR' };
 
         return `
           <div class="card">
@@ -372,11 +374,21 @@
               </div>
 
               <div class="input-row">
-                <div class="input-wrapper">
-                  <label>Preço (€/$)</label>
+                <div class="input-wrapper" style="flex: 1.1;">
+                  <label>Preço</label>
                   <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01" min="0">
                 </div>
-                <div class="input-wrapper">
+                <div class="input-wrapper" style="flex: 1;">
+                  <label>Moeda</label>
+                  <select id="moeda-${f.id}">
+                    <option value="EUR" ${salvo.moeda === 'EUR' ? 'selected' : ''}>EUR (€)</option>
+                    <option value="BRL" ${salvo.moeda === 'BRL' ? 'selected' : ''}>BRL (R$)</option>
+                    <option value="USD" ${salvo.moeda === 'USD' ? 'selected' : ''}>USD ($)</option>
+                    <option value="GBP" ${salvo.moeda === 'GBP' ? 'selected' : ''}>GBP (£)</option>
+                    <option value="CHF" ${salvo.moeda === 'CHF' ? 'selected' : ''}>CHF (Fr)</option>
+                  </select>
+                </div>
+                <div class="input-wrapper" style="flex: 0.9;">
                   <label>Qtd Repetida</label>
                   <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
                 </div>
@@ -392,6 +404,7 @@
     async function adicionarNaVitrine(fId) {
       const qualidade = document.getElementById(`qualidade-${fId}`).value;
       const preco = parseFloat(document.getElementById(`preco-${fId}`).value) || 0;
+      const moeda = document.getElementById(`moeda-${fId}`).value;
       const estoque = parseInt(document.getElementById(`qtd-${fId}`).value) || 0;
 
       const estoqueAnterior = meusPrecosQtd[fId]?.estoque || 0;
@@ -399,7 +412,7 @@
       if (estoque > 0 && estoqueAnterior === 0) {
         const planoUsuario = (perfilLogado?.plano || 'gratis').toLowerCase().trim();
         
-        const { data: config, error: errConfig } = await _supabase
+        const { data: config } = await _supabase
           .from('configuracoes_planos')
           .select('limite_anuncios')
           .ilike('plano', planoUsuario)
@@ -426,6 +439,7 @@
         user_id: authUserId, 
         figurinha_id: fId, 
         preco: preco, 
+        moeda: moeda, 
         estoque: estoque, 
         tipo: 'venda', 
         qualidade: qualidade,
@@ -435,7 +449,7 @@
       if (error) {
         alert("Erro ao salvar anúncio: " + error.message);
       } else {
-        meusPrecosQtd[fId] = { preco, estoque, qualidade };
+        meusPrecosQtd[fId] = { preco, estoque, qualidade, moeda };
         alert("✅ Anúncio salvo com sucesso!");
         window.location.reload();
       }
