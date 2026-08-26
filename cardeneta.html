@@ -49,10 +49,10 @@
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    .header-painel { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    .header-painel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     .header-painel h2 { font-size: 1.6rem; color: var(--gold); font-weight: 700; letter-spacing: -0.5px; }
 
-    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
 
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
     .album-criado-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -191,11 +191,14 @@
         <div>
           <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
         </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-          <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
-          <div id="avisoLimiteCardeneta" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
+        <!-- Alteração solicitada: Informações do plano e status discretas ao lado direito do botão -->
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+            <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+            <div id="avisoLimiteCardeneta" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
+          </div>
+          <button class="btn-gold" onclick="abrirModalCriar()" data-i18n="btn_add_cardeneta">+ Adicionar Nova Caderneta</button>
         </div>
-        <button class="btn-gold" onclick="abrirModalCriar()" data-i18n="btn_add_cardeneta">+ Adicionar Nova Caderneta</button>
       </div>
       <div id="gridMeusAlbuns" class="albuns-usuario-grid">
         <div class="empty-state" data-i18n="msg_carregando_cardenetas">Carregando suas cadernetas...</div>
@@ -519,7 +522,7 @@
         <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
-      // --- ATUALIZAÇÃO DO PLANO E CONTADOR NO CABEÇALHO ---
+      // --- ATUALIZAÇÃO DO PLANO E CONTADOR DISCRETO AO LADO DIREITO ---
       const planoUsuario = (dadosPerfilUsuario.plano || 'gratis').toLowerCase().trim();
       document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
 
@@ -540,17 +543,17 @@
       const avisoEl = document.getElementById('avisoLimiteCardeneta');
 
       if (avisoEl) {
-        if (limiteMaximo !== -1 && qtdAtivas >= limiteMaximo) {
+        // Se o limite for ilimitado (ex: -1 ou maior igual a 999999), exibe o selo em destaque
+        if (limiteMaximo === -1 || limiteMaximo >= 999999) {
+          avisoEl.style.display = 'block';
+          avisoEl.innerHTML = `<span style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;">⭐ ILIMITADO</span>`;
+        } else if (qtdAtivas >= limiteMaximo) {
           avisoEl.style.display = 'block';
           avisoEl.innerHTML = `⚠️ Limite atingido (${qtdAtivas}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mudar plano</a>`;
-        } else if (limiteMaximo !== -1) {
+        } else {
           avisoEl.style.display = 'block';
           avisoEl.style.color = 'var(--text-muted)';
           avisoEl.innerText = `Cadernetas ativas: ${qtdAtivas} / ${limiteMaximo}`;
-        } else {
-          avisoEl.style.display = 'block';
-          avisoEl.style.color = 'var(--gold)';
-          avisoEl.innerText = `Cadernetas ativas: ${qtdAtivas} (Ilimitado)`;
         }
       }
       // ----------------------------------------------------
@@ -643,7 +646,7 @@
         if (nomePlanoUsuario === 'gratis') {
           limitePermitido = 1;
         } else {
-          limitePermitido = 999; 
+          limitePermitido = 999999; 
         }
       }
 
@@ -659,7 +662,7 @@
 
       const totalCadernetasAtuais = count || 0;
 
-      if (limitePermitido !== -1 && totalCadernetasAtuais >= limitePermitido) {
+      if (limitePermitido !== -1 && limitePermitido < 999999 && totalCadernetasAtuais >= limitePermitido) {
         alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso Plano Premium ou Anual para desbloquear álbuns ilimitados!`);
         window.location.href = "plano.html";
         return;
@@ -678,7 +681,6 @@
 
       fecharModalCriar();
       await carregarMinhasCadernetas();
-      // Recarrega a página para atualizar o contador no topo se necessário
       location.reload();
     }
 
