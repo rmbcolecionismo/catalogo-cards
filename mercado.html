@@ -38,7 +38,11 @@
     
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
-    .section-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    
+    .section-header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+    .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .plan-badge-container { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
 
     .controls-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
@@ -154,12 +158,20 @@
       </select>
     </div>
 
-    <div class="section-title">🔄 Colecionadores Próximos & Matches por Álbum</div>
+    <!-- CABEÇALHO ATUALIZADO COM O PLANO E TROCAS ATIVAS À DIREITA -->
+    <div class="section-header-box">
+      <div class="section-title">🔄 Colecionadores Próximos & Matches por Álbum</div>
+      <div class="plan-badge-container">
+        <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
+        <div id="avisoLimiteTrocas" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Trocas ativas: ... / ...</div>
+      </div>
+    </div>
+
     <div id="mercadoGrid" class="market-grid">
       <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Carregando matches de troca...</div>
     </div>
 
-    <div class="section-title" style="margin-top: 30px;">💬 Minhas Propostas de Troca Ativas</div>
+    <div class="section-title" style="margin-top: 30px; margin-bottom: 15px;">💬 Minhas Propostas de Troca Ativas</div>
     <div id="propostasGrid" class="market-grid">
       <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">Carregando propostas...</div>
     </div>
@@ -253,6 +265,35 @@
           <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${perfilAtual.nome}</strong></span>
           <button class="btn-outline" onclick="fazerLogout()" style="padding: 4px 10px; font-size: 0.75rem;">Sair</button>
         `;
+      }
+
+      // Renderiza o Plano e contagem exata da tabela configuracoes_planos_limite_trocas
+      const planoUsuario = (perfilAtual?.plano || 'gratis').toLowerCase().trim();
+      document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
+
+      const { data: configPlano } = await _supabase
+        .from('configuracoes_planos_limite_trocas')
+        .select('limite_trocas')
+        .ilike('plano', planoUsuario)
+        .maybeSingle();
+
+      const limiteMaximoTrocas = configPlano ? configPlano.limite_trocas : 80;
+      const hojeStr = new Date().toISOString().split('T')[0];
+
+      const { data: historicoDiario } = await _supabase
+        .from('historico_propostas_diarias')
+        .select('propostas_enviadas')
+        .eq('user_id', usuarioAtual.id)
+        .eq('data', hojeStr)
+        .maybeSingle();
+
+      const qtdTrocasFeitasHoje = historicoDiario ? (historicoDiario.propostas_enviadas || 0) : 0;
+      const avisoTrocasEl = document.getElementById('avisoLimiteTrocas');
+
+      if (limiteMaximoTrocas === -1) {
+        avisoTrocasEl.innerText = `Trocas ativas: ${qtdTrocasFeitasHoje} / Ilimitado`;
+      } else {
+        avisoTrocasEl.innerText = `Trocas ativas: ${qtdTrocasFeitasHoje} / ${limiteMaximoTrocas}`;
       }
 
       const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_id, numero, nome, imagem');
@@ -492,15 +533,15 @@
     }
 
     async function verificarEAtualizarLimiteDiario() {
-      const planoUsuario = perfilAtual.plano || 'gratis';
+      const planoUsuario = (perfilAtual.plano || 'gratis').toLowerCase().trim();
       
       const { data: configPlano } = await _supabase
-        .from('configuracoes_planos')
+        .from('configuracoes_planos_limite_trocas')
         .select('limite_trocas')
-        .eq('plano', planoUsuario)
+        .ilike('plano', planoUsuario)
         .maybeSingle();
 
-      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 50);
+      const limiteMaximo = configPlano ? configPlano.limite_trocas : (planoUsuario === 'gratis' ? 3 : 80);
       const hojeStr = new Date().toISOString().split('T')[0];
 
       const { data: historico } = await _supabase
@@ -512,7 +553,7 @@
 
       const totalFeitasHoje = historico ? (historico.propostas_enviadas || 0) : 0;
 
-      if (totalFeitasHoje >= limiteMaximo) {
+      if (limiteMaximo !== -1 && totalFeitasHoje >= limiteMaximo) {
         alert(`⚠️ Você atingiu o limite diário de ${limiteMaximo} propostas do seu plano (${planoUsuario.toUpperCase()}). Tente novamente amanhã!`);
         return false;
       }
@@ -673,7 +714,7 @@
       let html = '';
       msgs.forEach(m => {
         const eu = m.remetente_id === usuarioAtual.id;
-        const isSistema = m.remetente_id === null; // Identifica mensagem do sistema pelo remetente nulo
+        const isSistema = m.remetente_id === null; 
         
         if (isSistema) {
           html += `<div class="msg-bubble sistema"><span>⭐ ${m.mensagem}</span></div>`;
@@ -772,7 +813,6 @@
             await processarBaixaOuAdicaoCardeneta(destinatarioId, figsDestinatario, figsRemetente);
           }
 
-          // Inserção ajustada sem o parâmetro 'tipo' (utilizando remetente_id: null para identificar o sistema)
           await _supabase.from('proposta_mensagens').insert([{
             proposta_id: propostaSelecionadaId,
             remetente_id: null,
