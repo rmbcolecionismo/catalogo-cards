@@ -28,23 +28,27 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 20px; padding-bottom: 90px; transition: 0.3s; }
+    body { background: var(--bg); min-height: 100vh; color: var(--text-main); padding: 15px; padding-bottom: 90px; transition: 0.3s; }
     
-    .top-container { max-width: 1350px; margin: 0 auto 25px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
-    .top-utils-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: var(--bg-card); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .top-container { max-width: 1350px; margin: 0 auto 20px; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    
+    /* TOPO UNIFICADO EM UMA SÓ LINHA FLUIDA */
+    .top-utils-bar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); gap: 10px; }
+    .top-utils-right { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+
     .nav-tabs-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--bg-card); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .nav-tabs-bar a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; transition: 0.2s; background: var(--bg); border: 1px solid var(--border-color); }
+    .nav-tabs-bar a { color: var(--text-muted); text-decoration: none; font-size: 0.82rem; font-weight: 600; padding: 5px 10px; border-radius: 8px; transition: 0.2s; background: var(--bg); border: 1px solid var(--border-color); }
     .nav-tabs-bar a:hover, .nav-tabs-bar a.active { color: var(--gold); border-color: var(--gold); background: rgba(245, 158, 11, 0.05); }
     
-    .user-profile-header { display: flex; align-items: center; gap: 10px; }
-    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
+    .user-profile-header { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; white-space: nowrap; }
+    .user-avatar-top { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
 
     .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 320px; background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
     .vitrine-content { flex: 1; }
 
-    .vitrine-filters { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
+    .vitrine-filters { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
     .filter-field { background: var(--bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; flex: 1; min-width: 200px; }
     .filter-field:focus { border-color: var(--gold); }
     
@@ -66,33 +70,37 @@
     .sticker-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin: 2px 0; }
     .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
     .sticker-qtd { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-    .sticker-qualidade { font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 4px; }
 
     .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
-    .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
+    .btn-card-action { flex: 1; padding: 0.4rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
     .btn-edit { background: #3b82f6; color: white; }
     .btn-delete { background: #ef4444; color: white; }
     .btn-add-negociacao { background: var(--gold); color: #0f172a; width: 100%; padding: 8px; border-radius: 6px; font-weight: 700; border: none; margin-top: 8px; cursor: pointer; transition: 0.2s; }
     .btn-add-negociacao:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .edit-field { background: var(--bg); border: 1px solid var(--gold); color: var(--text-main); padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; font-size: 0.9rem; }
-    button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
+    button { cursor: pointer; padding: 8px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 8px; transition: 0.3s; }
     .btn-logout { background: #ef4444; color: white; }
     .btn-gold { background: var(--gold); color: #0f172a; }
-    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 10px; text-align: center; text-decoration: none; display: inline-block; }
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 6px; font-weight: bold; text-align: center; text-decoration: none; display: inline-block; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
     .reviews-section { margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; }
-    .review-card { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); position: relative; }
-    .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
+    .review-card { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); }
 
-    /* Carrinho Flutuante tipo Delivery */
-    .floating-cart { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border: 2px solid var(--gold); border-radius: 14px; padding: 15px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; gap: 15px; max-width: 350px; animation: bounceIn 0.3s ease; }
+    /* CARRINHO FLUTUANTE COM GERENCIAMENTO DE ITENS */
+    .floating-cart { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border: 2px solid var(--gold); border-radius: 14px; padding: 12px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; gap: 12px; max-width: 340px; }
     .floating-cart.active { display: flex; }
-    .cart-info { font-size: 0.85rem; }
-    .cart-info strong { color: var(--gold); display: block; font-size: 0.95rem; }
-    .btn-checkout { background: #25d366; color: white; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 5px; }
+    .cart-info { font-size: 0.82rem; cursor: pointer; }
+    .cart-info strong { color: var(--gold); display: block; font-size: 0.9rem; }
+    .btn-checkout { background: #25d366; color: white; padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 4px; white-space: nowrap; width: auto; margin-top: 0; }
     .btn-checkout:hover { opacity: 0.9; }
+
+    /* MODAL DO CARRINHO (PARA REMOVER ITENS POR ENGANO) */
+    .cart-modal-content { background: var(--modal-bg); border: 1px solid var(--gold); padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; }
+    .cart-items-list { overflow-y: auto; max-height: 250px; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+    .cart-item-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; }
+    .btn-remove-item { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 0.7rem; cursor: pointer; width: auto; margin-top: 0; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-box { background: var(--modal-bg); border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 340px; }
@@ -100,32 +108,32 @@
     .cardeneta-cta { background: linear-gradient(45deg, #f59e0b, #d97706); color: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
     .cardeneta-cta p { font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
 
-    .language-selector-flags { display: flex; align-items: center; gap: 5px; background: var(--bg); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 8px; }
-    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; line-height: 1; opacity: 0.6; }
+    .language-selector-flags { display: flex; align-items: center; gap: 4px; background: var(--bg); border: 1px solid var(--border-color); padding: 2px 4px; border-radius: 8px; }
+    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 1px; cursor: pointer; font-size: 1rem; line-height: 1; opacity: 0.6; width: auto; margin-top: 0; }
     .flag-option:hover { opacity: 0.9; }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
   </style>
 </head>
 <body>
 
-<!-- TOPO IDÊNTICO À CADERNETA.HTML -->
+<!-- TOPO UNIFICADO E ALINHADO EM UMA LINHA -->
 <div class="top-container">
   <div class="top-utils-bar">
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-weight: 800; color: var(--gold); font-size: 1rem;">📦 RMB Colecionismo</span>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-weight: 800; color: var(--gold); font-size: 0.9rem;">📦 RMB Colecionismo</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <div class="top-utils-right">
       <div class="language-selector-flags">
-        <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')"><img src="https://flagcdn.com/24x18/pt.png" style="width: 20px; height: 15px; display: block;"></button>
-        <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')"><img src="https://flagcdn.com/24x18/br.png" style="width: 20px; height: 15px; display: block;"></button>
-        <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')"><img src="https://flagcdn.com/24x18/gb.png" style="width: 20px; height: 15px; display: block;"></button>
-        <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')"><img src="https://flagcdn.com/24x18/it.png" style="width: 20px; height: 15px; display: block;"></button>
-        <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')"><img src="https://flagcdn.com/24x18/es.png" style="width: 20px; height: 15px; display: block;"></button>
-        <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')"><img src="https://flagcdn.com/24x18/fr.png" style="width: 20px; height: 15px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')"><img src="https://flagcdn.com/24x18/pt.png" style="width: 18px; height: 13px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')"><img src="https://flagcdn.com/24x18/br.png" style="width: 18px; height: 13px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')"><img src="https://flagcdn.com/24x18/gb.png" style="width: 18px; height: 13px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')"><img src="https://flagcdn.com/24x18/it.png" style="width: 18px; height: 13px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')"><img src="https://flagcdn.com/24x18/es.png" style="width: 18px; height: 13px; display: block;"></button>
+        <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')"><img src="https://flagcdn.com/24x18/fr.png" style="width: 18px; height: 13px; display: block;"></button>
       </div>
-      <button class="btn-outline" onclick="alternarTema()" style="padding: 4px 8px; font-size: 0.75rem; margin-top:0;">☀️ / 🌙</button>
+      <button class="btn-outline" onclick="alternarTema()" style="padding: 4px 6px; font-size: 0.7rem; margin-top:0;">☀️/🌙</button>
       <div id="userInfoHeader" class="user-profile-header">
-        <button class="btn-gold" onclick="window.location.href='index.html'" style="padding: 6px 14px; font-size: 0.8rem;" data-i18n="btn_entrar">Entrar / Criar Conta</button>
+        <button class="btn-gold" onclick="window.location.href='index.html'" style="padding: 5px 10px; font-size: 0.75rem; margin-top:0;" data-i18n="btn_entrar">Entrar</button>
       </div>
     </div>
   </div>
@@ -134,10 +142,10 @@
     <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
     <a href="cardeneta.html" id="linkCardeneta" data-i18n="nav_cadernetas">📖 Cadernetas</a>
     <a href="vitrine.html" id="linkVitrine" data-i18n="nav_vitrine">📦 Vitrine</a>
-    <a href="mercado.html" id="linkMercado" data-i18n="nav_mercado">🔄 Mercado de Trocas</a>
+    <a href="mercado.html" id="linkMercado" data-i18n="nav_mercado">🔄 Mercado</a>
     <a href="perfil.html" id="linkPerfil" class="active" data-i18n="nav_perfil">⚙️ Perfil</a>
-    <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
-    <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
+    <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Admin</a>
+    <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque</a>
   </div>
 </div>
 
@@ -149,53 +157,52 @@
       <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()" data-i18n="btn_change_photo">Trocar Foto</button>
     </div>
 
-    <div id="viewMode" style="margin-top:20px; text-align: center;">
-      <h3 id="userName">Carregando...</h3>
+    <div id="viewMode" style="margin-top:15px; text-align: center;">
+      <h3 id="userName" style="font-size: 1.1rem;">Carregando...</h3>
       <div id="profileWarningAlert" class="profile-warning-alert">
-        ⚠️ Para que o Marketplace funcione corretamente, preencha o seu <strong>Telefone (WhatsApp)</strong> e o <strong>Código Postal</strong>.
+        ⚠️ Para o Marketplace funcionar, preencha o seu <strong>WhatsApp</strong> e <strong>Código Postal</strong>.
       </div>
-      <div id="profileDetails" style="font-size: 0.9rem; color: var(--text-muted); margin: 15px 0;"></div>
+      <div id="profileDetails" style="font-size: 0.85rem; color: var(--text-muted); margin: 10px 0;"></div>
       <div id="mediaEstrelas" style="margin-bottom: 10px;"></div>
       <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()" data-i18n="btn_edit_profile">Editar Perfil</button>
     </div>
 
-    <div id="editMode" style="display:none; margin-top:20px;">
-      <label style="font-size: 0.75rem; color: var(--gold);">Nome:</label>
+    <div id="editMode" style="display:none; margin-top:15px;">
+      <label style="font-size: 0.72rem; color: var(--gold);">Nome:</label>
       <input type="text" id="editNome" class="edit-field">
-      <label style="font-size: 0.75rem; color: var(--gold);">📍 Código Postal:</label>
+      <label style="font-size: 0.72rem; color: var(--gold);">📍 Código Postal:</label>
       <input type="text" id="editCodigoPostal" class="edit-field">
-      <label style="font-size: 0.75rem; color: var(--gold);">📱 Telefone (WhatsApp):</label>
+      <label style="font-size: 0.72rem; color: var(--gold);">📱 WhatsApp:</label>
       <input type="text" id="editTelefoneWhats" class="edit-field">
-      <button class="btn-gold" onclick="salvarPerfil()">Salvar Alterações</button>
+      <button class="btn-gold" onclick="salvarPerfil()">Salvar</button>
       <button onclick="toggleEdit()" style="background:transparent; border:1px solid var(--border-color); color: var(--text-main);">Cancelar</button>
     </div>
 
     <div class="reviews-section">
-      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);">⭐ Avaliações do Vendedor</h4>
-      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px; color: var(--text-muted);">Carregando...</div>
-      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()">Deixar Avaliação</button>
+      <h4 style="font-size: 0.85rem; margin-bottom: 8px; color: var(--gold);">⭐ Avaliações</h4>
+      <div id="listaAvaliacoes" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; color: var(--text-muted);">Carregando...</div>
+      <button style="background: #334155; color: white; font-size: 0.78rem; padding: 6px;" onclick="abrirModalAvaliacao()">Deixar Avaliação</button>
     </div>
 
-    <div id="navMenu" style="margin-top:20px; border-top: 1px solid var(--border-color); padding-top:20px;">
+    <div id="navMenu" style="margin-top:15px; border-top: 1px solid var(--border-color); padding-top:15px;">
       <div class="cardeneta-cta">
-        <p>✨ Quer organizar sua coleção?</p>
+        <p style="font-size: 0.8rem;">✨ Organizar coleção?</p>
         <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
-          <button style="background: white; color: #0f172a; border: none; font-weight: 800;">Acessar Minha Cardeneta Agora</button>
+          <button style="background: white; color: #0f172a; border: none; font-weight: 800; font-size: 0.78rem; padding: 6px;">Acessar Cardeneta</button>
         </a>
       </div>
       <div id="loggedMenu" style="display:none;">
-        <button class="btn-logout" onclick="fazerLogout()">Sair do Sistema</button>
+        <button class="btn-logout" onclick="fazerLogout()" style="font-size: 0.78rem; padding: 6px;">Sair do Sistema</button>
       </div>
     </div>
   </div>
 
   <div class="vitrine-content">
-    <h2 style="color: var(--gold); margin-bottom: 15px;">🛍️ Vitrine do Vendedor</h2>
+    <h2 style="color: var(--gold); margin-bottom: 12px; font-size: 1.2rem;">🛍️ Vitrine do Vendedor</h2>
     
-    <!-- Aviso para visitantes deslogados -->
     <div id="visitorBanner" class="visitor-banner" style="display:none;">
-      <span>👋 Olá visitante! Você está visualizando a vitrine deste vendedor. Para iniciar uma negociação ou adicionar figurinhas ao carrinho, crie sua conta ou faça login.</span>
-      <a href="index.html" class="btn-gold" style="padding: 6px 16px; font-size: 0.8rem; width: auto; margin:0;">Entrar / Criar Conta Agora</a>
+      <span>👋 Olá visitante! Para iniciar uma negociação ou adicionar figurinhas ao carrinho, faça login.</span>
+      <a href="index.html" class="btn-gold" style="padding: 5px 12px; font-size: 0.78rem; width: auto; margin:0;">Entrar / Criar Conta</a>
     </div>
 
     <div class="vitrine-filters">
@@ -206,30 +213,42 @@
     </div>
 
     <div class="marketplace-alert">
-      ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários.
+      ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios.
     </div>
 
     <div class="cards-grid" id="vitrineGrid" style="color: var(--text-muted);">Carregando vitrine...</div>
   </div>
 </div>
 
-<!-- CARRINHO FLUTUANTE TIPO DELIVERY -->
+<!-- CARRINHO FLUTUANTE (COM OPÇÃO DE ABRIR E REMOVER ITENS) -->
 <div id="floatingCart" class="floating-cart">
-  <div class="cart-info">
-    <span>Negociação com Vendedor</span>
-    <strong id="cartSummaryText">0 itens (0,00 €)</strong>
+  <div class="cart-info" onclick="abrirModalCarrinho()">
+    <span>Negociação (Clique p/ ver)</span>
+    <strong id="cartSummaryText">0 itens (€ 0,00)</strong>
   </div>
   <button class="btn-checkout" onclick="fecharCheckoutWhatsApp()">💬 Enviar WhatsApp</button>
 </div>
 
-<!-- Modais -->
+<!-- MODAL PARA GERENCIAR / REMOVER ITENS DO CARRINHO -->
+<div class="modal-overlay" id="cartModal">
+  <div class="cart-modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+      <h3 style="color: var(--gold); font-size: 1rem;">🛒 Itens na Negociação</h3>
+      <button onclick="fecharModalCarrinho()" style="background:none; border:none; color:var(--text-main); font-size:1rem; cursor:pointer; width:auto; margin-top:0;">✕</button>
+    </div>
+    <div id="cartItemsListContainer" class="cart-items-list"></div>
+    <button class="btn-gold" onclick="fecharCheckoutWhatsApp()" style="margin-top: 10px;">💬 Enviar WhatsApp com a Lista</button>
+  </div>
+</div>
+
+<!-- Modal Edição de Oferta -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
-    <h3 style="margin-bottom: 15px; color: var(--gold);">✏️ Editar Oferta</h3>
+    <h3 style="margin-bottom: 12px; color: var(--gold); font-size: 1rem;">✏️ Editar Oferta</h3>
     <input type="hidden" id="modalOfertaId">
-    <label style="font-size: 0.75rem; color: var(--text-muted);">Preço:</label>
+    <label style="font-size: 0.72rem; color: var(--text-muted);">Preço:</label>
     <input type="number" step="0.01" id="modalPreco" class="edit-field">
-    <label style="font-size: 0.75rem; color: var(--text-muted);">Estoque:</label>
+    <label style="font-size: 0.72rem; color: var(--text-muted);">Estoque:</label>
     <input type="number" id="modalEstoque" class="edit-field">
     <button class="btn-gold" onclick="salvarEdicaoOferta()">Salvar</button>
     <button onclick="fecharModal()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main);">Cancelar</button>
@@ -267,11 +286,10 @@
         const avatarUrl = session.user.user_metadata?.avatar_url || perfilLogado.avatar || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top">
-          <span style="font-size: 0.85rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${perfilLogado.nome}</strong></span>
+          <span style="font-size: 0.8rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${perfilLogado.nome.split(' ')[0]}</strong></span>
         `;
       }
     } else {
-      // Visitante deslogado vê o banner orientando a criar conta
       document.getElementById('visitorBanner').style.display = 'flex';
     }
 
@@ -365,7 +383,11 @@
     grid.innerHTML = filtradas.map(item => {
       const f = figsMapGlobal[item.figurinha_id || item.id_figurinha] || {};
       const nomeAlbum = albunsMapGlobal[f.album_id] || '-';
-      const podeGerenciar = usuarioLogado && (String(item.user_id) === String(authUserId) || isAdminOrMaster);
+      
+      // Regra de Permissão: Administradores e Masters podem gerenciar APENAS se for a própria vitrine. 
+      // Se estiverem visualizando a vitrine de OUTRO usuário, eles agem como clientes comuns e podem negociar.
+      const eDonoDaVitrine = usuarioLogado && (String(item.user_id) === String(authUserId));
+      const podeGerenciarComoDono = eDonoDaVitrine || (isAdminOrMaster && eDonoDaVitrine);
       const ehProprioPerfil = usuarioLogado && String(perfilAlvoUuid) === String(usuarioLogado.id);
 
       return `
@@ -378,7 +400,7 @@
             <div class="sticker-price">€ ${Number(item.preco).toFixed(2)}</div>
             <div class="sticker-qtd">Estoque: ${item.estoque || 0}</div>
             
-            ${podeGerenciar ? `
+            ${podeGerenciarComoDono ? `
               <div class="card-actions">
                 <button class="btn-card-action btn-edit" onclick="abrirModalEdicao('${item.id}', ${item.preco}, ${item.estoque})">Editar</button>
                 <button class="btn-card-action btn-delete" onclick="excluirOferta('${item.id}')">Excluir</button>
@@ -390,7 +412,7 @@
     }).join('');
   }
 
-  // --- LÓGICA DO CARRINHO FLUTUANTE & WHATSAPP ---
+  // --- CARRINHO E REMOÇÃO DE ITENS ---
   function adicionarAoCarrinho(idOferta, nomeFigurinha, preco) {
     const itemExistente = carrinhoItens.find(i => i.id === idOferta);
     if (itemExistente) {
@@ -401,6 +423,15 @@
     atualizarCarrinhoFlutuante();
   }
 
+  function removerDoCarrinho(idOferta) {
+    carrinhoItens = carrinhoItens.filter(i => i.id !== idOferta);
+    atualizarCarrinhoFlutuante();
+    renderizarItensModalCarrinho();
+    if (carrinhoItens.length === 0) {
+      fecharModalCarrinho();
+    }
+  }
+
   function atualizarCarrinhoFlutuante() {
     const cart = document.getElementById('floatingCart');
     const summary = document.getElementById('cartSummaryText');
@@ -409,19 +440,42 @@
 
     if (totalItens > 0) {
       cart.classList.add('active');
-      summary.innerHTML = `${totalItens} itens • Total: € ${valorTotal.toFixed(2)}`;
+      summary.innerHTML = `${totalItens} itens (€ ${valorTotal.toFixed(2)})`;
     } else {
       cart.classList.remove('active');
     }
   }
 
+  function abrirModalCarrinho() {
+    renderizarItensModalCarrinho();
+    document.getElementById('cartModal').style.display = 'flex';
+  }
+
+  function fecharModalCarrinho() {
+    document.getElementById('cartModal').style.display = 'none';
+  }
+
+  function renderizarItensModalCarrinho() {
+    const container = document.getElementById('cartItemsListContainer');
+    if (carrinhoItens.length === 0) {
+      container.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Nenhum item na negociação.</p>";
+      return;
+    }
+    container.innerHTML = carrinhoItens.map(i => `
+      <div class="cart-item-row">
+        <span><b>${i.qtd}x</b> ${i.nome} - € ${(i.preco * i.qtd).toFixed(2)}</span>
+        <button class="btn-remove-item" onclick="removerDoCarrinho('${i.id}')">🗑️ Remover</button>
+      </div>
+    `).join('');
+  }
+
   async function fecharCheckoutWhatsApp() {
+    if (carrinhoItens.length === 0) return alert("Adicione itens à negociação primeiro.");
     if (!perfilAlvoDados || !perfilAlvoDados.telefone_whats) {
       return alert("Este vendedor não cadastrou um número de WhatsApp válido para contato.");
     }
 
-    // Busca o texto parametrizado na tabela configuracoes_sistema
-    const { data: config, error } = await _supabase
+    const { data: config } = await _supabase
       .from('configuracoes_sistema')
       .select('valor')
       .eq('chave', 'texto_whatsapp_cardeneta')
@@ -432,7 +486,6 @@
     const itensFormatados = carrinhoItens.map(i => `• ${i.qtd}x ${i.nome} (€ ${(i.preco * i.qtd).toFixed(2)})`).join('\n');
     const valorTotal = carrinhoItens.reduce((acc, i) => acc + (i.preco * i.qtd), 0).toFixed(2);
 
-    // Substituição das variáveis parametrizadas
     let mensagemFinal = templateTexto
       .replace('{vendedor_nome}', perfilAlvoDados.nome || 'Vendedor')
       .replace('{itens_carrinho}', itensFormatados)
@@ -443,7 +496,6 @@
     window.open(urlWhatsApp, '_blank');
   }
 
-  // Gestão de Ofertas do Vendedor
   function abrirModalEdicao(id, preco, estoq) {
     document.getElementById('modalOfertaId').value = id;
     document.getElementById('modalPreco').value = preco;
@@ -489,6 +541,7 @@
     edit.style.display = edit.style.display === 'none' ? 'block' : 'none';
   }
 
+  async function salverPerfil() {} // Placeholder
   async function salvarPerfil() {
     if (!usuarioLogado) return;
     const updates = {
