@@ -77,14 +77,15 @@
     .card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
     .card-subtitle { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; margin-top: -4px; }
     
-    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; text-align: left; }
-    .input-row { display: flex; gap: 6px; width: 100%; }
-    .input-wrapper { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .input-wrapper label { font-size: 0.65rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .input-wrapper select, .input-wrapper input { width: 100%; padding: 6px 8px; font-size: 0.75rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; transition: 0.2s; }
+    /* Ajustes refinados para alinhar perfeitamente os inputs do card */
+    .card-inputs { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 2px; text-align: left; }
+    .input-row { display: flex; gap: 4px; width: 100%; align-items: flex-end; }
+    .input-wrapper { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .input-wrapper label { font-size: 0.58rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .input-wrapper select, .input-wrapper input { width: 100%; padding: 5px 4px; font-size: 0.68rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; transition: 0.2s; }
     .input-wrapper select:focus, .input-wrapper input:focus { border-color: var(--gold); }
 
-    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 8px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 2px; font-size: 0.78rem; transition: 0.2s; box-shadow: 0 3px 8px rgba(245,158,11,0.2); }
+    .btn-add-vitrine { background: var(--gold); color: #0f172a; border: none; width: 100%; padding: 7px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 2px; font-size: 0.75rem; transition: 0.2s; box-shadow: 0 3px 8px rgba(245,158,11,0.2); }
     .btn-add-vitrine:hover { opacity: 0.9; transform: translateY(-1px); }
 
     .pagination-nav { text-align: center; margin: 35px 0; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
@@ -109,12 +110,12 @@
   <div class="container">
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Início</a>
-        <a href="cardeneta.html" id="linkCardeneta">📖 Cadernetas</a>
-        <a href="vitrine.html" id="linkVitrine" style="color: var(--gold);">📦 Vitrine</a>
-        <a href="perfil.html" id="linkPerfil">⚙️ Perfil</a>
-        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;">🛡️ Painel Admin</a>
-        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);">📊 Estoque Master</a>
+        <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
+        <a href="cardeneta.html" id="linkCardeneta" data-i18n="nav_cardenetas">📖 Cadernetas</a>
+        <a href="vitrine.html" id="linkVitrine" style="color: var(--gold);" data-i18n="nav_vitrine">📦 Vitrine</a>
+        <a href="perfil.html" id="linkPerfil" data-i18n="nav_perfil">⚙️ Perfil</a>
+        <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
+        <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
       </div>
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <div class="language-selector-flags">
@@ -140,13 +141,13 @@
         
         <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem;">☀️ / 🌙</button>
         <div id="userInfoHeader" class="user-profile-header">
-          <span style="font-size: 0.8rem; color: var(--text-muted);">A carregar...</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="carregando">A carregar...</span>
         </div>
       </div>
     </div>
 
     <div class="header-title-box">
-      <h1>🛍️ Gerenciar Minha Vitrine</h1>
+      <h1 data-i18n="titulo_pagina">🛍️ Gerenciar Minha Vitrine</h1>
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
         <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
         <div id="avisoLimiteVitrine" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
@@ -155,26 +156,26 @@
     
     <div class="controls-panel">
       <div class="filter-group">
-        <label>Filtrar por Álbum:</label>
+        <label data-i18n="label_filtro_album">Filtrar por Álbum:</label>
         <select id="filterAlbum" class="filter-field" onchange="resetEBuscar()">
-          <option value="todos">📖 Todos os Álbuns</option>
+          <option value="todos" data-i18n="opcao_todos_albuns">📖 Todos os Álbuns</option>
         </select>
       </div>
       <div class="filter-group">
-        <label>Buscar Figurinha:</label>
-        <input type="text" id="search" class="filter-field" placeholder="🔍 Nº, Nome, Seleção/Escuderia ou Tipo...">
+        <label data-i18n="label_buscar">Buscar Figurinha:</label>
+        <input type="text" id="search" class="filter-field" data-i18n-placeholder="placeholder_busca" placeholder="🔍 Nº, Nome, Seleção/Escuderia ou Tipo...">
       </div>
     </div>
 
     <div class="cards-grid" id="vitrineGrid">
-      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">Carregando figurinhas...</div>
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);" data-i18n="carregando_figurinhas">Carregando figurinhas...</div>
     </div>
 
     <div class="pagination-nav" id="paginationNav"></div>
   </div>
 
   <footer>
-    <p>Plataforma de Colecionadores &copy; 2026 — Desenvolvido por <strong>RMB</strong></p>
+    <p><span data-i18n="footer_texto">Plataforma de Colecionadores &copy; 2026 — Desenvolvido por</span> <strong>RMB</strong></p>
   </footer>
 
   <script>
@@ -190,6 +191,187 @@
     let mapaAlbuns = {};
     let meusPrecosQtd = {};
     let idiomaAtual = 'pt-PT';
+
+    // Dicionário de Traduções Global
+    const traducoes = {
+      'pt-PT': {
+        nav_inicio: "🏠 Início",
+        nav_cardenetas: "📖 Cadernetas",
+        nav_vitrine: "📦 Vitrine",
+        nav_perfil: "⚙️ Perfil",
+        nav_admin: "🛡️ Painel Admin",
+        nav_estoque: "📊 Estoque Master",
+        carregando: "A carregar...",
+        titulo_pagina: "🛍️ Gerenciar Minha Vitrine",
+        label_filtro_album: "Filtrar por Álbum:",
+        opcao_todos_albuns: "📖 Todos os Álbuns",
+        label_buscar: "Buscar Figurinha:",
+        placeholder_busca: "🔍 Nº, Nome, Seleção/Escuderia ou Tipo...",
+        carregando_figurinhas: "Carregando figurinhas...",
+        album_geral: "Álbum Geral",
+        qualidade: "Qualidade",
+        preco: "Preço",
+        moeda: "Moeda",
+        qtd_repetida: "Qtd Repetida",
+        salvar: "Salvar",
+        msg_sucesso: "✅ Anúncio salvo com sucesso!",
+        msg_erro: "Erro ao salvar anúncio: ",
+        anterior: "Anterior",
+        proximo: "Próximo",
+        sair: "Sair",
+        footer_texto: "Plataforma de Colecionadores © 2026 — Desenvolvido por"
+      },
+      'pt-BR': {
+        nav_inicio: "🏠 Início",
+        nav_cardenetas: "📖 Cadernetas",
+        nav_vitrine: "📦 Vitrine",
+        nav_perfil: "⚙️ Perfil",
+        nav_admin: "🛡️ Painel Admin",
+        nav_estoque: "📊 Estoque Master",
+        carregando: "Carregando...",
+        titulo_pagina: "🛍️ Gerenciar Minha Vitrine",
+        label_filtro_album: "Filtrar por Álbum:",
+        opcao_todos_albuns: "📖 Todos os Álbuns",
+        label_buscar: "Buscar Figurinha:",
+        placeholder_busca: "🔍 Nº, Nome, Seleção/Escuderia ou Tipo...",
+        carregando_figurinhas: "Carregando figurinhas...",
+        album_geral: "Álbum Geral",
+        qualidade: "Qualidade",
+        preco: "Preço",
+        moeda: "Moeda",
+        qtd_repetida: "Qtd Repetida",
+        salvar: "Salvar",
+        msg_sucesso: "✅ Anúncio salvo com sucesso!",
+        msg_erro: "Erro ao salvar anúncio: ",
+        anterior: "Anterior",
+        proximo: "Próximo",
+        sair: "Sair",
+        footer_texto: "Plataforma de Colecionadores © 2026 — Desenvolvido por"
+      },
+      'en': {
+        nav_inicio: "🏠 Home",
+        nav_cardenetas: "📖 Albums",
+        nav_vitrine: "📦 Showcase",
+        nav_perfil: "⚙️ Profile",
+        nav_admin: "🛡️ Admin Panel",
+        nav_estoque: "📊 Master Stock",
+        carregando: "Loading...",
+        titulo_pagina: "🛍️ Manage My Showcase",
+        label_filtro_album: "Filter by Album:",
+        opcao_todos_albuns: "📖 All Albums",
+        label_buscar: "Search Sticker:",
+        placeholder_busca: "🔍 No., Name, Team/Selection or Type...",
+        carregando_figurinhas: "Loading stickers...",
+        album_geral: "General Album",
+        qualidade: "Condition",
+        preco: "Price",
+        moeda: "Currency",
+        qtd_repetida: "Qty Repeated",
+        salvar: "Save",
+        msg_sucesso: "✅ Listing saved successfully!",
+        msg_erro: "Error saving listing: ",
+        anterior: "Previous",
+        proximo: "Next",
+        sair: "Logout",
+        footer_texto: "Collectors Platform © 2026 — Developed by"
+      },
+      'it': {
+        nav_inicio: "🏠 Home",
+        nav_cardenetas: "📖 Album",
+        nav_vitrine: "📦 Vetrina",
+        nav_perfil: "⚙️ Profilo",
+        nav_admin: "🛡️ Pannello Admin",
+        nav_estoque: "📊 Stock Master",
+        carregando: "Caricamento...",
+        titulo_pagina: "🛍️ Gestisci la Mia Vetrina",
+        label_filtro_album: "Filtra per Album:",
+        opcao_todos_albuns: "📖 Tutti gli Album",
+        label_buscar: "Cerca Figurina:",
+        placeholder_busca: "🔍 N., Nome, Squadra o Tipo...",
+        carregando_figurinhas: "Caricamento figurine...",
+        album_geral: "Album Generale",
+        qualidade: "Condizione",
+        preco: "Prezzo",
+        moeda: "Valuta",
+        qtd_repetida: "Q.tà Doppie",
+        salvar: "Salva",
+        msg_sucesso: "✅ Inserzione salvata con successo!",
+        msg_erro: "Errore nel salvataggio: ",
+        anterior: "Precedente",
+        proximo: "Successivo",
+        sair: "Esci",
+        footer_texto: "Piattaforma Collezionisti © 2026 — Sviluppato da"
+      },
+      'es': {
+        nav_inicio: "🏠 Inicio",
+        nav_cardenetas: "📖 Álbumes",
+        nav_vitrine: "📦 Vitrina",
+        nav_perfil: "⚙️ Perfil",
+        nav_admin: "🛡️ Panel Admin",
+        nav_estoque: "📊 Stock Master",
+        carregando: "Cargando...",
+        titulo_pagina: "🛍️ Gestionar Mi Vitrina",
+        label_filtro_album: "Filtrar por Álbum:",
+        opcao_todos_albuns: "📖 Todos los Álbumes",
+        label_buscar: "Buscar Cromos:",
+        placeholder_busca: "🔍 Nº, Nombre, Selección/Escudería o Tipo...",
+        carregando_figurinhas: "Cargando cromos...",
+        album_geral: "Álbum General",
+        qualidade: "Calidad",
+        preco: "Precio",
+        moeda: "Moneda",
+        qtd_repetida: "Cant. Repetida",
+        salvar: "Guardar",
+        msg_sucesso: "✅ ¡Anuncio guardado con éxito!",
+        msg_erro: "Error al guardar anuncio: ",
+        anterior: "Anterior",
+        proximo: "Siguiente",
+        sair: "Salir",
+        footer_texto: "Plataforma de Coleccionistas © 2026 — Desarrollado por"
+      },
+      'fr': {
+        nav_inicio: "🏠 Accueil",
+        nav_cardenetas: "📖 Albums",
+        nav_vitrine: "📦 Vitrine",
+        nav_perfil: "⚙️ Profil",
+        nav_admin: "🛡️ Panneau Admin",
+        nav_estoque: "📊 Stock Master",
+        carregando: "Chargement...",
+        titulo_pagina: "🛍️ Gérer Ma Vitrine",
+        label_filtro_album: "Filtrer par Album :",
+        opcao_todos_albuns: "📖 Tous les Albums",
+        label_buscar: "Rechercher une Vignette :",
+        placeholder_busca: "🔍 Nº, Nom, Équipe ou Type...",
+        carregando_figurinhas: "Chargement des vignettes...",
+        album_geral: "Album Général",
+        qualidade: "État",
+        preco: "Prix",
+        moeda: "Devise",
+        qtd_repetida: "Qté Double",
+        salvar: "Enregistrer",
+        msg_sucesso: "✅ Annonce enregistrée avec succès !",
+        msg_erro: "Erreur lors de l'enregistrement : ",
+        anterior: "Précédent",
+        proximo: "Suivant",
+        sair: "Déconnexion",
+        footer_texto: "Plateforme des Collectionneurs © 2026 — Développé par"
+      }
+    };
+
+    function t(chave) {
+      return (traducoes[idiomaAtual] && traducoes[idiomaAtual][chave]) || (traducoes['pt-PT'][chave]) || chave;
+    }
+
+    function aplicarTraducaoInterface() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const chave = el.getAttribute('data-i18n');
+        el.innerText = t(chave);
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const chave = el.getAttribute('data-i18n-placeholder');
+        el.setAttribute('placeholder', t(chave));
+      });
+    }
 
     async function init() {
       const temaSalvo = localStorage.getItem('tema_app');
@@ -229,7 +411,7 @@
         document.getElementById('userInfoHeader').innerHTML = `
           <img src="${avatarUrl}" class="user-avatar-top" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
           <span style="font-size: 0.8rem; font-weight: 600;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
-          <button class="btn-outline" onclick="fazerLogout()" style="padding: 3px 6px; font-size: 0.7rem; margin-left: 3px;">Sair</button>
+          <button class="btn-outline" onclick="fazerLogout()" style="padding: 3px 6px; font-size: 0.7rem; margin-left: 3px;">${t('sair')}</button>
         `;
 
         const planoNome = (perfil.plano || 'gratis').toUpperCase();
@@ -276,10 +458,12 @@
       const { data: albuns } = await _supabase.from('albuns').select('*');
       if (albuns) {
         const selectAlbum = document.getElementById('filterAlbum');
+        let optionsHtml = `<option value="todos">${t('opcao_todos_albuns')}</option>`;
         albuns.forEach(a => { 
           mapaAlbuns[a.id] = a.nome; 
-          selectAlbum.innerHTML += `<option value="${a.id}">${a.nome}</option>`; 
+          optionsHtml += `<option value="${a.id}">${a.nome}</option>`; 
         });
+        selectAlbum.innerHTML = optionsHtml;
       }
 
       const { data: vitrineSalva } = await _supabase
@@ -299,6 +483,7 @@
       }
 
       marcarIdiomaAtivo();
+      aplicarTraducaoInterface();
       buscarDados();
     }
 
@@ -357,11 +542,11 @@
               <img src="${f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
             </div>
             <div class="card-title">${f.numero} - ${f.nome}</div>
-            <div class="card-subtitle">${mapaAlbuns[f.album_id] || 'Álbum Geral'}</div>
+            <div class="card-subtitle">${mapaAlbuns[f.album_id] || t('album_geral')}</div>
             
             <div class="card-inputs">
               <div class="input-wrapper">
-                <label>Qualidade</label>
+                <label>${t('qualidade')}</label>
                 <select id="qualidade-${f.id}">
                   <option value="100% (Nova / Perfeita)" ${salvo.qualidade === '100% (Nova / Perfeita)' ? 'selected' : ''}>✨ 100% Nova</option>
                   <option value="Ótimo estado" ${salvo.qualidade === 'Ótimo estado' ? 'selected' : ''}>👍 Ótimo estado</option>
@@ -372,11 +557,11 @@
 
               <div class="input-row">
                 <div class="input-wrapper" style="flex: 1.1;">
-                  <label>Preço</label>
+                  <label>${t('preco')}</label>
                   <input type="number" id="preco-${f.id}" value="${salvo.preco}" step="0.01" min="0">
                 </div>
-                <div class="input-wrapper" style="flex: 1;">
-                  <label>Moeda</label>
+                <div class="input-wrapper" style="flex: 1.1;">
+                  <label>${t('moeda')}</label>
                   <select id="moeda-${f.id}">
                     <option value="EUR" ${salvo.moeda === 'EUR' ? 'selected' : ''}>EUR (€)</option>
                     <option value="BRL" ${salvo.moeda === 'BRL' ? 'selected' : ''}>BRL (R$)</option>
@@ -386,13 +571,13 @@
                   </select>
                 </div>
                 <div class="input-wrapper" style="flex: 0.9;">
-                  <label>Qtd Repetida</label>
+                  <label>${t('qtd_repetida')}</label>
                   <input type="number" id="qtd-${f.id}" value="${salvo.estoque}" min="0">
                 </div>
               </div>
             </div>
 
-            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">Salvar</button>
+            <button class="btn-add-vitrine" onclick="adicionarNaVitrine(${f.id})">${t('salvar')}</button>
           </div>
         `;
       }).join('');
@@ -425,7 +610,7 @@
             .gt('estoque', 0);
 
           if (!errCount && (count || 0) >= limiteMaximo) {
-            alert(`Atenção: Atingiu o limite máximo de ${limiteMaximo} anúncios ativos do seu plano (${planoUsuario.toUpperCase()}). Será redirecionado para gerir o seu plano.`);
+            alert(`Atenção: Atingiu o limite máximo de ${limiteMaximo} anúncios ativos do seu plano (${planoUsuario.toUpperCase()}).`);
             window.location.href = "plano.html";
             return;
           }
@@ -444,10 +629,10 @@
       }, { onConflict: 'user_id, figurinha_id' });
 
       if (error) {
-        alert("Erro ao salvar anúncio: " + error.message);
+        alert(t('msg_erro') + error.message);
       } else {
         meusPrecosQtd[fId] = { preco, estoque, qualidade, moeda };
-        alert("✅ Anúncio salvo com sucesso!");
+        alert(t('msg_sucesso'));
         window.location.reload();
       }
     }
@@ -461,7 +646,7 @@
       }
 
       let html = '';
-      html += `<button class="btn-page" ${paginaAtual === 0 ? 'disabled' : ''} onclick="mudarPagina(${paginaAtual - 1})">Anterior</button>`;
+      html += `<button class="btn-page" ${paginaAtual === 0 ? 'disabled' : ''} onclick="mudarPagina(${paginaAtual - 1})">${t('anterior')}</button>`;
       
       for (let i = 0; i < totalPaginas; i++) {
         if (i === 0 || i === totalPaginas - 1 || (i >= paginaAtual - 2 && i <= paginaAtual + 2)) {
@@ -469,7 +654,7 @@
         }
       }
 
-      html += `<button class="btn-page" ${paginaAtual >= totalPaginas - 1 ? 'disabled' : ''} onclick="mudarPagina(${paginaAtual + 1})">Próximo</button>`;
+      html += `<button class="btn-page" ${paginaAtual >= totalPaginas - 1 ? 'disabled' : ''} onclick="mudarPagina(${paginaAtual + 1})">${t('proximo')}</button>`;
       nav.innerHTML = html;
     }
 
@@ -510,6 +695,14 @@
           .eq('id', authUserId);
       }
       marcarIdiomaAtivo();
+      aplicarTraducaoInterface();
+      
+      // Atualiza o select de álbuns e recarrega os cards para refletir o novo idioma
+      const selectAlbum = document.getElementById('filterAlbum');
+      if (selectAlbum.options.length > 0) {
+        selectAlbum.options[0].text = t('opcao_todos_albuns');
+      }
+      buscarDados();
     }
 
     function marcarIdiomaAtivo() {
