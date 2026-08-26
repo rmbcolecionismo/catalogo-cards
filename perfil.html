@@ -1,11 +1,3 @@
-O código fornecido apresenta um erro estrutural crítico na função verificarAcesso(): a chamada .eq('id', idParam) está a tentar comparar uma coluna UUID (id na tabela do Supabase) com o parâmetro idParam extraído do URL, mas a função tenta depois usar esse mesmo idParam em colunas que podem esperar um número inteiro ou vice-versa, o que gera falhas na base de dados (400 Bad Request ou falha ao carregar o perfil/vitrine).
-
-Além disso, faltou invocar a função verificarAcesso() no carregamento da página (não existe nenhum window.onload ou script de arranque a chamá-la).
-
-Aqui tem o código corrigido e otimizado com a inicialização automática e o tratamento correto dos parâmetros de URL:
-
-Código Corrigido
-HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -255,7 +247,6 @@ HTML
     }
 
     if (idParam) {
-      // Tenta buscar por ID (caso seja numérico ou UUID dependendo da base de dados)
       const { data } = await _supabase.from('usuarios_cadastrados').select('*').eq('id', idParam).maybeSingle();
       perfilAlvo = data;
     } else if (usuarioLogado) {
@@ -267,7 +258,6 @@ HTML
       document.getElementById('userName').innerText = perfilAlvo.nome || "Usuário";
       if(perfilAlvo.foto_url) document.getElementById('userAvatar').src = perfilAlvo.foto_url;
       
-      // Funções de carregamento de vitrine e avaliações (substitua conforme necessário se já tiver definidas)
       if (typeof carregarVitrine === 'function') carregarVitrine(perfilAlvoUuid);
       if (typeof carregarAvaliacoes === 'function') carregarAvaliacoes(perfilAlvoUuid);
     } else {
@@ -281,7 +271,6 @@ HTML
     }
   }
 
-  // Executa automaticamente ao carregar a página
   window.addEventListener('DOMContentLoaded', verificarAcesso);
 </script>
 </body>
