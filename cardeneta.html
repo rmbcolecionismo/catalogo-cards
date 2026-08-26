@@ -52,7 +52,7 @@
     .header-painel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     .header-painel h2 { font-size: 1.6rem; color: var(--gold); font-weight: 700; letter-spacing: -0.5px; }
 
-    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+    .plan-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; text-transform: uppercase; }
 
     .albuns-usuario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
     .album-criado-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -192,7 +192,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
           <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-            <div id="badgePlanoContainer" class="plan-badge">Plano: PREMIUM⭐ ILIMITADO</div>
+            <div id="badgePlanoContainer" class="plan-badge">Carregando plano...</div>
             <div id="avisoLimiteCardeneta" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
           </div>
         </div>
@@ -523,17 +523,24 @@
         <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
-      // --- ATUALIZAÇÃO DO PLANO E CONTADOR DISCRETO AO LADO DIREITO ---
+      // --- CONSULTA DINÂMICA DA TABELA CONFIGURACOES_PLANOS PARA O PLANO E LIMITE ---
       const planoUsuario = (dadosPerfilUsuario.plano || 'gratis').toLowerCase().trim();
-      document.getElementById('badgePlanoContainer').innerText = `Plano: PREMIUM⭐ ILIMITADO`;
 
       const { data: configPlano } = await _supabase
         .from('configuracoes_planos')
-        .select('limite_cadernetas')
+        .select('limite_cadernetas, plano')
         .ilike('plano', planoUsuario)
         .maybeSingle();
 
       const limiteMaximo = configPlano ? configPlano.limite_cadernetas : 1;
+      const nomePlanoFormatado = configPlano && configPlano.plano ? configPlano.plano.toUpperCase() : planoUsuario.toUpperCase();
+
+      const badgePlanoEl = document.getElementById('badgePlanoContainer');
+      if (limiteMaximo === -1 || limiteMaximo >= 99999) {
+        badgePlanoEl.innerText = `Plano: ${nomePlanoFormatado} ⭐ ILIMITADO`;
+      } else {
+        badgePlanoEl.innerText = `Plano: ${nomePlanoFormatado}`;
+      }
 
       const { count: totalCadernetas } = await _supabase
         .from('usuario_albuns')
@@ -544,9 +551,8 @@
       const avisoEl = document.getElementById('avisoLimiteCardeneta');
 
       if (avisoEl) {
-        if (limiteMaximo === -1 || limiteMaximo >= 999999) {
-          avisoEl.style.display = 'block';
-          avisoEl.innerHTML = `<span style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;">⭐ ILIMITADO</span>`;
+        if (limiteMaximo === -1 || limiteMaximo >= 99999) {
+          avisoEl.style.display = 'none'; // Se for ilimitado, não exibe aviso restritivo
         } else if (qtdAtivas >= limiteMaximo) {
           avisoEl.style.display = 'block';
           avisoEl.innerHTML = `⚠️ Limite atingido (${qtdAtivas}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mudar plano</a>`;
@@ -636,17 +642,11 @@
       const { data: dadosConfigPlano, error: erroConfig } = await _supabase
         .from('configuracoes_planos')
         .select('limite_cadernetas')
-        .eq('plano', nomePlanoUsuario)
+        .ilike('plano', nomePlanoUsuario)
         .maybeSingle();
 
       if (!erroConfig && dadosConfigPlano) {
         limitePermitido = dadosConfigPlano.limite_cadernetas;
-      } else {
-        if (nomePlanoUsuario === 'gratis') {
-          limitePermitido = 1;
-        } else {
-          limitePermitido = 999999; 
-        }
       }
 
       const { count, error: countError } = await _supabase
@@ -661,7 +661,7 @@
 
       const totalCadernetasAtuais = count || 0;
 
-      if (limitePermitido !== -1 && limitePermitido < 999999 && totalCadernetasAtuais >= limitePermitido) {
+      if (limitePermitido !== -1 && limitePermitido < 99999 && totalCadernetasAtuais >= limitePermitido) {
         alert(`🌟 Limite do Plano Atingido!\n\nSeu plano atual (${nomePlanoUsuario}) permite cadastrar apenas ${limitePermitido} caderneta(s). Faça um upgrade para o nosso Plano Premium ou Anual para desbloquear álbuns ilimitados!`);
         window.location.href = "plano.html";
         return;
