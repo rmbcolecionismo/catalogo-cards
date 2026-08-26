@@ -191,10 +191,10 @@
         <div>
           <h2 data-i18n="painel_tit_albuns">📖 Minhas Cadernetas</h2>
         </div>
-        <!-- Botão Adicionado à Direita do Título com status discreto abaixo -->
+        <!-- Alteração solicitada: Informações do plano e status discretas ao lado direito do botão -->
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
           <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-            <div id="badgePlanoContainer" class="plan-badge" style="display: none;"></div>
+            <div id="badgePlanoContainer" class="plan-badge">Plano: A carregar...</div>
             <div id="avisoLimiteCardeneta" style="font-size: 0.75rem; font-weight: 600; color: #ef4444; display: none;"></div>
           </div>
           <button class="btn-gold" onclick="abrirModalCriar()" data-i18n="btn_add_cardeneta">+ Adicionar Nova Caderneta</button>
@@ -298,7 +298,7 @@
         btn_excluir_album: "🗑️ Excluir este Álbum",
         sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
         stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
-        filtro_todas_cat: "📂 Todas as Categorias / Tipos",
+        filtro_todas_cat: "📂 Toutes les Catégories",
         filtro_mostrar_todas: "👁️ Mostrar Todas",
         filtro_mostrar_faltam: "❌ Mostrar Apenas o que Faltam",
         filtro_mostrar_possui: "✅ Mostrar Apenas o que Possui",
@@ -522,8 +522,9 @@
         <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
-      // --- VERIFICAÇÃO DE PLANO E LIMITE ---
+      // --- ATUALIZAÇÃO DO PLANO E CONTADOR DISCRETO AO LADO DIREITO ---
       const planoUsuario = (dadosPerfilUsuario.plano || 'gratis').toLowerCase().trim();
+      document.getElementById('badgePlanoContainer').innerText = `Plano: ${planoUsuario.toUpperCase()}`;
 
       const { data: configPlano } = await _supabase
         .from('configuracoes_planos')
@@ -542,7 +543,8 @@
       const avisoEl = document.getElementById('avisoLimiteCardeneta');
 
       if (avisoEl) {
-        if (limiteMaximo === -1 || limiteMaximo >= 999999 || planoUsuario === 'premium') {
+        // Se o limite for ilimitado (ex: -1 ou maior igual a 999999), exibe o selo em destaque
+        if (limiteMaximo === -1 || limiteMaximo >= 999999) {
           avisoEl.style.display = 'block';
           avisoEl.innerHTML = `<span style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;">⭐ ILIMITADO</span>`;
         } else if (qtdAtivas >= limiteMaximo) {
@@ -554,7 +556,7 @@
           avisoEl.innerText = `Cadernetas ativas: ${qtdAtivas} / ${limiteMaximo}`;
         }
       }
-      // ------------------------------------
+      // ----------------------------------------------------
 
       await carregarMinhasCadernetas();
     }
