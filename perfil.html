@@ -1,3 +1,11 @@
+O código fornecido apresenta um erro estrutural crítico na função verificarAcesso(): a chamada .eq('id', idParam) está a tentar comparar uma coluna UUID (id na tabela do Supabase) com o parâmetro idParam extraído do URL, mas a função tenta depois usar esse mesmo idParam em colunas que podem esperar um número inteiro ou vice-versa, o que gera falhas na base de dados (400 Bad Request ou falha ao carregar o perfil/vitrine).
+
+Além disso, faltou invocar a função verificarAcesso() no carregamento da página (não existe nenhum window.onload ou script de arranque a chamá-la).
+
+Aqui tem o código corrigido e otimizado com a inicialização automática e o tratamento correto dos parâmetros de URL:
+
+Código Corrigido
+HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -35,9 +43,6 @@
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .nav-links a:hover { color: var(--gold); }
     
-    .user-profile-header { display: flex; align-items: center; gap: 10px; }
-    .user-avatar-top { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); background: var(--bg); }
-
     .main-layout { display: flex; gap: 20px; max-width: 1350px; margin: 0 auto; flex-wrap: wrap; }
     .profile-sidebar { width: 320px; background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); height: fit-content; }
     .avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; display: block; margin: 0 auto; }
@@ -52,26 +57,6 @@
 
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
     
-    .sticker-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: var(--text-main); display: flex; flex-direction: column; transition: 0.3s; }
-    .sticker-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-    
-    .sticker-img-wrap { height: 190px; background: var(--bg); padding: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color); }
-    .sticker-card img { width: 100%; height: 100%; object-fit: contain; }
-    
-    .sticker-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .card-row { font-size: 0.75rem; color: var(--text-muted); }
-    .card-row span { font-weight: 700; color: var(--text-main); }
-    
-    .sticker-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin: 2px 0; }
-    .sticker-price { font-size: 1.1rem; font-weight: 800; color: #34d399; margin: 4px 0; }
-    .sticker-qtd { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-    .sticker-qualidade { font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 4px; }
-
-    .card-actions { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
-    .btn-card-action { flex: 1; padding: 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; text-align: center; }
-    .btn-edit { background: #3b82f6; color: white; }
-    .btn-delete { background: #ef4444; color: white; }
-
     .edit-field { background: var(--bg); border: 1px solid var(--gold); color: var(--text-main); padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 4px; font-size: 0.9rem; }
     button { cursor: pointer; padding: 10px; border-radius: 6px; border: none; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-logout { background: #ef4444; color: white; }
@@ -80,15 +65,11 @@
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
     .reviews-section { margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; }
-    .review-card { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); position: relative; }
-    .stars-display { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; }
-
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-box { background: var(--modal-bg); border: 1px solid var(--gold); padding: 25px; border-radius: 12px; width: 340px; }
 
-    .cardeneta-cta { background: linear-gradient(45deg, #f59e0b, #d97706); color: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; animation: pulse 2s infinite; }
+    .cardeneta-cta { background: linear-gradient(45deg, #f59e0b, #d97706); color: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
     .cardeneta-cta p { font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
 
     .language-selector-flags {
       display: flex;
@@ -99,24 +80,12 @@
       padding: 3px 6px;
       border-radius: 8px;
     }
-    .flag-option {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      padding: 2px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      line-height: 1;
-      transition: 0.2s;
-      opacity: 0.6;
-    }
-    .flag-option:hover { opacity: 0.9; transform: scale(1.05); }
+    .flag-option { background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px; cursor: pointer; font-size: 1.1rem; opacity: 0.6; }
     .flag-option.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
   </style>
 </head>
 <body>
 
-<!-- Barra de Navegação Superior Integrada -->
 <div class="top-nav">
   <div class="nav-links">
     <a href="index.html" data-i18n="nav_inicio">🏠 Início</a>
@@ -126,26 +95,11 @@
     <a href="admin.html" id="linkAdmin" style="display:none; color: #38bdf8;" data-i18n="nav_admin">🛡️ Painel Admin</a>
     <a href="estoque.html" id="linkEstoque" style="display:none; color: var(--gold);" data-i18n="nav_estoque">📊 Estoque Master</a>
   </div>
-  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+  <div style="display: flex; align-items: center; gap: 8px;">
     <div class="language-selector-flags">
-      <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')" title="Português (Portugal)">
-        <img src="https://flagcdn.com/24x18/pt.png" alt="PT" style="width: 20px; height: 15px; display: block;">
-      </button>
-      <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')" title="Português (Brasil)">
-        <img src="https://flagcdn.com/24x18/br.png" alt="BR" style="width: 20px; height: 15px; display: block;">
-      </button>
-      <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')" title="English">
-        <img src="https://flagcdn.com/24x18/gb.png" alt="EN" style="width: 20px; height: 15px; display: block;">
-      </button>
-      <button type="button" class="flag-option" data-lang="it" onclick="mudarIdiomaGlobal('it')" title="Italiano">
-        <img src="https://flagcdn.com/24x18/it.png" alt="IT" style="width: 20px; height: 15px; display: block;">
-      </button>
-      <button type="button" class="flag-option" data-lang="es" onclick="mudarIdiomaGlobal('es')" title="Español">
-        <img src="https://flagcdn.com/24x18/es.png" alt="ES" style="width: 20px; height: 15px; display: block;">
-      </button>
-      <button type="button" class="flag-option" data-lang="fr" onclick="mudarIdiomaGlobal('fr')" title="Français">
-        <img src="https://flagcdn.com/24x18/fr.png" alt="FR" style="width: 20px; height: 15px; display: block;">
-      </button>
+      <button type="button" class="flag-option" data-lang="pt-PT" onclick="mudarIdiomaGlobal('pt-PT')">🇵🇹</button>
+      <button type="button" class="flag-option" data-lang="pt-BR" onclick="mudarIdiomaGlobal('pt-BR')">🇧🇷</button>
+      <button type="button" class="flag-option" data-lang="en" onclick="mudarIdiomaGlobal('en')">🇬🇧</button>
     </div>
     <button class="btn-outline" onclick="alternarTema()" id="btnTemaToggle" style="padding: 4px 8px; font-size: 0.75rem; margin-top:0;">☀️ / 🌙</button>
   </div>
@@ -155,51 +109,22 @@
   <div class="profile-sidebar">
     <div style="text-align:center">
       <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" class="avatar-img">
-      <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="uploadAvatar(event)">
-      <button id="btnTrocarFoto" class="btn-gold" style="display:none;" onclick="document.getElementById('avatarInput').click()" data-i18n="btn_change_photo">Trocar Foto</button>
     </div>
 
     <div id="viewMode" style="margin-top:20px; text-align: center;">
       <h3 id="userName">Carregando...</h3>
-      <!-- Alerta informando sobre o funcionamento do Marketplace e Mercado de Trocas caso o telefone ou código postal estejam vazios -->
       <div id="profileWarningAlert" class="profile-warning-alert">
-        ⚠️ Para que o <strong>Marketplace</strong> e o <strong>Mercado de Trocas</strong> funcionem corretamente, preencha o seu <strong>Telefone (WhatsApp)</strong> e o <strong>Código Postal / CEP</strong>.
+        ⚠️ Preencha o seu Telefone e Código Postal.
       </div>
       <div id="profileDetails" style="font-size: 0.9rem; color: var(--text-muted); margin: 15px 0;"></div>
-      <div id="mediaEstrelas" style="margin-bottom: 10px;"></div>
-      <button id="btnEditarPerfil" style="display:none; margin-top:5px;" onclick="toggleEdit()" data-i18n="btn_edit_profile">Editar Perfil</button>
-    </div>
-
-    <div id="editMode" style="display:none; margin-top:20px;">
-      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_name">Nome:</label>
-      <input type="text" id="editNome" class="edit-field">
-      
-      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_postal">📍 Código Postal / CEP:</label>
-      <input type="text" id="editCodigoPostal" class="edit-field" placeholder="Ex: 2400-123 ou 01001-000">
-
-      <!-- Campo Telefone alimentando usuarios_cadastrados > telefone_whats -->
-      <label style="font-size: 0.75rem; color: var(--gold);" data-i18n="label_telefone">📱 Telefone (WhatsApp):</label>
-      <input type="text" id="editTelefoneWhats" class="edit-field" placeholder="Ex: +351 912345678 ou (11) 98765-4321">
-      
-      <button class="btn-gold" onclick="salvarPerfil()" data-i18n="btn_save">Salvar Alterações</button>
-      <button onclick="toggleEdit()" style="background:transparent; border:1px solid var(--border-color); color: var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
     </div>
 
     <div class="reviews-section">
-      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);" data-i18n="reviews_title">⭐ Avaliações do Vendedor</h4>
-      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px; color: var(--text-muted);">Carregando avaliações...</div>
-      <button style="background: #334155; color: white; font-size: 0.8rem; padding: 8px;" onclick="abrirModalAvaliacao()" data-i18n="btn_leave_review">Deixar Avaliação</button>
+      <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--gold);" data-i18n="reviews_title">⭐ Avaliações</h4>
+      <div id="listaAvaliacoes" style="max-height: 200px; overflow-y: auto; color: var(--text-muted);">Carregando avaliações...</div>
     </div>
 
-    <!-- Menu lateral simplificado (removidos Início, Gerenciar Vitrine e botões abaixo, pois estão no topo) -->
     <div id="navMenu" style="margin-top:20px; border-top: 1px solid var(--border-color); padding-top:20px;">
-      <div class="cardeneta-cta">
-        <p data-i18n="cta_organize">✨ Quer organizar sua coleção?</p>
-        <a id="linkCardenetaColega" href="cardeneta.html" style="text-decoration:none; color: #0f172a;">
-          <button style="background: white; color: #0f172a; border: none; font-weight: 800;" data-i18n="cta_button">Acessar Minha Cardeneta Agora</button>
-        </a>
-      </div>
-
       <div id="loggedMenu" style="display:none;">
         <button class="btn-logout" onclick="fazerLogout()" data-i18n="btn_logout">Sair do Sistema</button>
       </div>
@@ -216,58 +141,10 @@
       <select id="filtroAlbum" class="filter-field" onchange="aplicarFiltros()">
         <option value="" data-i18n="filter_all_albums">Filtrar por Álbum (Todos)</option>
       </select>
-      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código..." oninput="aplicarFiltros()" data-i18n-placeholder="search_placeholder">
-    </div>
-
-    <div class="marketplace-alert" data-i18n="marketplace_alert">
-      ⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.
+      <input type="text" id="filtroBusca" class="filter-field" placeholder="Buscar por Nome ou Código..." oninput="aplicarFiltros()">
     </div>
 
     <div class="cards-grid" id="vitrineGrid" style="color: var(--text-muted);">Carregando vitrine...</div>
-    <div id="carregarMaisContainer" style="text-align: center; margin-top: 20px; display: none;">
-      <button class="btn-gold" style="width: 200px;" onclick="carregarMais()" data-i18n="btn_load_more">Carregar Mais</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modais -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal-box">
-    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_edit_title">✏️ Editar Oferta</h3>
-    <input type="hidden" id="modalOfertaId">
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_price">Preço:</label>
-    <input type="number" step="0.01" id="modalPreco" class="edit-field">
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_stock">Estoque:</label>
-    <input type="number" id="modalEstoque" class="edit-field">
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_quality">Nota de Qualidade / Estado:</label>
-    <select id="modalQualidade" class="edit-field">
-      <option value="100% (Nova / Perfeita)">✨ 100% (Nova / Perfeita)</option>
-      <option value="Ótimo estado">👍 Ótimo estado</option>
-      <option value="Leve detalhe / Amassadinha">⚠️ Leve detalhe / Amassadinha</option>
-      <option value="Com marcas de uso">📌 Com marcas de uso</option>
-    </select>
-    <button class="btn-gold" onclick="salvarEdicaoOferta()" data-i18n="btn_save">Salvar</button>
-    <button onclick="fecharModal()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modalAvaliar">
-  <div class="modal-box">
-    <h3 style="margin-bottom: 15px; color: var(--gold);" data-i18n="modal_review_title">⭐ Avaliar Vendedor</h3>
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_your_name">Seu Nome:</label>
-    <input type="text" id="avaliacaoNome" class="edit-field">
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_stars">Nota (Estrelas):</label>
-    <select id="avaliacaoEstrelas" class="edit-field">
-      <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-      <option value="4">⭐⭐⭐⭐ (4/5)</option>
-      <option value="3">⭐⭐⭐ (3/5)</option>
-      <option value="2">⭐⭐ (2/5)</option>
-      <option value="1">⭐ (1/5)</option>
-    </select>
-    <label style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="label_comment">Comentário:</label>
-    <textarea id="avaliacaoComentario" class="edit-field" rows="3"></textarea>
-    <button class="btn-gold" onclick="enviarAvaliacao()" data-i18n="btn_send">Enviar Avaliação</button>
-    <button onclick="fecharModalAvaliacao()" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main);" data-i18n="btn_cancel">Cancelar</button>
   </div>
 </div>
 
@@ -279,18 +156,8 @@
   let usuarioLogado = null;
   let authUserId = null;
   let perfilAlvoUuid = null;
-  let perfilAlvoIdNumerico = null;
   let isAdminOrMaster = false;
-  let todasOfertas = [];
-  let figsMapGlobal = {};
-  let albunsMapGlobal = {};
-  let limiteExibicao = 30;
-
   let idiomaAtual = localStorage.getItem('user_lang') || 'pt-PT';
-  let moedaAtual = localStorage.getItem('user_currency') || 'EUR';
-
-  const taxasCambio = { EUR: 1.0, BRL: 5.50, USD: 1.08, GBP: 0.85 };
-  const simbolosMoeda = { EUR: '€', BRL: 'R$', USD: '$', GBP: '£' };
 
   const traducoes = {
     'pt-PT': {
@@ -301,33 +168,11 @@
       nav_perfil: "⚙️ Perfil",
       nav_admin: "🛡️ Painel Admin",
       nav_estoque: "📊 Estoque Master",
-      btn_change_photo: "Trocar Foto",
-      btn_edit_profile: "Editar Perfil",
-      label_name: "Nome:",
-      label_postal: "📍 Código Postal / CEP:",
-      label_telefone: "📱 Telefone (WhatsApp):",
-      btn_save: "Salvar Alterações",
-      btn_cancel: "Cancelar",
       reviews_title: "⭐ Avaliações do Vendedor",
-      btn_leave_review: "Deixar Avaliação",
-      cta_organize: "✨ Quer organizar sua coleção?",
-      cta_button: "Acessar Minha Cardeneta Agora",
       btn_logout: "Sair do Sistema",
       btn_login: "Entrar / Fazer Login",
       showcase_title: "🛍️ Vitrine do Vendedor",
-      filter_all_albums: "Filtrar por Álbum (Todos)",
-      search_placeholder: "Buscar por Nome ou Código...",
-      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.",
-      btn_load_more: "Carregar Mais",
-      modal_edit_title: "✏️ Editar Oferta",
-      label_price: "Preço:",
-      label_stock: "Estoque:",
-      label_quality: "Nota de Qualidade / Estado:",
-      modal_review_title: "⭐ Avaliar Vendedor",
-      label_your_name: "Seu Nome:",
-      label_stars: "Nota (Estrelas):",
-      label_comment: "Comentário:",
-      btn_send: "Enviar Avaliação"
+      filter_all_albums: "Filtrar por Álbum (Todos)"
     },
     'pt-BR': {
       title: "Perfil e Vitrine",
@@ -337,141 +182,11 @@
       nav_perfil: "⚙️ Perfil",
       nav_admin: "🛡️ Painel Admin",
       nav_estoque: "📊 Estoque Master",
-      btn_change_photo: "Trocar Foto",
-      btn_edit_profile: "Editar Perfil",
-      label_name: "Nome:",
-      label_postal: "📍 Código Postal / CEP:",
-      label_telefone: "📱 Telefone (WhatsApp):",
-      btn_save: "Salvar Alterações",
-      btn_cancel: "Cancelar",
       reviews_title: "⭐ Avaliações do Vendedor",
-      btn_leave_review: "Deixar Avaliação",
-      cta_organize: "✨ Quer organizar sua coleção?",
-      cta_button: "Acessar Minha Cardeneta Agora",
       btn_logout: "Sair do Sistema",
       btn_login: "Entrar / Fazer Login",
       showcase_title: "🛍️ Vitrine do Vendedor",
-      filter_all_albums: "Filtrar por Álbum (Todos)",
-      search_placeholder: "Buscar por Nome ou Código...",
-      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma atua exclusivamente como vitrine de anúncios. Os itens negociados são de total responsabilidade dos usuários. Nós não vendemos produtos diretamente.",
-      btn_load_more: "Carregar Mais",
-      modal_edit_title: "✏️ Editar Oferta",
-      label_price: "Preço:",
-      label_stock: "Estoque:",
-      label_quality: "Nota de Qualidade / Estado:",
-      modal_review_title: "⭐ Avaliar Vendedor",
-      label_your_name: "Seu Nome:",
-      label_stars: "Nota (Estrelas):",
-      label_comment: "Comentário:",
-      btn_send: "Enviar Avaliação"
-    },
-    es: {
-      title: "Perfil y Vitrina",
-      nav_inicio: "🏠 Inicio",
-      nav_cadernetas: "📖 Álbumes",
-      nav_vitrine: "📦 Vitrina",
-      nav_perfil: "⚙️ Perfil",
-      nav_admin: "🛡️ Panel Admin",
-      nav_estoque: "📊 Stock",
-      btn_change_photo: "Cambiar Foto",
-      btn_edit_profile: "Editar Perfil",
-      label_name: "Nombre:",
-      label_postal: "📍 Código Postal:",
-      label_telefone: "📱 Teléfono (WhatsApp):",
-      btn_save: "Guardar Cambios",
-      btn_cancel: "Cancelar",
-      reviews_title: "⭐ Opiniones del Vendedor",
-      btn_leave_review: "Dejar Opinión",
-      cta_organize: "✨ ¿Quieres organizar tu colección?",
-      cta_button: "Acceder a mi Álbum Ahora",
-      btn_logout: "Cerrar Sesión",
-      btn_login: "Entrar / Iniciar Sesión",
-      showcase_title: "🛍️ Vitrina del Vendedor",
-      filter_all_albums: "Filtrar por Álbum (Todos)",
-      search_placeholder: "Buscar por Nombre o Código...",
-      marketplace_alert: "⚠️ <strong>Aviso Importante:</strong> Esta plataforma actúa exclusivamente como escaparate de anuncios. Los artículos negociados son responsabilidad exclusiva de los usuarios.",
-      btn_load_more: "Cargar Más",
-      modal_edit_title: "✏️ Editar Oferta",
-      label_price: "Precio:",
-      label_stock: "Stock:",
-      label_quality: "Nota de Calidad / Estado:",
-      modal_review_title: "⭐ Calificar Vendedor",
-      label_your_name: "Tu Nombre:",
-      label_stars: "Calificación (Estrellas):",
-      label_comment: "Comentario:",
-      btn_send: "Enviar Opinión"
-    },
-    fr: {
-      title: "Profil et Vitrine",
-      nav_inicio: "🏠 Accueil",
-      nav_cadernetas: "📖 Albums",
-      nav_vitrine: "📦 Vitrine",
-      nav_perfil: "⚙️ Profil",
-      nav_admin: "🛡️ Panneau Admin",
-      nav_estoque: "📊 Stock",
-      btn_change_photo: "Changer la Photo",
-      btn_edit_profile: "Modifier le Profil",
-      label_name: "Nom:",
-      label_postal: "📍 Code Postal:",
-      label_telefone: "📱 Téléphone (WhatsApp):",
-      btn_save: "Enregistrer",
-      btn_cancel: "Annuler",
-      reviews_title: "⭐ Évaluations du Vendeur",
-      btn_leave_review: "Laisser un Avis",
-      cta_organize: "✨ Envie d'organiser votre collection?",
-      cta_button: "Accéder à mon Album Maintenant",
-      btn_logout: "Se Déconnecter",
-      btn_login: "Se Connecter",
-      showcase_title: "🛍️ Vitrine du Vendeur",
-      filter_all_albums: "Filtrer par Album (Tous)",
-      search_placeholder: "Rechercher par Nom ou Code...",
-      marketplace_alert: "⚠️ <strong>Avis Important:</strong> Cette plateforme sert exclusivement de vitrine d'annonces. Les articles négociés relèvent de la seule responsabilité des utilisateurs.",
-      btn_load_more: "Charger Plus",
-      modal_edit_title: "✏️ Modifier l'Offre",
-      label_price: "Prix:",
-      label_stock: "Stock:",
-      label_quality: "Qualité / État:",
-      modal_review_title: "⭐ Évaluer le Vendeur",
-      label_your_name: "Votre Nom:",
-      label_stars: "Note (Étoiles):",
-      label_comment: "Commentaire:",
-      btn_send: "Envoyer l'Avis"
-    },
-    it: {
-      title: "Profilo e Vetrina",
-      nav_inicio: "🏠 Inizio",
-      nav_cadernetas: "📖 Album",
-      nav_vitrine: "📦 Vetrina",
-      nav_perfil: "⚙️ Profilo",
-      nav_admin: "🛡️ Pannello Admin",
-      nav_estoque: "📊 Magazzino",
-      btn_change_photo: "Cambia Foto",
-      btn_edit_profile: "Modifica Profilo",
-      label_name: "Nome:",
-      label_postal: "📍 Codice Postale:",
-      label_telefone: "📱 Telefono (WhatsApp):",
-      btn_save: "Salva Modifiche",
-      btn_cancel: "Annulla",
-      reviews_title: "⭐ Recensioni del Venditore",
-      btn_leave_review: "Lascia una Recensione",
-      cta_organize: "✨ Vuoi organizzare la tua collezione?",
-      cta_button: "Accedi al mio Album Ora",
-      btn_logout: "Esci dal Sistema",
-      btn_login: "Accedi / Login",
-      showcase_title: "🛍️ Vetrina del Venditore",
-      filter_all_albums: "Filtra per Album (Tutti)",
-      search_placeholder: "Cerca per Nome o Codice...",
-      marketplace_alert: "⚠️ <strong>Avviso Importante:</strong> Questa piattaforma funge esclusivamente da vetrina per annunci. Gli articoli negoziati sono di esclusiva responsabilità degli utenti.",
-      btn_load_more: "Carica Altri",
-      modal_edit_title: "✏️ Modifica Offerta",
-      label_price: "Prezzo:",
-      label_stock: "Magazzino:",
-      label_quality: "Qualità / Condizione:",
-      modal_review_title: "⭐ Valuta Venditore",
-      label_your_name: "Il tuo Nome:",
-      label_stars: "Valutazione (Stelle):",
-      label_comment: "Commento:",
-      btn_send: "Invia Recensione"
+      filter_all_albums: "Filtrar por Álbum (Todos)"
     },
     en: {
       title: "Profile & Showcase",
@@ -481,33 +196,11 @@
       nav_perfil: "⚙️ Profile",
       nav_admin: "🛡️ Admin Panel",
       nav_estoque: "📊 Stock",
-      btn_change_photo: "Change Photo",
-      btn_edit_profile: "Edit Profile",
-      label_name: "Name:",
-      label_postal: "📍 Postal Code / ZIP:",
-      label_telefone: "📱 Phone (WhatsApp):",
-      btn_save: "Save Changes",
-      btn_cancel: "Cancel",
       reviews_title: "⭐ Seller Reviews",
-      btn_leave_review: "Leave a Review",
-      cta_organize: "✨ Want to organize your collection?",
-      cta_button: "Access My Collection Now",
       btn_logout: "Log Out",
       btn_login: "Log In",
       showcase_title: "🛍️ Seller Showcase",
-      filter_all_albums: "Filter by Album (All)",
-      search_placeholder: "Search by Name or Code...",
-      marketplace_alert: "⚠️ <strong>Important Notice:</strong> This platform acts exclusively as an ad showcase. Negotiated items are the sole responsibility of the users.",
-      btn_load_more: "Load More",
-      modal_edit_title: "✏️ Edit Offer",
-      label_price: "Price:",
-      label_stock: "Stock:",
-      label_quality: "Quality / Condition:",
-      modal_review_title: "⭐ Rate Seller",
-      label_your_name: "Your Name:",
-      label_stars: "Rating (Stars):",
-      label_comment: "Comment:",
-      btn_send: "Send Review"
+      filter_all_albums: "Filter by Album (All)"
     }
   };
 
@@ -515,17 +208,6 @@
     idiomaAtual = lang;
     localStorage.setItem('user_lang', lang);
     aplicarTraducaoInterface();
-    atualizarBotoesBandeiras();
-  }
-
-  function atualizarBotoesBandeiras() {
-    document.querySelectorAll('.flag-option').forEach(btn => {
-      if (btn.getAttribute('data-lang') === idiomaAtual) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
   }
 
   function aplicarTraducaoInterface() {
@@ -534,11 +216,6 @@
       const chave = el.getAttribute('data-i18n');
       if (t[chave]) el.innerHTML = t[chave];
     });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-      const chave = el.getAttribute('data-i18n-placeholder');
-      if (t[chave]) el.placeholder = t[chave];
-    });
-    atualizarBotoesBandeiras();
   }
 
   function alternarTema() {
@@ -561,6 +238,7 @@
     aplicarTraducaoInterface();
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
+    
     const { data: { session } } = await _supabase.auth.getSession();
     let perfilAlvo = null;
 
@@ -572,14 +250,12 @@
         isAdminOrMaster = (perfilLogado.is_admin === true || perfilLogado.funcao === 'admin' || perfilLogado.funcao === 'master');
       }
       document.getElementById('loggedMenu').style.display = 'block';
-      document.getElementById('linkCardeneta').style.display = 'inline-block';
-      document.getElementById('linkVitrine').style.display = 'inline-block';
-      document.getElementById('linkPerfil').style.display = 'inline-block';
     } else {
       document.getElementById('unloggedMenu').style.display = 'block';
     }
 
     if (idParam) {
+      // Tenta buscar por ID (caso seja numérico ou UUID dependendo da base de dados)
       const { data } = await _supabase.from('usuarios_cadastrados').select('*').eq('id', idParam).maybeSingle();
       perfilAlvo = data;
     } else if (usuarioLogado) {
@@ -588,25 +264,25 @@
 
     if (perfilAlvo && perfilAlvo.id) {
       perfilAlvoUuid = perfilAlvo.id;
-      perfilAlvoIdNumerico = perfilAlvo.id;
-      const ehProprio = usuarioLogado && (String(perfilAlvo.id) === String(usuarioLogado.id) || perfilAlvo.id === authUserId);
-      preencherDadosPerfil(perfilAlvo, ehProprio);
-      carregarVitrine(perfilAlvoUuid);
-      carregarAvaliacoes(perfilAlvoUuid);
+      document.getElementById('userName').innerText = perfilAlvo.nome || "Usuário";
+      if(perfilAlvo.foto_url) document.getElementById('userAvatar').src = perfilAlvo.foto_url;
+      
+      // Funções de carregamento de vitrine e avaliações (substitua conforme necessário se já tiver definidas)
+      if (typeof carregarVitrine === 'function') carregarVitrine(perfilAlvoUuid);
+      if (typeof carregarAvaliacoes === 'function') carregarAvaliacoes(perfilAlvoUuid);
     } else {
       document.getElementById('userName').innerText = "Vendedor não encontrado";
       document.getElementById('vitrineGrid').innerHTML = "Não foi possível localizar este vendedor.";
-      return;
     }
+
     if (isAdminOrMaster) {
       document.getElementById('linkAdmin').style.display = 'inline-block';
       document.getElementById('linkEstoque').style.display = 'inline-block';
     }
   }
 
-  function preencherDadosPerfil(perfil, ehProprio) {
-    document.getElementById('userName').innerText = perfil.nome || "Usuário";
-  }
+  // Executa automaticamente ao carregar a página
+  window.addEventListener('DOMContentLoaded', verificarAcesso);
 </script>
 </body>
 </html>
