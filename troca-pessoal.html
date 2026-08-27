@@ -33,8 +33,15 @@
     .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     
     #qrcode-container, #qrcode-confirmacao { display: flex; justify-content: center; margin: 15px 0; background: #fff; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto; }
-    #reader, #reader-confirm { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border-color); }
+    #reader { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border-color); display: none; }
     
+    /* Grade de Seleção de Cadernetas por Miniatura */
+    .cardenetas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; text-align: left; }
+    .cardeneta-select-card { background: var(--bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .cardeneta-select-card:hover, .cardeneta-select-card.selected { border-color: var(--gold); background: rgba(245, 158, 11, 0.08); }
+    .cardeneta-select-card img { width: 60px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); }
+    .cardeneta-select-card span { font-size: 0.75rem; font-weight: 600; line-height: 1.2; }
+
     .grid-comparativo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; text-align: left; }
     @media (max-width: 768px) { .grid-comparativo { grid-template-columns: 1fr; } }
     
@@ -68,31 +75,50 @@
       </div>
     </div>
 
-    <!-- 1. PASSO: SEU QR CODE DE IDENTIFICAÇÃO -->
-    <div class="card-painel" id="painelGerarQr">
-      <div class="section-title">📱 Seu QR Code de Identificação</div>
+    <!-- PASSO 1: SELEÇÃO DA CADERNETA -->
+    <div class="card-painel" id="painelSelecionarCaderneta">
+      <div class="section-title">📖 Escolha a Caderneta da Troca</div>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Mostre este código para o colega escanear para darmos início à troca presencial:
+        Selecione em qual álbum deseja realizar a troca presencial com o colega:
       </p>
-      <div id="qrcode-container">
-        <div id="qrcode"></div>
+      <div id="listaCadernetasGrid" class="cardenetas-grid">
+        <!-- Preenchido via JavaScript -->
       </div>
     </div>
 
-    <!-- 2. PASSO: LEITOR DA CÂMARA -->
-    <div class="card-painel" id="painelLeitor">
-      <div class="section-title">📷 Ler QR Code do Colega</div>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Aponte a câmara para o QR Code do colega:
-      </p>
-      <div id="reader"></div>
-      <div id="statusLeitura" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--gold);"></div>
+    <!-- PASSO 2: SEU QR CODE E BOTÃO PARA ATIVAR A CÂMARA -->
+    <div class="card-painel" id="painelGerarQr" style="display: none;">
+      <div class="section-title" id="tituloSecaoQr">📱 Troca Pessoal - Caderneta Selecionada</div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">Mostre o seu QR Code para o colega:</p>
+        <div id="qrcode-container">
+          <div id="qrcode"></div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Ou clique abaixo para abrir a câmara e ler o QR Code do colega:
+        </p>
+        <button class="btn-gold" onclick="ativarCameraLeitor()">📷 Ler QR Code do Colega</button>
+      </div>
+
+      <!-- Leitor embutido (inicialmente oculto até clicar no botão) -->
+      <div style="margin-top: 15px;">
+        <div id="reader"></div>
+        <div id="statusLeitura" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--gold);"></div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button class="btn-outline" onclick="voltarParaSelecaoCaderneta()">⬅️ Escolher Outra Caderneta</button>
+      </div>
     </div>
 
-    <!-- 3. PASSO: TELA DE CONFERÊNCIA AO TOQUE -->
+    <!-- PASSO 3: TELA DE CONFERÊNCIA AO TOQUE (FILTRADA PELA CADERNETA) -->
     <div id="painelMatchPresencial" class="card-painel" style="display: none;">
       <div class="section-title" id="tituloMatchColega">✨ Conferência de Figurinhas</div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Toque nas figurinhas para ajustar o que vai ser trocado entre vocês:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Toque nas figurinhas desta caderneta para ajustar a troca:</p>
       
       <div class="grid-comparativo">
         <div class="sub-card">
@@ -111,25 +137,16 @@
       </div>
     </div>
 
-    <!-- 4. PASSO: QR CODE DE VALIDAÇÃO FINAL (O colega lê para confirmar a baixa) -->
+    <!-- PASSO 4: VALIDAÇÃO FINAL -->
     <div id="painelQrConfirmacao" class="card-painel" style="display: none;">
       <div class="section-title">🔐 Validação Final do Colega</div>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Tudo conferido! Peça para o **colega** apontar o telemóvel dele (na opção de leitura) para este QR Code abaixo para efetivar a troca e atualizar as cadernetas instantaneamente:
+        Peça para o **colega** apontar o telemóvel dele para este QR Code para efetivar a transação e atualizar as cadernetas:
       </p>
       <div id="qrcode-confirmacao">
         <div id="qrcodeFinal"></div>
       </div>
       <button class="btn-outline" style="margin-top: 15px;" onclick="reiniciarFluxo()">Voltar / Cancelar</button>
-    </div>
-
-    <!-- 5. PASSO: SE O UTILIZADOR QUISER LER O QR CODE FINAL DO COLEGA PARA VALIDAR -->
-    <div class="card-painel" id="painelValidarRecebido" style="display: none;">
-      <div class="section-title">📷 Validar Troca do Colega</div>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Aponte a câmara para o QR Code de confirmação do colega para aceitar a transação:
-      </p>
-      <div id="reader-confirm"></div>
     </div>
   </div>
 
@@ -144,10 +161,10 @@
 
     let usuarioAtual = null;
     let figurinhasGlobalMap = new Map();
+    let cadernetaSelecionadaId = null;
+    let cadernetaSelecionadaNome = '';
     let colegaIdLido = null;
     let html5QrCode = null;
-    let html5QrCodeConfirm = null;
-    let propostaCriadaId = null;
 
     let selecionadasParaReceber = new Set();
     let selecionadasParaEnviar = new Set();
@@ -161,37 +178,76 @@
       }
       usuarioAtual = session.user;
 
-      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, numero, nome, imagem');
+      // 1. Carregar catálogo completo de figurinhas e o ID da caderneta de cada uma
+      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, caderneta_id, numero, nome, imagem');
       if (figsGerais) {
         figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
       }
 
-      // Gera o QR Code inicial com o ID do utilizador
-      document.getElementById("qrcode").innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), { text: usuarioAtual.id, width: 150, height: 150 });
-
-      iniciarLeitorCamera();
+      // 2. Carregar cadernetas disponíveis para o usuário escolher
+      await carregarCadernetasDisponiveis();
     });
 
-    function iniciarLeitorCamera() {
+    async function carregarCadernetasDisponiveis() {
+      const { data: cadernetas } = await _supabase.from('cadernetas').select('id, nome, capa');
+      const container = document.getElementById('listaCadernetasGrid');
+      
+      if (!cadernetas || cadernetas.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-muted)">Nenhuma caderneta encontrada.</span>';
+        return;
+      }
+
+      let html = '';
+      cadernetas.forEach(c => {
+        html += `
+          <div class="cardeneta-select-card" onclick="selecionarCaderneta('${c.id}', '${c.nome.replace(/'/g, "")}')">
+            <img src="${c.capa || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+            <span>${c.nome}</span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function selecionarCaderneta(id, nome) {
+      cadernetaSelecionadaId = id;
+      cadernetaSelecionadaNome = nome;
+      
+      document.getElementById('tituloSecaoQr').innerText = `📱 Troca: ${nome}`;
+      document.getElementById('painelSelecionarCaderneta').style.display = 'none';
+      document.getElementById('painelGerarQr').style.display = 'block';
+
+      // Gerar QR Code do utilizador
+      document.getElementById("qrcode").innerHTML = "";
+      new QRCode(document.getElementById("qrcode"), { text: usuarioAtual.id, width: 150, height: 150 });
+    }
+
+    function voltarParaSelecaoCaderneta() {
+      pararCameraSeAtiva();
+      document.getElementById('painelGerarQr').style.display = 'none';
       document.getElementById('painelMatchPresencial').style.display = 'none';
       document.getElementById('painelQrConfirmacao').style.display = 'none';
-      document.getElementById('painelValidarRecebido').style.display = 'none';
-      document.getElementById('painelGerarQr').style.display = 'block';
-      document.getElementById('painelLeitor').style.display = 'block';
-      document.getElementById('statusLeitura').innerText = '';
+      document.getElementById('painelSelecionarCaderneta').style.display = 'block';
+    }
 
-      if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+    function ativarCameraLeitor() {
+      const readerDiv = document.getElementById('reader');
+      readerDiv.style.display = 'block';
+      document.getElementById('statusLeitura').innerText = "A iniciar a câmara...";
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
 
       html5QrCode.start(
         { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 10, qrbox: { width: 200, height: 200 } },
         async (decodedText) => {
           colegaIdLido = decodedText.trim();
           
-          // Se o texto lido for um ID de proposta (caso esteja a validar o colega)
-          if (decodedText.startsWith('PROPOSTA_OK:')) {
-            const propId = decodedText.split(':')[1];
+          if (colegaIdLido.startsWith('PROPOSTA_OK:')) {
+            const propId = colegaIdLido.split(':')[1];
+            await pararCameraSeAtiva();
             await executarBaixaEConfirmarTroca(propId);
             return;
           }
@@ -201,60 +257,83 @@
             return;
           }
           
-          document.getElementById('statusLeitura').innerText = "✅ Colega lido! A carregar conferência...";
-          try { await html5QrCode.stop(); } catch(e) {}
+          document.getElementById('statusLeitura').innerText = "✅ Colega lido! A carregar...";
+          await pararCameraSeAtiva();
           await processarMatchPresencial(colegaIdLido);
         },
-        (errorMessage) => {}
+        () => {}
       ).catch(err => {
         document.getElementById('statusLeitura').innerText = "❌ Erro ao aceder à câmara.";
       });
     }
 
+    async function pararCameraSeAtiva() {
+      try {
+        if (html5QrCode && html5QrCode.isScanning) {
+          await html5QrCode.stop();
+        }
+      } catch(e) {}
+      document.getElementById('reader').style.display = 'none';
+    }
+
     async function reiniciarFluxo() {
       selecionadasParaReceber.clear();
       selecionadasParaEnviar.clear();
-      try { if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop(); } catch(e) {}
-      try { if (html5QrCodeConfirm && html5QrCodeConfirm.isScanning) await html5QrCodeConfirm.stop(); } catch(e) {}
-      iniciarLeitorCamera();
+      await pararCameraSeAtiva();
+      selecionarCaderneta(cadernetaSelecionadaId, cadernetaSelecionadaNome);
     }
 
     async function processarMatchPresencial(idColega) {
       document.getElementById('painelGerarQr').style.display = 'none';
-      document.getElementById('painelLeitor').style.display = 'none';
 
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
-      document.getElementById('tituloMatchColega').innerText = `✨ Conferência com ${perfilColega?.nome || 'Colega'}`;
+      document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${cadernetaSelecionadaNome} com ${perfilColega?.nome || 'Colega'}`;
 
+      // 1. Minhas figurinhas
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => String(f.figurinha_id)));
       const minhasRepetidasIds = new Set((minhasFig || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
+      // 2. Figurinhas do colega
       const { data: figColega } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega);
       const colegaRepetidasIds = new Set((figColega || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
-      selecionadasParaReceber = new Set(Array.from(colegaRepetidasIds).filter(id => !minhasCadastradasIds.has(id)));
-      selecionadasParaEnviar = new Set(Array.from(minhasRepetidasIds).filter(id => !colegaRepetidasIds.has(id)));
+      // Filtra apenas as figurinhas que pertencem estritamente à caderneta selecionada
+      selecionadasParaReceber = new Set(
+        Array.from(colegaRepetidasIds).filter(id => {
+          const f = figurinhasGlobalMap.get(id);
+          return f && String(f.caderneta_id) === String(cadernetaSelecionadaId) && !minhasCadastradasIds.has(id);
+        })
+      );
 
+      selecionadasParaEnviar = new Set(
+        Array.from(minhasRepetidasIds).filter(id => {
+          const f = figurinhasGlobalMap.get(id);
+          return f && String(f.caderneta_id) === String(cadernetaSelecionadaId);
+        })
+      );
+
+      // Renderizar Grade de Recebimento (Filtrada por caderneta)
       let htmlReceber = '';
       colegaRepetidasIds.forEach(id => {
         const f = figurinhasGlobalMap.get(id);
-        if (f) {
+        if (f && String(f.caderneta_id) === String(cadernetaSelecionadaId)) {
           const sel = selecionadasParaReceber.has(id);
           htmlReceber += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="rec_${id}" onclick="alternarReceber('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
         }
       });
-      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted)">Sem repetidas do colega.</span>';
+      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhuma repetida desta caderneta com o colega.</span>';
 
+      // Renderizar Grade de Envio (Filtrada por caderneta)
       let htmlEnviar = '';
       minhasRepetidasIds.forEach(id => {
         const f = figurinhasGlobalMap.get(id);
-        if (f) {
+        if (f && String(f.caderneta_id) === String(cadernetaSelecionadaId)) {
           const sel = selecionadasParaEnviar.has(id);
           htmlEnviar += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="env_${id}" onclick="alternarEnviar('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
         }
       });
-      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted)">Sem repetidas suas.</span>';
+      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted); font-size:0.8rem;">Você não possui repetidas desta caderneta.</span>';
 
       document.getElementById('painelMatchPresencial').style.display = 'block';
     }
@@ -277,7 +356,6 @@
         return;
       }
 
-      // 1. Cria a proposta com status pendente na base de dados
       const { data, error } = await _supabase.from('propostas_troca').insert([{
         remetente_id: usuarioAtual.id,
         destinatario_id: colegaIdLido,
@@ -287,35 +365,16 @@
       }]).select().single();
 
       if (error) { alert('Erro ao preparar proposta: ' + error.message); return; }
-      propostaCriadaId = data.id;
 
-      // 2. Oculta painel de conferência e mostra o QR Code de Confirmação Final
       document.getElementById('painelMatchPresencial').style.display = 'none';
       document.getElementById('painelQrConfirmacao').style.display = 'block';
 
-      // Gera um QR Code especial contendo um token de validação "PROPOSTA_OK:[ID]"
       document.getElementById("qrcodeFinal").innerHTML = "";
       new QRCode(document.getElementById("qrcodeFinal"), {
-        text: `PROPOSTA_OK:${propostaCriadaId}`,
+        text: `PROPOSTA_OK:${data.id}`,
         width: 170,
         height: 170
       });
-
-      // Ativa também a câmara para o caso de querer ler o do colega caso os papéis invertam
-      document.getElementById('painelValidarRecebido').style.display = 'block';
-      if (!html5QrCodeConfirm) html5QrCodeConfirm = new Html5Qrcode("reader-confirm");
-      html5QrCodeConfirm.start(
-        { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 200, height: 200 } },
-        async (decodedText) => {
-          if (decodedText.startsWith('PROPOSTA_OK:')) {
-            const propId = decodedText.split(':')[1];
-            try { await html5QrCodeConfirm.stop(); } catch(e){}
-            await executarBaixaEConfirmarTroca(propId);
-          }
-        },
-        () => {}
-      ).catch(() => {});
     }
 
     async function executarBaixaEConfirmarTroca(propId) {
@@ -327,7 +386,6 @@
       const figsRem = propData.figurinhas_remetente || [];
       const figsDest = propData.figurinhas_destinatario || [];
 
-      // Função auxiliar local para dar baixa/adição no inventário de ambos
       const processarBaixa = async (userId, subtrairIds, adicionarIds) => {
         for (let id of subtrairIds) {
           const { data: reg } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', userId).eq('figurinha_id', id).maybeSingle();
@@ -343,14 +401,11 @@
         }
       };
 
-      // Executa a troca nas duas cadernetas
       await processarBaixa(remetenteId, figsRem, figsDest);
       await processarBaixa(destinatarioId, figsDest, figsRem);
-
-      // Atualiza o status para 'aceita'
       await _supabase.from('propostas_troca').update({ status: 'aceita' }).eq('id', propId);
 
-      alert('🎉 Troca validada e concluída com sucesso! As cadernetas foram atualizadas.');
+      alert('🎉 Troca validada e concluída com sucesso! Cadernetas atualizadas.');
       window.location.href = 'mercado.html';
     }
   </script>
