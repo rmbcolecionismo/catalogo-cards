@@ -293,22 +293,32 @@
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
       document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
 
-      // 1. Busca global das figurinhas do álbum selecionado
-      const { data: figsDoAlbum } = await _supabase
+      // Garante que o ID do álbum base não é nulo e trata como string/UUID caso necessário
+      if (!albumBaseSelecionadoId) {
+        console.error("albumBaseSelecionadoId não está definido!");
+        return;
+      }
+
+      // 1. Busca global das figurinhas do álbum selecionado (Removendo o erro 400 de tipagem)
+      const { data: figsDoAlbum, error: erroFigs } = await _supabase
         .from('figurinhas')
         .select('id, album_base_id, numero, nome, imagem')
         .eq('album_base_id', albumBaseSelecionadoId);
 
+      if (erroFigs) {
+        console.error("Erro ao buscar figurinhas:", erroFigs.message);
+        return;
+      }
+
       const idsFigurinhasAlbum = new Set((figsDoAlbum || []).map(f => String(f.id)));
       const figsMap = new Map((figsDoAlbum || []).map(f => [String(f.id), f]));
 
-      // 2. Busca da cardeneta do usuário logado e do colega (Renan)
+      // 2. Busca da cardeneta do usuário logado e do colega
       const [{ data: minhasFig }, { data: figColega }] = await Promise.all([
         _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id),
         _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega)
       ]);
 
-      // Filtra e normaliza os dados estritamente para o álbum atual
       const minhasDoAlbum = (minhasFig || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
       const colegaDoAlbum = (figColega || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
 
@@ -320,10 +330,10 @@
         if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
       });
 
-      // 3. Cruzamento idêntico ao motor do mercado.html
       const colegaRepetidas = colegaDoAlbum.filter(item => item.quantidade > 1);
       const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
 
+      // 3. Renderização dos grids de Receber e Enviar
       selecionadasParaReceber = new Set();
       let htmlReceber = '';
       colegaRepetidas.forEach(item => {
