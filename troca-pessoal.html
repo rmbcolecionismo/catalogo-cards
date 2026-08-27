@@ -35,7 +35,6 @@
     #qrcode-container, #qrcode-confirmacao { display: flex; justify-content: center; margin: 15px 0; background: #fff; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto; }
     #reader { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border-color); display: none; }
     
-    /* Grade de Seleção de Álbuns / Cadernetas por Miniatura */
     .cardenetas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; text-align: left; }
     .cardeneta-select-card { background: var(--bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .cardeneta-select-card:hover, .cardeneta-select-card.selected { border-color: var(--gold); background: rgba(245, 158, 11, 0.08); }
@@ -81,9 +80,7 @@
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
         Selecione em qual dos seus álbuns deseja realizar a troca presencial:
       </p>
-      <div id="listaCadernetasGrid" class="cardenetas-grid">
-        <!-- Preenchido via JavaScript -->
-      </div>
+      <div id="listaCadernetasGrid" class="cardenetas-grid"></div>
     </div>
 
     <!-- PASSO 2: SEU QR CODE E BOTÃO PARA ATIVAR A CÂMARA -->
@@ -104,7 +101,6 @@
         <button class="btn-gold" onclick="ativarCameraLeitor()">📷 Ler QR Code do Colega</button>
       </div>
 
-      <!-- Leitor embutido -->
       <div style="margin-top: 15px;">
         <div id="reader"></div>
         <div id="statusLeitura" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--gold);"></div>
@@ -115,7 +111,7 @@
       </div>
     </div>
 
-    <!-- PASSO 3: TELA DE CONFERÊNCIA AO TOQUE (FILTRADA PELA CADERNETA) -->
+    <!-- PASSO 3: TELA DE CONFERÊNCIA AO TOQUE -->
     <div id="painelMatchPresencial" class="card-painel" style="display: none;">
       <div class="section-title" id="tituloMatchColega">✨ Conferência de Figurinhas</div>
       <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Toque nas figurinhas deste álbum para ajustar a troca:</p>
@@ -141,7 +137,7 @@
     <div id="painelQrConfirmacao" class="card-painel" style="display: none;">
       <div class="section-title">🔐 Validação Final do Colega</div>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Peça para o **colega** apontar o telemóvel dele para este QR Code para efetivar a transação e atualizar as cadernetas:
+        Peça para o **colega** apontar o telemóvel dele para este QR Code para efetivar a transação:
       </p>
       <div id="qrcode-confirmacao">
         <div id="qrcodeFinal"></div>
@@ -160,7 +156,6 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let usuarioAtual = null;
-    let figurinhasGlobalMap = new Map();
     let albumBaseSelecionadoId = null;
     let albumNomeSelecionado = '';
     let colegaIdLido = null;
@@ -177,19 +172,10 @@
         return;
       }
       usuarioAtual = session.user;
-
-      // 1. Carregar catálogo completo de figurinhas associando ao album_base_id
-      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_base_id, numero, nome, imagem');
-      if (figsGerais) {
-        figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
-      }
-
-      // 2. Carregar os álbuns do utilizador logado fazendo JOIN com albuns
       await carregarAlbunsDoUsuario();
     });
 
     async function carregarAlbunsDoUsuario() {
-      // Usando o relacionamento correto da foreign key para buscar dados na tabela albuns
       const { data, error } = await _supabase
         .from('usuario_albuns')
         .select(`
@@ -236,7 +222,6 @@
       document.getElementById('painelSelecionarCaderneta').style.display = 'none';
       document.getElementById('painelGerarQr').style.display = 'block';
 
-      // Gerar QR Code do utilizador
       document.getElementById("qrcode").innerHTML = "";
       new QRCode(document.getElementById("qrcode"), { text: usuarioAtual.id, width: 150, height: 150 });
     }
@@ -308,48 +293,81 @@
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
       document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
 
-      // 1. Minhas figurinhas cadastradas
-      const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
-      const minhasCadastradasIds = new Set((minhasFig || []).map(f => String(f.figurinha_id)));
-      const minhasRepetidasIds = new Set((minhasFig || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
+      // BUSCAR DIRETAMENTE NA TABELA usuario_cardeneta FAZENDO JOIN COM figurinhas filtradas pelo album_base_id
+      const { data: minhasFig } = await _supabase
+        .from('usuario_cardeneta')
+        .select(`
+          figurinha_id,
+          quantidade,
+          figurinhas!inner (
+            id,
+            album_base_id,
+            numero,
+            nome,
+            imagem
+          )
+        `)
+        .eq('user_id', usuarioAtual.id)
+        .eq('figurinhas.album_base_id', albumBaseSelecionadoId);
 
-      // 2. Figurinhas cadastradas do colega
-      const { data: figColega } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega);
-      const colegaRepetidasIds = new Set((figColega || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
+      const { data: figColega } = await _supabase
+        .from('usuario_cardeneta')
+        .select(`
+          figurinha_id,
+          quantidade,
+          figurinhas!inner (
+            id,
+            album_base_id,
+            numero,
+            nome,
+            imagem
+          )
+        `)
+        .eq('user_id', idColega)
+        .eq('figurinhas.album_base_id', albumBaseSelecionadoId);
 
-      // Filtra estritamente pelas figurinhas do album_base_id selecionado
-      selecionadasParaReceber = new Set(
-        Array.from(colegaRepetidasIds).filter(id => {
-          const f = figurinhasGlobalMap.get(id);
-          return f && String(f.album_base_id) === String(albumBaseSelecionadoId) && !minhasCadastradasIds.has(id);
-        })
-      );
+      // Mapas auxiliares para consulta rápida
+      const minhasMap = new Map((minhasFig || []).map(item => [String(item.figurinha_id), item]));
+      const colegaMap = new Map((figColega || []).map(item => [String(item.figurinha_id), item]));
 
-      selecionadasParaEnviar = new Set(
-        Array.from(minhasRepetidasIds).filter(id => {
-          const f = figurinhasGlobalMap.get(id);
-          return f && String(f.album_base_id) === String(albumBaseSelecionadoId);
-        })
-      );
-
-      // Renderizar Grade de Recebimento (Filtrada pelo álbum selecionado)
+      // 1. O que vou receber do colega: Repetidas dele (quantidade > 1) que eu NÃO tenho (ou tenho quantidade = 0 / não cadastradas)
+      selecionadasParaReceber = new Set();
       let htmlReceber = '';
-      colegaRepetidasIds.forEach(id => {
-        const f = figurinhasGlobalMap.get(id);
-        if (f && String(f.album_base_id) === String(albumBaseSelecionadoId)) {
-          const sel = selecionadasParaReceber.has(id);
-          htmlReceber += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="rec_${id}" onclick="alternarReceber('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+      
+      (figColega || []).forEach(item => {
+        if (item.quantidade > 1) {
+          const figId = String(item.figurinha_id);
+          const minhaQtd = minhasMap.has(figId) ? minhasMap.get(figId).quantidade : 0;
+          
+          if (minhaQtd === 0) {
+            selecionadasParaReceber.add(figId);
+          }
+
+          const f = item.figurinhas;
+          htmlReceber += `
+            <div class="fig-select-card ${minhaQtd === 0 ? 'selected' : ''}" id="rec_${figId}" onclick="alternarReceber('${figId}')">
+              <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <span>${f.numero}</span>
+            </div>`;
         }
       });
       document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhuma repetida deste álbum com o colega.</span>';
 
-      // Renderizar Grade de Envio (Filtrada pelo álbum selecionado)
+      // 2. O que vou enviar para o colega: Minhas repetidas (quantidade > 1)
+      selecionadasParaEnviar = new Set();
       let htmlEnviar = '';
-      minhasRepetidasIds.forEach(id => {
-        const f = figurinhasGlobalMap.get(id);
-        if (f && String(f.album_base_id) === String(albumBaseSelecionadoId)) {
-          const sel = selecionadasParaEnviar.has(id);
-          htmlEnviar += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="env_${id}" onclick="alternarEnviar('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+
+      (minhasFig || []).forEach(item => {
+        if (item.quantidade > 1) {
+          const figId = String(item.figurinha_id);
+          selecionadasParaEnviar.add(figId);
+
+          const f = item.figurinhas;
+          htmlEnviar += `
+            <div class="fig-select-card selected" id="env_${figId}" onclick="alternarEnviar('${figId}')">
+              <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <span>${f.numero}</span>
+            </div>`;
         }
       });
       document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted); font-size:0.8rem;">Você não possui repetidas deste álbum.</span>';
