@@ -293,7 +293,7 @@
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
       document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
 
-      // 1. Buscar todas as figurinhas globais deste álbum base para mapear quais existem nele
+      // 1. Buscar todas as figurinhas globais deste álbum base
       const { data: figsDoAlbum } = await _supabase
         .from('figurinhas')
         .select('id, album_base_id, numero, nome, imagem')
@@ -302,44 +302,35 @@
       const idsFigurinhasAlbum = new Set((figsDoAlbum || []).map(f => String(f.id)));
       const figsMap = new Map((figsDoAlbum || []).map(f => [String(f.id), f]));
 
-      // 2. Buscar a cardeneta do usuário logado para este álbum
+      // 2. Buscar cardeneta do usuário logado e do colega
       const { data: minhasFig } = await _supabase
         .from('usuario_cardeneta')
         .select('figurinha_id, quantidade')
         .eq('user_id', usuarioAtual.id);
 
-      // 3. Buscar a cardeneta do colega para este álbum
       const { data: figColega } = await _supabase
         .from('usuario_cardeneta')
         .select('figurinha_id, quantidade')
         .eq('user_id', idColega);
 
-      // Filtrar apenas dados pertencentes ao álbum base selecionado
+      // Filtrar apenas itens pertencentes ao álbum selecionado
       const minhasDoAlbum = (minhasFig || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
       const colegaDoAlbum = (figColega || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
 
       const minhasCadastradasIds = new Set(minhasDoAlbum.map(item => String(item.figurinha_id)));
       const colecCadastradasIds = new Set(colegaDoAlbum.map(item => String(item.figurinha_id)));
 
-      // Mapeamentos rápidos de quantidade
-      const minhasMap = new Map(minhasDoAlbum.map(item => [String(item.figurinha_id), item.quantidade]));
-      const colegaMap = new Map(colegaDoAlbum.map(item => [String(item.figurinha_id), item.quantidade]));
-
-      // Identificar o que falta para mim (figurinhas do álbum que eu NÃO tenho)
+      // Identificar o que falta para mim (figurinhas do álbum que não constam na minha cardeneta)
       const minhasFaltantesIds = new Set();
       idsFigurinhasAlbum.forEach(id => {
         if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
       });
 
-      // Minhas repetidas (quantidade > 1)
+      // Repetidas (quantidade > 1)
       const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
-      // Repetidas do colega (quantidade > 1)
       const colegaRepetidas = colegaDoAlbum.filter(item => item.quantidade > 1);
 
-      // Regra idêntica ao mercado.html:
-      // - O que vou receber: Repetidas do colega que faltam para mim
-      // - O que vou enviar: Minhas repetidas que o colega não tem cadastrado
-      
+      // 3. O que vou receber: Repetidas do colega (qtd > 1) que faltam para mim
       selecionadasParaReceber = new Set();
       let htmlReceber = '';
       colegaRepetidas.forEach(item => {
@@ -358,6 +349,7 @@
       });
       document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhum match de recebimento para este álbum.</span>';
 
+      // 4. O que vou enviar: Minhas repetidas (qtd > 1) que o colega não tem
       selecionadasParaEnviar = new Set();
       let htmlEnviar = '';
       minhasRepetidas.forEach(item => {
@@ -378,7 +370,6 @@
 
       document.getElementById('painelMatchPresencial').style.display = 'block';
     }
-
     function alternarReceber(id) {
       const card = document.getElementById(`rec_${id}`);
       if (selecionadasParaReceber.has(id)) { selecionadasParaReceber.delete(id); card.classList.remove('selected'); }
