@@ -69,7 +69,6 @@
     .btn-excluir:hover { background: #ef4444; color: white; }
 
     .miniatura-foto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); cursor: pointer; }
-    .miniatura-icone { width: 28px; height: 28px; object-fit: contain; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -244,7 +243,7 @@
       </div>
     </div>
 
-    <!-- ABA: USUÁRIOS (ANTIGA VENDEDORES) -->
+    <!-- ABA: USUÁRIOS -->
     <div id="aba-usuarios" class="tab-content">
       <div class="card">
         <h2 id="tituloCardUsuario">👥 Gestão de Usuários Cadastrados</h2>
@@ -271,7 +270,7 @@
           </div>
           <div class="form-group">
             <label>Plano</label>
-            <input type="text" id="inputPlanoUsuario" placeholder="Ex: gratis, premium...">
+            <select id="selectPlanoUsuario"><option value="gratis">gratis</option></select>
           </div>
         </div>
         <button class="btn-submit" id="btnSalvarUsuario" onclick="salvarUsuarioManual()">Atualizar Usuário</button>
@@ -318,7 +317,7 @@
     <!-- ABA: PLANOS -->
     <div id="aba-planos" class="tab-content">
       <div class="card">
-        <h2 id="tituloCardPlano">💎 Gestão de Planos (configuracoes_planos)</h2>
+        <h2 id="tituloCardPlano">💎 Gestão de Planos</h2>
         <input type="hidden" id="editPlanoId">
         <div class="form-row">
           <div class="form-group">
@@ -362,7 +361,7 @@
     <!-- ABA: TEXTO WHATS -->
     <div id="aba-textowhats" class="tab-content">
       <div class="card">
-        <h2 id="tituloCardWhats">💬 Textos e Mensagens WhatsApp (configuracoes_sistema)</h2>
+        <h2 id="tituloCardWhats">💬 Textos e Mensagens WhatsApp</h2>
         <input type="hidden" id="editWhatsId">
         <div class="form-group">
           <label>Chave de Identificação</label>
@@ -398,7 +397,7 @@
             <select id="selectAlbumDestaque" onchange="carregarFigurinhaPorAlbumDestaque()"><option value="">Selecione o álbum...</option></select>
           </div>
           <div class="form-group">
-            <label>Selecione a Figurinha</label>
+            <label>Selecione a Figurinha (Tipo incluso)</label>
             <select id="selectFigurinhaDestaque"><option value="">Selecione a figurinha...</option></select>
           </div>
         </div>
@@ -463,6 +462,7 @@
       carregarAlbuns();
       carregarAlbunsOrdens();
       carregarTipos();
+      carregarPlanosSelect();
       carregarUsuarios();
       carregarContatos();
       carregarAjudas();
@@ -649,7 +649,16 @@
       alert("Figurinha cadastrada com sucesso!");
     }
 
-    // --- USUÁRIOS (ANTIGOS VENDEDORES) ---
+    // --- USUÁRIOS ---
+    async function carregarPlanosSelect() {
+      const selectPlano = document.getElementById('selectPlanoUsuario');
+      if (!selectPlano) return;
+      const { data } = await _supabase.from('configuracoes_planos').select('plano');
+      if (data && data.length > 0) {
+        selectPlano.innerHTML = data.map(p => `<option value="${p.plano}">${p.plano}</option>`).join('');
+      }
+    }
+
     async function carregarUsuarios() {
       const tbody = document.getElementById('tabelaUsuarios');
       if (!tbody) return;
@@ -670,7 +679,7 @@
       document.getElementById('inputNomeUsuario').value = nome;
       document.getElementById('inputEmailUsuario').value = email;
       document.getElementById('selectFuncaoUsuario').value = funcao;
-      document.getElementById('inputPlanoUsuario').value = plano;
+      document.getElementById('selectPlanoUsuario').value = plano;
       document.getElementById('btnCancelarUsuario').style.display = "inline-block";
     }
 
@@ -678,7 +687,7 @@
       const id = document.getElementById('editUsuarioId').value;
       const nome = document.getElementById('inputNomeUsuario').value.trim();
       const funcao = document.getElementById('selectFuncaoUsuario').value;
-      const plano = document.getElementById('inputPlanoUsuario').value.trim();
+      const plano = document.getElementById('selectPlanoUsuario').value;
       if (!id) return;
 
       await _supabase.from('usuarios_cadastrados').update({ nome, funcao, plano }).eq('id', id);
@@ -690,7 +699,6 @@
       document.getElementById('editUsuarioId').value = '';
       document.getElementById('inputNomeUsuario').value = '';
       document.getElementById('inputEmailUsuario').value = '';
-      document.getElementById('inputPlanoUsuario').value = '';
       document.getElementById('btnCancelarUsuario').style.display = "none";
     }
 
@@ -727,7 +735,7 @@
         <tr>
           <td>${a.nova_imagem_url || a.foto_url ? `<img src="${a.nova_imagem_url || a.foto_url}" class="miniatura-foto">` : '-'}</td>
           <td>${a.figurinhas?.albuns?.nome || '-'}</td>
-          <td>Nº ${a.figurinhas?.numero || '-'}</td>
+          <td>Nº ${a.figurinhas?.numero || '-'} - ${a.figurinhas?.nome || ''}</td>
           <td>${a.status || 'Pendente'}</td>
           <td><button class="btn-excluir" onclick="excluirAjuda('${a.id}')">Excluir</button></td>
         </tr>
@@ -735,8 +743,13 @@
     }
 
     async function excluirAjuda(id) {
-      await _supabase.from('colaboracoes').delete().eq('id', id);
-      carregarAjudas();
+      if (!confirm("Deseja realmente excluir esta ajuda?")) return;
+      const { error } = await _supabase.from('colaboracoes').delete().eq('id', id);
+      if (error) {
+        alert("Erro ao excluir ajuda: " + error.message);
+      } else {
+        carregarAjudas();
+      }
     }
 
     // --- PLANOS ---
@@ -751,53 +764,120 @@
           <td>${p.limite_cadernetas}</td>
           <td>${p.limite_anuncios}</td>
           <td>${p.limite_trocas}</td>
-          <td><button class="btn-excluir" onclick="excluirPlano('${p.id}')">Excluir</button></td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoPlano('${p.id}', '${p.plano.replace(/'/g, "\\'")}', ${p.valor_plano || 0}, ${p.limite_cadernetas || 0}, ${p.limite_anuncios || 0}, ${p.limite_trocas || 0})">Editar</button>
+              <button class="btn-excluir" onclick="excluirPlano('${p.id}')">Excluir</button>
+            </div>
+          </td>
         </tr>
       `).join('') : `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum plano.</td></tr>`;
     }
 
+    function prepararEdicaoPlano(id, plano, valor, cadernetas, anuncios, trocas) {
+      document.getElementById('editPlanoId').value = id;
+      document.getElementById('inputNomePlano').value = plano;
+      document.getElementById('inputValorPlano').value = valor;
+      document.getElementById('inputLimiteCadernetas').value = cadernetas;
+      document.getElementById('inputLimiteAnuncios').value = anuncios;
+      document.getElementById('inputLimiteTrocas').value = trocas;
+      document.getElementById('btnSalvarPlano').innerText = "Atualizar Plano";
+      document.getElementById('btnCancelarPlano').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoPlano() {
+      document.getElementById('editPlanoId').value = '';
+      document.getElementById('inputNomePlano').value = '';
+      document.getElementById('inputValorPlano').value = '';
+      document.getElementById('inputLimiteCadernetas').value = '';
+      document.getElementById('inputLimiteAnuncios').value = '';
+      document.getElementById('inputLimiteTrocas').value = '';
+      document.getElementById('btnSalvarPlano').innerText = "Salvar Plano";
+      document.getElementById('btnCancelarPlano').style.display = "none";
+    }
+
     async function salvarPlano() {
+      const id = document.getElementById('editPlanoId').value;
       const plano = document.getElementById('inputNomePlano').value.trim();
-      const valor_plano = parseFloat(document.getElementById('inputValorPlano').value);
-      const limite_cadernetas = parseInt(document.getElementById('inputLimiteCadernetas').value);
-      const limite_anuncios = parseInt(document.getElementById('inputLimiteAnuncios').value);
-      const limite_trocas = parseInt(document.getElementById('inputLimiteTrocas').value);
+      const valor_plano = parseFloat(document.getElementById('inputValorPlano').value) || 0;
+      const limite_cadernetas = parseInt(document.getElementById('inputLimiteCadernetas').value) || 0;
+      const limite_anuncios = parseInt(document.getElementById('inputLimiteAnuncios').value) || 0;
+      const limite_trocas = parseInt(document.getElementById('inputLimiteTrocas').value) || 0;
       if (!plano) return;
 
-      await _supabase.from('configuracoes_planos').insert([{ plano, valor_plano, limite_cadernetas, limite_anuncios, limite_trocas }]);
+      if (id) {
+        await _supabase.from('configuracoes_planos').update({ plano, valor_plano, limite_cadernetas, limite_anuncios, limite_trocas }).eq('id', id);
+      } else {
+        await _supabase.from('configuracoes_planos').insert([{ plano, valor_plano, limite_cadernetas, limite_anuncios, limite_trocas }]);
+      }
+      cancelarEdicaoPlano();
       carregarPlanos();
+      carregarPlanosSelect();
     }
 
     async function excluirPlano(id) {
+      if (!confirm("Excluir plano?")) return;
       await _supabase.from('configuracoes_planos').delete().eq('id', id);
       carregarPlanos();
+      carregarPlanosSelect();
     }
 
     // --- TEXTO WHATS ---
     async function carregarWhats() {
       const tbody = document.getElementById('tabelaWhats');
       if (!tbody) return;
-      const { data } = await _supabase.from('configuracoes_sistema').select('*');
+      const { data, error } = await _supabase.from('configuracoes_sistema').select('*');
+      if (error) {
+        console.error("Erro ao carregar configuracoes_sistema:", error);
+      }
       tbody.innerHTML = data && data.length > 0 ? data.map(w => `
         <tr>
-          <td>${w.chave}</td>
-          <td>${w.valor}</td>
+          <td>${w.chave || '-'}</td>
+          <td>${w.valor || '-'}</td>
           <td>${w.atualizado_em ? new Date(w.atualizado_em).toLocaleDateString() : '-'}</td>
-          <td><button class="btn-excluir" onclick="excluirWhats('${w.id}')">Excluir</button></td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoWhats('${w.id}', '${w.chave || ''}', '${(w.valor || '').replace(/'/g, "\\'")}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirWhats('${w.id}')">Excluir</button>
+            </div>
+          </td>
         </tr>
       `).join('') : `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhum texto configurado.</td></tr>`;
     }
 
+    function prepararEdicaoWhats(id, chave, valor) {
+      document.getElementById('editWhatsId').value = id;
+      document.getElementById('inputChaveWhats').value = chave;
+      document.getElementById('inputValorWhats').value = valor;
+      document.getElementById('btnSalvarWhats').innerText = "Atualizar Configuração";
+      document.getElementById('btnCancelarWhats').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoWhats() {
+      document.getElementById('editWhatsId').value = '';
+      document.getElementById('inputChaveWhats').value = '';
+      document.getElementById('inputValorWhats').value = '';
+      document.getElementById('btnSalvarWhats').innerText = "Salvar Configuração";
+      document.getElementById('btnCancelarWhats').style.display = "none";
+    }
+
     async function salvarWhats() {
+      const id = document.getElementById('editWhatsId').value;
       const chave = document.getElementById('inputChaveWhats').value.trim();
       const valor = document.getElementById('inputValorWhats').value.trim();
       if (!chave) return;
 
-      await _supabase.from('configuracoes_sistema').upsert([{ chave, valor, atualizado_em: new Date() }], { onConflict: 'chave' });
+      if (id) {
+        await _supabase.from('configuracoes_sistema').update({ chave, valor, atualizado_em: new Date() }).eq('id', id);
+      } else {
+        await _supabase.from('configuracoes_sistema').upsert([{ chave, valor, atualizado_em: new Date() }], { onConflict: 'chave' });
+      }
+      cancelarEdicaoWhats();
       carregarWhats();
     }
 
     async function excluirWhats(id) {
+      if (!confirm("Excluir configuração?")) return;
       await _supabase.from('configuracoes_sistema').delete().eq('id', id);
       carregarWhats();
     }
@@ -810,14 +890,16 @@
         selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>`;
         return;
       }
-      const { data } = await _supabase.from('figurinhas').select('id, numero, nome').eq('album_id', albumId);
-      selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>` + (data || []).map(f => `<option value="${f.id}">Nº ${f.numero} - ${f.nome}</option>`).join('');
+      const { data } = await _supabase.from('figurinhas').select('id, numero, nome, tipos(nome)').eq('album_id', albumId);
+      selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>` + (data || []).map(f => {
+        const nomeTipo = f.tipos?.nome ? ` [Tipo: ${f.tipos.nome}]` : '';
+        return `<option value="${f.id}">Nº ${f.numero} - ${f.nome}${nomeTipo}</option>`;
+      }).join('');
     }
 
     async function carregarDestaques() {
       const tbody = document.getElementById('tabelaDestaques');
       if (!tbody) return;
-      // ATUALIZADO PARA 'destaques' (plural)
       const { data } = await _supabase.from('destaques').select('*').order('ordem', { ascending: true });
       tbody.innerHTML = data && data.length > 0 ? data.map(d => `
         <tr>
@@ -836,13 +918,12 @@
       const ordem = parseInt(document.getElementById('inputOrdemDestaque').value) || 0;
       if (!album_id) return;
 
-      // ATUALIZADO PARA 'destaques' (plural)
       await _supabase.from('destaques').insert([{ album_id, titulo_destaque, ordem }]);
       carregarDestaques();
     }
 
     async function excluirDestaque(id) {
-      // ATUALIZADO PARA 'destaques' (plural)
+      if (!confirm("Deseja excluir este destaque?")) return;
       await _supabase.from('destaques').delete().eq('id', id);
       carregarDestaques();
     }
