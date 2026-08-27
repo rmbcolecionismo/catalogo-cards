@@ -75,11 +75,11 @@
       </div>
     </div>
 
-    <!-- PASSO 1: SELEÇÃO DA CADERNETA -->
+    <!-- PASSO 1: SELEÇÃO DA CADERNETA DO USUÁRIO -->
     <div class="card-painel" id="painelSelecionarCaderneta">
       <div class="section-title">📖 Escolha a Caderneta da Troca</div>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Selecione em qual álbum deseja realizar a troca presencial com o colega:
+        Selecione em qual dos seus álbuns deseja realizar a troca presencial:
       </p>
       <div id="listaCadernetasGrid" class="cardenetas-grid">
         <!-- Preenchido via JavaScript -->
@@ -88,7 +88,7 @@
 
     <!-- PASSO 2: SEU QR CODE E BOTÃO PARA ATIVAR A CÂMARA -->
     <div class="card-painel" id="painelGerarQr" style="display: none;">
-      <div class="section-title" id="tituloSecaoQr">📱 Troca Pessoal - Caderneta Selecionada</div>
+      <div class="section-title" id="tituloSecaoQr">📱 Troca Pessoal - Álbum Selecionado</div>
       
       <div style="margin-bottom: 20px;">
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">Mostre o seu QR Code para o colega:</p>
@@ -104,21 +104,21 @@
         <button class="btn-gold" onclick="ativarCameraLeitor()">📷 Ler QR Code do Colega</button>
       </div>
 
-      <!-- Leitor embutido (inicialmente oculto até clicar no botão) -->
+      <!-- Leitor embutido -->
       <div style="margin-top: 15px;">
         <div id="reader"></div>
         <div id="statusLeitura" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--gold);"></div>
       </div>
 
       <div style="margin-top: 20px;">
-        <button class="btn-outline" onclick="voltarParaSelecaoCaderneta()">⬅️ Escolher Outra Caderneta</button>
+        <button class="btn-outline" onclick="voltarParaSelecaoCaderneta()">⬅️ Escolher Outro Álbum</button>
       </div>
     </div>
 
     <!-- PASSO 3: TELA DE CONFERÊNCIA AO TOQUE (FILTRADA PELA CADERNETA) -->
     <div id="painelMatchPresencial" class="card-painel" style="display: none;">
       <div class="section-title" id="tituloMatchColega">✨ Conferência de Figurinhas</div>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Toque nas figurinhas desta caderneta para ajustar a troca:</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Toque nas figurinhas deste álbum para ajustar a troca:</p>
       
       <div class="grid-comparativo">
         <div class="sub-card">
@@ -161,8 +161,8 @@
 
     let usuarioAtual = null;
     let figurinhasGlobalMap = new Map();
-    let cadernetaSelecionadaId = null;
-    let cadernetaSelecionadaNome = '';
+    let albumBaseSelecionadoId = null;
+    let albumNomeSelecionado = '';
     let colegaIdLido = null;
     let html5QrCode = null;
 
@@ -178,40 +178,59 @@
       }
       usuarioAtual = session.user;
 
-      // 1. Carregar catálogo completo de figurinhas e o ID da caderneta de cada uma
-      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, caderneta_id, numero, nome, imagem');
+      // 1. Carregar catálogo completo de figurinhas associando ao album_base_id
+      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_base_id, numero, nome, imagem');
       if (figsGerais) {
         figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
       }
 
-      // 2. Carregar cadernetas disponíveis para o usuário escolher
-      await carregarCadernetasDisponiveis();
+      // 2. Carregar os álbuns do utilizador logado na tabela usuario_albuns fazendo JOIN com albuns para pegar o nome e a imagem
+      await carregarAlbunsDoUsuario();
     });
 
-    async function carregarCadernetasDisponiveis() {
-      const { data: cadernetas } = await _supabase.from('cadernetas').select('id, nome, capa');
+    async function carregarAlbunsDoUsuario() {
+      // Consulta na tabela usuario_albuns unindo com a tabela albuns para buscar nome e imagem da capa
+      const { data, error } = await _supabase
+        .from('usuario_albuns')
+        .select(`
+          album_base_id,
+          albuns (
+            id,
+            nome,
+            imagem
+          )
+        `)
+        .eq('user_id', usuarioAtual.id);
+
       const container = document.getElementById('listaCadernetasGrid');
-      
-      if (!cadernetas || cadernetas.length === 0) {
-        container.innerHTML = '<span style="color:var(--text-muted)">Nenhuma caderneta encontrada.</span>';
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-muted)">Você ainda não possui álbuns cadastrados.</span>';
         return;
       }
 
       let html = '';
-      cadernetas.forEach(c => {
-        html += `
-          <div class="cardeneta-select-card" onclick="selecionarCaderneta('${c.id}', '${c.nome.replace(/'/g, "")}')">
-            <img src="${c.capa || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-            <span>${c.nome}</span>
-          </div>
-        `;
+      data.forEach(item => {
+        const albumInfo = item.albuns;
+        if (albumInfo) {
+          const nomeAlbum = albumInfo.nome || 'Álbum';
+          const imagemCapa = albumInfo.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+          const baseId = albumInfo.id || item.album_base_id;
+
+          html += `
+            <div class="cardeneta-select-card" onclick="selecionarAlbum('${baseId}', '${nomeAlbum.replace(/'/g, "")}')">
+              <img src="${imagemCapa}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <span>${nomeAlbum}</span>
+            </div>
+          `;
+        }
       });
       container.innerHTML = html;
     }
 
-    function selecionarCaderneta(id, nome) {
-      cadernetaSelecionadaId = id;
-      cadernetaSelecionadaNome = nome;
+    function selecionarAlbum(id, nome) {
+      albumBaseSelecionadoId = id;
+      albumNomeSelecionado = nome;
       
       document.getElementById('tituloSecaoQr').innerText = `📱 Troca: ${nome}`;
       document.getElementById('painelSelecionarCaderneta').style.display = 'none';
@@ -280,60 +299,60 @@
       selecionadasParaReceber.clear();
       selecionadasParaEnviar.clear();
       await pararCameraSeAtiva();
-      selecionarCaderneta(cadernetaSelecionadaId, cadernetaSelecionadaNome);
+      selecionarAlbum(albumBaseSelecionadoId, albumNomeSelecionado);
     }
 
     async function processarMatchPresencial(idColega) {
       document.getElementById('painelGerarQr').style.display = 'none';
 
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
-      document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${cadernetaSelecionadaNome} com ${perfilColega?.nome || 'Colega'}`;
+      document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
 
-      // 1. Minhas figurinhas
+      // 1. Minhas figurinhas cadastradas
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
       const minhasCadastradasIds = new Set((minhasFig || []).map(f => String(f.figurinha_id)));
       const minhasRepetidasIds = new Set((minhasFig || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
-      // 2. Figurinhas do colega
+      // 2. Figurinhas cadastradas do colega
       const { data: figColega } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega);
       const colegaRepetidasIds = new Set((figColega || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
-      // Filtra apenas as figurinhas que pertencem estritamente à caderneta selecionada
+      // Filtra estritamente pelas figurinhas do album_base_id selecionado
       selecionadasParaReceber = new Set(
         Array.from(colegaRepetidasIds).filter(id => {
           const f = figurinhasGlobalMap.get(id);
-          return f && String(f.caderneta_id) === String(cadernetaSelecionadaId) && !minhasCadastradasIds.has(id);
+          return f && String(f.album_base_id) === String(albumBaseSelecionadoId) && !minhasCadastradasIds.has(id);
         })
       );
 
       selecionadasParaEnviar = new Set(
         Array.from(minhasRepetidasIds).filter(id => {
           const f = figurinhasGlobalMap.get(id);
-          return f && String(f.caderneta_id) === String(cadernetaSelecionadaId);
+          return f && String(f.album_base_id) === String(albumBaseSelecionadoId);
         })
       );
 
-      // Renderizar Grade de Recebimento (Filtrada por caderneta)
+      // Renderizar Grade de Recebimento (Filtrada pelo álbum selecionado)
       let htmlReceber = '';
       colegaRepetidasIds.forEach(id => {
         const f = figurinhasGlobalMap.get(id);
-        if (f && String(f.caderneta_id) === String(cadernetaSelecionadaId)) {
+        if (f && String(f.album_base_id) === String(albumBaseSelecionadoId)) {
           const sel = selecionadasParaReceber.has(id);
           htmlReceber += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="rec_${id}" onclick="alternarReceber('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
         }
       });
-      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhuma repetida desta caderneta com o colega.</span>';
+      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhuma repetida deste álbum com o colega.</span>';
 
-      // Renderizar Grade de Envio (Filtrada por caderneta)
+      // Renderizar Grade de Envio (Filtrada pelo álbum selecionado)
       let htmlEnviar = '';
       minhasRepetidasIds.forEach(id => {
         const f = figurinhasGlobalMap.get(id);
-        if (f && String(f.caderneta_id) === String(cadernetaSelecionadaId)) {
+        if (f && String(f.album_base_id) === String(albumBaseSelecionadoId)) {
           const sel = selecionadasParaEnviar.has(id);
           htmlEnviar += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="env_${id}" onclick="alternarEnviar('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
         }
       });
-      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted); font-size:0.8rem;">Você não possui repetidas desta caderneta.</span>';
+      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted); font-size:0.8rem;">Você não possui repetidas deste álbum.</span>';
 
       document.getElementById('painelMatchPresencial').style.display = 'block';
     }
@@ -397,7 +416,7 @@
         for (let id of adicionarIds) {
           const { data: reg } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', userId).eq('figurinha_id', id).maybeSingle();
           if (reg) await _supabase.from('usuario_cardeneta').update({ quantidade: reg.quantidade + 1 }).eq('id', reg.id);
-          else await _supabase.from('usuario_cardeneta').insert([{ user_id: userId, figurinha_id: id, quantidade: 1 }]);
+          else await _sqliteOuSupabaseIns = await _supabase.from('usuario_cardeneta').insert([{ user_id: userId, figurinha_id: id, quantidade: 1 }]);
         }
       };
 
