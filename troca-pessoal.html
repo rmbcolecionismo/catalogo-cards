@@ -1,84 +1,186 @@
-async function processarMatchPresencial(idColega) {
-      document.getElementById('painelGerarQr').style.display = 'none';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Troca Pessoal - Colecionismo</title>
+  <!-- Inclua aqui os seus estilos e dependências do Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .panel { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 6px; display: none; }
+    .grid-figs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .fig-select-card { width: 60px; height: 80px; border: 2px solid #ccc; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; padding: 4px; font-size: 12px; background: #fff; }
+    .fig-select-card.selected { border-color: #4CAF50; background: #e8f5e9; }
+    .fig-select-card img { width: 40px; height: 50px; object-fit: cover; border-radius: 2px; }
+    button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #45a049; }
+  </style>
+</head>
+<body>
 
-      const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
-      document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
+  <div class="container">
+    <h2>Troca Pessoal Presencial</h2>
+    <div id="painelGerarQr">
+      <p>Selecione um colega ou escaneie o QR Code para iniciar a conferência.</p>
+      <!-- Exemplo de gatilho para testes -->
+      <button onclick="processarMatchPresencial('ID_EXEMPLO_COLEGA')">Simular Leitura de Colega</button>
+    </div>
 
-      if (!albumBaseSelecionadoId) {
-        console.error("albumBaseSelecionadoId não está definido!");
-        return;
+    <!-- Painel de Match Presencial -->
+    <div id="painelMatchPresencial" class="panel">
+      <h3 id="tituloMatchColega">✨ Conferência de Trocas</h3>
+      
+      <h4>O que você vai receber:</h4>
+      <div id="gridReceberColega" class="grid-figs"></div>
+
+      <h4 style="margin-top: 15px;">O que você vai enviar:</h4>
+      <div id="gridEnviarMim" class="grid-figs"></div>
+    </div>
+  </div>
+
+  <script>
+    // Inicialização do Supabase (Ajuste com as suas credenciais reais)
+    const SUPABASE_URL = 'https://eyddrnjrewehojfmskvd.supabase.co';
+    const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_AQUI';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Variáveis globais simuladas (substitua conforme o carregamento da sua página)
+    let usuarioAtual = { id: 'ID_DO_USUARIO_LOGADO' };
+    let albumBaseSelecionadoId = '1'; 
+    let albumNomeSelecionado = 'Meu Álbum';
+    let selecionadasParaReceber = new Set();
+    let selecionadasParaEnviar = new Set();
+
+    function alternarReceber(figId) {
+      const card = document.getElementById(`rec_${figId}`);
+      if (selecionadasParaReceber.has(figId)) {
+        selecionadasParaReceber.delete(figId);
+        card.classList.remove('selected');
+      } else {
+        selecionadasParaReceber.add(figId);
+        card.classList.add('selected');
       }
-
-      // 1. Busca global das figurinhas corrigida para usar 'album_id' (ajuste se a sua coluna tiver outro nome)
-      const { data: figsDoAlbum, error: erroFigs } = await _supabase
-        .from('figurinhas')
-        .select('id, album_id, numero, nome, imagem')
-        .eq('album_id', albumBaseSelecionadoId);
-
-      if (erroFigs) {
-        console.error("Erro ao buscar figurinhas:", erroFigs.message);
-        return;
-      }
-
-      const idsFigurinhasAlbum = new Set((figsDoAlbum || []).map(f => String(f.id)));
-      const figsMap = new Map((figsDoAlbum || []).map(f => [String(f.id), f]));
-
-      // 2. Busca da cardeneta do usuário logado e do colega
-      const [{ data: minhasFig }, { data: figColega }] = await Promise.all([
-        _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id),
-        _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega)
-      ]);
-
-      const minhasDoAlbum = (minhasFig || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
-      const colegaDoAlbum = (figColega || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
-
-      const minhasCadastradasIds = new Set(minhasDoAlbum.map(item => String(item.figurinha_id)));
-      const colecCadastradasIds = new Set(colegaDoAlbum.map(item => String(item.figurinha_id)));
-
-      const minhasFaltantesIds = new Set();
-      idsFigurinhasAlbum.forEach(id => {
-        if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
-      });
-
-      const colegaRepetidas = colegaDoAlbum.filter(item => item.quantidade > 1);
-      const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
-
-      // 3. Renderização dos grids de Receber e Enviar
-      selecionadasParaReceber = new Set();
-      let htmlReceber = '';
-      colegaRepetidas.forEach(item => {
-        const figId = String(item.figurinha_id);
-        if (minhasFaltantesIds.has(figId)) {
-          selecionadasParaReceber.add(figId);
-          const f = figsMap.get(figId);
-          if (f) {
-            htmlReceber += `
-              <div class="fig-select-card selected" id="rec_${figId}" onclick="alternarReceber('${figId}')">
-                <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-                <span>${f.numero}</span>
-              </div>`;
-          }
-        }
-      });
-      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhum match de recebimento para este álbum.</span>';
-
-      selecionadasParaEnviar = new Set();
-      let htmlEnviar = '';
-      minhasRepetidas.forEach(item => {
-        const figId = String(item.figurinha_id);
-        if (!colecCadastradasIds.has(figId)) {
-          selecionadasParaEnviar.add(figId);
-          const f = figsMap.get(figId);
-          if (f) {
-            htmlEnviar += `
-              <div class="fig-select-card selected" id="env_${figId}" onclick="alternarEnviar('${figId}')">
-                <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-                <span>${f.numero}</span>
-              </div>`;
-          }
-        }
-      });
-      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhum match de envio para este álbum.</span>';
-
-      document.getElementById('painelMatchPresencial').style.display = 'block';
     }
+
+    function alternarEnviar(figId) {
+      const card = document.getElementById(`env_${figId}`);
+      if (selecionadasParaEnviar.has(figId)) {
+        selecionadasParaEnviar.delete(figId);
+        card.classList.remove('selected');
+      } else {
+        selecionadasParaEnviar.add(figId);
+        card.classList.add('selected');
+      }
+    }
+
+    async function processarMatchPresencial(idColega) {
+      try {
+        const painelQr = document.getElementById('painelGerarQr');
+        if (painelQr) painelQr.style.display = 'none';
+
+        if (!usuarioAtual || !usuarioAtual.id) {
+          console.error("Erro crítico: A variável 'usuarioAtual' não está definida.");
+          alert("Erro: Sessão do usuário não encontrada. Recarregue a página.");
+          return;
+        }
+
+        const albumIdAtual = window.albumBaseSelecionadoId || albumBaseSelecionadoId;
+        if (!albumIdAtual) {
+          console.error("Erro crítico: Nenhum ID de álbum selecionado.");
+          alert("Selecione um álbum primeiro.");
+          return;
+        }
+
+        const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
+        const tituloEl = document.getElementById('tituloMatchColega');
+        if (tituloEl) {
+          tituloEl.innerText = `✨ Conferência: ${window.albumNomeSelecionado || albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
+        }
+
+        // 1. Busca global das figurinhas do álbum alinhada com a coluna 'album_id'
+        const { data: figsDoAlbum, error: erroFigs } = await _supabase
+          .from('figurinhas')
+          .select('id, album_id, numero, nome, imagem')
+          .eq('album_id', albumIdAtual);
+
+        if (erroFigs) {
+          console.error("Erro ao buscar figurinhas:", erroFigs.message);
+          return;
+        }
+
+        const idsFigurinhasAlbum = new Set((figsDoAlbum || []).map(f => String(f.id)));
+        const figsMap = new Map((figsDoAlbum || []).map(f => [String(f.id), f]));
+
+        // 2. Busca paralela das cadenetas
+        const [resMinhas, resColega] = await Promise.all([
+          _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id),
+          _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega)
+        ]);
+
+        const minhasDoAlbum = (resMinhas.data || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
+        const colegaDoAlbum = (resColega.data || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
+
+        const minhasCadastradasIds = new Set(minhasDoAlbum.map(item => String(item.figurinha_id)));
+        const colecCadastradasIds = new Set(colegaDoAlbum.map(item => String(item.figurinha_id)));
+
+        const minhasFaltantesIds = new Set();
+        idsFigurinhasAlbum.forEach(id => {
+          if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
+        });
+
+        const colegaRepetidas = colegaDoAlbum.filter(item => item.quantidade > 1);
+        const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
+
+        // 3. Renderização dos grids de Receber e Enviar
+        window.selecionadasParaReceber = new Set();
+        let htmlReceber = '';
+        colegaRepetidas.forEach(item => {
+          const figId = String(item.figurinha_id);
+          if (minhasFaltantesIds.has(figId)) {
+            window.selecionadasParaReceber.add(figId);
+            const f = figsMap.get(figId);
+            if (f) {
+              htmlReceber += `
+                <div class="fig-select-card selected" id="rec_${figId}" onclick="alternarReceber('${figId}')">
+                  <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                  <span>${f.numero}</span>
+                </div>`;
+            }
+          }
+        });
+        
+        const gridReceber = document.getElementById('gridReceberColega');
+        if (gridReceber) gridReceber.innerHTML = htmlReceber || '<span style="color:#777; font-size:0.8rem;">Nenhum match de recebimento para este álbum.</span>';
+
+        window.selecionadasParaEnviar = new Set();
+        let htmlEnviar = '';
+        minhasRepetidas.forEach(item => {
+          const figId = String(item.figurinha_id);
+          if (!colecCadastradasIds.has(figId)) {
+            window.selecionadasParaEnviar.add(figId);
+            const f = figsMap.get(figId);
+            if (f) {
+              htmlEnviar += `
+                <div class="fig-select-card selected" id="env_${figId}" onclick="alternarEnviar('${figId}')">
+                  <img src="${f.imagem || ''}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                  <span>${f.numero}</span>
+                </div>`;
+            }
+          }
+        });
+
+        const gridEnviar = document.getElementById('gridEnviarMim');
+        if (gridEnviar) gridEnviar.innerHTML = htmlEnviar || '<span style="color:#777; font-size:0.8rem;">Nenhum match de envio para este álbum.</span>';
+
+        const painelMatch = document.getElementById('painelMatchPresencial');
+        if (painelMatch) painelMatch.style.display = 'block';
+
+      } catch (err) {
+        console.error("Erro crítico em processarMatchPresencial:", err);
+      }
+    }
+  </script>
+</body>
+</html>
