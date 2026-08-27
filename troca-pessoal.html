@@ -287,13 +287,13 @@
       selecionarAlbum(albumBaseSelecionadoId, albumNomeSelecionado);
     }
 
-    async function processarMatchPresencial(idColega) {
+   async function processarMatchPresencial(idColega) {
       document.getElementById('painelGerarQr').style.display = 'none';
 
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
       document.getElementById('tituloMatchColega').innerText = `✨ Conferência: ${albumNomeSelecionado} com ${perfilColega?.nome || 'Colega'}`;
 
-      // 1. Buscar todas as figurinhas globais deste álbum base
+      // 1. Busca global das figurinhas do álbum selecionado
       const { data: figsDoAlbum } = await _supabase
         .from('figurinhas')
         .select('id, album_base_id, numero, nome, imagem')
@@ -302,35 +302,28 @@
       const idsFigurinhasAlbum = new Set((figsDoAlbum || []).map(f => String(f.id)));
       const figsMap = new Map((figsDoAlbum || []).map(f => [String(f.id), f]));
 
-      // 2. Buscar cardeneta do usuário logado e do colega
-      const { data: minhasFig } = await _supabase
-        .from('usuario_cardeneta')
-        .select('figurinha_id, quantidade')
-        .eq('user_id', usuarioAtual.id);
+      // 2. Busca da cardeneta do usuário logado e do colega (Renan)
+      const [{ data: minhasFig }, { data: figColega }] = await Promise.all([
+        _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id),
+        _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega)
+      ]);
 
-      const { data: figColega } = await _supabase
-        .from('usuario_cardeneta')
-        .select('figurinha_id, quantidade')
-        .eq('user_id', idColega);
-
-      // Filtrar apenas itens pertencentes ao álbum selecionado
+      // Filtra e normaliza os dados estritamente para o álbum atual
       const minhasDoAlbum = (minhasFig || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
       const colegaDoAlbum = (figColega || []).filter(item => idsFigurinhasAlbum.has(String(item.figurinha_id)));
 
       const minhasCadastradasIds = new Set(minhasDoAlbum.map(item => String(item.figurinha_id)));
       const colecCadastradasIds = new Set(colegaDoAlbum.map(item => String(item.figurinha_id)));
 
-      // Identificar o que falta para mim (figurinhas do álbum que não constam na minha cardeneta)
       const minhasFaltantesIds = new Set();
       idsFigurinhasAlbum.forEach(id => {
         if (!minhasCadastradasIds.has(id)) minhasFaltantesIds.add(id);
       });
 
-      // Repetidas (quantidade > 1)
-      const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
+      // 3. Cruzamento idêntico ao motor do mercado.html
       const colegaRepetidas = colegaDoAlbum.filter(item => item.quantidade > 1);
+      const minhasRepetidas = minhasDoAlbum.filter(item => item.quantidade > 1);
 
-      // 3. O que vou receber: Repetidas do colega (qtd > 1) que faltam para mim
       selecionadasParaReceber = new Set();
       let htmlReceber = '';
       colegaRepetidas.forEach(item => {
@@ -349,7 +342,6 @@
       });
       document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted); font-size:0.8rem;">Nenhum match de recebimento para este álbum.</span>';
 
-      // 4. O que vou enviar: Minhas repetidas (qtd > 1) que o colega não tem
       selecionadasParaEnviar = new Set();
       let htmlEnviar = '';
       minhasRepetidas.forEach(item => {
