@@ -222,8 +222,9 @@
             <select id="selectAlbumFigurinha"><option value="">Selecione o álbum...</option></select>
           </div>
           <div class="form-group">
-            <label>Tipo</label>
-            <select id="selectTipoFigurinha"><option value="">Selecione o tipo...</option></select>
+            <!-- ALTERADO AQUI DE SELECT PARA INPUT TEXT LIVRE -->
+            <label>Tipo de Figurinha</label>
+            <input type="text" id="selectTipoFigurinha" placeholder="Ex: Comum, Rara, Especial">
           </div>
         </div>
         <div class="form-row">
@@ -775,10 +776,8 @@
     // --- TIPOS ---
     async function carregarTipos() {
       const tbody = document.getElementById('tabelaTipos');
-      const selectTip = document.getElementById('selectTipoFigurinha');
       if (!tbody) return;
       const { data } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
-      if (data && selectTip) selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
       tbody.innerHTML = data && data.length > 0 ? data.map(i => `
         <tr>
           <td>${i.nome}</td>
@@ -836,7 +835,8 @@
     // --- FIGURINHAS ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
-      const tipo = document.getElementById('selectTipoFigurinha').value;
+      // Agora pega o texto digitado livremente no input
+      const tipo = document.getElementById('selectTipoFigurinha').value.trim();
       const selecao_escuderia = document.getElementById('inputSelecaoFigurinha').value.trim();
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
@@ -863,6 +863,7 @@
 
       await _supabase.from('figurinhas').insert([{ album_id, tipo: tipo || null, selecao_escuderia, numero, nome, imagem }]);
       alert("Figurinha cadastrada com sucesso!");
+      document.getElementById('selectTipoFigurinha').value = '';
       document.getElementById('inputNumeroFigurinha').value = '';
       document.getElementById('inputNomeFigurinha').value = '';
       document.getElementById('inputSelecaoFigurinha').value = '';
