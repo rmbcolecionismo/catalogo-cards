@@ -39,6 +39,67 @@
     .user-profile-header { display: flex; align-items: center; gap: 10px; }
     .container { max-width: 1250px; margin: 0 auto; width: 100%; flex: 1; }
     
+    /* ESTILOS DO BANNER DE TROCA EM MÃOS COM QR CODE */
+    .banner-qr-presencial {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+      position: relative;
+      overflow: hidden;
+      flex-wrap: wrap;
+    }
+    .banner-qr-presencial::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(245, 158, 11, 0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .banner-content { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 8px; }
+    .banner-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: fit-content;
+    }
+    .banner-content h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
+    .banner-content p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+    
+    .banner-qr-mini {
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      flex: 0 0 auto;
+    }
+    .banner-qr-mini svg { width: 64px; height: 64px; display: block; }
+    .banner-qr-mini span { font-size: 0.6rem; color: #0f172a; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .banner-action-area { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
     .section-header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
     .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 0; }
     .plan-badge-container { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
@@ -142,6 +203,33 @@
         <a href="vitrine.html" id="linkVitrine">📦 Vitrine</a>
         <a href="mercado.html" class="active" id="linkMercado">🔄 Mercado de Trocas</a>
         <a href="perfil.html" id="linkPerfil">⚙️ Perfil</a>
+      </div>
+    </div>
+
+    <!-- BANNER PROFISSIONAL DE TROCA EM MÃOS COM QR CODE -->
+    <div class="banner-qr-presencial">
+      <div class="banner-content">
+        <div class="banner-badge-tag">⚡ NOVO • Troca Presencial Instantânea</div>
+        <h2>Vai encontrar um colecionador? Faça a troca por QR Code!</h2>
+        <p>Use nosso sistema automatizado para validar a troca em mãos de forma rápida, segura e com atualização instantânea das cadernetas.</p>
+        <div class="banner-action-area">
+          <a href="troca-pessoal.html" class="btn-gold" style="width: auto; padding: 10px 20px;">📱 Iniciar Troca em Mãos</a>
+        </div>
+      </div>
+      <div class="banner-qr-mini">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2H10V10H2V2Z" fill="#0f172a"/>
+          <path d="M4 4H8V8H4V4Z" fill="#ffffff"/>
+          <path d="M14 2H22V10H14V2Z" fill="#0f172a"/>
+          <path d="M16 4H20V8H16V4Z" fill="#ffffff"/>
+          <path d="M2 14H10V22H2V14Z" fill="#0f172a"/>
+          <path d="M4 16H8V20H4V16Z" fill="#ffffff"/>
+          <path d="M14 14H17V17H14V14Z" fill="#0f172a"/>
+          <path d="M19 19H22V22H19V19Z" fill="#0f172a"/>
+          <path d="M14 19H17V22H14V19Z" fill="#0f172a"/>
+          <path d="M19 14H22V17H19V14Z" fill="#0f172a"/>
+        </svg>
+        <span>QR CODE</span>
       </div>
     </div>
 
