@@ -59,11 +59,8 @@
     
     .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
     
-    .controls-panel { background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: flex-end; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
-    .filter-group { flex: 1; min-width: 220px; }
-    .filter-group-checkbox { display: flex; align-items: center; gap: 0.5rem; height: 41px; padding-bottom: 2px; }
-    .filter-group-checkbox input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--gold); }
-    .filter-group-checkbox label { margin-bottom: 0; cursor: pointer; color: var(--text-main); font-size: 0.8rem; }
+    .controls-panel { background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    .filter-group { flex: 1; min-width: 250px; }
     
     label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     input, select { width: 100%; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text-main); outline: none; font-size: 0.85rem; transition: border-color 0.2s; }
@@ -93,7 +90,9 @@
     .acoes-grupo { display: flex; gap: 0.4rem; align-items: center; justify-content: center; }
     .file-input-hidden { display: none; }
 
-    .paginacao-container { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 3rem 0; flex-wrap: wrap; gap: 1rem; background: var(--bg-card); padding: 1rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); backdrop-filter: blur(12px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    .load-more-container { text-align: center; margin: 1.5rem 0 3rem 0; }
+    .btn-load-more { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+    .btn-load-more:hover { background: var(--gold); color: #0f172a; }
 
     .vazio-mensagem { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.95rem; }
   </style>
@@ -145,12 +144,6 @@
         <label>Buscar Figurinha:</label>
         <input type="text" id="search" placeholder="🔍 Ex: #001, 001, 1, Messi, Brasil...">
       </div>
-      <div class="filter-group" style="flex: 0 0 auto;">
-        <div class="filter-group-checkbox">
-          <input type="checkbox" id="checkSemFoto" onchange="aplicarFiltros()">
-          <label for="checkSemFoto">Somente Figurinhas sem Foto</label>
-        </div>
-      </div>
     </div>
 
     <div class="tabela-container">
@@ -172,23 +165,8 @@
       </table>
     </div>
 
-    <div class="paginacao-container" id="paginacaoContainer" style="display: none;">
-      <div style="font-size: 0.85rem; color: var(--text-muted);" id="infoPaginacao">
-        Mostrando 0 a 0 de 0 itens
-      </div>
-      <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <button class="btn-outline" id="btnAnterior" onclick="mudarPagina(-1)">◀ Anterior</button>
-        <span id="textoPaginaAtual" style="font-size: 0.85rem; font-weight: 600; padding: 0 0.5rem;">Página 1</span>
-        <button class="btn-outline" id="btnProxima" onclick="mudarPagina(1)">Próxima ▶</button>
-      </div>
-      <div>
-        <select id="itensPorPaginaSelect" onchange="alterarItensPorPagina()" style="padding: 0.4rem; font-size: 0.8rem; width: auto;">
-          <option value="15">15 por página</option>
-          <option value="30" selected>30 por página</option>
-          <option value="50">50 por página</option>
-          <option value="100">100 por página</option>
-        </select>
-      </div>
+    <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+      <button class="btn-load-more" onclick="carregarMaisFigurinhas()">Carregar mais 30 itens</button>
     </div>
   </div>
 
@@ -196,16 +174,15 @@
     const SUPABASE_URL = "https://eyddrnjrewehojfmskvd.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const ITENS_POR_PAGINA = 30;
 
     let usuarioLogado = null;
     let figurinhasGlobal = [];
     let mapaAlbuns = {};
     let listaAlbunsSelectOptions = '';
-    
-    let paginaAtual = 1;
-    let itensPorPagina = 30;
-    let totalRegistros = 0;
+    let paginaAtual = 0;
 
+    // Aplicar tema salvo localmente ao iniciar
     window.addEventListener('DOMContentLoaded', () => {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
@@ -237,6 +214,7 @@
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) { window.location.href = "login.html"; return null; }
 
+      // Restrito às tabelas/perfis de autorização ou usuários cadastrados
       const { data: perfil } = await _supabase
         .from('usuarios_cadastrados')
         .select('*')
@@ -247,6 +225,7 @@
 
       const funcao = String(perfil.funcao || '').toLowerCase().trim();
       
+      // Validação restrita: Apenas Administrador e Master[cite: 1]
       if (funcao !== 'administrador' && funcao !== 'master' && funcao !== 'admin') {
         alert("Acesso restrito a administradores e master.");
         window.location.href = "index.html";
@@ -257,6 +236,7 @@
       document.getElementById('userGreeting').innerText = `Olá, ${perfil.nome || 'Admin'}`;
       if (perfil.avatar) document.getElementById('userAvatar').src = perfil.avatar;
       
+      // Exibir links de navegação condicionados
       document.getElementById('linkAdmin').style.display = 'inline';
       if (funcao === 'master' || funcao === 'administrador') {
         document.getElementById('linkEstoque').style.display = 'inline';
@@ -277,25 +257,11 @@
       }
     }
 
-    function aplicarFiltros() {
-      paginaAtual = 1;
-      carregarPaginaDados();
-    }
-
-    let timeoutBusca;
-    document.getElementById('search').addEventListener('input', () => {
-      clearTimeout(timeoutBusca);
-      timeoutBusca = setTimeout(aplicarFiltros, 300);
-    });
-
-    function construirFiltrosQuery(query, albumId, termo, apenasSemFoto) {
+    function executarConsultaSupabase(albumId, termo, inicio, fim) {
+      let query = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
+      
       if (albumId !== 'todos') {
         query = query.eq('album_id', albumId);
-      }
-
-      if (apenasSemFoto) {
-        // Abrangência total para capturar nulos, strings vazias ou URLs contendo "sem-foto"
-        query = query.or('imagem.is.null,imagem.eq.,imagem.ilike.%sem-foto%,imagem_url.is.null,imagem_url.eq.,imagem_url.ilike.%sem-foto%');
       }
 
       if (termo !== "") {
@@ -312,29 +278,17 @@
         }
       }
 
-      return query;
+      return query.range(inicio, fim);
     }
 
-    async function carregarPaginaDados() {
+    async function aplicarFiltros() {
+      paginaAtual = 0;
+      figurinhasGlobal = [];
       const albumId = document.getElementById('filterAlbum').value;
       let termo = document.getElementById('search').value;
-      const apenasSemFoto = document.getElementById('checkSemFoto').checked;
-
-      let queryCount = _supabase.from('figurinhas').select('*', { count: 'exact', head: true });
-      queryCount = construirFiltrosQuery(queryCount, albumId, termo, apenasSemFoto);
-      const { count, error: countError } = await queryCount;
       
-      if (!countError) {
-        totalRegistros = count || 0;
-      }
-
-      const inicio = (paginaAtual - 1) * itensPorPagina;
-      const fim = inicio + itensPorPagina - 1;
-
-      let queryData = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
-      queryData = construirFiltrosQuery(queryData, albumId, termo, apenasSemFoto);
-      const { data, error } = await queryData.range(inicio, fim);
-
+      const { data, error } = await executarConsultaSupabase(albumId, termo, 0, ITENS_POR_PAGINA - 1);
+      
       if (error) {
         console.error("Erro ao buscar:", error);
         return;
@@ -342,45 +296,30 @@
 
       figurinhasGlobal = data || [];
       renderizarTabela(figurinhasGlobal);
-      atualizarControlesPaginacao();
+      document.getElementById('loadMoreContainer').style.display = (data && data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
     }
 
-    function mudarPagina(direcao) {
-      const totalPaginas = Math.ceil(totalRegistros / itensPorPagina) || 1;
-      paginaAtual += direcao;
-      if (paginaAtual < 1) paginaAtual = 1;
-      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+    let timeoutBusca;
+    document.getElementById('search').addEventListener('input', () => {
+      clearTimeout(timeoutBusca);
+      timeoutBusca = setTimeout(aplicarFiltros, 300);
+    });
+
+    async function carregarMaisFigurinhas() {
+      paginaAtual++;
+      const inicio = paginaAtual * ITENS_POR_PAGINA;
+      const fim = inicio + ITENS_POR_PAGINA - 1;
+      const albumId = document.getElementById('filterAlbum').value;
+      let termo = document.getElementById('search').value;
+
+      const { data, error } = await executarConsultaSupabase(albumId, termo, inicio, fim);
       
-      carregarPaginaDados();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function alterarItensPorPagina() {
-      itensPorPagina = parseInt(document.getElementById('itensPorPaginaSelect').value);
-      paginaAtual = 1;
-      carregarPaginaDados();
-    }
-
-    function atualizarControlesPaginacao() {
-      const totalPaginas = Math.ceil(totalRegistros / itensPorPagina) || 1;
-      const container = document.getElementById('paginacaoContainer');
-      
-      if (totalRegistros > 0) {
-        container.style.display = 'flex';
-        const inicioItem = (paginaAtual - 1) * itensPorPagina + 1;
-        const fimItem = Math.min(paginaAtual * itensPorPagina, totalRegistros);
-        
-        document.getElementById('infoPaginacao').innerText = `Mostrando ${inicioItem} a ${fimItem} de ${totalRegistros} itens`;
-        document.getElementById('textoPaginaAtual').innerText = `Página ${paginaAtual} de ${totalPaginas}`;
-        
-        document.getElementById('btnAnterior').disabled = paginaAtual === 1;
-        document.getElementById('btnAnterior').style.opacity = paginaAtual === 1 ? '0.5' : '1';
-        
-        document.getElementById('btnProxima').disabled = paginaAtual >= totalPaginas;
-        document.getElementById('btnProxima').style.opacity = paginaAtual >= totalPaginas ? '0.5' : '1';
+      if (!error && data && data.length > 0) {
+        figurinhasGlobal = figurinhasGlobal.concat(data);
+        renderizarTabela(figurinhasGlobal);
+        document.getElementById('loadMoreContainer').style.display = (data.length >= ITENS_POR_PAGINA) ? 'block' : 'none';
       } else {
-        container.style.display = 'none';
-        document.getElementById('tabelaCorpo').innerHTML = `<tr><td colspan="7" class="vazio-mensagem">Nenhuma figurinha encontrada.</td></tr>`;
+        document.getElementById('loadMoreContainer').style.display = 'none';
       }
     }
 
@@ -536,10 +475,6 @@
         } else {
           document.getElementById(`img-${id}`).src = novaUrl;
           alert("Foto convertida para WebP e atualizada com sucesso!");
-          
-          if (document.getElementById('checkSemFoto').checked) {
-            carregarPaginaDados();
-          }
         }
       } catch (err) {
         console.error(err);
@@ -569,7 +504,8 @@
       if (error) {
         alert("Erro ao excluir figurinha: " + error.message);
       } else {
-        carregarPaginaDados();
+        const rowElement = document.getElementById(`row-${id}`);
+        if (rowElement) rowElement.remove();
         alert("Figurinha excluída com sucesso!");
       }
     }
