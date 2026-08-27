@@ -160,7 +160,7 @@
           </div>
           <div class="form-group">
             <label>URL do Ícone / Bandeira ou Emoji (Opcional)</label>
-            <input type="text" id="inputIconeOrdem" placeholder="Ex: 🇧🇷">
+            <input type="text" id="inputIconeOrdem" placeholder="Ex: 🇧🇷 ou URL da imagem">
           </div>
         </div>
         <button class="btn-submit" id="btnSalvarOrdem" onclick="salvarAlbumOrdem()">Salvar Ordem</button>
@@ -394,11 +394,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Selecione o Álbum</label>
-            <select id="selectAlbumDestaque" onchange="carregarFigurinhaPorAlbumDestaque()"><option value="">Selecione o álbum...</option></select>
+            <select id="selectAlbumDestaque" onchange="carregarTiposDestaquePorAlbum()"><option value="">Selecione o álbum...</option></select>
           </div>
           <div class="form-group">
-            <label>Selecione a Figurinha (Tipo incluso)</label>
-            <select id="selectFigurinhaDestaque"><option value="">Selecione a figurinha...</option></select>
+            <label>Selecione o Tipo de Figurinha</label>
+            <select id="selectFigurinhaDestaque"><option value="">Selecione o tipo...</option></select>
           </div>
         </div>
         <div class="form-row">
@@ -485,6 +485,90 @@
       if(event) event.currentTarget.classList.add('active');
     }
 
+    // --- PROCESSAMENTO E OTIMIZAÇÃO DE IMAGENS (WEBP + NITIDEZ) ---
+    async function processarImagemParaWebP(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Definir dimensões máximas para otimização
+            let width = img.width;
+            let height = img.height;
+            const maxDim = 1200;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Desenhar imagem com suavização ajustada
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Filtro simples de nitidez (Sharpen Matrix)
+            try {
+              const imageData = ctx.getImageData(0, 0, width, height);
+              const data = imageData.data;
+              const w = imageData.width;
+              const h = imageData.height;
+              const kat = [
+                 0, -1,  0,
+                -1,  5, -1,
+                 0, -1,  0
+              ];
+              const side = Math.round(Math.sqrt(kat.length));
+              const halfSide = Math.floor(side / 2);
+              const src = new Uint8ClampedArray(data);
+
+              for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                  let r = 0, g = 0, b = 0;
+                  for (let cy = 0; cy < side; cy++) {
+                    for (let cx = 0; cx < side; cx++) {
+                      const scy = y + cy - halfSide;
+                      const scx = x + cx - halfSide;
+                      if (scy >= 0 && scy < h && scx >= 0 && scx < w) {
+                        const srcOff = (scy * w + scx) * 4;
+                        const wt = kat[cy * side + cx];
+                        r += src[srcOff] * wt;
+                        g += src[srcOff + 1] * wt;
+                        b += src[srcOff + 2] * wt;
+                      }
+                    }
+                  }
+                  const dstOff = (y * w + x) * 4;
+                  data[dstOff] = Math.min(Math.max(r, 0), 255);
+                  data[dstOff + 1] = Math.min(Math.max(g, 0), 255);
+                  data[dstOff + 2] = Math.min(Math.max(b, 0), 255);
+                }
+              }
+              ctx.putImageData(imageData, 0, 0);
+            } catch (err) {
+              console.warn("Filtro de nitidez ignorado por restrições de CORS/Canvas:", err);
+            }
+
+            canvas.toBlob((blob) => {
+              resolve(blob);
+            }, 'image/webp', 0.85);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     // --- ÁLBUNS ---
     async function carregarAlbuns() {
       const tbody = document.getElementById('tabelaAlbuns');
@@ -527,12 +611,12 @@
       if (!nome) return;
       msgDiv.style.display = "block";
       msgDiv.className = "msg-feedback msg-success";
-      msgDiv.innerText = "Salvando...";
+      msgDiv.innerText = "Processando e salvando...";
 
       if (inputFile.files && inputFile.files[0]) {
-        const file = inputFile.files[0];
+        const webpBlob = await processarImagemParaWebP(inputFile.files[0]);
         const fileName = `album_${Date.now()}.webp`;
-        await _supabase.storage.from('figurinhas').upload(fileName, file);
+        await _supabase.storage.from('figurinhas').upload(fileName, webpBlob, { contentType: 'image/webp' });
         const { data: pub } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
         imagemUrl = pub.publicUrl;
       }
@@ -557,6 +641,7 @@
     function cancelarEdicaoAlbum() {
       document.getElementById('editAlbumId').value = '';
       document.getElementById('inputNomeAlbum').value = '';
+      document.getElementById('editAlbumImagemAtual').value = '';
       document.getElementById('btnSalvarAlbum').innerText = "Salvar Álbum";
       document.getElementById('btnCancelarAlbum').style.display = "none";
     }
@@ -577,15 +662,26 @@
       if (filtro) q = q.eq('album_id', filtro);
       const { data } = await q;
 
-      tbody.innerHTML = data && data.length > 0 ? data.map(i => `
-        <tr>
-          <td>${i.albuns?.nome || '-'}</td>
-          <td style="text-align: center; color: var(--gold);">${i.posicao}</td>
-          <td style="text-align: center;">${i.icone || '-'}</td>
-          <td>${i.nome_categoria}</td>
-          <td><button class="btn-excluir" onclick="excluirAlbumOrdem('${i.id}')">Excluir</button></td>
-        </tr>
-      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ordem.</td></tr>`;
+      tbody.innerHTML = data && data.length > 0 ? data.map(i => {
+        let iconeHtml = '-';
+        if (i.icone) {
+          const iconeStr = String(i.icone).trim();
+          if (iconeStr.startsWith('http://') || iconeStr.startsWith('https://') || iconeStr.startsWith('/') || iconeStr.includes('.')) {
+            iconeHtml = `<img src="${iconeStr}" class="miniatura-foto" alt="Ícone">`;
+          } else {
+            iconeHtml = iconeStr;
+          }
+        }
+        return `
+          <tr>
+            <td>${i.albuns?.nome || '-'}</td>
+            <td style="text-align: center; color: var(--gold);">${i.posicao}</td>
+            <td style="text-align: center;">${iconeHtml}</td>
+            <td>${i.nome_categoria}</td>
+            <td><button class="btn-excluir" onclick="excluirAlbumOrdem('${i.id}')">Excluir</button></td>
+          </tr>
+        `;
+      }).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ordem.</td></tr>`;
     }
 
     async function salvarAlbumOrdem() {
@@ -596,6 +692,9 @@
       if (!album_id || isNaN(posicao) || !nome_categoria) return;
 
       await _supabase.from('album_categorias_ordem').insert([{ album_id, posicao, nome_categoria, icone }]);
+      document.getElementById('inputPosicaoOrdem').value = '';
+      document.getElementById('inputNomeCategoriaOrdem').value = '';
+      document.getElementById('inputIconeOrdem').value = '';
       carregarAlbunsOrdens();
     }
 
@@ -611,18 +710,56 @@
       if (!tbody) return;
       const { data } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
       if (data && selectTip) selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
-      tbody.innerHTML = data && data.length > 0 ? data.map(i => `<tr><td>${i.nome}</td><td><button class="btn-excluir" onclick="excluirTipo('${i.id}')">Excluir</button></td></tr>`).join('') : `<tr><td colspan="2">Nenhum tipo.</td></tr>`;
+      tbody.innerHTML = data && data.length > 0 ? data.map(i => `
+        <tr>
+          <td>${i.nome}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoTipo('${i.id}', '${i.nome.replace(/'/g, "\\'")}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirTipo('${i.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">Nenhum tipo.</td></tr>`;
     }
 
     async function salvarTipo() {
+      const id = document.getElementById('editTipoId').value;
       const nome = document.getElementById('inputNomeTipo').value.trim();
+      const msgDiv = document.getElementById('msgTipo');
       if (!nome) return;
-      await _supabase.from('tipos').insert([{ nome }]);
-      document.getElementById('inputNomeTipo').value = '';
+
+      if (id) {
+        await _supabase.from('tipos').update({ nome }).eq('id', id);
+      } else {
+        await _supabase.from('tipos').insert([{ nome }]);
+      }
+      cancelarEdicaoTipo();
       carregarTipos();
+      if (msgDiv) {
+        msgDiv.style.display = "block";
+        msgDiv.className = "msg-feedback msg-success";
+        msgDiv.innerText = "Salvo com sucesso!";
+        setTimeout(() => msgDiv.style.display = "none", 3000);
+      }
+    }
+
+    function prepararEdicaoTipo(id, nome) {
+      document.getElementById('editTipoId').value = id;
+      document.getElementById('inputNomeTipo').value = nome;
+      document.getElementById('btnSalvarTipo').innerText = "Atualizar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoTipo() {
+      document.getElementById('editTipoId').value = '';
+      document.getElementById('inputNomeTipo').value = '';
+      document.getElementById('btnSalvarTipo').innerText = "Salvar Tipo";
+      document.getElementById('btnCancelarTipo').style.display = "none";
     }
 
     async function excluirTipo(id) {
+      if (!confirm("Excluir tipo?")) return;
       await _supabase.from('tipos').delete().eq('id', id);
       carregarTipos();
     }
@@ -635,18 +772,32 @@
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
       const fileInput = document.getElementById('inputArquivoFigurinha');
+      const msgDiv = document.getElementById('msgFigurinha');
       let imagem = null;
 
-      if (!album_id || !numero || !nome) return;
+      if (!album_id || !numero || !nome) {
+        if (msgDiv) {
+          msgDiv.style.display = "block";
+          msgDiv.className = "msg-feedback msg-error";
+          msgDiv.innerText = "Preencha os campos obrigatórios!";
+        }
+        return;
+      }
+
       if (fileInput.files && fileInput.files[0]) {
+        const webpBlob = await processarImagemParaWebP(fileInput.files[0]);
         const fileName = `fig_${Date.now()}.webp`;
-        await _supabase.storage.from('figurinhas').upload(fileName, fileInput.files[0]);
+        await _supabase.storage.from('figurinhas').upload(fileName, webpBlob, { contentType: 'image/webp' });
         const { data: pub } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
         imagem = pub.publicUrl;
       }
 
       await _supabase.from('figurinhas').insert([{ album_id, tipo: tipo || null, selecao_escuderia, numero, nome, imagem }]);
       alert("Figurinha cadastrada com sucesso!");
+      document.getElementById('inputNumeroFigurinha').value = '';
+      document.getElementById('inputNomeFigurinha').value = '';
+      document.getElementById('inputSelecaoFigurinha').value = '';
+      document.getElementById('inputArquivoFigurinha').value = '';
     }
 
     // --- USUÁRIOS ---
@@ -883,18 +1034,28 @@
     }
 
     // --- DESTAQUES ---
-    async function carregarFigurinhaPorAlbumDestaque() {
+    async function carregarTiposDestaquePorAlbum() {
       const albumId = document.getElementById('selectAlbumDestaque').value;
       const selectFig = document.getElementById('selectFigurinhaDestaque');
       if (!albumId) {
-        selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>`;
+        selectFig.innerHTML = `<option value="">Selecione o tipo...</option>`;
         return;
       }
-      const { data } = await _supabase.from('figurinhas').select('id, numero, nome, tipos(nome)').eq('album_id', albumId);
-      selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>` + (data || []).map(f => {
-        const nomeTipo = f.tipos?.nome ? ` [Tipo: ${f.tipos.nome}]` : '';
-        return `<option value="${f.id}">Nº ${f.numero} - ${f.nome}${nomeTipo}</option>`;
-      }).join('');
+      // Buscar tipos unicos ou registros da tabela figurinhas associados aos tipos
+      const { data } = await _supabase.from('figurinhas').select('tipo, tipos(id, nome)').eq('album_id', albumId);
+      const tiposMap = new Map();
+      if (data) {
+        data.forEach(f => {
+          if (f.tipos) {
+            tiposMap.set(f.tipos.id, f.tipos.nome);
+          }
+        });
+      }
+      let html = `<option value="">Selecione o tipo...</option>`;
+      tiposMap.forEach((nomeTipo, idTipo) => {
+        html += `<option value="${idTipo}">${nomeTipo}</option>`;
+      });
+      selectFig.innerHTML = html;
     }
 
     async function carregarDestaques() {
