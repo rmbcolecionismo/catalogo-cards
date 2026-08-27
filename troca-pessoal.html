@@ -33,8 +33,15 @@
     .section-title { font-size: 1.3rem; color: var(--gold); font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     
     #qrcode-container, #qrcode-confirmacao { display: flex; justify-content: center; margin: 15px 0; background: #fff; padding: 15px; border-radius: 10px; width: fit-content; margin-left: auto; margin-right: auto; }
-    #reader, #reader-confirm { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border-color); }
+    #reader, #reader-confirm { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px solid var(--border-color); display: none; }
     
+    /* Estilo para o seletor de álbuns por miniaturas */
+    .albuns-filtro-container { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; justify-content: center; flex-wrap: wrap; }
+    .album-mini-card { display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; border-radius: 10px; padding: 6px; background: var(--bg); width: 80px; }
+    .album-mini-card.active { opacity: 1; border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
+    .album-mini-card img { width: 50px; height: 65px; object-fit: cover; border-radius: 6px; margin-bottom: 4px; }
+    .album-mini-card span { font-size: 0.65rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-weight: 600; }
+
     .grid-comparativo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; text-align: left; }
     @media (max-width: 768px) { .grid-comparativo { grid-template-columns: 1fr; } }
     
@@ -68,6 +75,14 @@
       </div>
     </div>
 
+    <!-- FILTRO DE ÁLBUNS DO USUÁRIO -->
+    <div class="card-painel" style="padding: 15px 25px;">
+      <div class="section-title" style="font-size: 1.1rem; margin-bottom: 8px;">📚 Selecione o Álbum para Troca</div>
+      <div id="listaAlbunsFiltro" class="albuns-filtro-container">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">A carregar os seus álbuns...</span>
+      </div>
+    </div>
+
     <!-- 1. PASSO: SEU QR CODE DE IDENTIFICAÇÃO -->
     <div class="card-painel" id="painelGerarQr">
       <div class="section-title">📱 Seu QR Code de Identificação</div>
@@ -79,12 +94,13 @@
       </div>
     </div>
 
-    <!-- 2. PASSO: LEITOR DA CÂMARA -->
+    <!-- 2. PASSO: LEITOR DA CÂMARA (DESLIGADO POR PADRÃO COM BOTÃO PARA LIGAR) -->
     <div class="card-painel" id="painelLeitor">
       <div class="section-title">📷 Ler QR Code do Colega</div>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-        Aponte a câmara para o QR Code do colega:
+        Clique no botão abaixo para ativar a câmara e ler o QR Code do colega:
       </p>
+      <button class="btn-gold" id="btnLigarCamera" onclick="ligarCameraLeitor()">📸 Ligar Câmara</button>
       <div id="reader"></div>
       <div id="statusLeitura" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--gold);"></div>
     </div>
@@ -149,37 +165,86 @@
     let html5QrCodeConfirm = null;
     let propostaCriadaId = null;
 
+    let albumBaseSelecionadoId = null; // ID do álbum ativo no filtro
     let selecionadasParaReceber = new Set();
     let selecionadasParaEnviar = new Set();
 
     window.addEventListener('DOMContentLoaded', async () => {
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) {
-        alert('Você precisa estar logado.');
+        alert('Você estar logado.');
         window.location.href = 'index.html';
         return;
       }
       usuarioAtual = session.user;
 
-      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, numero, nome, imagem');
-      if (figsGerais) {
-        figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
-      }
+      // Carrega os álbuns do utilizador para montar o filtro de miniaturas[cite: 3]
+      await carregarFiltroAlbunsUsuario();
 
       // Gera o QR Code inicial com o ID do utilizador
       document.getElementById("qrcode").innerHTML = "";
       new QRCode(document.getElementById("qrcode"), { text: usuarioAtual.id, width: 150, height: 150 });
-
-      iniciarLeitorCamera();
     });
 
-    function iniciarLeitorCamera() {
-      document.getElementById('painelMatchPresencial').style.display = 'none';
-      document.getElementById('painelQrConfirmacao').style.display = 'none';
-      document.getElementById('painelValidarRecebido').style.display = 'none';
-      document.getElementById('painelGerarQr').style.display = 'block';
-      document.getElementById('painelLeitor').style.display = 'block';
-      document.getElementById('statusLeitura').innerText = '';
+    // Função para carregar os álbuns do usuário logado baseado na tabela usuario_albuns > albuns_base_id > albuns[cite: 3]
+    async function carregarFiltroAlbunsUsuario() {
+      const { data: userAlbuns, error } = await _supabase
+        .from('usuario_albuns')
+        .select('albuns_base_id, albuns(id, nome, imagem)')
+        .eq('user_id', usuarioAtual.id);
+
+      if (error || !userAlbuns || userAlbuns.length === 0) {
+        document.getElementById('listaAlbunsFiltro').innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum álbum encontrado no seu perfil.</span>';
+        return;
+      }
+
+      let html = '';
+      userAlbuns.forEach((item, index) => {
+        const alb = item.albuns;
+        if (alb) {
+          const isFirst = index === 0;
+          if (isFirst) albumBaseSelecionadoId = alb.id; // Seleciona o primeiro por padrão
+
+          html += `
+            <div class="album-mini-card ${isFirst ? 'active' : ''}" id="album_mini_${alb.id}" onclick="selecionarAlbumFiltro('${alb.id}')">
+              <img src="${alb.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'}" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+              <span>${alb.nome || 'Álbum'}</span>
+            </div>
+          `;
+        }
+      });
+
+      document.getElementById('listaAlbunsFiltro').innerHTML = html;
+
+      // Carrega as figurinhas globais para o mapa global
+      const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_id, numero, nome, imagem');
+      if (figsGerais) {
+        figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
+      }
+    }
+
+    // Função de seleção do álbum pelo filtro de miniaturas
+    function selecionarAlbumFiltro(albumId) {
+      albumBaseSelecionadoId = albumId;
+      
+      // Atualiza visual das classes ativas nas miniaturas
+      document.querySelectorAll('.album-mini-card').forEach(el => el.classList.remove('active'));
+      const selecionadoCard = document.getElementById(`album_mini_${albumId}`);
+      if (selecionadoCard) selecionadoCard.classList.add('active');
+
+      // Se já estiver numa tela de match aberta com o colega, recalcula os matches para este novo álbum selecionado
+      if (colegaIdLido && document.getElementById('painelMatchPresencial').style.display === 'block') {
+        processarMatchPresencial(colegaIdLido);
+      }
+    }
+
+    // Função acionada manualmente pelo utilizador para ligar a câmara
+    function ligarCameraLeitor() {
+      document.getElementById('btnLigarCamera').style.display = 'none';
+      const readerEl = document.getElementById('reader');
+      readerEl.style.display = 'block';
+
+      document.getElementById('statusLeitura').innerText = 'A ligar a câmara...';
 
       if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
 
@@ -189,7 +254,6 @@
         async (decodedText) => {
           colegaIdLido = decodedText.trim();
           
-          // Se o texto lido for um ID de proposta (caso esteja a validar o colega)
           if (decodedText.startsWith('PROPOSTA_OK:')) {
             const propId = decodedText.split(':')[1];
             await executarBaixaEConfirmarTroca(propId);
@@ -208,15 +272,28 @@
         (errorMessage) => {}
       ).catch(err => {
         document.getElementById('statusLeitura').innerText = "❌ Erro ao aceder à câmara.";
+        document.getElementById('btnLigarCamera').style.display = 'inline-block';
+        readerEl.style.display = 'none';
       });
     }
 
     async function reiniciarFluxo() {
       selecionadasParaReceber.clear();
       selecionadasParaEnviar.clear();
+      colegaIdLido = null;
       try { if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop(); } catch(e) {}
       try { if (html5QrCodeConfirm && html5QrCodeConfirm.isScanning) await html5QrCodeConfirm.stop(); } catch(e) {}
-      iniciarLeitorCamera();
+      
+      document.getElementById('painelMatchPresencial').style.display = 'none';
+      document.getElementById('painelQrConfirmacao').style.display = 'none';
+      document.getElementById('painelValidarRecebido').style.display = 'none';
+      document.getElementById('painelGerarQr').style.display = 'block';
+      document.getElementById('painelLeitor').style.display = 'block';
+      
+      // Reseta o botão da câmara para o estado desligado
+      document.getElementById('reader').style.display = 'none';
+      document.getElementById('btnLigarCamera').style.display = 'inline-block';
+      document.getElementById('statusLeitura').innerText = '';
     }
 
     async function processarMatchPresencial(idColega) {
@@ -226,35 +303,49 @@
       const { data: perfilColega } = await _supabase.from('usuarios_cadastrados').select('nome').eq('id', idColega).maybeSingle();
       document.getElementById('tituloMatchColega').innerText = `✨ Conferência com ${perfilColega?.nome || 'Colega'}`;
 
+      // Filtra as figurinhas globais pertencentes estritamente ao álbum selecionado no topo
+      const idsFigurinhasAlbumAtual = new Set(
+        Array.from(figurinhasGlobalMap.values())
+          .filter(f => String(f.album_id) === String(albumBaseSelecionadoId))
+          .map(f => String(f.id))
+      );
+
       const { data: minhasFig } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', usuarioAtual.id);
-      const minhasCadastradasIds = new Set((minhasFig || []).map(f => String(f.figurinha_id)));
-      const minhasRepetidasIds = new Set((minhasFig || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
+      const minhasDoAlbum = (minhasFig || []).filter(f => idsFigurinhasAlbumAtual.has(String(f.figurinha_id)));
+      const minhasCadastradasIds = new Set(minhasDoAlbum.map(f => String(f.figurinha_id)));
+      const minhasRepetidasIds = new Set(minhasDoAlbum.filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
       const { data: figColega } = await _supabase.from('usuario_cardeneta').select('figurinha_id, quantidade').eq('user_id', idColega);
-      const colegaRepetidasIds = new Set((figColega || []).filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
+      const colegaDoAlbum = (figColega || []).filter(f => idsFigurinhasAlbumAtual.has(String(f.figurinha_id)));
+      const colegaRepetidasIds = new Set(colegaDoAlbum.filter(f => f.quantidade > 1).map(f => String(f.figurinha_id)));
 
+      // Lógica de match funcional preservada intacta
       selecionadasParaReceber = new Set(Array.from(colegaRepetidasIds).filter(id => !minhasCadastradasIds.has(id)));
-      selecionadasParaEnviar = new Set(Array.from(minhasRepetidasIds).filter(id => !colegaRepetidasIds.has(id)));
+      selecionadasParaEnviar = new Set(Array.from(minhasRepetidasIds).filter(id => !colegaDoAlbum.some(c => String(c.figurinha_id) === id)));
 
       let htmlReceber = '';
       colegaRepetidasIds.forEach(id => {
-        const f = figurinhasGlobalMap.get(id);
-        if (f) {
-          const sel = selecionadasParaReceber.has(id);
-          htmlReceber += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="rec_${id}" onclick="alternarReceber('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+        if (idsFigurinhasAlbumAtual.has(id)) {
+          const f = figurinhasGlobalMap.get(id);
+          if (f) {
+            const sel = selecionadasParaReceber.has(id);
+            htmlReceber += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="rec_${id}" onclick="alternarReceber('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+          }
         }
       });
-      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted)">Sem repetidas do colega.</span>';
+      document.getElementById('gridReceberColega').innerHTML = htmlReceber || '<span style="color:var(--text-muted)">Sem repetidas do colega neste álbum.</span>';
 
       let htmlEnviar = '';
       minhasRepetidasIds.forEach(id => {
-        const f = figurinhasGlobalMap.get(id);
-        if (f) {
-          const sel = selecionadasParaEnviar.has(id);
-          htmlEnviar += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="env_${id}" onclick="alternarEnviar('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+        if (idsFigurinhasAlbumAtual.has(id)) {
+          const f = figurinhasGlobalMap.get(id);
+          if (f) {
+            const sel = selecionadasParaEnviar.has(id);
+            htmlEnviar += `<div class="fig-select-card ${sel ? 'selected' : ''}" id="env_${id}" onclick="alternarEnviar('${id}')"><img src="${f.imagem || ''}"><span>${f.numero}</span></div>`;
+          }
         }
       });
-      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted)">Sem repetidas suas.</span>';
+      document.getElementById('gridEnviarMim').innerHTML = htmlEnviar || '<span style="color:var(--text-muted)">Sem repetidas suas neste álbum.</span>';
 
       document.getElementById('painelMatchPresencial').style.display = 'block';
     }
@@ -277,7 +368,6 @@
         return;
       }
 
-      // 1. Cria a proposta com status pendente na base de dados
       const { data, error } = await _supabase.from('propostas_troca').insert([{
         remetente_id: usuarioAtual.id,
         destinatario_id: colegaIdLido,
@@ -289,11 +379,9 @@
       if (error) { alert('Erro ao preparar proposta: ' + error.message); return; }
       propostaCriadaId = data.id;
 
-      // 2. Oculta painel de conferência e mostra o QR Code de Confirmação Final
       document.getElementById('painelMatchPresencial').style.display = 'none';
       document.getElementById('painelQrConfirmacao').style.display = 'block';
 
-      // Gera um QR Code especial contendo um token de validação "PROPOSTA_OK:[ID]"
       document.getElementById("qrcodeFinal").innerHTML = "";
       new QRCode(document.getElementById("qrcodeFinal"), {
         text: `PROPOSTA_OK:${propostaCriadaId}`,
@@ -301,7 +389,6 @@
         height: 170
       });
 
-      // Ativa também a câmara para o caso de querer ler o do colega caso os papéis invertam
       document.getElementById('painelValidarRecebido').style.display = 'block';
       if (!html5QrCodeConfirm) html5QrCodeConfirm = new Html5Qrcode("reader-confirm");
       html5QrCodeConfirm.start(
@@ -327,7 +414,6 @@
       const figsRem = propData.figurinhas_remetente || [];
       const figsDest = propData.figurinhas_destinatario || [];
 
-      // Função auxiliar local para dar baixa/adição no inventário de ambos
       const processarBaixa = async (userId, subtrairIds, adicionarIds) => {
         for (let id of subtrairIds) {
           const { data: reg } = await _supabase.from('usuario_cardeneta').select('id, quantidade').eq('user_id', userId).eq('figurinha_id', id).maybeSingle();
@@ -343,11 +429,9 @@
         }
       };
 
-      // Executa a troca nas duas cadernetas
       await processarBaixa(remetenteId, figsRem, figsDest);
       await processarBaixa(destinatarioId, figsDest, figsRem);
 
-      // Atualiza o status para 'aceita'
       await _supabase.from('propostas_troca').update({ status: 'aceita' }).eq('id', propId);
 
       alert('🎉 Troca validada e concluída com sucesso! As cadernetas foram atualizadas.');
