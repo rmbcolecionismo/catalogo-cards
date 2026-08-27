@@ -202,12 +202,10 @@
     let mapaAlbuns = {};
     let listaAlbunsSelectOptions = '';
     
-    // Novas variáveis de controle de paginação real
     let paginaAtual = 1;
     let itensPorPagina = 30;
     let totalRegistros = 0;
 
-    // Aplicar tema salvo localmente ao iniciar
     window.addEventListener('DOMContentLoaded', () => {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
@@ -296,8 +294,8 @@
       }
 
       if (apenasSemFoto) {
-        // Filtra itens onde imagem é nula, vazia ou aponta para o link padrão de sem-foto
-        query = query.or('imagem.is.null,imagem.eq.,imagem.eq.https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg,imagem_url.is.null,imagem_url.eq.,imagem_url.eq.https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg');
+        // Abrangência total para capturar nulos, strings vazias ou URLs contendo "sem-foto"
+        query = query.or('imagem.is.null,imagem.eq.,imagem.ilike.%sem-foto%,imagem_url.is.null,imagem_url.eq.,imagem_url.ilike.%sem-foto%');
       }
 
       if (termo !== "") {
@@ -322,7 +320,6 @@
       let termo = document.getElementById('search').value;
       const apenasSemFoto = document.getElementById('checkSemFoto').checked;
 
-      // 1. Obter o total exato de registros filtrados
       let queryCount = _supabase.from('figurinhas', { count: 'exact', head: true });
       queryCount = construirFiltrosQuery(queryCount, albumId, termo, apenasSemFoto);
       const { count, error: countError } = await queryCount;
@@ -331,11 +328,9 @@
         totalRegistros = count || 0;
       }
 
-      // 2. Calcular limites para paginação no Supabase
       const inicio = (paginaAtual - 1) * itensPorPagina;
       const fim = inicio + itensPorPagina - 1;
 
-      // 3. Buscar dados da página atual
       let queryData = _supabase.from('figurinhas').select('*').order('numero', { ascending: true });
       queryData = construirFiltrosQuery(queryData, albumId, termo, apenasSemFoto);
       const { data, error } = await queryData.range(inicio, fim);
@@ -542,7 +537,6 @@
           document.getElementById(`img-${id}`).src = novaUrl;
           alert("Foto convertida para WebP e atualizada com sucesso!");
           
-          // Se o filtro de "somente sem foto" estiver ativo, recarrega os dados para remover o item atualizado da lista
           if (document.getElementById('checkSemFoto').checked) {
             carregarPaginaDados();
           }
@@ -575,7 +569,7 @@
       if (error) {
         alert("Erro ao excluir figurinha: " + error.message);
       } else {
-        carregarPaginaDados(); // Atualiza a página e contagem total após excluir
+        carregarPaginaDados();
         alert("Figurinha excluída com sucesso!");
       }
     }
