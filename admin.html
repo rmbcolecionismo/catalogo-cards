@@ -69,7 +69,7 @@
     .btn-excluir:hover { background: #ef4444; color: white; }
 
     .miniatura-foto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); cursor: pointer; }
-    .miniatura-icone { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; }
+    .miniatura-icone { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; display: inline-block; }
   </style>
 </head>
 <body>
@@ -667,7 +667,7 @@
           if (iconeStr.startsWith('http://') || iconeStr.startsWith('https://') || iconeStr.startsWith('/') || iconeStr.includes('.')) {
             iconeHtml = `<img src="${iconeStr}" class="miniatura-icone" alt="Ícone">`;
           } else {
-            iconeHtml = iconeStr;
+            iconeHtml = `<span style="font-size: 1.2rem; display: inline-block; vertical-align: middle;">${iconeStr}</span>`;
           }
         }
         return `
@@ -676,27 +676,64 @@
             <td style="text-align: center; color: var(--gold);">${i.posicao}</td>
             <td style="text-align: center;">${iconeHtml}</td>
             <td>${i.nome_categoria}</td>
-            <td><button class="btn-excluir" onclick="excluirAlbumOrdem('${i.id}')">Excluir</button></td>
+            <td>
+              <div class="acoes-btns">
+                <button class="btn-acao" onclick="prepararEdicaoOrdem('${i.id}', '${i.album_id}', ${i.posicao}, '${i.nome_categoria.replace(/'/g, "\\'")}', '${(i.icone || '').replace(/'/g, "\\'")}')">Editar</button>
+                <button class="btn-excluir" onclick="excluirAlbumOrdem('${i.id}')">Excluir</button>
+              </div>
+            </td>
           </tr>
         `;
       }).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ordem.</td></tr>`;
     }
 
     async function salvarAlbumOrdem() {
+      const id = document.getElementById('editOrdemId').value;
       const album_id = document.getElementById('selectAlbumOrdem').value;
       const posicao = parseInt(document.getElementById('inputPosicaoOrdem').value);
       const nome_categoria = document.getElementById('inputNomeCategoriaOrdem').value.trim();
       const icone = document.getElementById('inputIconeOrdem').value.trim();
+      const msgDiv = document.getElementById('msgOrdem');
+
       if (!album_id || isNaN(posicao) || !nome_categoria) return;
 
-      await _supabase.from('album_categorias_ordem').insert([{ album_id, posicao, nome_categoria, icone }]);
+      if (id) {
+        await _supabase.from('album_categorias_ordem').update({ album_id, posicao, nome_categoria, icone }).eq('id', id);
+      } else {
+        await _supabase.from('album_categorias_ordem').insert([{ album_id, posicao, nome_categoria, icone }]);
+      }
+
+      cancelarEdicaoOrdem();
+      carregarAlbunsOrdens();
+      if (msgDiv) {
+        msgDiv.style.display = "block";
+        msgDiv.className = "msg-feedback msg-success";
+        msgDiv.innerText = "Salvo com sucesso!";
+        setTimeout(() => msgDiv.style.display = "none", 3000);
+      }
+    }
+
+    function prepararEdicaoOrdem(id, albumId, posicao, nomeCategoria, icone) {
+      document.getElementById('editOrdemId').value = id;
+      document.getElementById('selectAlbumOrdem').value = albumId;
+      document.getElementById('inputPosicaoOrdem').value = posicao;
+      document.getElementById('inputNomeCategoriaOrdem').value = nomeCategoria;
+      document.getElementById('inputIconeOrdem').value = icone;
+      document.getElementById('btnSalvarOrdem').innerText = "Atualizar Ordem";
+      document.getElementById('btnCancelarOrdem').style.display = "inline-block";
+    }
+
+    function cancelarEdicaoOrdem() {
+      document.getElementById('editOrdemId').value = '';
       document.getElementById('inputPosicaoOrdem').value = '';
       document.getElementById('inputNomeCategoriaOrdem').value = '';
       document.getElementById('inputIconeOrdem').value = '';
-      carregarAlbunsOrdens();
+      document.getElementById('btnSalvarOrdem').innerText = "Salvar Ordem";
+      document.getElementById('btnCancelarOrdem').style.display = "none";
     }
 
     async function excluirAlbumOrdem(id) {
+      if (!confirm("Deseja realmente excluir esta ordem?")) return;
       await _supabase.from('album_categorias_ordem').delete().eq('id', id);
       carregarAlbunsOrdens();
     }
@@ -879,7 +916,10 @@
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
-      const { data } = await _supabase.from('colaboracoes').select('id, figurinha_id, album_id, nova_imagem_url, colaborador, status, created_at, figurinhas(numero, nome, albuns(nome))');
+      const { data, error } = await _supabase.from('colaboracoes').select('id, figurinha_id, album_id, nova_imagem_url, colaborador, status, created_at, figurinhas(numero, nome, albuns(nome))');
+      if (error) {
+        console.error("Erro ao carregar colaborações:", error);
+      }
       tbody.innerHTML = data && data.length > 0 ? data.map(a => `
         <tr>
           <td>${a.nova_imagem_url ? `<img src="${a.nova_imagem_url}" class="miniatura-foto">` : '-'}</td>
