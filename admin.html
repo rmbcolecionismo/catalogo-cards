@@ -70,6 +70,11 @@
 
     .miniatura-foto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); cursor: pointer; }
     .miniatura-icone { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; display: inline-block; }
+
+    /* Estilo para o Preview da Figurinha */
+    .preview-container { margin-top: 0.8rem; display: none; align-items: center; gap: 1rem; background: rgba(15, 23, 42, 0.5); padding: 0.6rem; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.4); }
+    .preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); }
+    .preview-text { font-size: 0.8rem; color: #cbd5e1; }
   </style>
 </head>
 <body>
@@ -238,6 +243,11 @@
         <div class="form-group">
           <label>Fazer Upload da Imagem (Opcional)</label>
           <input type="file" id="inputArquivoFigurinha" accept="image/*">
+          <!-- Card de Preview Adicionado Abaixo -->
+          <div id="containerPreviewFigurinha" class="preview-container">
+            <img id="imgPreviewFigurinha" class="preview-img" src="" alt="Preview">
+            <div class="preview-text"><strong>Preview da Imagem</strong><br><span>Pronta para cadastro</span></div>
+          </div>
         </div>
         <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
         <div id="msgFigurinha" class="msg-feedback"></div>
@@ -472,7 +482,31 @@
       carregarDestaques();
     }
 
-    window.addEventListener('DOMContentLoaded', verificarSessao);
+    window.addEventListener('DOMContentLoaded', () => {
+      verificarSessao();
+
+      // Script do Preview de Imagem da Figurinha
+      const inputArquivoFigurinha = document.getElementById('inputArquivoFigurinha');
+      const containerPreviewFigurinha = document.getElementById('containerPreviewFigurinha');
+      const imgPreviewFigurinha = document.getElementById('imgPreviewFigurinha');
+
+      if (inputArquivoFigurinha) {
+        inputArquivoFigurinha.addEventListener('change', function(event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              imgPreviewFigurinha.src = e.target.result;
+              containerPreviewFigurinha.style.display = 'flex';
+            }
+            reader.readAsDataURL(file);
+          } else {
+            imgPreviewFigurinha.src = '';
+            containerPreviewFigurinha.style.display = 'none';
+          }
+        });
+      }
+    });
 
     async function fazerLogout() {
       await _supabase.auth.signOut();
@@ -833,6 +867,10 @@
       document.getElementById('inputNomeFigurinha').value = '';
       document.getElementById('inputSelecaoFigurinha').value = '';
       document.getElementById('inputArquivoFigurinha').value = '';
+      
+      // Esconder o preview após o cadastro bem-sucedido
+      document.getElementById('containerPreviewFigurinha').style.display = 'none';
+      document.getElementById('imgPreviewFigurinha').src = '';
     }
 
     // --- USUÁRIOS ---
