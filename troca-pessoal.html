@@ -190,10 +190,16 @@
     async function carregarFiltroAlbunsUsuario() {
       const { data: userAlbuns, error } = await _supabase
         .from('usuario_albuns')
-        .select('albuns_base_id, albuns(id, nome, imagem)')
+        .select('album_base_id, albuns:album_base_id(id, nome, imagem)')
         .eq('user_id', usuarioAtual.id);
 
-      if (error || !userAlbuns || userAlbuns.length === 0) {
+      if (error) {
+        console.error("Erro ao carregar álbuns:", error.message);
+        document.getElementById('listaAlbunsFiltro').innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Erro ao carregar seus álbuns.</span>';
+        return;
+      }
+
+      if (!userAlbuns || userAlbuns.length === 0) {
         document.getElementById('listaAlbunsFiltro').innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum álbum encontrado no seu perfil.</span>';
         return;
       }
@@ -203,7 +209,7 @@
         const alb = item.albuns;
         if (alb) {
           const isFirst = index === 0;
-          if (isFirst) albumBaseSelecionadoId = alb.id; // Seleciona o primeiro por padrão
+          if (isFirst) albumBaseSelecionadoId = alb.id; 
 
           html += `
             <div class="album-mini-card ${isFirst ? 'active' : ''}" id="album_mini_${alb.id}" onclick="selecionarAlbumFiltro('${alb.id}')">
@@ -216,13 +222,11 @@
 
       document.getElementById('listaAlbunsFiltro').innerHTML = html;
 
-      // Carrega as figurinhas globais para o mapa global
       const { data: figsGerais } = await _supabase.from('figurinhas').select('id, album_id, numero, nome, imagem');
       if (figsGerais) {
         figurinhasGlobalMap = new Map(figsGerais.map(f => [String(f.id), f]));
       }
     }
-
     // Função de seleção do álbum pelo filtro de miniaturas
     function selecionarAlbumFiltro(albumId) {
       albumBaseSelecionadoId = albumId;
