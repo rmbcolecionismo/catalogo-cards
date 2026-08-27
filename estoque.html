@@ -320,10 +320,10 @@
       let termo = document.getElementById('search').value;
       const apenasSemFoto = document.getElementById('checkSemFoto').checked;
 
-      let queryCount = _supabase.from('figurinhas', { count: 'exact', head: true });
+      let queryCount = _supabase.from('figurinhas').select('*', { count: 'exact', head: true });
       queryCount = construirFiltrosQuery(queryCount, albumId, termo, apenasSemFoto);
       const { count, error: countError } = await queryCount;
-
+      
       if (!countError) {
         totalRegistros = count || 0;
       }
