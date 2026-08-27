@@ -817,7 +817,8 @@
     async function carregarDestaques() {
       const tbody = document.getElementById('tabelaDestaques');
       if (!tbody) return;
-      const { data } = await _supabase.from('destaque').select('*').order('ordem', { ascending: true });
+      // ATUALIZADO PARA 'destaques' (plural)
+      const { data } = await _supabase.from('destaques').select('*').order('ordem', { ascending: true });
       tbody.innerHTML = data && data.length > 0 ? data.map(d => `
         <tr>
           <td>${d.titulo_destaque || '-'}</td>
@@ -835,12 +836,14 @@
       const ordem = parseInt(document.getElementById('inputOrdemDestaque').value) || 0;
       if (!album_id) return;
 
-      await _supabase.from('destaque').insert([{ album_id, titulo_destaque, ordem }]);
+      // ATUALIZADO PARA 'destaques' (plural)
+      await _supabase.from('destaques').insert([{ album_id, titulo_destaque, ordem }]);
       carregarDestaques();
     }
 
     async function excluirDestaque(id) {
-      await _supabase.from('destaque').delete().eq('id', id);
+      // ATUALIZADO PARA 'destaques' (plural)
+      await _supabase.from('destaques').delete().eq('id', id);
       carregarDestaques();
     }
   </script>
