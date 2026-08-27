@@ -69,6 +69,7 @@
     .btn-excluir:hover { background: #ef4444; color: white; }
 
     .miniatura-foto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); cursor: pointer; }
+    .miniatura-icone { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -307,8 +308,8 @@
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead><tr><th>Foto</th><th>Álbum</th><th>Figurinha (Nº / Nome)</th><th>Status</th><th style="width: 120px;">Ações</th></tr></thead>
-            <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
+            <thead><tr><th>Foto</th><th>Álbum</th><th>Figurinha (Nº / Nome)</th><th>Colaborador</th><th>Status</th><th style="width: 120px;">Ações</th></tr></thead>
+            <tbody id="tabelaAjudas"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -495,7 +496,6 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Definir dimensões máximas para otimização
             let width = img.width;
             let height = img.height;
             const maxDim = 1200;
@@ -512,12 +512,10 @@
             canvas.width = width;
             canvas.height = height;
 
-            // Desenhar imagem com suavização ajustada
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Filtro simples de nitidez (Sharpen Matrix)
             try {
               const imageData = ctx.getImageData(0, 0, width, height);
               const data = imageData.data;
@@ -667,7 +665,7 @@
         if (i.icone) {
           const iconeStr = String(i.icone).trim();
           if (iconeStr.startsWith('http://') || iconeStr.startsWith('https://') || iconeStr.startsWith('/') || iconeStr.includes('.')) {
-            iconeHtml = `<img src="${iconeStr}" class="miniatura-foto" alt="Ícone">`;
+            iconeHtml = `<img src="${iconeStr}" class="miniatura-icone" alt="Ícone">`;
           } else {
             iconeHtml = iconeStr;
           }
@@ -881,16 +879,17 @@
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
-      const { data } = await _supabase.from('colaboracoes').select('*, figurinhas(numero, nome, albuns(nome))');
+      const { data } = await _supabase.from('colaboracoes').select('id, figurinha_id, album_id, nova_imagem_url, colaborador, status, created_at, figurinhas(numero, nome, albuns(nome))');
       tbody.innerHTML = data && data.length > 0 ? data.map(a => `
         <tr>
-          <td>${a.nova_imagem_url || a.foto_url ? `<img src="${a.nova_imagem_url || a.foto_url}" class="miniatura-foto">` : '-'}</td>
+          <td>${a.nova_imagem_url ? `<img src="${a.nova_imagem_url}" class="miniatura-foto">` : '-'}</td>
           <td>${a.figurinhas?.albuns?.nome || '-'}</td>
           <td>Nº ${a.figurinhas?.numero || '-'} - ${a.figurinhas?.nome || ''}</td>
+          <td>${a.colaborador || 'Anônimo'}</td>
           <td>${a.status || 'Pendente'}</td>
           <td><button class="btn-excluir" onclick="excluirAjuda('${a.id}')">Excluir</button></td>
         </tr>
-      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda.</td></tr>`;
+      `).join('') : `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhuma ajuda.</td></tr>`;
     }
 
     async function excluirAjuda(id) {
@@ -1041,7 +1040,6 @@
         selectFig.innerHTML = `<option value="">Selecione o tipo...</option>`;
         return;
       }
-      // Buscar tipos unicos ou registros da tabela figurinhas associados aos tipos
       const { data } = await _supabase.from('figurinhas').select('tipo, tipos(id, nome)').eq('album_id', albumId);
       const tiposMap = new Map();
       if (data) {
