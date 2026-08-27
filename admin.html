@@ -48,8 +48,8 @@
     .form-row .form-group { flex: 1; min-width: 200px; }
     
     label { display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: 600; }
-    input, select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; font-size: 0.9rem; outline: none; }
-    input:focus, select:focus { border-color: var(--gold); }
+    input, select, textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: white; font-size: 0.9rem; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
     
     .btn-submit { background: var(--gold); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
     .btn-submit:hover { background: #d97706; }
@@ -68,25 +68,8 @@
     .btn-excluir { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
     .btn-excluir:hover { background: #ef4444; color: white; }
 
-    .miniatura-foto {
-      width: 45px;
-      height: 45px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid var(--gold);
-      cursor: pointer;
-      transition: transform 0.2s, opacity 0.2s;
-    }
-    .miniatura-foto:hover {
-      transform: scale(1.1);
-      opacity: 0.9;
-    }
-    .miniatura-icone {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
-      vertical-align: middle;
-    }
+    .miniatura-foto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); cursor: pointer; }
+    .miniatura-icone { width: 28px; height: 28px; object-fit: contain; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -94,11 +77,12 @@
   <header>
     <div class="top-nav">
       <div class="nav-links">
-        <a href="index.html">🏠 Home</a>
-        <a href="perfil.html">👤 Meu Perfil</a>
-        <a href="vitrine.html">📦 Minha Vitrine</a>
-        <a href="admin.html" style="color: var(--gold);">⚙️ Painel Admin</a>
-        <a href="estoque.html">📊 Estoque</a>
+        <a href="index.html">🏠 Início</a>
+        <a href="cardeneta.html">📖 Cadernetas</a>
+        <a href="vitrine.html">📦 Vitrine</a>
+        <a href="mercado.html">🔄 Mercado</a>
+        <a href="perfil.html">⚙️ Perfil</a>
+        <a href="admin.html" style="color: var(--gold);">🛡️ Painel Admin</a>
       </div>
       <div class="user-profile-top">
         <img id="userAvatar" src="https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg" alt="Avatar" class="user-avatar" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
@@ -107,8 +91,8 @@
       </div>
     </div>
 
-    <h1>⚙️ Painel de Administração</h1>
-    <p class="subtitle">Gerencie os cadastros e dados do sistema por categorias</p>
+    <h1>🛡️ Painel Administrativo</h1>
+    <p class="subtitle">Área restrita para Administradores e Master</p>
   </header>
 
   <div class="container">
@@ -118,9 +102,12 @@
       <button class="tab-btn" onclick="mudarAba('ordens', event)">📑 Álbuns Ordens</button>
       <button class="tab-btn" onclick="mudarAba('tipos', event)">🏷️ Tipos</button>
       <button class="tab-btn" onclick="mudarAba('figurinhas', event)">🃏 Figurinhas</button>
-      <button class="tab-btn" onclick="mudarAba('vendedores', event)">👥 Vendedores</button>
+      <button class="tab-btn" onclick="mudarAba('usuarios', event)">👥 Usuários</button>
       <button class="tab-btn" onclick="mudarAba('contatos', event)">📬 Contatos</button>
       <button class="tab-btn" onclick="mudarAba('ajudas', event)">🤝 Ajudas</button>
+      <button class="tab-btn" onclick="mudarAba('planos', event)">💎 Planos</button>
+      <button class="tab-btn" onclick="mudarAba('textowhats', event)">💬 Texto Whats</button>
+      <button class="tab-btn" onclick="mudarAba('destaques', event)">⭐ Destaques</button>
     </div>
 
     <!-- ABA: ÁLBUNS -->
@@ -134,7 +121,7 @@
           <input type="text" id="inputNomeAlbum" placeholder="Ex: Copa do Mundo 2026">
         </div>
         <div class="form-group">
-          <label>Fazer Upload da Imagem / Capa (Opcional - Convertido para WebP)</label>
+          <label>Fazer Upload da Imagem / Capa (Opcional)</label>
           <input type="file" id="inputArquivoAlbum" accept="image/*">
         </div>
         <button class="btn-submit" id="btnSalvarAlbum" onclick="salvarAlbum()">Salvar Álbum</button>
@@ -170,11 +157,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Nome da Categoria / Seleção</label>
-            <input type="text" id="inputNomeCategoriaOrdem" placeholder="Ex: Brasil, Golden Ballers, Espanha...">
+            <input type="text" id="inputNomeCategoriaOrdem" placeholder="Ex: Brasil, Espanha...">
           </div>
           <div class="form-group">
             <label>URL do Ícone / Bandeira ou Emoji (Opcional)</label>
-            <input type="text" id="inputIconeOrdem" placeholder="Ex: https://.../brasil.png ou 🇧🇷">
+            <input type="text" id="inputIconeOrdem" placeholder="Ex: 🇧🇷">
           </div>
         </div>
         <button class="btn-submit" id="btnSalvarOrdem" onclick="salvarAlbumOrdem()">Salvar Ordem</button>
@@ -185,21 +172,11 @@
         <h2>📋 Ordens Cadastradas por Álbum</h2>
         <div class="form-group" style="margin-bottom: 15px;">
           <label>Filtrar visualização por Álbum:</label>
-          <select id="selectFiltroOrdemAlbum" onchange="carregarAlbunsOrdens()">
-            <option value="">Todos os álbuns</option>
-          </select>
+          <select id="selectFiltroOrdemAlbum" onchange="carregarAlbunsOrdens()"><option value="">Todos os álbuns</option></select>
         </div>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead>
-              <tr>
-                <th>Álbum</th>
-                <th style="width: 70px; text-align: center;">Posição</th>
-                <th style="width: 70px; text-align: center;">Ícone</th>
-                <th>Categoria / Seleção</th>
-                <th style="width: 130px;">Ações</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Álbum</th><th style="width: 70px; text-align: center;">Posição</th><th style="width: 70px; text-align: center;">Ícone</th><th>Categoria / Seleção</th><th style="width: 130px;">Ações</th></tr></thead>
             <tbody id="tabelaAlbunsOrdens"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
           </table>
         </div>
@@ -247,7 +224,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Seleção / Escuderia</label>
-            <input type="text" id="inputSelecaoFigurinha" placeholder="Ex: Portugal, Brasil, Ferrari">
+            <input type="text" id="inputSelecaoFigurinha" placeholder="Ex: Portugal, Brasil">
           </div>
           <div class="form-group">
             <label>Número</label>
@@ -259,7 +236,7 @@
           <input type="text" id="inputNomeFigurinha" placeholder="Ex: Jogador Famoso">
         </div>
         <div class="form-group">
-          <label>Fazer Upload da Imagem (Opcional - Convertido para WebP)</label>
+          <label>Fazer Upload da Imagem (Opcional)</label>
           <input type="file" id="inputArquivoFigurinha" accept="image/*">
         </div>
         <button class="btn-submit" onclick="cadastrarFigurinha()">Cadastrar Figurinha</button>
@@ -267,96 +244,189 @@
       </div>
     </div>
 
-    <!-- ABA: VENDEDORES -->
-    <div id="aba-vendedores" class="tab-content">
+    <!-- ABA: USUÁRIOS (ANTIGA VENDEDORES) -->
+    <div id="aba-usuarios" class="tab-content">
       <div class="card">
-        <h2 id="tituloCardVendedor">👥 Cadastro de Vendedor Autorizado</h2>
-        <input type="hidden" id="editVendedorOriginalEmail">
+        <h2 id="tituloCardUsuario">👥 Gestão de Usuários Cadastrados</h2>
+        <input type="hidden" id="editUsuarioId">
         <div class="form-row">
           <div class="form-group">
-            <label>E-mail do Vendedor</label>
-            <input type="email" id="inputEmailVendedor" placeholder="vendedor@email.com">
+            <label>Nome</label>
+            <input type="text" id="inputNomeUsuario" placeholder="Nome do usuário">
           </div>
           <div class="form-group">
-            <label>Nome do Vendedor</label>
-            <input type="text" id="inputNomeVendedor" placeholder="Nome Completo">
+            <label>E-mail</label>
+            <input type="email" id="inputEmailUsuario" placeholder="email@email.com" disabled>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Cidade</label>
-            <input type="text" id="inputCidadeVendedor" placeholder="Ex: Lisboa">
+            <label>Função / Permissão</label>
+            <select id="selectFuncaoUsuario">
+              <option value="colecionador">Colecionador</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="administrador">Administrador</option>
+              <option value="master">Master</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Telefone / WhatsApp</label>
-            <input type="text" id="inputTelefoneVendedor" placeholder="+351 912 345 678">
+            <label>Plano</label>
+            <input type="text" id="inputPlanoUsuario" placeholder="Ex: gratis, premium...">
           </div>
         </div>
-        <div class="form-group">
-          <label>Função / Permissão</label>
-          <select id="selectFuncaoVendedor">
-            <option value="vendedor">Vendedor</option>
-            <option value="admin">Administrador</option>
-            <option value="master">Master</option>
-          </select>
-        </div>
-        <button class="btn-submit" id="btnSalvarVendedor" onclick="salvarVendedor()">Autorizar / Salvar Vendedor</button>
-        <button class="btn-acao" id="btnCancelarVendedor" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoVendedor()">Cancelar</button>
-        <div id="msgVendedor" class="msg-feedback"></div>
+        <button class="btn-submit" id="btnSalvarUsuario" onclick="salvarUsuarioManual()">Atualizar Usuário</button>
+        <button class="btn-acao" id="btnCancelarUsuario" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoUsuario()">Cancelar</button>
+        <div id="msgUsuario" class="msg-feedback"></div>
       </div>
       <div class="card">
-        <h2>📋 Vendedores Autorizados</h2>
+        <h2>📋 Lista de Usuários</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Cidade</th>
-                <th>Telefone / WhatsApp</th>
-                <th>Função</th>
-                <th style="width: 130px;">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaVendedores"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Função</th><th>Plano</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaUsuarios"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ABA: CONTATOS RECEBIDOS -->
+    <!-- ABA: CONTATOS -->
     <div id="aba-contatos" class="tab-content">
       <div class="card">
-        <h2>📬 Gerir Contatos Recebidos</h2>
+        <h2>📬 Mensagens de Fale Conosco (Contatos)</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Telemóvel</th><th>Álbuns</th><th style="width: 160px;">Ações</th></tr></thead>
-            <tbody id="tabelaContatos"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr></tbody>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Assunto</th><th>Mensagem</th><th>Anexo</th><th>Criado em</th><th style="width: 100px;">Ações</th></tr></thead>
+            <tbody id="tabelaContatos"><tr><td colspan="7" style="text-align: center; color: #94a3b8;">A carregar contatos...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ABA: AJUDAS (COLABORAÇÕES) -->
+    <!-- ABA: AJUDAS -->
     <div id="aba-ajudas" class="tab-content">
       <div class="card">
         <h2>🤝 Gestão de Ajudas e Colaborações</h2>
         <div style="overflow-x: auto;">
           <table class="lista-tabela">
-            <thead>
-              <tr>
-                <th>Foto</th>
-                <th>Álbum</th>
-                <th>Figurinha (Nº / Nome)</th>
-                <th>Status</th>
-                <th style="width: 120px;">Ações</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Foto</th><th>Álbum</th><th>Figurinha (Nº / Nome)</th><th>Status</th><th style="width: 120px;">Ações</th></tr></thead>
             <tbody id="tabelaAjudas"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar ajudas...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- ABA: PLANOS -->
+    <div id="aba-planos" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardPlano">💎 Gestão de Planos (configuracoes_planos)</h2>
+        <input type="hidden" id="editPlanoId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome do Plano</label>
+            <input type="text" id="inputNomePlano" placeholder="Ex: Premium">
+          </div>
+          <div class="form-group">
+            <label>Valor do Plano</label>
+            <input type="number" step="0.01" id="inputValorPlano" placeholder="Ex: 9.99">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Limite de Cadernetas</label>
+            <input type="number" id="inputLimiteCadernetas" placeholder="Ex: 5">
+          </div>
+          <div class="form-group">
+            <label>Limite de Anúncios</label>
+            <input type="number" id="inputLimiteAnuncios" placeholder="Ex: 10">
+          </div>
+          <div class="form-group">
+            <label>Limite de Trocas</label>
+            <input type="number" id="inputLimiteTrocas" placeholder="Ex: 20">
+          </div>
+        </div>
+        <button class="btn-submit" id="btnSalvarPlano" onclick="salvarPlano()">Salvar Plano</button>
+        <button class="btn-acao" id="btnCancelarPlano" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoPlano()">Cancelar</button>
+        <div id="msgPlano" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Planos Configurados</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Plano</th><th>Valor</th><th>Cadernetas</th><th>Anúncios</th><th>Trocas</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaPlanos"><tr><td colspan="6" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: TEXTO WHATS -->
+    <div id="aba-textowhats" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardWhats">💬 Textos e Mensagens WhatsApp (configuracoes_sistema)</h2>
+        <input type="hidden" id="editWhatsId">
+        <div class="form-group">
+          <label>Chave de Identificação</label>
+          <input type="text" id="inputChaveWhats" placeholder="Ex: msg_boas_vindas">
+        </div>
+        <div class="form-group">
+          <label>Valor / Conteúdo da Mensagem</label>
+          <textarea id="inputValorWhats" rows="4" placeholder="Digite a mensagem automática..."></textarea>
+        </div>
+        <button class="btn-submit" id="btnSalvarWhats" onclick="salvarWhats()">Salvar Configuração</button>
+        <button class="btn-acao" id="btnCancelarWhats" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoWhats()">Cancelar</button>
+        <div id="msgWhats" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Configurações do Sistema</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Chave</th><th>Valor</th><th>Atualizado em</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaWhats"><tr><td colspan="4" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: DESTAQUES -->
+    <div id="aba-destaques" class="tab-content">
+      <div class="card">
+        <h2 id="tituloCardDestaque">⭐ Gerir Figurinhas em Destaque</h2>
+        <input type="hidden" id="editDestaqueId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Selecione o Álbum</label>
+            <select id="selectAlbumDestaque" onchange="carregarFigurinhaPorAlbumDestaque()"><option value="">Selecione o álbum...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Selecione a Figurinha</label>
+            <select id="selectFigurinhaDestaque"><option value="">Selecione a figurinha...</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título do Destaque</label>
+            <input type="text" id="inputTituloDestaque" placeholder="Ex: Destaque da Semana">
+          </div>
+          <div class="form-group">
+            <label>Ordem Numérica</label>
+            <input type="number" id="inputOrdemDestaque" placeholder="Ex: 1">
+          </div>
+        </div>
+        <button class="btn-submit" id="btnSalvarDestaque" onclick="salvarDestaque()">Salvar Destaque</button>
+        <button class="btn-acao" id="btnCancelarDestaque" style="display:none; margin-left:10px; padding: 0.8rem 1rem;" onclick="cancelarEdicaoDestaque()">Cancelar</button>
+        <div id="msgDestaque" class="msg-feedback"></div>
+      </div>
+      <div class="card">
+        <h2>📋 Destaques Atuais na Index</h2>
+        <div style="overflow-x: auto;">
+          <table class="lista-tabela">
+            <thead><tr><th>Título</th><th>Álbum ID</th><th>Ordem</th><th>Criado em</th><th style="width: 130px;">Ações</th></tr></thead>
+            <tbody id="tabelaDestaques"><tr><td colspan="5" style="text-align: center; color: #94a3b8;">A carregar...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -364,98 +434,6 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGRybmpyZXdlaG9qZm1za3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDEwMzksImV4cCI6MjEwMjIxNzAzOX0.fR3cQArpbz4dzTHx80jhfsYJJfDZHJZ7KUkDCdCoJuE";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Função aprimorada para converter para WebP + Melhoria de Nitidez e Qualidade Visual
-    async function converterParaWebP(file, maxWidth = 1200, maxHeight = 1200, quality = 0.85) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-
-            // Redimensionamento proporcional
-            if (width > height) {
-              if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-              }
-            } else {
-              if (height > maxHeight) {
-                width = Math.round((width * maxHeight) / height);
-                height = maxHeight;
-              }
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-            // Aplicação de suavização de imagem de alta qualidade (High Quality Image Smoothing)
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            // Desenha a imagem redimensionada no canvas
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // --- FILTRO OPCIONAL DE NITIDEZ (Sharpen Kernel) ---
-            try {
-              const imgData = ctx.getImageData(0, 0, width, height);
-              const data = imgData.data;
-              
-              // Matriz de nitidez moderada (deixa mais profissional sem exagerar nos ruídos)
-              const weights = [
-                 0, -1,  0,
-                -1,  5, -1,
-                 0, -1,  0
-              ];
-              const katrail = 1;
-              const w = width;
-              const h = height;
-              const buffer = new Uint8ClampedArray(data);
-
-              for (let y = 1; y < h - 1; y++) {
-                for (let x = 1; x < w - 1; x++) {
-                  for (let c = 0; c < 3; c++) {
-                    let sum = 0;
-                    for (let ky = -1; ky <= 1; ky++) {
-                      for (let kx = -1; kx <= 1; kx++) {
-                        const idx = ((y + ky) * w + (x + kx)) * 4 + c;
-                        sum += buffer[idx] * weights[(ky + 1) * 3 + (kx + 1)];
-                      }
-                    }
-                    const targetIdx = (y * w + x) * 4 + c;
-                    data[targetIdx] = Math.min(255, Math.max(0, sum));
-                  }
-                }
-              }
-              ctx.putImageData(imgData, 0, 0);
-            } catch (e) {
-              console.warn("Filtro de nitidez ignorado por restrições de CORS/ImageData:", e);
-            }
-
-            // Conversão final para WebP com o nível de qualidade desejado
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                reject(new Error("Falha ao processar e converter imagem para WebP."));
-                return;
-              }
-              const nomeBase = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-              const novoArquivo = new File([blob], `${nomeBase}.webp`, {
-                type: 'image/webp',
-                lastModified: Date.now()
-              });
-              resolve(novoArquivo);
-            }, 'image/webp', quality);
-          };
-          img.onerror = (err) => reject(err);
-        };
-        reader.onerror = (err) => reject(err);
-      });
-    }
     async function verificarSessao() {
       const { data: { session }, error } = await _supabase.auth.getSession();
       
@@ -465,25 +443,32 @@
       }
 
       const user = session.user;
-      const { data: vendedor } = await _supabase
-        .from('vendedores_autorizados')
+      const { data: perfil } = await _supabase
+        .from('usuarios_cadastrados')
         .select('*')
         .eq('email', user.email)
         .single();
 
-      const nomeExibicao = vendedor?.nome || user.user_metadata?.full_name || user.email.split('@')[0];
-      
-      const greetingEl = document.getElementById('userGreeting');
-      if (greetingEl) {
-        greetingEl.innerText = `Olá, ${nomeExibicao}`;
+      const funcao = String(perfil?.funcao || '').toLowerCase().trim();
+      if (funcao !== 'administrador' && funcao !== 'master') {
+        alert("Acesso negado. Apenas Administradores e Master podem acessar esta página.");
+        window.location.replace("index.html");
+        return;
       }
+
+      const nomeExibicao = perfil?.nome || user.user_metadata?.full_name || user.email.split('@')[0];
+      const greetingEl = document.getElementById('userGreeting');
+      if (greetingEl) greetingEl.innerText = `Olá, ${nomeExibicao}`;
 
       carregarAlbuns();
       carregarAlbunsOrdens();
       carregarTipos();
-      carregarVendedores();
+      carregarUsuarios();
       carregarContatos();
       carregarAjudas();
+      carregarPlanos();
+      carregarWhats();
+      carregarDestaques();
     }
 
     window.addEventListener('DOMContentLoaded', verificarSessao);
@@ -500,627 +485,363 @@
       if(event) event.currentTarget.classList.add('active');
     }
 
+    // --- ÁLBUNS ---
     async function carregarAlbuns() {
       const tbody = document.getElementById('tabelaAlbuns');
       const selectFig = document.getElementById('selectAlbumFigurinha');
       const selectOrdem = document.getElementById('selectAlbumOrdem');
       const selectFiltroOrdem = document.getElementById('selectFiltroOrdemAlbum');
+      const selectDestaque = document.getElementById('selectAlbumDestaque');
       if (!tbody) return;
 
-      const { data, error } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
-      if (error) return;
-
+      const { data } = await _supabase.from('albuns').select('*').order('nome', { ascending: true });
       if (data) {
         const optionsHtml = `<option value="">Selecione o álbum...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
         if (selectFig) selectFig.innerHTML = optionsHtml;
         if (selectOrdem) selectOrdem.innerHTML = optionsHtml;
-
-        if (selectFiltroOrdem) {
-          const filtroAtual = selectFiltroOrdem.value;
-          selectFiltroOrdem.innerHTML = `<option value="">Todos os álbuns</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
-          selectFiltroOrdem.value = filtroAtual;
-        }
+        if (selectDestaque) selectDestaque.innerHTML = optionsHtml;
+        if (selectFiltroOrdem) selectFiltroOrdem.innerHTML = `<option value="">Todos os álbuns</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
       }
       
-      if (data && tbody) {
-        tbody.innerHTML = data.map(item => {
-          const imagemHtml = item.imagem 
-            ? `<img src="${item.imagem}" alt="Capa" class="miniatura-foto" onclick="window.open('${item.imagem}', '_blank')" title="Clique para ver em tamanho real">` 
-            : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>';
-
-          const nomeSeguro = item.nome.replace(/'/g, "\\'");
-          const imagemSegura = (item.imagem || '').replace(/'/g, "\\'");
-
-          return `
-            <tr>
-              <td>${imagemHtml}</td>
-              <td>${item.nome}</td>
-              <td>
-                <div class="acoes-btns">
-                  <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${nomeSeguro}', '${imagemSegura}')">Editar</button>
-                  <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
+      tbody.innerHTML = data && data.length > 0 ? data.map(item => `
+        <tr>
+          <td>${item.imagem ? `<img src="${item.imagem}" class="miniatura-foto">` : 'Sem foto'}</td>
+          <td>${item.nome}</td>
+          <td>
+            <div class="acoes-btns">
+              <button class="btn-acao" onclick="prepararEdicaoAlbum('${item.id}', '${item.nome.replace(/'/g, "\\'")}', '${item.imagem || ''}')">Editar</button>
+              <button class="btn-excluir" onclick="excluirAlbum('${item.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">Nenhum álbum encontrado.</td></tr>`;
     }
 
     async function salvarAlbum() {
       const id = document.getElementById('editAlbumId').value;
       const nome = document.getElementById('inputNomeAlbum').value.trim();
       const inputFile = document.getElementById('inputArquivoAlbum');
-      const imagemAtual = document.getElementById('editAlbumImagemAtual').value;
+      let imagemUrl = document.getElementById('editAlbumImagemAtual').value || null;
       const msgDiv = document.getElementById('msgAlbum');
 
+      if (!nome) return;
       msgDiv.style.display = "block";
-      msgDiv.className = "msg-feedback";
-
-      if (!nome) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = "Preencha o nome do álbum.";
-        return;
-      }
-
       msgDiv.className = "msg-feedback msg-success";
-      msgDiv.innerText = "Processando e salvando álbum...";
+      msgDiv.innerText = "Salvando...";
 
-      let imagemUrl = imagemAtual || null;
-
-      try {
-        if (inputFile.files && inputFile.files.length > 0) {
-          const fileOriginal = inputFile.files[0];
-          const fileWebP = await converterParaWebP(fileOriginal, 1200, 1200, 0.85);
-          const fileName = `album_${Date.now()}.webp`;
-          
-          const { error: uploadError } = await _supabase.storage
-            .from('figurinhas')
-            .upload(fileName, fileWebP);
-
-          if (uploadError) throw new Error("Erro no upload da imagem: " + uploadError.message);
-
-          const { data: publicUrlData } = _supabase.storage
-            .from('figurinhas')
-            .getPublicUrl(fileName);
-
-          imagemUrl = publicUrlData.publicUrl;
-        }
-
-        let error;
-        if (id) {
-          ({ error } = await _supabase.from('albuns').update({ nome, imagem: imagemUrl }).eq('id', id));
-        } else {
-          ({ error } = await _supabase.from('albuns').insert([{ nome, imagem: imagemUrl }]));
-        }
-
-        if (error) throw new Error("Erro ao salvar no banco: " + error.message);
-
-        msgDiv.className = "msg-feedback msg-success";
-        msgDiv.innerText = "Álbum salvo com sucesso!";
-
-        cancelarEdicaoAlbum();
-        carregarAlbuns();
-        carregarAlbunsOrdens();
-
-        setTimeout(() => { msgDiv.style.display = "none"; }, 3000);
-      } catch (err) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = err.message;
+      if (inputFile.files && inputFile.files[0]) {
+        const file = inputFile.files[0];
+        const fileName = `album_${Date.now()}.webp`;
+        await _supabase.storage.from('figurinhas').upload(fileName, file);
+        const { data: pub } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
+        imagemUrl = pub.publicUrl;
       }
+
+      if (id) await _supabase.from('albuns').update({ nome, imagem: imagemUrl }).eq('id', id);
+      else await _supabase.from('albuns').insert([{ nome, imagem: imagemUrl }]);
+
+      cancelarEdicaoAlbum();
+      carregarAlbuns();
+      msgDiv.innerText = "Salvo com sucesso!";
+      setTimeout(() => msgDiv.style.display = "none", 3000);
     }
 
     function prepararEdicaoAlbum(id, nome, imagem) {
       document.getElementById('editAlbumId').value = id;
-      document.getElementById('editAlbumImagemAtual').value = imagem || '';
+      document.getElementById('editAlbumImagemAtual').value = imagem;
       document.getElementById('inputNomeAlbum').value = nome;
-      document.getElementById('inputArquivoAlbum').value = '';
-      document.getElementById('tituloCardAlbum').innerText = "📂 Editar Álbum";
       document.getElementById('btnSalvarAlbum').innerText = "Atualizar Álbum";
       document.getElementById('btnCancelarAlbum').style.display = "inline-block";
     }
 
     function cancelarEdicaoAlbum() {
       document.getElementById('editAlbumId').value = '';
-      document.getElementById('editAlbumImagemAtual').value = '';
       document.getElementById('inputNomeAlbum').value = '';
-      document.getElementById('inputArquivoAlbum').value = '';
-      document.getElementById('tituloCardAlbum').innerText = "📂 Cadastro de Álbum";
       document.getElementById('btnSalvarAlbum').innerText = "Salvar Álbum";
       document.getElementById('btnCancelarAlbum').style.display = "none";
     }
 
     async function excluirAlbum(id) {
-      if (!confirm("Deseja realmente excluir este álbum?")) return;
+      if (!confirm("Excluir álbum?")) return;
       await _supabase.from('albuns').delete().eq('id', id);
       carregarAlbuns();
-      carregarAlbunsOrdens();
     }
 
-    // --- FUNÇÕES DA ABA ÁLBUNS ORDENS ---
+    // --- ÁLBUNS ORDENS ---
     async function carregarAlbunsOrdens() {
       const tbody = document.getElementById('tabelaAlbunsOrdens');
-      const filtroAlbumId = document.getElementById('selectFiltroOrdemAlbum')?.value;
+      const filtro = document.getElementById('selectFiltroOrdemAlbum')?.value;
       if (!tbody) return;
 
-      let query = _supabase
-        .from('album_categorias_ordem')
-        .select(`
-          id,
-          album_id,
-          posicao,
-          nome_categoria,
-          icone,
-          albuns (
-            nome
-          )
-        `)
-        .order('posicao', { ascending: true });
+      let q = _supabase.from('album_categorias_ordem').select('*, albuns(nome)').order('posicao', { ascending: true });
+      if (filtro) q = q.eq('album_id', filtro);
+      const { data } = await q;
 
-      if (filtroAlbumId) {
-        query = query.eq('album_id', filtroAlbumId);
-      }
-
-      const { data, error } = await query;
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ordens: ${error.message}</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ordem cadastrada.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(item => {
-        const nomeAlbum = item.albuns?.nome || 'Álbum Desconhecido';
-        const iconeHtml = item.icone 
-          ? (item.icone.startsWith('http') || item.icone.startsWith('/') || item.icone.includes('.') 
-              ? `<img src="${item.icone}" class="miniatura-icone" alt="Ícone">` 
-              : `<span style="font-size: 1.2rem;">${item.icone}</span>`) 
-          : '<span style="color: #94a3b8; font-size: 0.75rem;">-</span>';
-
-        return `
-          <tr>
-            <td>${nomeAlbum}</td>
-            <td style="text-align: center; font-weight: bold; color: var(--gold);">${item.posicao}</td>
-            <td style="text-align: center;">${iconeHtml}</td>
-            <td>${item.nome_categoria}</td>
-            <td>
-              <div class="acoes-btns">
-                <button class="btn-acao" onclick="prepararEdicaoOrdem('${item.id}', '${item.album_id}', ${item.posicao}, '${item.nome_categoria.replace(/'/g, "\\'")}', '${(item.icone || '').replace(/'/g, "\\'")}')">Editar</button>
-                <button class="btn-excluir" onclick="excluirAlbumOrdem('${item.id}')">Excluir</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      tbody.innerHTML = data && data.length > 0 ? data.map(i => `
+        <tr>
+          <td>${i.albuns?.nome || '-'}</td>
+          <td style="text-align: center; color: var(--gold);">${i.posicao}</td>
+          <td style="text-align: center;">${i.icone || '-'}</td>
+          <td>${i.nome_categoria}</td>
+          <td><button class="btn-excluir" onclick="excluirAlbumOrdem('${i.id}')">Excluir</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ordem.</td></tr>`;
     }
 
     async function salvarAlbumOrdem() {
-      const id = document.getElementById('editOrdemId').value;
       const album_id = document.getElementById('selectAlbumOrdem').value;
-      const posicao = parseInt(document.getElementById('inputPosicaoOrdem').value, 10);
+      const posicao = parseInt(document.getElementById('inputPosicaoOrdem').value);
       const nome_categoria = document.getElementById('inputNomeCategoriaOrdem').value.trim();
       const icone = document.getElementById('inputIconeOrdem').value.trim();
-      const msgDiv = document.getElementById('msgOrdem');
+      if (!album_id || isNaN(posicao) || !nome_categoria) return;
 
-      msgDiv.style.display = "block";
-      msgDiv.className = "msg-feedback";
-
-      if (!album_id || isNaN(posicao) || !nome_categoria) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = "Preencha todos os campos obrigatórios (Álbum, Posição e Nome da Categoria).";
-        return;
-      }
-
-      let error;
-      if (id) {
-        ({ error } = await _supabase
-          .from('album_categorias_ordem')
-          .update({ album_id, posicao, nome_categoria, icone: icone || null })
-          .eq('id', id));
-      } else {
-        ({ error } = await _supabase
-          .from('album_categorias_ordem')
-          .insert([{ album_id, posicao, nome_categoria, icone: icone || null }]));
-      }
-
-      if (error) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = "Erro ao salvar ordem: " + error.message;
-        return;
-      }
-
-      msgDiv.className = "msg-feedback msg-success";
-      msgDiv.innerText = "Ordem salva com sucesso!";
-      
-      cancelarEdicaoOrdem();
+      await _supabase.from('album_categorias_ordem').insert([{ album_id, posicao, nome_categoria, icone }]);
       carregarAlbunsOrdens();
-      setTimeout(() => { msgDiv.style.display = "none"; }, 3000);
-    }
-
-    function prepararEdicaoOrdem(id, album_id, posicao, nome_categoria, icone) {
-      document.getElementById('editOrdemId').value = id;
-      document.getElementById('selectAlbumOrdem').value = album_id;
-      document.getElementById('inputPosicaoOrdem').value = posicao;
-      document.getElementById('inputNomeCategoriaOrdem').value = nome_categoria;
-      document.getElementById('inputIconeOrdem').value = icone || '';
-      
-      document.getElementById('tituloCardOrdem').innerText = "📑 Editar Ordem de Categoria";
-      document.getElementById('btnSalvarOrdem').innerText = "Atualizar Ordem";
-      document.getElementById('btnCancelarOrdem').style.display = "inline-block";
-    }
-
-    function cancelarEdicaoOrdem() {
-      document.getElementById('editOrdemId').value = '';
-      document.getElementById('selectAlbumOrdem').value = '';
-      document.getElementById('inputPosicaoOrdem').value = '';
-      document.getElementById('inputNomeCategoriaOrdem').value = '';
-      document.getElementById('inputIconeOrdem').value = '';
-      
-      document.getElementById('tituloCardOrdem').innerText = "📑 Cadastro de Ordem de Categoria por Álbum";
-      document.getElementById('btnSalvarOrdem').innerText = "Salvar Ordem";
-      document.getElementById('btnCancelarOrdem').style.display = "none";
     }
 
     async function excluirAlbumOrdem(id) {
-      if (!confirm("Deseja realmente excluir esta ordem de categoria?")) return;
-      const { error } = await _supabase.from('album_categorias_ordem').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir: " + error.message);
-        return;
-      }
+      await _supabase.from('album_categorias_ordem').delete().eq('id', id);
       carregarAlbunsOrdens();
     }
 
+    // --- TIPOS ---
     async function carregarTipos() {
       const tbody = document.getElementById('tabelaTipos');
       const selectTip = document.getElementById('selectTipoFigurinha');
       if (!tbody) return;
-
       const { data } = await _supabase.from('tipos').select('*').order('nome', { ascending: true });
-      if (data && selectTip) {
-        selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
-      }
-      if (data && tbody) {
-        tbody.innerHTML = data.map(item => `
-          <tr>
-            <td>${item.nome}</td>
-            <td>
-              <div class="acoes-btns">
-                <button class="btn-acao" onclick="prepararEdicaoTipo('${item.id}', '${item.nome}')">Editar</button>
-                <button class="btn-excluir" onclick="excluirTipo('${item.id}')">Excluir</button>
-              </div>
-            </td>
-          </tr>
-        `).join('');
-      }
+      if (data && selectTip) selectTip.innerHTML = `<option value="">Selecione o tipo...</option>` + data.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+      tbody.innerHTML = data && data.length > 0 ? data.map(i => `<tr><td>${i.nome}</td><td><button class="btn-excluir" onclick="excluirTipo('${i.id}')">Excluir</button></td></tr>`).join('') : `<tr><td colspan="2">Nenhum tipo.</td></tr>`;
     }
 
     async function salvarTipo() {
-      const id = document.getElementById('editTipoId').value;
       const nome = document.getElementById('inputNomeTipo').value.trim();
       if (!nome) return;
-
-      if (id) {
-        await _supabase.from('tipos').update({ nome }).eq('id', id);
-      } else {
-        await _supabase.from('tipos').insert([{ nome }]);
-      }
+      await _supabase.from('tipos').insert([{ nome }]);
       document.getElementById('inputNomeTipo').value = '';
-      cancelarEdicaoTipo();
       carregarTipos();
     }
 
-    function prepararEdicaoTipo(id, nome) {
-      document.getElementById('editTipoId').value = id;
-      document.getElementById('inputNomeTipo').value = nome;
-      document.getElementById('tituloCardTipo').innerText = "🏷️ Editar Tipo";
-      document.getElementById('btnSalvarTipo').innerText = "Atualizar Tipo";
-      document.getElementById('btnCancelarTipo').style.display = "inline-block";
-    }
-
-    function cancelarEdicaoTipo() {
-      document.getElementById('editTipoId').value = '';
-      document.getElementById('inputNomeTipo').value = '';
-      document.getElementById('tituloCardTipo').innerText = "🏷️ Cadastro de Tipo";
-      document.getElementById('btnSalvarTipo').innerText = "Salvar Tipo";
-      document.getElementById('btnCancelarTipo').style.display = "none";
-    }
-
     async function excluirTipo(id) {
-      if (!confirm("Deseja realmente excluir este tipo?")) return;
       await _supabase.from('tipos').delete().eq('id', id);
       carregarTipos();
     }
 
+    // --- FIGURINHAS ---
     async function cadastrarFigurinha() {
       const album_id = document.getElementById('selectAlbumFigurinha').value;
-      const tipo_id = document.getElementById('selectTipoFigurinha').value;
+      const tipo = document.getElementById('selectTipoFigurinha').value;
       const selecao_escuderia = document.getElementById('inputSelecaoFigurinha').value.trim();
       const numero = document.getElementById('inputNumeroFigurinha').value.trim();
       const nome = document.getElementById('inputNomeFigurinha').value.trim();
-      const inputFile = document.getElementById('inputArquivoFigurinha');
-      const msgDiv = document.getElementById('msgFigurinha');
+      const fileInput = document.getElementById('inputArquivoFigurinha');
+      let imagem = null;
 
-      msgDiv.style.display = "block";
-      msgDiv.className = "msg-feedback";
-
-      if (!album_id || !numero || !nome) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = "Preencha pelo menos o Álbum, o Número e o Nome da Figurinha.";
-        return;
+      if (!album_id || !numero || !nome) return;
+      if (fileInput.files && fileInput.files[0]) {
+        const fileName = `fig_${Date.now()}.webp`;
+        await _supabase.storage.from('figurinhas').upload(fileName, fileInput.files[0]);
+        const { data: pub } = _supabase.storage.from('figurinhas').getPublicUrl(fileName);
+        imagem = pub.publicUrl;
       }
 
-      msgDiv.className = "msg-feedback msg-success";
-      msgDiv.innerText = "Processando e a cadastrar figurinha...";
-
-      let imagemUrl = null;
-
-      try {
-        if (inputFile.files && inputFile.files.length > 0) {
-          const fileOriginal = inputFile.files[0];
-          const fileWebP = await converterParaWebP(fileOriginal, 1200, 1200, 0.82);
-          const fileName = `fig_${Date.now()}.webp`;
-          
-          const { error: uploadError } = await _supabase.storage
-            .from('figurinhas')
-            .upload(fileName, fileWebP);
-
-          if (uploadError) throw new Error("Erro no upload da imagem: " + uploadError.message);
-
-          const { data: publicUrlData } = _supabase.storage
-            .from('figurinhas')
-            .getPublicUrl(fileName);
-
-          imagemUrl = publicUrlData.publicUrl;
-        }
-
-        const { error: insertError } = await _supabase
-          .from('figurinhas')
-          .insert([{
-            album_id: album_id,
-            tipo: tipo_id || null,
-            selecao_escuderia: selecao_escuderia || null,
-            numero: numero,
-            nome: nome,
-            imagem: imagemUrl
-          }]);
-
-        if (insertError) throw new Error("Erro ao salvar no banco: " + insertError.message);
-
-        msgDiv.className = "msg-feedback msg-success";
-        msgDiv.innerText = "Figurinha cadastrada com sucesso!";
-
-        document.getElementById('inputSelecaoFigurinha').value = '';
-        document.getElementById('inputNumeroFigurinha').value = '';
-        document.getElementById('inputNomeFigurinha').value = '';
-        document.getElementById('inputArquivoFigurinha').value = '';
-        document.getElementById('selectAlbumFigurinha').value = '';
-        document.getElementById('selectTipoFigurinha').value = '';
-
-        setTimeout(() => { msgDiv.style.display = "none"; }, 4000);
-
-      } catch (err) {
-        msgDiv.className = "msg-feedback msg-error";
-        msgDiv.innerText = err.message;
-      }
+      await _supabase.from('figurinhas').insert([{ album_id, tipo: tipo || null, selecao_escuderia, numero, nome, imagem }]);
+      alert("Figurinha cadastrada com sucesso!");
     }
 
-    async function carregarVendedores() {
-      const tbody = document.getElementById('tabelaVendedores');
+    // --- USUÁRIOS (ANTIGOS VENDEDORES) ---
+    async function carregarUsuarios() {
+      const tbody = document.getElementById('tabelaUsuarios');
       if (!tbody) return;
-      const { data } = await _supabase.from('vendedores_autorizados').select('*');
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum vendedor encontrado.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = data.map(v => `
+      const { data } = await _supabase.from('usuarios_cadastrados').select('*');
+      tbody.innerHTML = data && data.length > 0 ? data.map(u => `
         <tr>
-          <td>${v.nome || '-'}</td>
-          <td>${v.email || '-'}</td>
-          <td>${v.cidade || '-'}</td>
-          <td>${v.telefone_whats || '-'}</td>
-          <td>${v.funcao || 'vendedor'}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-acao" onclick="prepararEdicaoVendedor('${v.email}', '${v.nome || ''}', '${v.cidade || ''}', '${v.telefone_whats || ''}', '${v.funcao || 'vendedor'}')">Editar</button>
-              <button class="btn-excluir" onclick="excluirVendedor('${v.email}')">Remover</button>
-            </div>
-          </td>
+          <td>${u.nome || '-'}</td>
+          <td>${u.email || '-'}</td>
+          <td>${u.funcao || 'colecionador'}</td>
+          <td>${u.plano || 'gratis'}</td>
+          <td><button class="btn-acao" onclick="prepararEdicaoUsuario('${u.id}', '${u.nome || ''}', '${u.email || ''}', '${u.funcao || 'colecionador'}', '${u.plano || 'gratis'}')">Editar</button></td>
         </tr>
-      `).join('');
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhum usuário encontrado.</td></tr>`;
     }
 
-    async function salvarVendedor() {
-      const email = document.getElementById('inputEmailVendedor').value.trim();
-      const nome = document.getElementById('inputNomeVendedor').value.trim();
-      const cidade = document.getElementById('inputCidadeVendedor').value.trim();
-      const telefone_whats = document.getElementById('inputTelefoneVendedor').value.trim();
-      const funcao = document.getElementById('selectFuncaoVendedor').value;
-      const originalEmail = document.getElementById('editVendedorOriginalEmail').value;
-
-      if (!email) return;
-
-      if (originalEmail && originalEmail !== email) {
-        await _supabase.from('vendedores_autorizados').delete().eq('email', originalEmail);
-      }
-
-      await _supabase.from('vendedores_autorizados').upsert([{ email, nome, cidade, telefone_whats, funcao }], { onConflict: 'email' });
-      cancelarEdicaoVendedor();
-      carregarVendedores();
+    function prepararEdicaoUsuario(id, nome, email, funcao, plano) {
+      document.getElementById('editUsuarioId').value = id;
+      document.getElementById('inputNomeUsuario').value = nome;
+      document.getElementById('inputEmailUsuario').value = email;
+      document.getElementById('selectFuncaoUsuario').value = funcao;
+      document.getElementById('inputPlanoUsuario').value = plano;
+      document.getElementById('btnCancelarUsuario').style.display = "inline-block";
     }
 
-    function prepararEdicaoVendedor(email, nome, cidade, telefone, funcao) {
-      document.getElementById('editVendedorOriginalEmail').value = email;
-      document.getElementById('inputEmailVendedor').value = email;
-      document.getElementById('inputNomeVendedor').value = nome;
-      document.getElementById('inputCidadeVendedor').value = cidade;
-      document.getElementById('inputTelefoneVendedor').value = telefone;
-      document.getElementById('selectFuncaoVendedor').value = funcao;
-      
-      document.getElementById('tituloCardVendedor').innerText = "👥 Editar Vendedor";
-      document.getElementById('btnSalvarVendedor').innerText = "Atualizar Vendedor";
-      document.getElementById('btnCancelarVendedor').style.display = "inline-block";
+    async function salvarUsuarioManual() {
+      const id = document.getElementById('editUsuarioId').value;
+      const nome = document.getElementById('inputNomeUsuario').value.trim();
+      const funcao = document.getElementById('selectFuncaoUsuario').value;
+      const plano = document.getElementById('inputPlanoUsuario').value.trim();
+      if (!id) return;
+
+      await _supabase.from('usuarios_cadastrados').update({ nome, funcao, plano }).eq('id', id);
+      cancelarEdicaoUsuario();
+      carregarUsuarios();
     }
 
-    function cancelarEdicaoVendedor() {
-      document.getElementById('editVendedorOriginalEmail').value = '';
-      document.getElementById('inputEmailVendedor').value = '';
-      document.getElementById('inputNomeVendedor').value = '';
-      document.getElementById('inputCidadeVendedor').value = '';
-      document.getElementById('inputTelefoneVendedor').value = '';
-      
-      document.getElementById('tituloCardVendedor').innerText = "👥 Cadastro de Vendedor Autorizado";
-      document.getElementById('btnSalvarVendedor').innerText = "Autorizar / Salvar Vendedor";
-      document.getElementById('btnCancelarVendedor').style.display = "none";
+    function cancelarEdicaoUsuario() {
+      document.getElementById('editUsuarioId').value = '';
+      document.getElementById('inputNomeUsuario').value = '';
+      document.getElementById('inputEmailUsuario').value = '';
+      document.getElementById('inputPlanoUsuario').value = '';
+      document.getElementById('btnCancelarUsuario').style.display = "none";
     }
 
-    async function excluirVendedor(email) {
-      if (!confirm("Tem certeza que deseja remover este vendedor?")) return;
-      await _supabase.from('vendedores_autorizados').delete().eq('email', email);
-      carregarVendedores();
-    }
-
+    // --- CONTATOS ---
     async function carregarContatos() {
       const tbody = document.getElementById('tabelaContatos');
       if (!tbody) return;
-
-      const { data } = await _supabase.from('contatos_vendedores').select('*');
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum contato recente.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(c => `
+      const { data } = await _supabase.from('contatos').select('*').order('criado_em', { ascending: false });
+      tbody.innerHTML = data && data.length > 0 ? data.map(c => `
         <tr>
           <td>${c.nome || '-'}</td>
           <td>${c.email || '-'}</td>
-          <td>${c.cidade || '-'}</td>
-          <td>${c.telefone || c.telemóvel || '-'}</td>
-          <td>${c.albuns || '-'}</td>
-          <td>
-            <div class="acoes-btns">
-              <button class="btn-acao" onclick="copiarEmailSaudacao('${c.nome || 'Parceiro'}', '${c.email || ''}')">✉️ E-mail</button>
-              <button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button>
-            </div>
-          </td>
+          <td>${c.assunto || '-'}</td>
+          <td>${c.mensagem || '-'}</td>
+          <td>${c.anexo ? `<a href="${c.anexo}" target="_blank">Ver</a>` : '-'}</td>
+          <td>${c.criado_em ? new Date(c.criado_em).toLocaleDateString() : '-'}</td>
+          <td><button class="btn-excluir" onclick="excluirContato('${c.id}')">Excluir</button></td>
         </tr>
-      `).join('');
+      `).join('') : `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Nenhum contato recebido.</td></tr>`;
     }
 
-    async function copiarEmailSaudacao(nome, emailDestino) {
-      const assunto = "Bem-vindo(a) à nossa equipa de Vendedores Autorizados! 🚀";
-      const corpoMensagem = `Olá, ${nome}!\n\nSeja muito bem-vindo(a) à nossa equipa de Vendedores Autorizados!`;
-      const urlGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailDestino)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoMensagem)}`;
-      window.open(urlGmail, '_blank');
-    }
     async function excluirContato(id) {
-      if (!confirm("Deseja realmente excluir este contato?")) return;
-      const { error } = await _supabase.from('contatos_vendedores').delete().eq('id', id);
-      if (error) {
-        alert("Erro ao excluir contato: " + error.message);
-        return;
-      }
+      if (!confirm("Excluir contato?")) return;
+      await _supabase.from('contatos').delete().eq('id', id);
       carregarContatos();
     }
 
+    // --- AJUDAS ---
     async function carregarAjudas() {
       const tbody = document.getElementById('tabelaAjudas');
       if (!tbody) return;
-
-      const { data, error } = await _supabase
-        .from('colaboracoes')
-        .select(`
-          *,
-          figurinhas (
-            numero,
-            nome,
-            albuns (
-              nome
-            )
-          )
-        `);
-      
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ajudas: ${error.message}</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda ou colaboração encontrada.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = data.map(a => {
-        const albumNome = a.figurinhas?.albuns?.nome || a.album_nome || '-';
-        const figNumero = a.figurinhas?.numero || a.figurinha || '-';
-        const figNome = a.figurinhas?.nome ? ` - ${a.figurinhas.nome}` : '';
-        const imagemUrl = a.nova_imagem_url || a.foto_url;
-
-        return `
-          <tr>
-            <td>
-              ${imagemUrl 
-                ? `<img src="${imagemUrl}" alt="Foto Ajuda" class="miniatura-foto" onclick="window.open('${imagemUrl}', '_blank')" title="Clique para abrir em tamanho real">` 
-                : '<span style="color: #94a3b8; font-size: 0.75rem;">Sem foto</span>'}
-            </td>
-            <td>${albumNome}</td>
-            <td>Nº ${figNumero}${figNome}</td>
-            <td>${a.status || 'Pendente'}</td>
-            <td>
-              <div class="acoes-btns">
-                <button class="btn-excluir" onclick="excluirAjuda('${a.id}', '${imagemUrl || ''}')">Excluir</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      const { data } = await _supabase.from('colaboracoes').select('*, figurinhas(numero, nome, albuns(nome))');
+      tbody.innerHTML = data && data.length > 0 ? data.map(a => `
+        <tr>
+          <td>${a.nova_imagem_url || a.foto_url ? `<img src="${a.nova_imagem_url || a.foto_url}" class="miniatura-foto">` : '-'}</td>
+          <td>${a.figurinhas?.albuns?.nome || '-'}</td>
+          <td>Nº ${a.figurinhas?.numero || '-'}</td>
+          <td>${a.status || 'Pendente'}</td>
+          <td><button class="btn-excluir" onclick="excluirAjuda('${a.id}')">Excluir</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhuma ajuda.</td></tr>`;
     }
 
-    async function excluirAjuda(id, fotoUrl) {
-      if (!confirm("Deseja realmente excluir esta ajuda e a foto associada?")) return;
+    async function excluirAjuda(id) {
+      await _supabase.from('colaboracoes').delete().eq('id', id);
+      carregarAjudas();
+    }
 
-      try {
-        if (fotoUrl && fotoUrl.trim() !== '') {
-          try {
-            let caminhoArquivo = '';
-            if (fotoUrl.includes('/object/public/colaboracoes/')) {
-              caminhoArquivo = fotoUrl.split('/object/public/colaboracoes/')[1];
-            } else if (fotoUrl.includes('/colaboracoes/')) {
-              const partes = fotoUrl.split('/colaboracoes/');
-              caminhoArquivo = partes[partes.length - 1];
-            }
+    // --- PLANOS ---
+    async function carregarPlanos() {
+      const tbody = document.getElementById('tabelaPlanos');
+      if (!tbody) return;
+      const { data } = await _supabase.from('configuracoes_planos').select('*');
+      tbody.innerHTML = data && data.length > 0 ? data.map(p => `
+        <tr>
+          <td>${p.plano}</td>
+          <td>${p.valor_plano}</td>
+          <td>${p.limite_cadernetas}</td>
+          <td>${p.limite_anuncios}</td>
+          <td>${p.limite_trocas}</td>
+          <td><button class="btn-excluir" onclick="excluirPlano('${p.id}')">Excluir</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Nenhum plano.</td></tr>`;
+    }
 
-            if (caminhoArquivo) {
-              if (caminhoArquivo.includes('?')) {
-                caminhoArquivo = caminhoArquivo.split('?')[0];
-              }
-              caminhoArquivo = decodeURIComponent(caminhoArquivo);
-              
-              await _supabase.storage
-                .from('colaboracoes')
-                .remove([caminhoArquivo]);
-            }
-          } catch (storageErr) {
-            console.warn("Aviso ao tentar apagar arquivo do Storage (continuando exclusão do registro):", storageErr);
-          }
-        }
+    async function salvarPlano() {
+      const plano = document.getElementById('inputNomePlano').value.trim();
+      const valor_plano = parseFloat(document.getElementById('inputValorPlano').value);
+      const limite_cadernetas = parseInt(document.getElementById('inputLimiteCadernetas').value);
+      const limite_anuncios = parseInt(document.getElementById('inputLimiteAnuncios').value);
+      const limite_trocas = parseInt(document.getElementById('inputLimiteTrocas').value);
+      if (!plano) return;
 
-        const { error: deleteError } = await _supabase
-          .from('colaboracoes')
-          .delete()
-          .eq('id', id);
+      await _supabase.from('configuracoes_planos').insert([{ plano, valor_plano, limite_cadernetas, limite_anuncios, limite_trocas }]);
+      carregarPlanos();
+    }
 
-        if (deleteError) {
-          throw new Error("Erro ao excluir registro do banco: " + deleteError.message);
-        }
+    async function excluirPlano(id) {
+      await _supabase.from('configuracoes_planos').delete().eq('id', id);
+      carregarPlanos();
+    }
 
-        carregarAjudas();
-      } catch (err) {
-        alert("Erro ao excluir ajuda: " + err.message);
+    // --- TEXTO WHATS ---
+    async function carregarWhats() {
+      const tbody = document.getElementById('tabelaWhats');
+      if (!tbody) return;
+      const { data } = await _supabase.from('configuracoes_sistema').select('*');
+      tbody.innerHTML = data && data.length > 0 ? data.map(w => `
+        <tr>
+          <td>${w.chave}</td>
+          <td>${w.valor}</td>
+          <td>${w.atualizado_em ? new Date(w.atualizado_em).toLocaleDateString() : '-'}</td>
+          <td><button class="btn-excluir" onclick="excluirWhats('${w.id}')">Excluir</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Nenhum texto configurado.</td></tr>`;
+    }
+
+    async function salvarWhats() {
+      const chave = document.getElementById('inputChaveWhats').value.trim();
+      const valor = document.getElementById('inputValorWhats').value.trim();
+      if (!chave) return;
+
+      await _supabase.from('configuracoes_sistema').upsert([{ chave, valor, atualizado_em: new Date() }], { onConflict: 'chave' });
+      carregarWhats();
+    }
+
+    async function excluirWhats(id) {
+      await _supabase.from('configuracoes_sistema').delete().eq('id', id);
+      carregarWhats();
+    }
+
+    // --- DESTAQUES ---
+    async function carregarFigurinhaPorAlbumDestaque() {
+      const albumId = document.getElementById('selectAlbumDestaque').value;
+      const selectFig = document.getElementById('selectFigurinhaDestaque');
+      if (!albumId) {
+        selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>`;
+        return;
       }
+      const { data } = await _supabase.from('figurinhas').select('id, numero, nome').eq('album_id', albumId);
+      selectFig.innerHTML = `<option value="">Selecione a figurinha...</option>` + (data || []).map(f => `<option value="${f.id}">Nº ${f.numero} - ${f.nome}</option>`).join('');
+    }
+
+    async function carregarDestaques() {
+      const tbody = document.getElementById('tabelaDestaques');
+      if (!tbody) return;
+      const { data } = await _supabase.from('destaque').select('*').order('ordem', { ascending: true });
+      tbody.innerHTML = data && data.length > 0 ? data.map(d => `
+        <tr>
+          <td>${d.titulo_destaque || '-'}</td>
+          <td>${d.album_id}</td>
+          <td>${d.ordem}</td>
+          <td>${d.creat_at ? new Date(d.creat_at).toLocaleDateString() : '-'}</td>
+          <td><button class="btn-excluir" onclick="excluirDestaque('${d.id}')">Excluir</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Nenhum destaque.</td></tr>`;
+    }
+
+    async function salvarDestaque() {
+      const album_id = document.getElementById('selectAlbumDestaque').value;
+      const titulo_destaque = document.getElementById('inputTituloDestaque').value.trim();
+      const ordem = parseInt(document.getElementById('inputOrdemDestaque').value) || 0;
+      if (!album_id) return;
+
+      await _supabase.from('destaque').insert([{ album_id, titulo_destaque, ordem }]);
+      carregarDestaques();
+    }
+
+    async function excluirDestaque(id) {
+      await _supabase.from('destaque').delete().eq('id', id);
+      carregarDestaques();
     }
   </script>
 </body>
