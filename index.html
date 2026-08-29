@@ -54,6 +54,13 @@
 
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; text-decoration: none; text-align: center; transition: 0.2s; }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
 
     .collab-card { background: var(--bg-card); border: 1px dashed var(--gold); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .collab-text h4 { color: var(--gold); font-size: 1.05rem; margin-bottom: 4px; }
@@ -313,8 +320,8 @@
         <input type="password" id="authSenha" class="filter-field" placeholder="Sua senha" style="width: 100%;" data-i18n-placeholder="placeholder_senha">
         
         <div style="display: flex; gap: 8px;">
-          <button class="btn-gold" onclick="fazerLoginEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_entrar_modal">Entrar</button>
-          <button class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_criar_conta">Criar Conta</button>
+          <button id="btnEntrarModal" class="btn-gold" onclick="fazerLoginEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_entrar_modal" disabled>Entrar</button>
+          <button id="btnCadastrar" class="btn-outline" onclick="cadastrarEmail()" style="flex: 1; justify-content: center;" data-i18n="btn_criar_conta" disabled>Criar Conta</button>
         </div>
 
         <button class="btn-outline" onclick="fecharModalAuth()" style="border: none; color: var(--text-muted); margin-top: 5px;" data-i18n="btn_fechar">Fechar</button>
@@ -542,11 +549,39 @@
       renderizarDestaques();
     }
 
+    // Função de validação em tempo real para os campos de autenticação
+    function validarFormularioAuth() {
+      const email = document.getElementById('authEmail').value.trim();
+      const senha = document.getElementById('authSenha').value;
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailValido = emailRegex.test(email);
+      const senhaValida = senha.length >= 6;
+
+      const btnEntrar = document.getElementById('btnEntrarModal');
+      const btnCadastrar = document.getElementById('btnCadastrar');
+
+      if (emailValido && senhaValida) {
+        if (btnEntrar) btnEntrar.removeAttribute('disabled');
+        if (btnCadastrar) btnCadastrar.removeAttribute('disabled');
+      } else {
+        if (btnEntrar) btnEntrar.setAttribute('disabled', 'true');
+        if (btnCadastrar) btnCadastrar.setAttribute('disabled', 'true');
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const temaSalvo = localStorage.getItem('tema_app');
       if (temaSalvo === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
+
+      const inputEmail = document.getElementById('authEmail');
+      const inputSenha = document.getElementById('authSenha');
+
+      if (inputEmail) inputEmail.addEventListener('input', validarFormularioAuth);
+      if (inputSenha) inputSenha.addEventListener('input', validarFormularioAuth);
+
       initHome();
     });
 
@@ -694,7 +729,6 @@
       const filtroAlbum = document.getElementById('selectFiltroAlbum').value;
       const filtroMoeda = document.getElementById('selectFiltroMoeda').value;
 
-      // Aplicando também o filtro nas figurinhas em destaque
       const destaquesFiltrados = itensMarketplaceGlobal.filter(item => {
         if (!item.figurinha) return false;
         
