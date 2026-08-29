@@ -299,7 +299,7 @@
         btn_excluir_album: "🗑️ Excluir este Álbum",
         sub_instrucao_clique: "Clique na imagem para marcar/desmarcar ou use os botões para controlar quantidades.",
         stat_total: "Total Álbum", stat_tenho: "Tenho", stat_faltam: "Faltam", stat_repetidas: "Repetidas", stat_progresso: "Progresso",
-        filtro_todas_cat: "📂 Todas as Categorias / Tipos",
+        filtro_todas_cat: "📂 Toutes les Catégories",
         filtro_mostrar_todas: "👁️ Mostrar Todas",
         filtro_mostrar_faltam: "❌ Mostrar Apenas o que Faltam",
         filtro_mostrar_possui: "✅ Mostrar Apenas o que Possui",
@@ -523,6 +523,7 @@
         <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600; padding-right: 6px;">Olá, <strong style="color: var(--gold);">${nomeUsuario}</strong></span>
       `;
       
+      // --- CONSULTA DINÂMICA DA TABELA CONFIGURACOES_PLANOS PARA O PLANO E LIMITE ---
       const planoUsuario = (dadosPerfilUsuario.plano || 'gratis').toLowerCase().trim();
 
       const { data: configPlano } = await _supabase
@@ -551,7 +552,7 @@
 
       if (avisoEl) {
         if (limiteMaximo === -1 || limiteMaximo >= 99999) {
-          avisoEl.style.display = 'none';
+          avisoEl.style.display = 'none'; // Se for ilimitado, não exibe aviso restritivo
         } else if (qtdAtivas >= limiteMaximo) {
           avisoEl.style.display = 'block';
           avisoEl.innerHTML = `⚠️ Limite atingido (${qtdAtivas}/${limiteMaximo}). <a href="plano.html" style="color: var(--gold); text-decoration: underline;">Mudar plano</a>`;
@@ -771,180 +772,242 @@
       }
     }
 
+    function obterCategoriaPadrao(f) {
+      const tipoStr = String(f.tipo || '').trim();
+      const selecaoStr = String(f.selecao_escuderia || f.selecao || f.escuderia || '').trim();
+      if (ordemCategoriasDinamica.includes(tipoStr)) return tipoStr;
+      if (ordemCategoriasDinamica.includes(selecaoStr)) return selecaoStr;
+      return selecaoStr || tipoStr || 'Geral';
+    }
+
     function popularSelectFiltroTipos() {
-      const select = document.getElementById('selectFiltroTipo');
-      const catsSet = new Set();
-      figurinhasDoAlbum.forEach(f => {
-        if (f.tipo) catsSet.add(f.tipo);
-      });
+      const selectTipo = document.getElementById('selectFiltroTipo');
+      let cats = new Set();
+      figurinhasDoAlbum.forEach(f => cats.add(obterCategoriaPadrao(f)));
       
-      let html = `<option value="todos" data-i18n="filtro_todas_cat">📂 Todas as Categorias / Tipos</option>`;
-      catsSet.forEach(cat => {
+      let html = '<option value="todos">📂 Todas as Categorias / Tipos</option>';
+      Array.from(cats).forEach(cat => {
         html += `<option value="${cat}">${cat}</option>`;
       });
-      select.innerHTML = html;
+      selectTipo.innerHTML = html;
     }
 
     function renderizarGrid() {
       const container = document.getElementById('cardenetaContainer');
-      const filtroTipo = document.getElementById('selectFiltroTipo').value;
       const filtroStatus = document.getElementById('selectFiltroStatus').value;
+      const filtroTipo = document.getElementById('selectFiltroTipo').value;
 
-      let figsFiltradas = figurinhasDoAlbum.filter(f => {
+      let tenhoCount = 0, repetidasCount = 0;
+      figurinhasDoAlbum.forEach(f => {
+        const q = mapaCadernetaUsuario[f.id] || 0;
+        if (q > 0) {
+          tenhoCount++;
+          if (q > 1) repetidasCount += (q - 1);
+        }
+      });
+      atualizarEstatisticas(figurinhasDoAlbum.length, tenhoCount, repetidasCount);
+
+      let filtradas = figurinhasDoAlbum.filter(f => {
         const qtd = mapaCadernetaUsuario[f.id] || 0;
-        if (filtroTipo !== 'todos' && f.tipo !== filtroTipo) return false;
-        if (filtroStatus === 'faltam' && qtd > 0) return false;
-        if (filtroStatus === 'possui' && qtd === 0) return false;
+        const possui = qtd > 0;
+        if (filtroStatus === 'possui' && !possui) return false;
+        if (filtroStatus === 'faltam' && possui) return false;
         if (filtroStatus === 'repetidas' && qtd <= 1) return false;
+        if (filtroTipo !== 'todos' && obterCategoriaPadrao(f) !== filtroTipo) return false;
         return true;
       });
 
-      if (figsFiltradas.length === 0) {
-        container.innerHTML = `<div class="empty-state">Nenhuma figurinha encontrada com os filtros selecionados.</div>`;
-        atualizarEstatisticas();
+      if (filtradas.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma figurinha encontrada.</div>';
         return;
       }
 
-      container.innerHTML = `<div class="cardeneta-grid">` + figsFiltradas.map(f => {
-        const qtd = mapaCadernetaUsuario[f.id] || 0;
-        const possui = qtd > 0;
-        const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+      let gruposMap = {};
+      filtradas.forEach(f => {
+        let cat = obterCategoriaPadrao(f);
+        if (!gruposMap[cat]) gruposMap[cat] = [];
+        gruposMap[cat].push(f);
+      });
+
+      let chavesOrdenadas = Object.keys(gruposMap).sort((a, b) => {
+        let indexA = ordemCategoriasDinamica.indexOf(a);
+        let indexB = ordemCategoriasDinamica.indexOf(b);
+        if (indexA === -1) indexA = 9999;
+        if (indexB === -1) indexB = 9999;
+        return indexA - indexB;
+      });
+
+      container.innerHTML = chavesOrdenadas.map(cat => {
+        let iconeVal = mapaIconesCategorias[cat] || '';
+        let htmlIcone = '';
+
+        if (iconeVal) {
+          iconeVal = iconeVal.replace(/^img[:=]+/i, '').trim();
+          if (iconeVal.startsWith('http')) {
+            htmlIcone = `<img src="${iconeVal}" alt="${cat}" style="width: 20px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px;">`;
+          } else {
+            htmlIcone = `<span style="margin-right: 6px;">${iconeVal}</span>`;
+          }
+        }
 
         return `
-          <div class="fig-card ${possui ? 'possui' : ''}">
-            <div class="fig-img-wrap" onclick="clicarFigura('${f.id}')">
-              <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
-              <div class="fig-badge-status">${possui ? 'Possui (' + qtd + ')' : 'Falta'}</div>
+          <div class="secao-grupo">
+            <div class="secao-titulo">${htmlIcone}${cat}</div>
+            <div class="cardeneta-grid">
+              ${gruposMap[cat].map(f => {
+                const qtd = mapaCadernetaUsuario[f.id] || 0;
+                const possui = qtd > 0;
+                const classeCard = possui ? 'fig-card possui' : 'fig-card';
+                const textoStatus = possui ? (qtd > 1 ? `✅ Tenho +${qtd-1}` : '✅ Já tenho') : '❌ Falta';
+                const imgUrl = f.imagem || 'https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg';
+                
+                let numFig = String(f.numero || '').trim();
+                if (numFig.startsWith('#')) {
+                  numFig = numFig;
+                } else if (numFig) {
+                  numFig = '#' + numFig;
+                }
+
+                return `
+                  <div class="${classeCard}" id="card-${f.id}">
+                    <div class="fig-img-wrap" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <span class="fig-badge-status" id="badge-${f.id}">${textoStatus}</span>
+                      <img src="${imgUrl}" class="fig-img" onerror="this.src='https://raw.githubusercontent.com/rmbcolecionismo/catalogo-cards/main/sem-foto.jpg'">
+                    </div>
+                    <div class="fig-content" onclick="clicarMarcar('${f.id}')" style="cursor:pointer;">
+                      <div class="fig-numero">${numFig}</div>
+                      <div class="fig-nome">${f.nome || 'Sem Nome'}</div>
+                    </div>
+                    <div class="fig-actions-row">
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', -1)">-</button>
+                      <span class="qty-display" id="qty-${f.id}">Qtd: ${qtd}</span>
+                      <button class="qty-btn" onclick="alterarQtd('${f.id}', 1)">+</button>
+                    </div>
+                    <div class="fig-footer" id="footer-${f.id}">${possui && qtd > 1 ? `Repetidas: ${qtd-1}` : ''}</div>
+                  </div>
+                `;
+              }).join('')}
             </div>
-            <div class="fig-content">
-              <span class="fig-numero">${f.numero || ''}</span>
-              <span class="fig-nome" title="${f.nome || ''}">${f.nome || 'Figurinha'}</span>
-            </div>
-            <div class="fig-actions-row">
-              <button class="qty-btn" onclick="alterarQtd('${f.id}', -1)">-</button>
-              <span class="qty-display">${qtd}</span>
-              <button class="qty-btn" onclick="alterarQtd('${f.id}', 1)">+</button>
-            </div>
-            <div class="fig-footer">${f.tipo || 'Geral'}</div>
           </div>
         `;
-      }).join('') + `</div>`;
-
-      atualizarEstatisticas();
+      }).join('');
     }
 
-    async function clicarFigura(figurinhaId) {
-      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
-      const novaQtd = qtdAtual > 0 ? 0 : 1;
-      await atualizarQuantidadeBanco(figurinhaId, novaQtd);
+    async function clicarMarcar(figurinhaId) {
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      await salvarQuantidade(figurinhaId, qtd > 0 ? 0 : 1);
     }
 
     async function alterarQtd(figurinhaId, delta) {
-      const qtdAtual = mapaCadernetaUsuario[figurinhaId] || 0;
-      const novaQtd = Math.max(0, qtdAtual + delta);
-      await atualizarQuantidadeBanco(figurinhaId, novaQtd);
+      const qtd = mapaCadernetaUsuario[figurinhaId] || 0;
+      let novaQtd = qtd + delta;
+      if (novaQtd < 0) novaQtd = 0;
+      await salvarQuantidade(figurinhaId, novaQtd);
     }
 
-    async function atualizarQuantidadeBanco(figurinhaId, novaQtd) {
-      mapaCadernetaUsuario[figurinhaId] = novaQtd;
-      renderizarGrid();
-
+    async function salvarQuantidade(figurinhaId, novaQtd) {
       if (novaQtd === 0) {
-        await _supabase
-          .from('usuario_cardeneta')
-          .delete()
-          .eq('user_id', usuarioAtual.id)
-          .eq('figurinha_id', figurinhaId);
+        delete mapaCadernetaUsuario[figurinhaId];
+        await _supabase.from('usuario_cardeneta').delete().eq('user_id', usuarioAtual.id).eq('figurinha_id', figurinhaId);
       } else {
-        await _supabase
-          .from('usuario_cardeneta')
-          .upsert({
-            user_id: usuarioAtual.id,
-            figurinha_id: figurinhaId,
-            quantidade: novaQtd
-          }, { onConflict: 'user_id, figurinha_id' });
+        mapaCadernetaUsuario[figurinhaId] = novaQtd;
+        await _supabase.from('usuario_cardeneta').upsert([{
+          user_id: usuarioAtual.id,
+          figurinha_id: figurinhaId,
+          quantidade: novaQtd
+        }], { onConflict: 'user_id, figurinha_id' });
       }
-    }
-
-    function atualizarEstatisticas() {
-      const total = figurinhasDoAlbum.length;
-      let tenho = 0;
-      let repetidas = 0;
-
-      figurinhasDoAlbum.forEach(f => {
-        const q = mapaCadernetaUsuario[f.id] || 0;
-        if (q > 0) tenho++;
-        if (q > 1) repetidas += (q - 1);
-      });
-
-      const faltam = total - tenho;
-      const porcentagem = total > 0 ? Math.round((tenho / total) * 100) : 0;
-
-      document.getElementById('statTotal').innerText = total;
-      document.getElementById('statTenho').innerText = tenho;
-      document.getElementById('statFaltam').innerText = faltam;
-      document.getElementById('statRepetidas').innerText = repetidas;
-      document.getElementById('statPorcentagem').innerText = porcentagem + '%';
+      renderizarGrid();
     }
 
     async function confirmarMarcarTodas() {
-      if (!confirm("Deseja marcar todas as figurinhas deste álbum como 'Tenho (1)'?")) return;
-      
-      for (const f of figurinhasDoAlbum) {
+      if (!confirm("Marcar todas como 'Já tenho'?")) return;
+      let upsertData = [];
+      figurinhasDoAlbum.forEach(f => {
         mapaCadernetaUsuario[f.id] = 1;
-        await _supabase.from('usuario_cardeneta').upsert({
-          user_id: usuarioAtual.id,
-          figurinha_id: f.id,
-          quantidade: 1
-        }, { onConflict: 'user_id, figurinha_id' });
-      }
+        upsertData.push({ user_id: usuarioAtual.id, figurinha_id: f.id, quantidade: 1 });
+      });
       renderizarGrid();
-      alert("Todas as figurinhas foram marcadas!");
+      await _supabase.from('usuario_cardeneta').upsert(upsertData, { onConflict: 'user_id, figurinha_id' });
     }
 
     async function confirmarLimparColecao() {
-      if (!confirm("Deseja desmarcar todas as figurinhas deste álbum?")) return;
-
-      const ids = figurinhasDoAlbum.map(f => f.id);
+      if (!confirm("Zerar todas as marcações?")) return;
+      let ids = figurinhasDoAlbum.map(f => f.id);
       mapaCadernetaUsuario = {};
-      
-      if (ids.length > 0) {
-        await _supabase
-          .from('usuario_cardeneta')
-          .delete()
-          .eq('user_id', usuarioAtual.id)
-          .in('figurinha_id', ids);
-      }
       renderizarGrid();
-      alert("Coleção limpa com sucesso!");
+      await _supabase.from('usuario_cardeneta').delete().eq('user_id', usuarioAtual.id).in('figurinha_id', ids);
     }
 
-    function toggleShareMenu() {
-      const container = document.getElementById('shareDropdownContainer');
-      container.classList.toggle('active');
+    function atualizarEstatisticas(total, tenho, repetidas) {
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statTenho').innerText = tenho;
+      document.getElementById('statFaltam').innerText = total - tenho;
+      document.getElementById('statRepetidas').innerText = repetidas;
+      document.getElementById('statPorcentagem').innerText = (total > 0 ? ((tenho / total) * 100).toFixed(1) : 0) + '%';
     }
 
-    function enviarWhatsApp(tipo) {
-      let texto = `📖 Minha Caderneta: ${document.getElementById('tituloCardenetaPagina').innerText}\n\n`;
-      
-      if (tipo === 'faltantes' || tipo === 'ambos') {
-        let faltantes = figurinhasDoAlbum.filter(f => (mapaCadernetaUsuario[f.id] || 0) === 0).map(f => f.numero);
-        texto += `❌ Faltam (${faltantes.length}): ${faltantes.join(', ')}\n\n`;
-      }
-      
-      if (tipo === 'repetidas' || tipo === 'ambos') {
-        let reps = [];
-        figurinhasDoAlbum.forEach(f => {
-          const q = mapaCadernetaUsuario[f.id] || 0;
-          if (q > 1) reps.push(`${f.numero} (${q-1}x rep)`);
-        });
-        texto += `🔁 Repetidas: ${reps.join(', ') || 'Nenhuma'}`;
-      }
+    function toggleShareMenu() { document.getElementById('shareDropdownContainer').classList.toggle('active'); }
 
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
+    async function enviarWhatsApp(tipo) {
       toggleShareMenu();
+
+      const albumBase = cadernetaAtiva && (Array.isArray(cadernetaAtiva.albuns) ? cadernetaAtiva.albuns[0] : cadernetaAtiva.albuns);
+      const nomeAlbum = cadernetaAtiva?.apelido_personalizado 
+        ? `${albumBase?.nome || 'Álbum'} - ${cadernetaAtiva.apelido_personalizado}` 
+        : (albumBase?.nome || 'Minha Coleção');
+
+      let texto = `🏁 ${nomeAlbum}\n`;
+
+      let faltantesPorCat = {};
+      let repetidasPorCat = {};
+
+      figurinhasDoAlbum.forEach(f => {
+        let q = mapaCadernetaUsuario[f.id] || 0;
+        let catId = f.categoria_id || f.id_categoria || f.grupo_id || 'geral';
+        let catInt = obterCategoriaPadrao(f);
+        let catIcone = f.icone || f.categoria_icone || mapaIconesCategorias[catInt] || '📌'; 
+
+        if (q === 0) {
+          if (!faltantesPorCat[catId]) {
+            faltantesPorCat[catId] = { nome: catInt, icone: catIcone, numeros: [] };
+          }
+          faltantesPorCat[catId].numeros.push(f.numero);
+        }
+        
+        if (q > 1) {
+          if (!repetidasPorCat[catId]) {
+            repetidasPorCat[catId] = { nome: catInt, icone: catIcone, itens: [] };
+          }
+          repetidasPorCat[catId].itens.push(`${f.numero} (${q-1})`);
+        }
+      });
+
+      if ((tipo === 'ambos' || tipo === 'faltantes') && Object.keys(faltantesPorCat).length > 0) {
+        texto += `\nFaltantes`;
+        for (let catId in faltantesPorCat) {
+          let cat = faltantesPorCat[catId];
+          let numerosOrdenados = cat.numeros.sort((a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b));
+          texto += `\n${cat.icone} ${cat.nome}: ${numerosOrdenados.join(', ')}`;
+        }
+      }
+
+      if ((tipo === 'ambos' || tipo === 'repetidas') && Object.keys(repetidasPorCat).length > 0) {
+        texto += `\n\nRepetidas`;
+        for (let catId in repetidasPorCat) {
+          let cat = repetidasPorCat[catId];
+          let itensOrdenados = cat.itens.sort((a, b) => {
+            let numA = parseInt(a.split(' ')[0]);
+            let numB = parseInt(b.split(' ')[0]);
+            return numA - numB || a.localeCompare(b);
+          });
+          texto += `\n${cat.icone} ${cat.nome}: ${itensOrdenados.join(', ')}`;
+        }
+      }
+
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
     }
   </script>
 </body>
 </html>
+
